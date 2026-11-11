@@ -1,61 +1,66 @@
 <div class="filter-bar">
   <!-- ── Period (shared date-picker) ───────────────────────────── -->
   @if (flags().date !== false || flags().asOf) {
-    @if (isAsOf()) {
-      <app-date-picker
-        mode="single"
-        [value]="singleValue()"
-        (valueChange)="onSingleChange($any($event))"
-        displayFormat="MMM d, yyyy"
-        [placeholder]="'REPORTS.PERIOD.AS_OF' | translate"
-        triggerClass="fb-datepicker">
-      </app-date-picker>
+    @if (flags().monthOnly) {
+      <div class="fb-month">
+        <button type="button" class="fb-step" (click)="shiftMonth(-1)" [attr.aria-label]="'REPORTS.PERIOD.PREV_MONTH' | translate">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <app-date-picker
+          mode="single" [monthOnly]="true" [clearable]="false"
+          [value]="monthValue()" (valueChange)="onMonthChange($any($event))"
+          displayFormat="MMMM yyyy" [placeholder]="'REPORTS.PERIOD.MONTH' | translate"
+          triggerClass="fb-datepicker">
+        </app-date-picker>
+        <button type="button" class="fb-step" (click)="shiftMonth(1)" [disabled]="isCurrentMonth()" [attr.aria-label]="'REPORTS.PERIOD.NEXT_MONTH' | translate">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
     } @else {
-      <app-date-picker
-        mode="range"
-        [value]="rangeValue()"
-        (valueChange)="onRangeChange($any($event))"
-        [presets]="presets"
-        [monthsShown]="2"
-        displayFormat="MMM d, yyyy"
-        [placeholder]="'REPORTS.PERIOD.CUSTOM' | translate"
-        triggerClass="fb-datepicker">
-      </app-date-picker>
+    <!-- One picker for both modes, so the panel stays open when "As of" is toggled inside it. -->
+    <app-date-picker
+      [mode]="isAsOf() ? 'single' : 'range'"
+      [value]="isAsOf() ? singleValue() : rangeValue()"
+      (valueChange)="isAsOf() ? onSingleChange($any($event)) : onRangeChange($any($event))"
+      [presets]="presets"
+      [singlePresets]="!!flags().asOfOptional"
+      [asOfOption]="!!flags().asOfOptional"
+      [asOfChecked]="isAsOf()"
+      [asOfLabel]="'REPORTS.PERIOD.AS_OF' | translate"
+      (asOfChange)="onAsOf($event)"
+      [monthsShown]="isAsOf() ? 1 : 2"
+      displayFormat="MMM d, yyyy"
+      [placeholder]="(isAsOf() ? 'REPORTS.PERIOD.AS_OF' : 'REPORTS.PERIOD.CUSTOM') | translate"
+      triggerClass="fb-datepicker">
+    </app-date-picker>
     }
   }
 
-  <!-- ── Branches ──────────────────────────────────────────────── -->
-  @if (showBranches()) {
-    <div class="fb-control">
-      <button type="button" class="fb-trigger" [class.open]="branchOpen()" (click)="toggleBranch()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/>
-        </svg>
-        <span class="fb-trigger-text">{{ selectedBranchLabel() }}</span>
-        <svg class="fb-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-      </button>
-
-      @if (branchOpen()) {
-        <div class="fb-panel fb-panel--list">
-          @for (b of branches(); track b.value) {
-            <label class="fb-check">
-              <input type="checkbox" [checked]="isBranchSelected(b.value)" (change)="toggleBranchValue(b.value)" />
-              <span>{{ b.label }}</span>
-            </label>
-          }
-          <button type="button" class="btn btn-primary btn-sm fb-apply" (click)="applyBranches()">
-            {{ 'REPORTS.FILTER.APPLY' | translate }}
-          </button>
-        </div>
-      }
-    </div>
-  }
-
-  <!-- ── Compare toggle ────────────────────────────────────────── -->
-  @if (flags().compare) {
-    <button type="button" class="fb-compare" [class.on]="compare()" (click)="toggleCompare()">
-      <span class="fb-switch"><span class="fb-knob"></span></span>
-      {{ 'REPORTS.FILTER.COMPARE' | translate }}
+  <!-- ── Filters (branches + the report's switches) in one dialog ── -->
+  @if (hasFilters()) {
+    <button type="button" class="fb-filters" [class.on]="activeCount() > 0" (click)="openFilters()" aria-haspopup="dialog">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+      <span>{{ 'COMMON.FILTERS' | translate }}</span>
+      @if (activeCount() > 0) { <span class="fb-badge">{{ activeCount() }}</span> }
+      <svg class="fb-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
     </button>
+    @if (chips().length) {
+      <button type="button" class="fb-clear" (click)="clearAll()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        <span>{{ 'COMMON.CLEAR_ALL' | translate }}</span>
+      </button>
+    }
   }
 </div>
+
+@if (chips().length) {
+  <div class="fb-applied">
+    <span class="fb-applied-label">{{ 'REPORTS.BO.FILTERS.APPLIED' | translate }}:</span>
+    @for (c of chips(); track c.key) {
+      <span class="fb-tag">
+        <span>{{ c.label }}</span>
+        <button type="button" (click)="clearChip(c)" [attr.aria-label]="'REPORTS.BO.DISMISS' | translate">×</button>
+      </span>
+    }
+  </div>
+}

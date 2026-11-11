@@ -3,11 +3,15 @@ import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 import { ListPageComponent } from '@shared/components/list-page/components/list-page.component';
 import { ListCellTemplateDirective, ListRowActionsDirective } from '@shared/components/list-page/directives/list-template.directives';
 import { DropdownMenuBtnComponent, DropdownMenuBtnItem } from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
 
 import { DocumentListBase, DocListMeta } from '../../../services/document-list-base';
+import { DocBoardViewComponent } from '../../../components/doc-board-view/doc-board-view.component';
+import { DocCalendarViewComponent } from '../../../components/doc-calendar-view/doc-calendar-view.component';
+import { DocViewAdapter } from '../../../components/doc-views/doc-views.types';
 import { statusClass } from '@shared/utils/status-tone';
 import { BillsService } from '../../services/bills.service';
 import { BillActions } from '../../services/bill-actions';
@@ -20,7 +24,7 @@ import { BillActions } from '../../services/bill-actions';
 @Component({
   selector: 'app-bills-list',
   standalone: true,
-  imports: [CommonModule, TranslateModule, ListPageComponent, ListCellTemplateDirective, ListRowActionsDirective, DropdownMenuBtnComponent, MycurrencyPipe],
+  imports: [CommonModule, TranslateModule, ListPageComponent, ListCellTemplateDirective, ListRowActionsDirective, DropdownMenuBtnComponent, MycurrencyPipe, TooltipDirective, DocBoardViewComponent, DocCalendarViewComponent],
   templateUrl: './bills-list.component.html',
 })
 export class BillsListComponent extends DocumentListBase implements OnInit {
@@ -84,12 +88,41 @@ export class BillsListComponent extends DocumentListBase implements OnInit {
   statusClass = statusClass;
   statusLabel(status: string): string { return this.lang.instant('BILLS.STATUS.' + status); }
 
-  rowMenu(r: any): DropdownMenuBtnItem[] {
+  /**
+   * How the board / calendar present and act on a bill (same rules as the table).
+   * The API filters bills by bill date, so the calendar places them on it; the due date
+   * is shown on the card (red once past on an unsettled bill).
+   */
+  readonly viewAdapter: DocViewAdapter = {
+    numberKey: 'billingNumber',
+    refKey: 'reference',
+    partyKey: 'supplierName',
+    dateKey: 'billingDate',
+    dueKey: 'dueDate',
+    dueLabelKey: 'BILLS.LIST.DUE_DATE',
+    settledStatuses: ['Paid', 'Closed', 'Draft'],
+    columns: [
+      { id: 'draft',   labelKey: 'BILLS.STATUS.Draft',          statuses: ['Draft'],          tone: 'bg-amber-400' },
+      { id: 'open',    labelKey: 'BILLS.STATUS.Open',           statuses: ['Open'],           tone: 'bg-emerald-500' },
+      { id: 'partial', labelKey: 'BILLS.STATUS.Partially Paid', statuses: ['Partially Paid'], tone: 'bg-indigo-500' },
+      { id: 'paid',    labelKey: 'BILLS.STATUS.Paid',           statuses: ['Paid'],           tone: 'bg-teal-500' },
+      { id: 'closed',  labelKey: 'BILLS.STATUS.Closed',         statuses: ['Closed'],         tone: 'bg-slate-400' },
+    ],
+    statusLabel: s => this.statusLabel(s),
+    statusClass,
+    view: r => this.view(r),
+    edit: r => this.edit(r),
+    canEdit: r => this.actions.edit(r),
+    editBlockedReason: r => this.actions.editBlockedReason(r),
+    menu: (r, after) => this.rowMenu(r, after),
+  };
+
+  rowMenu(r: any, after: () => void = () => this.listPage?.refresh?.()): DropdownMenuBtnItem[] {
     // Pay lives in the menu (first), so only View and Edit sit outside it.
     const pay: DropdownMenuBtnItem[] = this.actions.pay(r)
       ? [{ label: this.lang.instant('BILLS.LIST.PAY'), click: () => this.pay(r) }]
       : [];
-    return [...pay, ...this.actions.menu(r, r.id, () => this.listPage?.refresh?.())];
+    return [...pay, ...this.actions.menu(r, r.id, after)];
   }
 
   add(): void { void this.router.navigate(['/account/bills', 'new']); }

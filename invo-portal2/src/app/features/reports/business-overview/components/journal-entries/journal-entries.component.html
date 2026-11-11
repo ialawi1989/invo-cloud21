@@ -1,0 +1,90 @@
+<app-bo-state [loading]="loading() && !data()" [error]="error()" [empty]="isEmpty()" (retry)="load()" />
+
+@if (data(); as d) {
+  @if (records().length) {
+    <div class="je" [class.stale]="loading()">
+      <div class="rp-table-wrap">
+        <table class="je-table">
+          <thead>
+            <tr>
+              <th [attr.aria-sort]="ariaSort('AccountType')">
+                <button type="button" class="je-sort" [class.active]="sort()?.sortValue === 'AccountType'" (click)="sortBy('AccountType')">
+                  {{ 'REPORTS.BO.COLUMNS.ACCOUNT_TYPE' | translate }}
+                  <svg class="je-sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polyline points="6 9 12 4 18 9" [style.opacity]="ariaSort('AccountType') === 'descending' ? .25 : 1"/>
+                    <polyline points="6 15 12 20 18 15" [style.opacity]="ariaSort('AccountType') === 'ascending' ? .25 : 1"/>
+                  </svg>
+                </button>
+              </th>
+              <th [attr.aria-sort]="ariaSort('reference')">
+                <button type="button" class="je-sort" [class.active]="sort()?.sortValue === 'reference'" (click)="sortBy('reference')">
+                  {{ 'REPORTS.BO.COLUMNS.REFERENCE' | translate }}
+                  <svg class="je-sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polyline points="6 9 12 4 18 9" [style.opacity]="ariaSort('reference') === 'descending' ? .25 : 1"/>
+                    <polyline points="6 15 12 20 18 15" [style.opacity]="ariaSort('reference') === 'ascending' ? .25 : 1"/>
+                  </svg>
+                </button>
+              </th>
+              <th [attr.aria-sort]="ariaSort('referenceNumber')">
+                <button type="button" class="je-sort" [class.active]="sort()?.sortValue === 'referenceNumber'" (click)="sortBy('referenceNumber')">
+                  {{ 'REPORTS.BO.COLUMNS.REFERENCE_NO' | translate }}
+                  <svg class="je-sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polyline points="6 9 12 4 18 9" [style.opacity]="ariaSort('referenceNumber') === 'descending' ? .25 : 1"/>
+                    <polyline points="6 15 12 20 18 15" [style.opacity]="ariaSort('referenceNumber') === 'ascending' ? .25 : 1"/>
+                  </svg>
+                </button>
+              </th>
+              <th class="num" [attr.aria-sort]="ariaSort('Debit')">
+                <button type="button" class="je-sort" [class.active]="sort()?.sortValue === 'Debit'" (click)="sortBy('Debit')">
+                  {{ 'REPORTS.BO.COLUMNS.DEBIT' | translate }}
+                  <svg class="je-sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polyline points="6 9 12 4 18 9" [style.opacity]="ariaSort('Debit') === 'descending' ? .25 : 1"/>
+                    <polyline points="6 15 12 20 18 15" [style.opacity]="ariaSort('Debit') === 'ascending' ? .25 : 1"/>
+                  </svg>
+                </button>
+              </th>
+              <th class="num" [attr.aria-sort]="ariaSort('Credit')">
+                <button type="button" class="je-sort" [class.active]="sort()?.sortValue === 'Credit'" (click)="sortBy('Credit')">
+                  {{ 'REPORTS.BO.COLUMNS.CREDIT' | translate }}
+                  <svg class="je-sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polyline points="6 9 12 4 18 9" [style.opacity]="ariaSort('Credit') === 'descending' ? .25 : 1"/>
+                    <polyline points="6 15 12 20 18 15" [style.opacity]="ariaSort('Credit') === 'ascending' ? .25 : 1"/>
+                  </svg>
+                </button>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of records(); track $index) {
+              <tr>
+                <td>{{ r.AccountType | boAccountName }}</td>
+                <td>{{ r.reference }}</td>
+                <td>
+                  @if (r.referenceId && link(r.reference, r.referenceId); as href) {
+                    <a class="rp-link" [routerLink]="href">{{ r.referenceNumber }}</a>
+                  } @else {
+                    {{ r.referenceNumber }}
+                  }
+                </td>
+                <td class="num je-debit">@if (r.Debit > 0) { {{ r.Debit | mycurrency }} }</td>
+                <td class="num je-credit">@if (r.Credit > 0) { {{ r.Credit | mycurrency }} }</td>
+              </tr>
+            }
+            <tr class="total">
+              <td><strong>{{ 'REPORTS.BO.COLUMNS.TOTAL' | translate }}</strong></td>
+              <td></td>
+              <td></td>
+              <td class="num"><strong>{{ d.total.totalDebit | mycurrency }}</strong></td>
+              <td class="num"><strong>{{ d.total.totalCredit | mycurrency }}</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <app-pagination
+        [page]="page()" [pageSize]="pageSize()" [count]="d.count" [pageCount]="d.pageCount"
+        [pageSizeOptions]="sizes" [disabled]="loading()"
+        (pageChange)="goTo($event)" (pageSizeChange)="setSize($event)" />
+    </div>
+  }
+}

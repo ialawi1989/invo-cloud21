@@ -43,7 +43,7 @@
       </span>
 
       <span class="flex items-center gap-1 shrink-0">
-        @if (hasValue() && !isDisabled()) {
+        @if (hasValue() && !isDisabled() && clearable()) {
           <button
             type="button"
             (click)="clear($event)"
@@ -118,7 +118,7 @@
     <!-- ─── Presets (range mode only) ────────────────────────────────────── -->
     <!-- Mobile: 2-column grid above the calendar (no horizontal scroll).    -->
     <!-- Desktop: vertical sidebar to the left of the calendar.              -->
-    @if (isRangeMode() && presets().length > 0) {
+    @if ((isRangeMode() || singlePresets()) && presets().length > 0) {
       <div
         class="
           grid grid-cols-2 gap-1
@@ -451,12 +451,21 @@
     <!-- Footer -->
     @if (showFooter()) {
       <div class="flex items-center justify-between gap-2 mt-3 pt-3 border-t border-slate-100">
-        <button
-          type="button"
-          (click)="clear()"
-          class="px-3.5 py-1.5 rounded-lg text-sm font-medium text-slate-600 border border-slate-200 bg-white hover:bg-slate-50 transition-colors">
-          Clear
-        </button>
+        @if (asOfOption()) {
+          <label class="flex items-center gap-2 text-sm font-medium text-slate-700 cursor-pointer select-none">
+            <input type="checkbox" class="w-4 h-4 rounded accent-brand-600 cursor-pointer"
+              [checked]="asOfChecked()" (change)="asOfChange.emit($any($event.target).checked)" />
+            {{ asOfLabel() }}
+          </label>
+        }
+        @if (clearable()) {
+          <button
+            type="button"
+            (click)="clear()"
+            class="px-3.5 py-1.5 rounded-lg text-sm font-medium text-slate-600 border border-slate-200 bg-white hover:bg-slate-50 transition-colors">
+            Clear
+          </button>
+        }
         @if (showTime() && !isRangeMode()) {
           <!-- In time mode, the day click no longer auto-closes the
                panel — give the user an explicit Done button instead of
@@ -465,15 +474,15 @@
           <button
             type="button"
             (click)="close()"
-            class="px-4 py-1.5 rounded-lg text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 transition-colors">
+            class="ms-auto px-4 py-1.5 rounded-lg text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 transition-colors">
             Done
           </button>
         } @else {
           <button
             type="button"
             (click)="goToToday()"
-            class="px-4 py-1.5 rounded-lg text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 transition-colors">
-            Today
+            class="ms-auto px-4 py-1.5 rounded-lg text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 transition-colors">
+            {{ monthOnly() ? 'This month' : 'Today' }}
           </button>
         }
       </div>

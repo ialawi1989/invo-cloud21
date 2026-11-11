@@ -103,6 +103,11 @@
           }
         </div>
 
+        <!-- Waiver windows for this person: both shares, or just one. Changing them refreshes the figures above. -->
+        @if (c.socialInsuranceApplicable) {
+          <app-gosi-exemptions [employeeId]="employeeId" [canEdit]="canEditPay()" (changed)="load()"/>
+        }
+
         <dl class="pay-facts">
           @if (c.effectiveFrom) {
             <div><dt>{{ 'EMPLOYEES.PAYROLL.EFFECTIVE_FROM' | translate }}</dt><dd>{{ c.effectiveFrom }}</dd></div>
@@ -206,6 +211,29 @@
               <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.CHANGE_NOTE_FIELD' | translate }}</span>
               <textarea class="form-control" rows="2" formControlName="changeNote"></textarea>
             </label>
+
+            <!-- ── Social insurance enrolment ───────────────────────────────
+                 Without this switch nobody is ever deducted. The registration
+                 date picks the rate regime where a country has two (Saudi Arabia,
+                 UAE); it is the FIRST registration with the authority, not the
+                 hire date. -->
+            <label class="pay-field pay-field--wide pay-check">
+              <input type="checkbox" formControlName="socialInsuranceApplicable" />
+              <span>{{ 'EMPLOYEES.PAYROLL.SI_ENROLLED' | translate }}</span>
+            </label>
+
+            @if (payForm.get('socialInsuranceApplicable')?.value) {
+              <label class="pay-field">
+                <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.SI_NUMBER' | translate }}</span>
+                <input class="form-control" type="text" formControlName="gosiNumber" />
+              </label>
+
+              <label class="pay-field">
+                <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.SI_REGISTERED_ON' | translate }}</span>
+                <app-date-field formControlName="socialInsuranceRegisteredOn"/>
+                <span class="pay-field__hint">{{ 'EMPLOYEES.PAYROLL.SI_REGISTERED_ON_HINT' | translate }}</span>
+              </label>
+            }
 
             <!-- ── Tax information — STORED, NOT CALCULATED ────────────────
                  No country's tax scheme is modelled: the fields hold what

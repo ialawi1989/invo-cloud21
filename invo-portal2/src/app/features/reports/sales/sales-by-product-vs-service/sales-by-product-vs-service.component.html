@@ -1,0 +1,58 @@
+@if (loading() && !data()) {
+  <div class="ls-loading" aria-busy="true"><div class="ls-skel"></div></div>
+} @else if (error()) {
+  <app-report-error [message]="error()" (retry)="load()" />
+} @else if (data(); as d) {
+  @if (isEmpty()) {
+    <app-report-empty />
+  } @else {
+    <div class="ls" [class.stale]="loading()">
+      <app-bo-table-shell [periods]="[]" hintKey="salesByProductVsService_scrollHint">
+        <table class="bo-table">
+          <thead>
+            <tr class="header-row">
+              <th class="sticky-col-1">{{ 'REPORTS.SALES_BY_PRODUCT_VS_SERVICE.COLUMNS.SERVICE' | translate }}</th>
+              <th class="text-start">{{ 'REPORTS.SALES_BY_PRODUCT_VS_SERVICE.COLUMNS.PRODUCT' | translate }}</th>
+              @for (c of cols; track c.key) {
+                <th class="text-end">{{ 'REPORTS.SALES_BY_PRODUCT_VS_SERVICE.COLUMNS.' + c.label | translate }}</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (g of groups(); track trackGroup($index, g)) {
+              @for (r of g.records; track trackRecord($index, r); let first = $first) {
+                <tr class="data-row">
+                  <td class="sticky-col-1">@if (first) { <strong>{{ g.serviceName }}</strong> }</td>
+                  <td>{{ r.productName }}</td>
+                  @for (c of cols; track c.key) {
+                    <td class="text-end" [class.neg]="num(r[c.key]) < 0">{{ c.money ? (num(r[c.key]) | mycurrency) : num(r[c.key]) }}</td>
+                  }
+                </tr>
+              }
+              <tr class="subtotal-row">
+                <td class="sticky-col-1"><strong>{{ 'REPORTS.SALES_BY_PRODUCT_VS_SERVICE.SUBTOTAL' | translate }}</strong></td>
+                <td></td>
+                @for (c of cols; track c.key) {
+                  <td class="text-end"><strong>{{ c.money ? (num(g.first[c.sub]) | mycurrency) : num(g.first[c.sub]) }}</strong></td>
+                }
+              </tr>
+            }
+            @if (total(); as t) {
+              <tr class="total-row">
+                <td class="sticky-col-1"><strong>{{ 'REPORTS.SALES_BY_PRODUCT.TOTAL' | translate }}</strong></td>
+                <td></td>
+                @for (c of cols; track c.key) {
+                  <td class="text-end"><strong>{{ c.money ? (num(t[c.key]) | mycurrency) : num(t[c.key]) }}</strong></td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </app-bo-table-shell>
+      <app-pagination
+        [page]="page()" [pageSize]="pageSize()" [count]="d.count" [pageCount]="d.pageCount"
+        [pageSizeOptions]="sizes" [disabled]="loading()"
+        (pageChange)="goTo($event)" (pageSizeChange)="setSize($event)" />
+    </div>
+  }
+}

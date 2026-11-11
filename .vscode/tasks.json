@@ -4,7 +4,7 @@
     {
       "label": "ng serve (invo-portal2)",
       "type": "shell",
-      "command": "ng serve --host 0.0.0.0 --port 4700 --host 0.0.0.0",
+      "command": "npm start",
       "options": {
         "cwd": "${workspaceFolder}/invo-portal2"
       },

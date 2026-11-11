@@ -1,4 +1,4 @@
-<app-modal-header [title]="'EMPLOYEES.SCHEDULE.SET_REGULAR_SHIFTS' | translate" />
+<app-modal-header [title]="titleKey() | translate" />
 
 <div class="body">
   <!-- Employee card -->
@@ -15,6 +15,26 @@
       <span class="emp-sub">{{ 'EMPLOYEES.SCHEDULE.REGULAR_SCHEDULE_SETUP' | translate }}</span>
     </div>
   </div>
+
+  <!-- Repeating pattern  vs  change to a single day -->
+  <div class="mode-switch">
+    <app-segmented-toggle [options]="modeOptions" [value]="mode()" (valueChange)="onMode($event)" />
+  </div>
+
+  @if (mode() === 'single') {
+    <div class="settings-grid">
+      <div class="setting">
+        <label class="lbl">{{ 'EMPLOYEES.SCHEDULE.DATE' | translate }}</label>
+        <app-date-picker triggerClass="date-input"
+                         [min]="singleMin()"
+                         [max]="singleMax()"
+                         [value]="singleDateObj()"
+                         (valueChange)="onSingleDate($any($event))" />
+      </div>
+    </div>
+    <p class="hint">{{ 'EMPLOYEES.SCHEDULE.SINGLE_DAY_HINT' | translate }}</p>
+    <app-day-shifts-editor [shifts]="singleShifts()" (stateChange)="singleState.set($event)" />
+  } @else {
 
   <!-- Settings -->
   <div class="settings-grid">
@@ -123,13 +143,21 @@
       }
     </div>
   }
+
+  <p class="summary">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+    {{ summary() }}
+  </p>
+  }
 </div>
 
 <app-modal-footer>
   <button type="button" class="btn-cancel" (click)="cancel()">
     {{ 'COMMON.CANCEL' | translate }}
   </button>
-  <button type="button" class="btn-save" (click)="save()">
+  <button type="button" class="btn-save"
+          [disabled]="mode() === 'single' && !canSaveSingle()"
+          (click)="save()">
     {{ 'COMMON.SAVE' | translate }}
   </button>
 </app-modal-footer>

@@ -15,7 +15,16 @@ import { ModalFooterComponent } from '@shared/modal/modal-footer.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
 import { ToastService } from '@shared/components/toast/toast.service';
+import {
+  SegmentedToggleComponent,
+  SegmentedToggleOption,
+} from '@shared/components/segmented-toggle/segmented-toggle.component';
 
+import {
+  DayShiftsEditorComponent,
+  DayShiftsState,
+} from '../day-shifts-editor/day-shifts-editor.component';
+import type { ShiftFormResult } from '../shift-form/shift-form.component';
 import {
   ScheduleEmployee,
   ScheduleShift,
@@ -33,23 +42,38 @@ const DEFAULT_SHIFT: ScheduleShift = { from: '09:00', to: '17:00' };
 
 export interface RegularShiftFormData {
   employee: ScheduleEmployee;
-  /** Anchor start date (usually the first day of the visible week). */
+  /** First day of the visible week (anchor for "schedule for later"). */
   date:     string;
   branchId: string;
+  /** Which tab to open on. Defaults to the repeating pattern. */
+  mode?:    'regular' | 'single';
+  /** Day preselected in the single-day tab (must be in the visible week). */
+  singleDate?: string;
+  /** The seven ISO dates of the visible week (Sat→Fri), from the board. */
+  week?: string[];
 }
 
-export interface RegularShiftFormResult {
-  /** Payload for `saveEmployeeSchedule`. */
-  schedule: {
-    employeeId:       string;
-    employeeName:     string;
-    days:             unknown;
-    from:             string;
-    to:               string | null;
-    branchId:         string;
-    regularSchedule:  Record<string, ScheduleShift[]>[];
-  };
+/** Payload for `saveEmployeeSchedule`. */
+export interface RegularSchedulePayload {
+  employeeId:       string;
+  employeeName:     string;
+  days:             unknown;
+  from:             string;
+  to:               string | null;
+  branchId:         string;
+  regularSchedule:  Record<string, ScheduleShift[]>[];
 }
+
+/**
+ * Either a new repeating pattern, or a change to one day only. The single-day
+ * variant is the same payload the one-shift modal returns, so the board
+ * persists both through the same code.
+ */
+export type RegularShiftFormResult =
+  | { kind: 'regular'; schedule: RegularSchedulePayload }
+  | { kind: 'single';  day: ShiftFormResult };
+
+type FormMode  = 'regular' | 'single';
 
 /** One day's editable slot within a week. */
 interface DaySlot { shifts: ScheduleShift[]; }
@@ -91,6 +115,8 @@ const END_OPTIONS: EndOption[] = [
     ModalFooterComponent,
     SearchDropdownComponent,
     DatePickerComponent,
+    SegmentedToggleComponent,
+    DayShiftsEditorComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './regular-shift-form.component.html',
@@ -113,10 +139,28 @@ export class RegularShiftFormComponent {
 
   employee = this.data.employee;
 
+  // ─── Mode: repeating pattern vs. a change to one day ────────────────────
+  mode = signal<FormMode>(this.data.mode === 'single' ? 'single' : 'regular');
+  readonly modeOptions: SegmentedToggleOption[] = [
+    { value: 'regular', label: 'EMPLOYEES.SCHEDULE.MODE_REPEATING' },
+    { value: 'single',  label: 'EMPLOYEES.SCHEDULE.MODE_SINGLE_DAY' },
+  ];
+  onMode(v: string): void { this.mode.set(v === 'single' ? 'single' : 'regular'); }
+
+  readonly titleKey = computed(() =>
+    this.mode() === 'single'
+      ? 'EMPLOYEES.SCHEDULE.CHANGE_SINGLE_DAY'
+      : 'EMPLOYEES.SCHEDULE.SET_REGULAR_SHIFTS');
+
   repeatWeek = signal<number>(1);
-  startDate  = signal<string>(this.data.date ?? '');
   endOption  = signal<'never' | 'specificDate'>('never');
   endDate    = signal<string | null>(null);
+
+  /** ISO date of today, local time (default pick in the single-day tab). */
+  private readonly today = this.toIso(new Date()) as string;
+
+  /** Anchor start date (usually the first day of the visible week). */
+  startDate = signal<string>(this.data.date ?? '');
 
   /** `Date` views of the ISO 'yyyy-MM-dd' signals for `<app-date-picker>`. */
   startDateObj = computed<Date | null>(() => this.toDate(this.startDate()));
@@ -124,6 +168,48 @@ export class RegularShiftFormComponent {
 
   onStartDate(d: Date | null): void { this.startDate.set(this.toIso(d) ?? ''); }
   onEndDate(d: Date | null): void { this.endDate.set(this.toIso(d)); }
+
+  // ─── Single-day change (one date of the visible week) ───────────────────
+  /** Dates of the visible week that have board data to edit against. */
+  private readonly weekDates: string[] =
+    this.data.week?.length ? this.data.week : (this.data.employee?.days ?? []).map((d) => d.date);
+  singleMin = computed<Date | null>(() => this.toDate(this.weekDates[0] ?? null));
+  singleMax = computed<Date | null>(() => this.toDate(this.weekDates[this.weekDates.length - 1] ?? null));
+
+  singleDate = signal<string>(
+    this.weekDates.includes(this.data.singleDate ?? '')
+      ? (this.data.singleDate as string)
+      : (this.weekDates.includes(this.today) ? this.today : this.weekDates[0] ?? ''),
+  );
+  singleDateObj = computed<Date | null>(() => this.toDate(this.singleDate()));
+  onSingleDate(d: Date | null): void {
+    const iso = this.toIso(d);
+    if (iso && this.weekDates.includes(iso)) this.singleDate.set(iso);
+  }
+
+  private singleDay = computed(() =>
+    // `days` is index-aligned with the visible week (see employee-schedule.types).
+    (this.employee?.days ?? [])[this.weekDates.indexOf(this.singleDate())] ?? null);
+  /** Existing shifts of the picked day — the editor resets when this changes. */
+  singleShifts = computed<ScheduleShift[]>(() => this.singleDay()?.shift ?? []);
+  singleState = signal<DayShiftsState>({ kept: [], removed: [], added: [] });
+  canSaveSingle = computed(() =>
+    this.singleState().kept.length > 0 || this.singleState().added.length > 0);
+
+  /** One-line plain-language description of what Save will do. */
+  summary = computed<string>(() => {
+    const start = this.startDate();
+    const end = this.endOption() === 'specificDate' && this.endDate()
+      ? this.translate.instant('EMPLOYEES.SCHEDULE.SUMMARY_UNTIL', { date: this.endDate() })
+      : this.translate.instant('EMPLOYEES.SCHEDULE.SUMMARY_NO_END');
+    return this.translate.instant('EMPLOYEES.SCHEDULE.SUMMARY', {
+      name:   this.employee.employeeName,
+      repeat: this.translate.instant(this.selectedRepeat().labelKey),
+      hours:  this.totalHoursAllWeeks(),
+      start,
+      end,
+    });
+  });
 
   weeks = signal<WeekMap[]>([this.buildFirstWeek()]);
 
@@ -258,12 +344,23 @@ export class RegularShiftFormComponent {
     return Math.round(total * 10) / 10;
   }
 
+  /** Hours across every week of the cycle (what one full repeat adds up to). */
+  private totalHoursAllWeeks(): number {
+    let total = 0;
+    for (let w = 0; w < this.weeks().length; w++) total += this.weekTotalHours(w);
+    return Math.round(total * 10) / 10;
+  }
+
   dayLabelKey(day: WeekDayName): string {
     return `COMMON.DAYS.${day.toUpperCase()}`;
   }
 
   // ─── Save ──────────────────────────────────────────────────────────────
   save(): void {
+    if (this.mode() === 'single') {
+      this.saveSingle();
+      return;
+    }
     const weeks = this.weeks();
     for (let w = 0; w < weeks.length; w++) {
       for (const day of WEEK_DAYS) {
@@ -290,17 +387,43 @@ export class RegularShiftFormComponent {
       return out;
     });
 
+    const to = this.endOption() === 'specificDate' ? this.endDate() : null;
+
     this.ref.close({
+      kind: 'regular',
       schedule: {
         employeeId:      this.employee.employeeId,
         employeeName:    this.employee.employeeName,
         days:            this.employee.days,
         from:            this.startDate(),
-        to:              this.endOption() === 'specificDate' ? this.endDate() : null,
+        to,
         branchId:        this.data.branchId,
         regularSchedule,
       },
     });
+  }
+
+  /** Validate and return the one-day change (exceptions + additional shifts). */
+  private saveSingle(): void {
+    const { kept, removed, added } = this.singleState();
+    const all = [...kept, ...added];
+    if (!noOverlaps(all)) {
+      this.toast.error(this.translate.instant('EMPLOYEES.SCHEDULE.SHIFT_OVERLAP'));
+      return;
+    }
+    if (!validTimeOrder(all)) {
+      this.toast.error(this.translate.instant('EMPLOYEES.SCHEDULE.SHIFT_INVALID_TIME'));
+      return;
+    }
+    const day: ShiftFormResult = {
+      branchId:           this.data.branchId,
+      employeeId:         this.employee.employeeId,
+      employeeScheduleId: this.singleDay()?.employeeScheduleId ?? null,
+      date:               this.singleDate(),
+      exceptions:         removed,
+      additionalShifts:   added,
+    };
+    this.ref.close({ kind: 'single', day });
   }
 
   cancel(): void {

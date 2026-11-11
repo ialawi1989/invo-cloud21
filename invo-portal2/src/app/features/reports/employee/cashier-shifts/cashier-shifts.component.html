@@ -1,0 +1,99 @@
+@if (error()) {
+  <app-report-error [message]="error()" (retry)="loadList()" />
+} @else if (list() && list()!.records.length === 0) {
+  <app-report-empty />
+} @else {
+  <div class="cs">
+    <!-- The shifts of the period -->
+    <aside class="cs-list" [class.stale]="listLoading()" aria-label="{{ 'REPORTS.CASHIER_SHIFTS.SHIFTS' | translate }}">
+      @if (listLoading() && !list()) {
+        @for (i of [1, 2, 3, 4]; track i) { <div class="cs-skel"></div> }
+      }
+      @for (s of list()?.records ?? []; track s.id) {
+        <button type="button" class="cs-shift" [class.active]="s.id === selected()" (click)="select(s.id)" [attr.aria-pressed]="s.id === selected()">
+          <strong>{{ s.employeeName }}</strong>
+          <span class="cs-meta">{{ 'REPORTS.CASHIER_SHIFTS.BRANCH' | translate }}: {{ s.branchName }}</span>
+          <span class="cs-meta">{{ 'REPORTS.CASHIER_SHIFTS.START' | translate }}: {{ s.cashierIn | date: 'dd/MM/yyyy HH:mm' }}</span>
+          <span class="cs-meta">{{ 'REPORTS.CASHIER_SHIFTS.END' | translate }}: {{ s.cashierOut ? (s.cashierOut | date: 'dd/MM/yyyy HH:mm') : '-' }}</span>
+          <span class="cs-amounts">
+            <span>{{ 'REPORTS.CASHIER_SHIFTS.START_AMOUNT' | translate }} <b>{{ num(s.startAmount) | mycurrency }}</b></span>
+            <span>{{ 'REPORTS.CASHIER_SHIFTS.END_AMOUNT' | translate }} <b>{{ num(s.endAmount) | mycurrency }}</b></span>
+          </span>
+        </button>
+      }
+      @if (list(); as l) {
+        <app-pagination [page]="page()" [pageSize]="pageSize()" [count]="l.count" [pageCount]="l.pageCount"
+          [pageSizeOptions]="sizes" [disabled]="listLoading()" (pageChange)="goTo($event)" (pageSizeChange)="setPageSize($event)" />
+      }
+    </aside>
+
+    <!-- The chosen shift -->
+    <section class="cs-detail" [class.stale]="detailLoading()">
+      @if (detailError()) {
+        <app-report-error [message]="detailError()" (retry)="loadReport()" />
+      } @else if (report(); as r) {
+        <header class="cs-head">
+          <div><span class="cs-k">{{ 'REPORTS.CASHIER_SHIFTS.CASHIER' | translate }}</span><strong>{{ r.employeeName }}</strong></div>
+          <div><span class="cs-k">{{ 'REPORTS.CASHIER_SHIFTS.BRANCH' | translate }}</span><strong>{{ r.branchName }}</strong></div>
+        </header>
+
+        <div class="cs-times">
+          <div class="cs-card">
+            <h4>{{ 'REPORTS.CASHIER_SHIFTS.STARTING' | translate }}</h4>
+            <p><span>{{ 'REPORTS.CASHIER_SHIFTS.DATE' | translate }}</span> {{ r.cashierIn | date: 'dd/MM/yyyy' }}</p>
+            <p><span>{{ 'REPORTS.CASHIER_SHIFTS.TIME' | translate }}</span> {{ r.cashierIn | date: 'HH:mm' }}</p>
+          </div>
+          <div class="cs-card">
+            <h4>{{ 'REPORTS.CASHIER_SHIFTS.CLOSING' | translate }}</h4>
+            @if (r.cashierOut) {
+              <p><span>{{ 'REPORTS.CASHIER_SHIFTS.DATE' | translate }}</span> {{ r.cashierOut | date: 'dd/MM/yyyy' }}</p>
+              <p><span>{{ 'REPORTS.CASHIER_SHIFTS.TIME' | translate }}</span> {{ r.cashierOut | date: 'HH:mm' }}</p>
+            } @else { <p class="cs-open">{{ 'REPORTS.CASHIER_SHIFTS.STILL_OPEN' | translate }}</p> }
+          </div>
+        </div>
+
+        <div class="cs-card cs-sum">
+          <div><span>{{ 'REPORTS.CASHIER_SHIFTS.TOTAL_ORDERS' | translate }}</span><b>{{ num(r.totalOrders) }}</b></div>
+          <div><span>{{ 'REPORTS.CASHIER_SHIFTS.OPENING' | translate }}</span><b>{{ num(r.openingBalance) | mycurrency }}</b></div>
+          <div class="pos"><span>{{ 'REPORTS.CASHIER_SHIFTS.PAYMENTS' | translate }}</span><b>{{ num(r.totalPayments) | mycurrency }}</b></div>
+          <div class="neg"><span>{{ 'REPORTS.CASHIER_SHIFTS.REFUNDS' | translate }}</span><b>{{ num(r.totalRefunds) | mycurrency }}</b></div>
+          <div class="neg"><span>{{ 'REPORTS.CASHIER_SHIFTS.PAYOUT' | translate }}</span><b>{{ num(r.totalPayout) | mycurrency }}</b></div>
+          <div class="cs-total"><span>{{ 'REPORTS.CASHIER_SHIFTS.CLOSING_BALANCE' | translate }}</span><b>{{ num(r.closingBalance) | mycurrency }}</b></div>
+        </div>
+
+        <h4 class="cs-h">{{ 'REPORTS.CASHIER_SHIFTS.BY_TENDER' | translate }}</h4>
+        <div class="cs-card cs-table">
+          @if (r.paymentByTender.length) {
+            <table>
+              <thead><tr><th>{{ 'REPORTS.CASHIER_SHIFTS.PAYMENT_METHOD' | translate }}</th><th class="end">{{ 'REPORTS.CASHIER_SHIFTS.TOTAL' | translate }}</th><th class="end">{{ 'REPORTS.CASHIER_SHIFTS.EQUIVALENT' | translate }}</th></tr></thead>
+              <tbody>
+                @for (t of r.paymentByTender; track $index) {
+                  <tr><td>{{ t.paymentMethodName }}</td><td class="end">{{ num(t.total) | mycurrency }}</td><td class="end">{{ num(t.equivalant) | mycurrency }}</td></tr>
+                }
+              </tbody>
+            </table>
+          } @else { <p class="cs-none">{{ 'REPORTS.CASHIER_SHIFTS.NONE' | translate }}</p> }
+        </div>
+
+        <h4 class="cs-h">{{ 'REPORTS.CASHIER_SHIFTS.SHORT_OVER' | translate }}</h4>
+        <div class="cs-card cs-table">
+          @if (r.shortOver.length) {
+            <table>
+              <thead><tr><th>{{ 'REPORTS.CASHIER_SHIFTS.TENDER' | translate }}</th><th class="end">{{ 'REPORTS.CASHIER_SHIFTS.EXPECTED' | translate }}</th><th class="end">{{ 'REPORTS.CASHIER_SHIFTS.COUNT' | translate }}</th><th class="end">{{ 'REPORTS.CASHIER_SHIFTS.SHORT_OVER_COL' | translate }}</th></tr></thead>
+              <tbody>
+                @for (t of r.shortOver; track $index) {
+                  <tr>
+                    <td>{{ t.paymentMethodName }}</td><td class="end">{{ num(t.expected) | mycurrency }}</td><td class="end">{{ num(t.countAmount) | mycurrency }}</td>
+                    <td class="end" [class.neg]="num(t.shortOver) < 0" [class.pos]="num(t.shortOver) > 0"><b>{{ num(t.shortOver) | mycurrency }}</b></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          } @else { <p class="cs-none">{{ 'REPORTS.CASHIER_SHIFTS.NONE' | translate }}</p> }
+        </div>
+      } @else if (detailLoading()) {
+        <div class="cs-skel tall"></div>
+      }
+    </section>
+  </div>
+}

@@ -51,6 +51,20 @@
       <div><span>{{ 'EMPLOYEES.PAYROLL_RUN.NEEDS_REVIEW' | translate }}</span><b [class.pr-warn]="totals().flagged > 0">{{ totals().flagged }}</b></div>
     </div>
 
+    @if (run()?.gosiRemittance; as rm) {
+      <!-- Bahrain: the SIO rounds the AGGREGATE total, not each payslip. -->
+      <div class="pr-remit" role="note">
+        <div class="pr-remit__main">
+          <span>{{ 'EMPLOYEES.PAYROLL_RUN.REMIT_TITLE' | translate }}</span>
+          <b>{{ rm.roundedTotal | mycurrency }}</b>
+        </div>
+        <small>
+          {{ 'EMPLOYEES.PAYROLL_RUN.REMIT_DETAIL' | translate: { exact: (rm.exactTotal | mycurrency), diff: (rm.adjustment | mycurrency) } }}
+          @if (rm.estimate) { · {{ 'EMPLOYEES.PAYROLL_RUN.REMIT_ESTIMATE' | translate }} }
+        </small>
+      </div>
+    }
+
     <div class="pr-scroll">
       <table class="pr-table">
         <thead>
@@ -78,7 +92,8 @@
               <td class="pr-sticky">
                 <div class="pr-emp">{{ l.employeeName }}</div>
                 @for (f of l.result.flags; track f) {
-                  <span class="pr-flag" [class.pr-flag--bad]="f === 'negativeNet'">{{ flagLabel(f) }}</span>
+                  <span class="pr-flag" [class.pr-flag--bad]="f === 'negativeNet'"
+                        [class.pr-flag--info]="f === 'retirementApproaching'">{{ flagLabel(f, l) }}</span>
                 }
                 @if (l.inputs.notEmployedDays > 0) {
                   <span class="pr-flag pr-flag--info">{{ 'EMPLOYEES.PAYROLL_RUN.PARTIAL_MONTH' | translate: { days: l.inputs.notEmployedDays } }}</span>
@@ -158,16 +173,36 @@
 
     <section class="pr-card">
       <h2 class="pr-card__title">{{ 'EMPLOYEES.PAYROLL_RUN.NEW_RUN' | translate }}</h2>
+      @if (countryDefaults(); as cd) {
+        @if (cd.gosi && !cd.gosi.complete) {
+          <!-- Not a block: a company with nobody enrolled in social insurance is fine.
+               But anyone who IS enrolled would be deducted nothing, so say so up front
+               — and finalizing is refused for those lines until it is resolved. -->
+          <div class="pr-warncard" role="alert">
+            <strong>{{ 'EMPLOYEES.PAYROLL_RUN.GOSI_WARN_TITLE' | translate }}</strong>
+            <p>{{ (cd.gosi.configured ? 'EMPLOYEES.PAYROLL_RUN.GOSI_WARN_INCOMPLETE' : 'EMPLOYEES.PAYROLL_RUN.GOSI_WARN_NONE') | translate }}</p>
+            <a class="btn btn-default btn-sm" routerLink="/employees/gosi-settings">
+              {{ 'EMPLOYEES.PAYROLL_RUN.GOSI_WARN_ACTION' | translate }}
+            </a>
+          </div>
+        }
+      }
       <div class="pr-new">
         <label class="pr-field">
           <span>{{ 'EMPLOYEES.PAYROLL_RUN.MONTH' | translate }}</span>
-          <input class="pr-input" type="month" [ngModel]="newMonth()" (ngModelChange)="newMonth.set($event)" name="month"/>
+          <app-date-picker [monthOnly]="true" displayFormat="MMMM yyyy" triggerClass="pr-input" [showFooter]="true"
+                           [value]="newMonthDate()" (valueChange)="onNewMonth($any($event))"/>
         </label>
         <label class="pr-field">
           <span>{{ 'EMPLOYEES.PAYROLL_RUN.DIVISOR' | translate }}</span>
           <input class="pr-input" type="number" min="1" max="31" step="1"
                  [ngModel]="newDivisor()" (ngModelChange)="newDivisor.set($event)" name="divisor"/>
           <small class="pr-hint">{{ 'EMPLOYEES.PAYROLL_RUN.DIVISOR_HINT' | translate }}</small>
+          @if (countryDefaults(); as cd) {
+            @if (cd.verify) {
+              <small class="pr-hint pr-hint--warn">{{ 'EMPLOYEES.PAYROLL_RUN.DEFAULTS_UNCONFIRMED' | translate }}</small>
+            }
+          }
         </label>
         <button type="button" class="btn btn-primary" [disabled]="busy() || !newMonth()" (click)="createRun()">
           {{ 'EMPLOYEES.PAYROLL_RUN.CREATE' | translate }}

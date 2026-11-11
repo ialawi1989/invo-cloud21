@@ -1,0 +1,78 @@
+@use '../../../styles/report-theme' as rp;
+
+:host { @include rp.tokens; display: block; }
+
+/* ── Shared statement-table look (common stylesheet) ─────────────────── */
+:host ::ng-deep { @include rp.statement-table; }
+@include rp.period-dots;
+
+/* ── Only what is specific to this frame ─────────────────────────────── */
+/* One compact navigator above the table: period chips (colour = the column's header colour) + scroll hint. */
+.ts-nav {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 10px; padding: 8px 12px;
+  background: var(--rp-surface); border: 1px solid var(--rp-border); border-radius: 10px;
+}
+.ts-nav-title { font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--rp-muted); }
+.ts-nav-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* Every control in this frame is a button: no text selection on fast clicks, no double-tap zoom. */
+.ts-chip, .ts-arrow, .ts-hint-x {
+  -webkit-user-select: none; user-select: none; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+}
+.ts-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+.ts-chip {
+  display: inline-flex; align-items: center; gap: 6px; padding: 3px 11px 3px 9px;
+  border: 1px solid var(--rp-border); background: var(--rp-surface); border-radius: 999px;
+  font: inherit; font-size: 12.5px; font-weight: 500; color: var(--rp-text-2); cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s;
+  &:hover { border-color: var(--rp-brand); color: var(--rp-brand); }
+  /* No ring after a mouse click; keyboard users still get a clear one. */
+  &:focus { outline: none; }
+  &:focus-visible { outline: 2px solid var(--rp-brand); outline-offset: 2px; }
+  &.active { background: var(--rp-brand-soft); border-color: var(--rp-brand); color: var(--rp-text); font-weight: 600; }
+}
+
+.ts-nav-hint {
+  display: inline-flex; align-items: center; gap: 6px; margin-inline-start: auto; font-size: 12px; color: var(--rp-muted);
+}
+.ts-hint-x { border: 0; background: transparent; padding: 0 2px; font-size: 16px; line-height: 1; color: inherit; cursor: pointer; &:hover { color: var(--rp-text); } }
+
+.ts-wrap { @include rp.card; position: relative; overflow: hidden; }
+/* Horizontal scroll only — vertical scrolling belongs to the page (one scrollbar). */
+.ts-scroll { overflow-x: auto; overflow-y: hidden; scrollbar-width: none; &::-webkit-scrollbar { display: none; } }
+
+/* The one horizontal scrollbar: pinned to the bottom of the page scroller so it is always reachable. */
+.ts-bar {
+  position: sticky; bottom: 0; z-index: 7; height: 16px; overflow-x: auto; overflow-y: hidden;
+  background: rgba(255, 255, 255, .94); border: 1px solid var(--rp-border); border-radius: 0 0 var(--rp-radius) var(--rp-radius); margin-top: -1px;
+  box-shadow: 0 -6px 10px -6px rgba(15, 23, 42, .18);   /* soft edge so rows slide under it instead of being cut */
+  scrollbar-width: thin; scrollbar-color: #94a3b8 transparent;
+  &::-webkit-scrollbar { height: 10px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 999px; border: 2px solid transparent; background-clip: content-box; }
+  &::-webkit-scrollbar-thumb:hover { background: var(--rp-brand); background-clip: content-box; }
+}
+.ts-bar-fill { height: 1px; }
+.ts-arrow {
+  position: absolute; top: 50%; transform: translateY(-50%); z-index: 6; width: 30px; height: 30px; border-radius: 50%;
+  border: 1px solid var(--rp-border); background: var(--rp-surface); box-shadow: 0 2px 8px rgba(15, 23, 42, .12); color: var(--rp-text-2);
+  font-size: 18px; line-height: 1; cursor: pointer; opacity: 0; pointer-events: none; transition: opacity .15s;
+  &:disabled { display: none; }
+}
+.ts-arrow-start { inset-inline-start: 8px; }
+.ts-arrow-end { inset-inline-end: 8px; }
+.ts-wrap.can-left .ts-arrow-start,
+.ts-wrap.can-right .ts-arrow-end { opacity: 1; pointer-events: auto; }
+:host-context([dir='rtl']) .ts-arrow { transform: translateY(-50%) scaleX(-1); }
+
+/* ── Responsive ──────────────────────────────────────────────────────── */
+/* Touch screens swipe; the overlay arrows only get in the way. */
+@media (hover: none) { .ts-arrow { display: none; } }
+
+@media (max-width: 640px) {
+  .ts-nav { padding: 8px 10px; gap: 6px 10px; }
+  /* Period chips become a single swipeable row instead of wrapping into several lines. */
+  .ts-nav-chips { flex-wrap: nowrap; overflow-x: auto; max-width: 100%; padding-bottom: 2px; scrollbar-width: none; &::-webkit-scrollbar { display: none; } }
+  .ts-chip { flex-shrink: 0; }
+  .ts-nav-hint { display: none; }
+}

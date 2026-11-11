@@ -208,12 +208,13 @@ import { DocRailFilterComponent, DocRailFilterOption } from '../doc-rail-filter/
                  (pointerdown)="panStart($event)" (pointermove)="panMove($event)" (pointerup)="panEnd($event)" (pointercancel)="panEnd($event)">
               @if (template() && data(); as d) {
                 <div class="dv-paper__frame">
-                  @if (ribbonText()) {
-                    <div class="dv-ribbon-clip" aria-hidden="true">
-                      <span class="dv-ribbon" [class.dv-ribbon--danger]="ribbonKind() === 'danger'">{{ ribbonText() }}</span>
-                    </div>
-                  }
                   <div class="dv-paper__scale" [style.zoom]="zoom() / 100">
+                    @if (ribbonText()) {
+                      <!-- Inside the scale box so it is pinned to the PAPER's own corner (and zooms with it), not the frame's. -->
+                      <div class="dv-ribbon-clip" aria-hidden="true">
+                        <span class="dv-ribbon" [class.dv-ribbon--danger]="ribbonKind() === 'danger'">{{ ribbonText() }}</span>
+                      </div>
+                    }
                     @if (reportDesign() && reportData()) {
                       <app-designer-paper [template]="reportDesign()!" [data]="reportData()!"/>
                     } @else {

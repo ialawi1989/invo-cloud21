@@ -1,0 +1,177 @@
+@if (!hasProduct) {
+  <div class="ls-error"><p>{{ 'REPORTS.ITEM_TRANSACTIONS.NO_PRODUCT' | translate }}</p></div>
+} @else if (loading() && !data()) {
+  <div class="ls-loading" aria-busy="true"><div class="ls-skel"></div></div>
+} @else if (error()) {
+  <app-report-error [message]="error()" (retry)="load()" />
+} @else if (data(); as d) {
+  <div class="ls" [class.stale]="loading()">
+    <p class="ls-product">{{ 'REPORTS.ITEM_TRANSACTIONS.PRODUCT' | translate }}: <strong>{{ productName || productId }}</strong></p>
+
+    @if (isEmpty()) {
+      <app-report-empty />
+    } @else {
+      @if (total(); as t) {
+        <div class="ls-cards">
+          <div class="ls-card">
+            <div class="ls-card-label">{{ 'REPORTS.ITEM_TRANSACTIONS.CARDS.CUSTOMERS' | translate }}</div>
+            <div class="ls-card-value">{{ num(t.customersCount) }}</div>
+            <div class="ls-card-hint">{{ 'REPORTS.ITEM_TRANSACTIONS.CARDS.CUSTOMERS_HINT' | translate }}</div>
+          </div>
+          <div class="ls-card">
+            <div class="ls-card-label">{{ 'REPORTS.ITEM_TRANSACTIONS.COLUMNS.NET_QTY' | translate }}</div>
+            <div class="ls-card-value">{{ num(t.netQty) }}</div>
+            <div class="ls-card-hint">
+              {{ 'REPORTS.ITEM_TRANSACTIONS.COLUMNS.SOLD' | translate }} {{ num(t.soldQty) }} ·
+              {{ 'REPORTS.ITEM_TRANSACTIONS.COLUMNS.VOIDED' | translate }} {{ num(t.voidedQty) }} ·
+              {{ 'REPORTS.ITEM_TRANSACTIONS.COLUMNS.RETURNED' | translate }} {{ num(t.returnedQty) }}
+            </div>
+          </div>
+          <div class="ls-card">
+            <div class="ls-card-label">{{ 'REPORTS.ITEM_TRANSACTIONS.COLUMNS.SALES_AMOUNT' | translate }}</div>
+            <div class="ls-card-value" [class.neg]="num(t.salesAmount) < 0">{{ num(t.salesAmount) | mycurrency }}</div>
+          </div>
+          <div class="ls-card">
+            <div class="ls-card-label">{{ 'REPORTS.ITEM_TRANSACTIONS.COLUMNS.TOTAL' | translate }}</div>
+            <div class="ls-card-value" [class.neg]="num(t.total) < 0">{{ num(t.total) | mycurrency }}</div>
+          </div>
+        </div>
+      }
+
+      <app-bo-table-shell [periods]="[]" hintKey="salesByItemTransactions_scrollHint">
+        <table class="bo-table">
+          <thead>
+            <tr class="header-row">
+              <th class="sticky-col-1" [attr.aria-sort]="ariaSort('transactionNumber')">
+                <button type="button" class="ls-sort" [class.active]="sort()?.sortValue === 'transactionNumber'" (click)="sortBy('transactionNumber')">
+                  {{ 'REPORTS.ITEM_TRANSACTIONS.COLUMNS.TRANSACTION' | translate }}
+                  <svg class="ls-sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 4 18 9" [style.opacity]="ariaSort('transactionNumber') === 'descending' ? .25 : 1"/><polyline points="6 15 12 20 18 15" [style.opacity]="ariaSort('transactionNumber') === 'ascending' ? .25 : 1"/></svg>
+                </button>
+              </th>
+              <th class="text-start" [attr.aria-sort]="ariaSort('transactionType')">
+                <button type="button" class="ls-sort" [class.active]="sort()?.sortValue === 'transactionType'" (click)="sortBy('transactionType')">
+                  {{ 'REPORTS.ITEM_TRANSACTIONS.COLUMNS.TYPE' | translate }}
+                  <svg class="ls-sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 4 18 9" [style.opacity]="ariaSort('transactionType') === 'descending' ? .25 : 1"/><polyline points="6 15 12 20 18 15" [style.opacity]="ariaSort('transactionType') === 'ascending' ? .25 : 1"/></svg>
+                </button>
+              </th>
+              <th class="text-start" [attr.aria-sort]="ariaSort('transactionDate')">
+                <button type="button" class="ls-sort" [class.active]="sort()?.sortValue === 'transactionDate'" (click)="sortBy('transactionDate')">
+                  {{ 'REPORTS.ITEM_TRANSACTIONS.COLUMNS.DATE' | translate }}
+                  <svg class="ls-sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 4 18 9" [style.opacity]="ariaSort('transactionDate') === 'descending' ? .25 : 1"/><polyline points="6 15 12 20 18 15" [style.opacity]="ariaSort('transactionDate') === 'ascending' ? .25 : 1"/></svg>
+                </button>
+              </th>
+              <th class="text-start" [attr.aria-sort]="ariaSort('customerName')">
+                <button type="button" class="ls-sort" [class.active]="sort()?.sortValue === 'customerName'" (click)="sortBy('customerName')">
+                  {{ 'REPORTS.ITEM_TRANSACTIONS.COLUMNS.CUSTOMER' | translate }}
+                  <svg class="ls-sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 4 18 9" [style.opacity]="ariaSort('customerName') === 'descending' ? .25 : 1"/><polyline points="6 15 12 20 18 15" [style.opacity]="ariaSort('customerName') === 'ascending' ? .25 : 1"/></svg>
+                </button>
+              </th>
+              <th class="text-start" [attr.aria-sort]="ariaSort('branchName')">
+                <button type="button" class="ls-sort" [class.active]="sort()?.sortValue === 'branchName'" (click)="sortBy('branchName')">
+                  {{ 'REPORTS.ITEM_TRANSACTIONS.COLUMNS.BRANCH' | translate }}
+                  <svg class="ls-sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 4 18 9" [style.opacity]="ariaSort('branchName') === 'descending' ? .25 : 1"/><polyline points="6 15 12 20 18 15" [style.opacity]="ariaSort('branchName') === 'ascending' ? .25 : 1"/></svg>
+                </button>
+              </th>
+              <th class="text-start" [attr.aria-sort]="ariaSort('employeeName')">
+                <button type="button" class="ls-sort" [class.active]="sort()?.sortValue === 'employeeName'" (click)="sortBy('employeeName')">
+                  {{ 'REPORTS.ITEM_TRANSACTIONS.COLUMNS.EMPLOYEE' | translate }}
+                  <svg class="ls-sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 4 18 9" [style.opacity]="ariaSort('employeeName') === 'descending' ? .25 : 1"/><polyline points="6 15 12 20 18 15" [style.opacity]="ariaSort('employeeName') === 'ascending' ? .25 : 1"/></svg>
+                </button>
+              </th>
+              <th class="text-end">{{ 'REPORTS.ITEM_TRANSACTIONS.COLUMNS.SOLD' | translate }}</th>
+              <th class="text-end">{{ 'REPORTS.ITEM_TRANSACTIONS.COLUMNS.VOIDED' | translate }}</th>
+              <th class="text-end">{{ 'REPORTS.ITEM_TRANSACTIONS.COLUMNS.RETURNED' | translate }}</th>
+              <th class="text-end" [attr.aria-sort]="ariaSort('netQty')">
+                <button type="button" class="ls-sort" [class.active]="sort()?.sortValue === 'netQty'" (click)="sortBy('netQty')">
+                  {{ 'REPORTS.ITEM_TRANSACTIONS.COLUMNS.NET_QTY' | translate }}
+                  <svg class="ls-sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 4 18 9" [style.opacity]="ariaSort('netQty') === 'descending' ? .25 : 1"/><polyline points="6 15 12 20 18 15" [style.opacity]="ariaSort('netQty') === 'ascending' ? .25 : 1"/></svg>
+                </button>
+              </th>
+              <th class="text-end">{{ 'REPORTS.ITEM_TRANSACTIONS.COLUMNS.UNIT_PRICE' | translate }}</th>
+              <th class="text-end" [attr.aria-sort]="ariaSort('salesAmount')">
+                <button type="button" class="ls-sort" [class.active]="sort()?.sortValue === 'salesAmount'" (click)="sortBy('salesAmount')">
+                  {{ 'REPORTS.ITEM_TRANSACTIONS.COLUMNS.SALES_AMOUNT' | translate }}
+                  <svg class="ls-sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 4 18 9" [style.opacity]="ariaSort('salesAmount') === 'descending' ? .25 : 1"/><polyline points="6 15 12 20 18 15" [style.opacity]="ariaSort('salesAmount') === 'ascending' ? .25 : 1"/></svg>
+                </button>
+              </th>
+              <th class="text-end">{{ 'REPORTS.ITEM_TRANSACTIONS.COLUMNS.DISCOUNT' | translate }}</th>
+              <th class="text-end">{{ 'REPORTS.ITEM_TRANSACTIONS.COLUMNS.TAX' | translate }}</th>
+              <th class="text-end" [attr.aria-sort]="ariaSort('total')">
+                <button type="button" class="ls-sort" [class.active]="sort()?.sortValue === 'total'" (click)="sortBy('total')">
+                  {{ 'REPORTS.ITEM_TRANSACTIONS.COLUMNS.TOTAL' | translate }}
+                  <svg class="ls-sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 4 18 9" [style.opacity]="ariaSort('total') === 'descending' ? .25 : 1"/><polyline points="6 15 12 20 18 15" [style.opacity]="ariaSort('total') === 'ascending' ? .25 : 1"/></svg>
+                </button>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of records(); track trackRow($index, r)) {
+              <tr class="data-row">
+                <td class="sticky-col-1">
+                  @if (link(r); as href) { <a class="account-link" [routerLink]="href" target="_blank" rel="noopener">{{ r.transactionNumber }}</a> }
+                  @else { {{ r.transactionNumber }} }
+                  @if (isCreditNote(r) && r.invoiceNumber) {
+                    <small class="sub-line">{{ 'REPORTS.ITEM_TRANSACTIONS.COLUMNS.ORIGINAL_INVOICE' | translate }}:
+                      @if (invoiceLink(r); as ih) { <a class="account-link" [routerLink]="ih" target="_blank" rel="noopener">{{ r.invoiceNumber }}</a> }
+                      @else { {{ r.invoiceNumber }} }
+                    </small>
+                  }
+                  @if (r.partOf) { <small class="sub-line">{{ 'REPORTS.ITEM_TRANSACTIONS.VIA' | translate }} {{ r.partOf }}</small> }
+                </td>
+                <td>
+                  <span class="ls-badge" [class.ls-badge-return]="isCreditNote(r)">
+                    {{ (isCreditNote(r) ? 'REPORTS.ITEM_TRANSACTIONS.TYPES.RETURN' : 'REPORTS.ITEM_TRANSACTIONS.TYPES.INVOICE') | translate }}
+                  </span>
+                  @if (isVoidOnly(r)) {
+                    <span class="ls-badge ls-badge-void" [attr.title]="'REPORTS.ITEM_TRANSACTIONS.TYPES.VOIDED_HINT' | translate">{{ 'REPORTS.ITEM_TRANSACTIONS.TYPES.VOIDED' | translate }}</span>
+                  }
+                </td>
+                <td>{{ r.transactionDate | date: 'dd/MM/yyyy HH:mm' }}</td>
+                <td>
+                  @if (r.customerId) {
+                    <a class="account-link" [routerLink]="'/account/customers/view/' + r.customerId" target="_blank" rel="noopener">{{ r.customerName }}</a>
+                    @if (r.customerPhone) { <small class="sub-line">{{ r.customerPhone }}</small> }
+                    @if (r.customerEmail) { <small class="sub-line">{{ r.customerEmail }}</small> }
+                  } @else {
+                    <span class="ls-muted">{{ r.customerName || ('REPORTS.ITEM_TRANSACTIONS.WALKIN_CUSTOMER' | translate) }}</span>
+                  }
+                </td>
+                <td>{{ r.branchName || '—' }}</td>
+                <td>{{ r.employeeName || '—' }}</td>
+                <td class="text-end">{{ num(r.soldQty) }}</td>
+                <td class="text-end">{{ num(r.voidedQty) }}</td>
+                <td class="text-end">{{ num(r.returnedQty) }}</td>
+                <td class="text-end" [class.neg]="num(r.netQty) < 0">{{ num(r.netQty) }}</td>
+                <td class="text-end">{{ num(r.unitPrice) | mycurrency }}</td>
+                <td class="text-end" [class.neg]="num(r.salesAmount) < 0">{{ num(r.salesAmount) | mycurrency }}</td>
+                <td class="text-end" [class.neg]="num(r.discountTotal) < 0">{{ num(r.discountTotal) | mycurrency }}</td>
+                <td class="text-end" [class.neg]="num(r.taxTotal) < 0">{{ num(r.taxTotal) | mycurrency }}</td>
+                <td class="text-end" [class.neg]="num(r.total) < 0">{{ num(r.total) | mycurrency }}</td>
+              </tr>
+            }
+            @if (total(); as t) {
+              <tr class="total-row">
+                <td class="sticky-col-1"><strong>{{ 'REPORTS.SALES_BY_PRODUCT.TOTAL' | translate }}</strong></td>
+                <td></td><td></td><td></td><td></td><td></td>
+                <td class="text-end"><strong>{{ num(t.soldQty) }}</strong></td>
+                <td class="text-end"><strong>{{ num(t.voidedQty) }}</strong></td>
+                <td class="text-end"><strong>{{ num(t.returnedQty) }}</strong></td>
+                <td class="text-end"><strong>{{ num(t.netQty) }}</strong></td>
+                <td></td>
+                <td class="text-end"><strong>{{ num(t.salesAmount) | mycurrency }}</strong></td>
+                <td class="text-end"><strong>{{ num(t.discountTotal) | mycurrency }}</strong></td>
+                <td class="text-end"><strong>{{ num(t.taxTotal) | mycurrency }}</strong></td>
+                <td class="text-end"><strong>{{ num(t.total) | mycurrency }}</strong></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </app-bo-table-shell>
+
+      <app-pagination
+        [page]="page()" [pageSize]="pageSize()" [count]="d.count" [pageCount]="d.pageCount"
+        [pageSizeOptions]="sizes" [disabled]="loading()"
+        (pageChange)="goTo($event)" (pageSizeChange)="setSize($event)" />
+    }
+  </div>
+}

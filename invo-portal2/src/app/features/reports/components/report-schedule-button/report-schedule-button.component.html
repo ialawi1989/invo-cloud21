@@ -1,0 +1,39 @@
+@if (type()) {
+  <div class="rs">
+    <button type="button" class="rs-btn" [class.has-active]="active().length > 0" aria-haspopup="menu" [attr.aria-expanded]="open()"
+            [attr.title]="'REPORTS.SCHEDULE.BUTTON' | translate" [attr.aria-label]="'REPORTS.SCHEDULE.BUTTON' | translate" (click)="toggle()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+        <line x1="3" y1="10" x2="21" y2="10"/><polyline points="17 14 17 17 14 17"/>
+      </svg>
+      @if (active().length) { <span class="rs-badge on">{{ active().length }}</span> }
+      @else if (onlyInactive()) { <span class="rs-badge off"></span> }
+    </button>
+
+    @if (open()) {
+      <div class="rs-backdrop" (click)="open.set(false)"></div>
+      <div class="rs-menu" role="menu">
+        @if (schedules().length) {
+          <div class="rs-list">
+            @for (s of schedules(); track s.id) {
+              <button type="button" role="menuitem" class="rs-card" (click)="edit(s)">
+                <span class="rs-card-top">
+                  <span class="rs-freq">{{ 'REPORTS.SCHEDULE.' + s.frequency.toUpperCase() | translate }}</span>
+                  <span class="rs-state" [class.on]="s.isActive">{{ (s.isActive ? 'REPORTS.SCHEDULE.ACTIVE' : 'REPORTS.SCHEDULE.INACTIVE') | translate }}</span>
+                </span>
+                <span class="rs-card-dates">
+                  <span>{{ 'REPORTS.SCHEDULE.PREVIOUS_RUN' | translate }}: {{ s.previousRun ? (s.previousRun | date: 'dd/MM/yyyy') : '—' }}</span>
+                  <span>{{ 'REPORTS.SCHEDULE.NEXT_RUN' | translate }}: {{ s.nextRun ? (s.nextRun | date: 'dd/MM/yyyy') : '—' }}</span>
+                </span>
+              </button>
+            }
+          </div>
+        }
+        <button type="button" role="menuitem" class="rs-new" (click)="edit(null)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          {{ 'REPORTS.SCHEDULE.NEW' | translate }}
+        </button>
+      </div>
+    }
+  </div>
+}

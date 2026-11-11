@@ -1,0 +1,25 @@
+@use '../../../styles/report-theme' as rp;
+
+:host { @include rp.tokens; display: block; }
+@include rp.data-table('.je-table');
+
+.je { transition: opacity .15s; }
+.je.stale { opacity: .55; pointer-events: none; }
+
+/* Sortable headers: the header text is a button; the arrows show the direction, the active column is brand-coloured. */
+.je-sort {
+  display: inline-flex; align-items: center; gap: 6px; padding: 0; border: 0; background: transparent; cursor: pointer;
+  font: inherit; color: inherit; text-transform: inherit; letter-spacing: inherit; white-space: nowrap;
+  .je-sort-icon { opacity: .45; transition: opacity .15s; }
+  &:hover { color: var(--rp-brand); .je-sort-icon { opacity: 1; } }
+  &:focus-visible { outline: 2px solid var(--rp-brand); outline-offset: 3px; border-radius: 4px; }
+  &.active { color: var(--rp-brand); .je-sort-icon { opacity: 1; } }
+}
+th.num .je-sort { justify-content: flex-end; width: 100%; }
+
+/* Space between the table card and its pager. */
+app-pagination { display: block; margin-top: 4px; }  /* the table card already has a bottom margin */
+
+/* Debit green, credit red — as in the legacy report. */
+td.je-debit { color: var(--rp-income); }
+td.je-credit { color: var(--rp-expense); }

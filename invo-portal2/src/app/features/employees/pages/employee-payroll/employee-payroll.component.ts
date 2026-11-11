@@ -1,3 +1,4 @@
+import { GosiExemptionsComponent } from '../../components/gosi-exemptions/gosi-exemptions.component';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -58,7 +59,7 @@ import {
 @Component({
   selector: 'app-employee-payroll',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, SearchDropdownComponent, AlertComponent, DateFieldComponent],
+  imports: [CommonModule, ReactiveFormsModule, TranslateModule, SearchDropdownComponent, AlertComponent, DateFieldComponent, GosiExemptionsComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './employee-payroll.component.html',
   styleUrls: ['./employee-payroll.component.scss'],
@@ -171,6 +172,7 @@ export class EmployeePayrollComponent {
     socialInsuranceApplicable: this.fb.control<boolean>(false),
     wpsEnabled: this.fb.control<boolean>(false),
     gosiNumber: this.fb.control<string | null>(null),
+    socialInsuranceRegisteredOn: this.fb.control<string | null>(null),
     // Tax information — HELD, never computed from. No country's scheme is
     // encoded, so nothing here can be silently wrong; see the migration
     // header on 1784900000000_employee_payroll_tax.js.
@@ -220,6 +222,7 @@ export class EmployeePayrollComponent {
       socialInsuranceApplicable: c?.socialInsuranceApplicable ?? false,
       wpsEnabled: c?.wpsEnabled ?? false,
       gosiNumber: c?.gosiNumber ?? null,
+      socialInsuranceRegisteredOn: c?.socialInsuranceRegisteredOn ?? null,
       // Carried into the new row like the rest: tax details rarely change with
       // a pay rise, and retyping them invites a transcription error in an
       // identifier nobody re-checks. Effective dating still applies — this

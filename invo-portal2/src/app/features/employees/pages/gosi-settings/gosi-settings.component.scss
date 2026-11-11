@@ -68,6 +68,18 @@
 // ── Add-period form ────────────────────────────────────────────────────
 .gosi-form {
   margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  // The flex gap owns the vertical rhythm — drop the per-element margins.
+  .field-row + .field-row,
+  .gosi-tier__row { margin-top: 0; }
+  .gosi-form__tiers { margin: 0; }
+  .gosi-check { margin-bottom: 2px; }
+  .field-row { gap: 8px; }
+  .gosi-form__actions { margin-top: 0; }
+
 
   &__tiers {
     display: grid;
@@ -91,26 +103,63 @@
 .gosi-tier {
   border: 1px solid #e2e8f0;
   border-radius: 10px;
-  padding: 14px 16px 16px;
+  padding: 16px 20px 22px;
   margin: 0;
+  min-width: 0;
+  background: #fcfdfe;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 
   legend {
     font-size: 12px;
-    font-weight: 600;
-    color: #334155;
-    padding: 0 4px;
+    font-weight: 700;
+    letter-spacing: .02em;
+    color: #0f172a;
+    padding: 0 6px;
   }
 
   &__row {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px 10px;
-    margin-top: 10px;
-
-    .field-label { font-weight: 500; }
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 18px 16px;
+    margin: 0;
+    align-items: end;
   }
 }
+
+// ── Stacked field: label above control ─────────────────────────────────
+.gf {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+
+  .field-label { font-size: 12px; font-weight: 500; color: #475569; line-height: 1.3; }
+  .input { width: 100%; }
+
+  &__ctl { position: relative; display: block; }
+  &__ctl--pct .input { padding-inline-end: 30px; }
+  &__sfx {
+    position: absolute;
+    inset-inline-end: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    color: #94a3b8;
+    pointer-events: none;
+  }
+}
+
+// Number inputs: drop the spinner arrows (they clip the value on narrow fields).
+input[type="number"].input {
+  -moz-appearance: textfield;
+  appearance: textfield;
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+}
+
+.gosi-tier .field-hint { margin: 0; padding-top: 16px; border-top: 1px dashed #e2e8f0; line-height: 1.5; }
 
 // ── Tier 3 history ─────────────────────────────────────────────────────
 .gosi-tier3-history {
@@ -131,6 +180,7 @@
   margin-bottom: 0;
 
   & + & { margin-top: 18px; }
+  .input--narrow { width: 100%; max-width: 260px; }
 }
 
 .field-label {
@@ -141,7 +191,9 @@
   em { color: #ef4444; font-style: normal; }
 }
 
-.field-hint { margin: 0; font-size: 12px; color: #94a3b8; line-height: 1.4; }
+.field-hint { margin: 2px 0 0; font-size: 12px; color: #94a3b8; line-height: 1.4; }
+
+.input.ng-touched.ng-invalid { border-color: #ef4444; }
 
 .input {
   width: 100%;
@@ -166,3 +218,148 @@
 }
 
 textarea.input { resize: vertical; }
+
+.gosi-suggest {
+  border: 1px solid #fde68a;
+  background: #fffbeb;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+
+  &__text { margin: 0 0 4px; font-size: 13px; color: #92400e; }
+  &__note { margin: 0 0 8px; font-size: 12px; color: #78350f; line-height: 1.45; }
+  &__applied { margin: 8px 0 0; font-size: 12px; color: #166534; }
+}
+.gosi-check { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; }
+
+.gosi-chip {
+  margin-inline-start: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #fffbeb;
+  color: #b45309;
+  vertical-align: middle;
+
+  &--ok { background: #ecfdf5; color: #047857; }
+}
+.field-error { margin: 4px 0 0; font-size: 12px; color: #dc2626; }
+
+.gosi-unavailable {
+  border: 1px solid #fde68a;
+  background: #fffbeb;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: #92400e;
+  line-height: 1.45;
+}
+
+/* Retirement ages card */
+.ret-ages {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  max-width: 560px;
+}
+.ret-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  cursor: pointer;
+
+  &__label { font-size: 13px; font-weight: 600; color: #334155; }
+  &__control { display: flex; align-items: center; gap: 8px; }
+  &__input { width: 120px; flex: none; }
+  &__unit { font-size: 13px; color: #64748b; }
+}
+
+.ret-notes {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: #f8fafc;
+  border: 1px solid #eef2f6;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #64748b;
+
+  li { position: relative; padding-inline-start: 14px; }
+  li::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    top: .6em;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #cbd5e1;
+  }
+  &__open { color: #92400e; &::before { background: #f59e0b !important; } }
+}
+
+.ret-source {
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  em { color: #ef4444; font-style: normal; }
+}
+
+.ret-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.mandatory-legend { margin-inline-end: auto; font-size: 12px; color: #e11d48; align-self: center; }
+
+.gosi-table__actions { text-align: end; width: 1%; position: sticky; inset-inline-end: 0; background: #fff; box-shadow: -8px 0 8px -8px rgba(15, 23, 42, .12); }
+
+.gosi-editing {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 10px 14px; border: 1px solid #bae6fd; background: #f0f9ff; border-radius: 8px;
+  font-size: 13px; color: #075985;
+  span { font-size: 12px; color: #0c4a6e; line-height: 1.45; }
+}
+.gosi-table__actions {
+  white-space: nowrap;
+  padding-inline: 12px 14px;
+
+  .btn {
+    padding: 4px 12px;
+    min-height: 30px;
+    font-size: 12px;
+    border-radius: 6px;
+  }
+  .btn + .btn { margin-inline-start: 8px; }
+}
+.gosi-btn-danger {
+  color: #dc2626;
+  border-color: #fecaca;
+  &:hover:not(:disabled) { background: #fef2f2; border-color: #fca5a5; }
+}
+
+.gosi-country {
+  list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-direction: column; gap: 10px;
+
+  &__row {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+    padding: 12px 14px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fcfdfe;
+  }
+  &__main { display: flex; flex-direction: column; gap: 3px; min-width: 0; font-size: 13px; color: #0f172a; }
+  &__rates { color: #334155; }
+  &__meta { font-size: 12px; color: #94a3b8; line-height: 1.4; }
+}
+.gosi-band { display: block; font-size: 13px; color: #334155; }

@@ -10,8 +10,6 @@ import { DocumentLineEditor, newTempId } from '../../services/document-line-edit
 export class SupplierCreditLineEditor extends DocumentLineEditor {
   /** The supplier is abroad: no tax on the credit. */
   international = false;
-  /** What the bill of a picked line totalled before / after tax (when the row didn't say) - legacy `resolveSourceBillTotals`. */
-  sourceTotals?: (billingId: string) => Promise<{ beforeTax: number; afterTax: number } | null>;
   /** Called when a bill line already on the credit is picked again. */
   onDuplicate?: (line: InvoiceLine) => void;
 
@@ -60,16 +58,6 @@ export class SupplierCreditLineEditor extends DocumentLineEditor {
     l.billingDiscountTotal = product.billingDiscountTotal;
     l.billDiscount = Number(product.billDiscount) || 0;
     l.billingQty = Number(product.billingQty) || 0;
-    l.sourceBillTotalBeforeTax = Number(product.sourceBillTotalBeforeTax) || 0;
-    l.sourceBillTotalAfterTax = Number(product.sourceBillTotalAfterTax) || 0;
-    if (product.sourceBillTotalBeforeTax == null && product.sourceBillTotalAfterTax == null && product.billingId && this.sourceTotals) {
-      void this.sourceTotals(product.billingId).then(t => {
-        if (!t) return;
-        l.sourceBillTotalBeforeTax = t.beforeTax;
-        l.sourceBillTotalAfterTax = t.afterTax;
-        this.doc.calculateTotal();
-      });
-    }
     l.taxId = this.international ? null : product.taxId;
     this.onChangeTax(l);
   }

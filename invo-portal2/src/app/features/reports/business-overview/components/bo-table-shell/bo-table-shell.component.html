@@ -1,0 +1,36 @@
+@if (periods().length > 1 || (overflow() && !hintDismissed())) {
+  <div class="ts-nav">
+    @if (periods().length > 1) {
+      <span class="ts-nav-title">{{ 'REPORTS.BO.PERIODS' | translate }}</span>
+      <div class="ts-nav-chips" role="group" [attr.aria-label]="'REPORTS.BO.JUMP_TO' | translate">
+        @for (p of periods(); track p; let i = $index) {
+          <button type="button" class="ts-chip" [class.active]="activePeriod() === i"
+                  [attr.aria-pressed]="activePeriod() === i" [attr.title]="p" (click)="jumpTo(i)">
+            <i class="ts-dot" [class]="'ts-dot bo-p' + slot(i)"></i>{{ chipLabel(p) }}
+          </button>
+        }
+      </div>
+    }
+    @if (overflow() && !hintDismissed()) {
+      <span class="ts-nav-hint">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 8 3 12 7 16"/><polyline points="17 8 21 12 17 16"/><line x1="3" y1="12" x2="21" y2="12"/></svg>
+        {{ 'REPORTS.BO.SCROLL_HINT' | translate }}
+        <button type="button" class="ts-hint-x" (click)="dismissHint()" [attr.aria-label]="'REPORTS.BO.DISMISS' | translate">×</button>
+      </span>
+    }
+  </div>
+}
+
+<div class="ts-wrap" [class.can-left]="canLeft()" [class.can-right]="canRight()">
+  <button type="button" class="ts-arrow ts-arrow-start" [disabled]="!canLeft()" (click)="scrollBy('start')" [attr.aria-label]="'REPORTS.BO.SCROLL_START' | translate">‹</button>
+  <button type="button" class="ts-arrow ts-arrow-end" [disabled]="!canRight()" (click)="scrollBy('end')" [attr.aria-label]="'REPORTS.BO.SCROLL_END' | translate">›</button>
+  <div class="ts-scroll" #scroller (scroll)="update()">
+    <ng-content />
+  </div>
+</div>
+
+@if (overflow()) {
+  <div class="ts-bar" #bar (pointerdown)="barDown()" (scroll)="onBar()" aria-hidden="true">
+    <div class="ts-bar-fill" [style.width.px]="contentWidth()"></div>
+  </div>
+}

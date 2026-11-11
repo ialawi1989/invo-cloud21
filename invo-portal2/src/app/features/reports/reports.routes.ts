@@ -1,5 +1,6 @@
 import { inject } from '@angular/core';
-import { CanActivateFn, Routes } from '@angular/router';
+import { CanActivateFn, Routes, UrlMatcher } from '@angular/router';
+import { findBoReport } from './business-overview/config/business-overview.config';
 import { LanguageService } from '@core/i18n/language.service';
 import { privilegeGuard } from '@core/guards/privilege.guard';
 
@@ -15,12 +16,36 @@ const translationsLoaded: CanActivateFn = async () => {
   return true;
 };
 
+/**
+ * Business Overview reports have dedicated pages (accounting statements with
+ * comparison columns and drill-down) instead of the generic flat-table shell.
+ *   view/:slug                  → the statement
+ *   view/:slug/account-journals → drill-down into one account
+ * Must come before the generic `view/:slug` route.
+ */
+const businessOverviewMatcher: UrlMatcher = segments => {
+  if (segments[0]?.path !== 'view' || !segments[1] || !findBoReport(segments[1].path)) return null;
+  if (segments.length === 2) return { consumed: segments, posParams: { slug: segments[1] } };
+  if (segments.length === 3 && segments[2].path === 'account-journals') {
+    return { consumed: segments, posParams: { slug: segments[1] } };
+  }
+  return null;
+};
+
 export const REPORTS_ROUTES: Routes = [
   {
     path: '',
     canActivate: [translationsLoaded, privilegeGuard],
     loadComponent: () =>
       import('./pages/reports-catalog/reports-catalog.component').then(m => m.ReportsCatalogComponent),
+    data: { permissionPath: 'reportsSecurity.actions.view.access' },
+  },
+  {
+    matcher: businessOverviewMatcher,
+    canActivate: [translationsLoaded, privilegeGuard],
+    loadComponent: () =>
+      import('./business-overview/pages/bo-report-host/bo-report-host.component').then(m => m.BoReportHostComponent),
+    // The per-report privilege is checked inside the host (it depends on the slug).
     data: { permissionPath: 'reportsSecurity.actions.view.access' },
   },
   {

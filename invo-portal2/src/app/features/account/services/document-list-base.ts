@@ -13,6 +13,8 @@ import type { DropdownMenuBtnItem } from '@shared/components/dropdown-menu-btn/d
 import { LogsDrawerComponent, LogsDrawerData } from '@shared/components/logs-drawer/logs-drawer.component';
 
 import { CustomerAddress } from '../customers/models/customer.model';
+import { DocFetch } from '../components/doc-views/doc-views.types';
+import { DocListQuery, makeDocViewFetch } from '../components/doc-views/doc-view-fetch';
 import { TransactionLockService } from './transaction-lock.service';
 
 export const ymdOf = (v: any): string | null => {
@@ -23,6 +25,12 @@ export const ymdOf = (v: any): string | null => {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 };
 export const toArray = (v: any): any[] => (v == null || v === '' ? [] : Array.isArray(v) ? v : [v]);
+
+/** Status-board and calendar buttons added to the list page's view toggle. */
+export const DOC_EXTRA_VIEW_MODES = [
+  { id: 'board',    labelKey: 'COMMON.VIEW_BOARD',    iconPath: 'M4 4h5v16H4z M15 4h5v10h-5z' },
+  { id: 'calendar', labelKey: 'COMMON.VIEW_CALENDAR', iconPath: 'M3 6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M3 10h18 M8 2v4 M16 2v4' },
+];
 
 /** Per-document settings of a list built on {@link DocumentListBase}. */
 export interface DocListMeta {
@@ -103,7 +111,30 @@ export abstract class DocumentListBase {
     };
   }
 
+  // ── board / calendar views ─────────────────────────────────────────
+  /** Active body: the list's table, or one of the extra views projected into it. */
+  viewMode = signal<'table' | 'board' | 'calendar'>('table');
+  readonly extraViewModes = DOC_EXTRA_VIEW_MODES;
+  onViewMode(mode: string): void {
+    this.viewMode.set(mode === 'board' || mode === 'calendar' ? mode : 'table');
+  }
+
+  /**
+   * The list's latest search / sort / filters. The list page re-calls `load`
+   * whenever any of them change (whatever view is showing), so recording them
+   * here keeps the board and calendar in step with it.
+   */
+  readonly query = signal<DocListQuery>({});
+
+  /** `fetch` for the board / calendar: this list's query plus per-view overrides. */
+  readonly viewFetch: DocFetch = makeDocViewFetch({
+    query: () => this.query(),
+    buildBody: q => this.buildBody(q),
+    fetch: body => this.fetch(body),
+  });
+
   load = async (params: ListQueryParams) => {
+    this.query.set({ searchTerm: params.searchTerm, sortBy: params.sortBy, filter: params.filter });
     const body: any = { page: params.page, limit: params.limit, ...this.buildBody(params) };
     if (params.columns?.length) body.columns = params.columns;
     const data = await this.fetch(body);

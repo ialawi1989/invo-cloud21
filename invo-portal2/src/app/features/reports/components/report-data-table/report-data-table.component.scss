@@ -79,3 +79,6 @@
   svg { opacity: .5; }
   p { margin: 0; font-size: 14px; }
 }
+
+/* A linked cell (employee, invoice, product): brand-coloured, opens in a new tab. */
+.rt-link { color: #1e8c9f; font-weight: 500; text-decoration: none; &:hover { text-decoration: underline; } &:focus-visible { outline: 2px solid #1e8c9f; outline-offset: 2px; border-radius: 3px; } }

@@ -1,0 +1,30 @@
+:host { display: block; }
+
+.rem {
+  display: flex; flex-direction: column; align-items: center; text-align: center; padding: 34px 20px 38px;
+  background: #fff; border: 1px solid var(--rp-border, #e5e7eb); border-radius: 16px; box-shadow: 0 1px 3px rgba(15, 23, 42, .05);
+}
+.rem-art { width: min(260px, 70vw); height: auto; margin-bottom: 4px; }
+
+.rem-shadow { fill: #e2e8f0; opacity: .7; }
+.rem-blob { fill: #eaf6f9; }
+.rem-dot { fill: #9fd6e0; &.d2 { fill: #fcd9a8; } &.d3 { fill: #c9c2f5; } }
+.rem-spark { stroke: #94a3b8; stroke-width: 2; stroke-linecap: round; opacity: .7; }
+
+.rem-sheet { fill: #fff; stroke: #cbd9e1; stroke-width: 2; }
+.rem-head { fill: #dff1f5; }
+.rem-led { &.a { fill: #f87171; } &.b { fill: #fbbf24; } &.c { fill: #34d399; } }
+.rem-row { fill: #e8eef3; }
+.rem-lens { fill: #fff; stroke: #167d8f; stroke-width: 6; }
+.rem-lens-in { fill: #ecfeff; }
+.rem-handle { stroke: #167d8f; stroke-width: 8; stroke-linecap: round; }
+.rem-minus { stroke: #94a3b8; stroke-width: 4; stroke-linecap: round; }
+
+.rem-float { animation: rem-float 4.2s ease-in-out infinite; transform-origin: 50% 60%; }
+.rem-dot { animation: rem-twinkle 3s ease-in-out infinite; &.d2 { animation-delay: .8s; } &.d3 { animation-delay: 1.6s; } }
+@keyframes rem-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes rem-twinkle { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) { .rem-float, .rem-dot { animation: none; } }
+
+.rem-title { margin: 8px 0 4px; font-size: 17px; font-weight: 700; color: var(--rp-text, #0f172a); }
+.rem-hint { margin: 0; max-width: 380px; font-size: 13.5px; line-height: 1.5; color: var(--rp-muted, #64748b); }

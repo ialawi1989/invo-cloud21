@@ -1,0 +1,17 @@
+@use '../../../styles/report-theme' as rp;
+
+:host { @include rp.tokens; display: block; }
+@include rp.data-table('.aj-table');
+
+.aj { transition: opacity .15s; }
+.aj.stale { opacity: .55; pointer-events: none; }
+
+.aj-type { @include rp.pill; }
+.aj-user { margin-top: 2px; font-size: 11px; color: var(--rp-muted); }
+
+/* Space between the table card and its pager. */
+app-pagination { display: block; margin-top: 4px; }  /* the table card already has a bottom margin */
+
+/* Debit green, credit red — as in the legacy report. */
+td.aj-debit { color: var(--rp-income); }
+td.aj-credit { color: var(--rp-expense); }

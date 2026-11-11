@@ -1,0 +1,59 @@
+@if (loading() && !data()) {
+  <div class="ls-loading" aria-busy="true"><div class="ls-skel"></div></div>
+} @else if (error()) {
+  <app-report-error [message]="error()" (retry)="load()" />
+} @else if (data()) {
+  @if (isEmpty()) {
+    <app-report-empty />
+  } @else {
+    <div class="ls" [class.stale]="loading()">
+      <app-bo-table-shell [periods]="[]" hintKey="departmentSalesPayments_scrollHint">
+        <table class="bo-table">
+          <thead>
+            <tr class="header-row">
+              <th class="sticky-col-1" [attr.rowspan]="methods().length ? 2 : 1">{{ 'REPORTS.FILTER.FILTER_BY_OPTION.' + groupLabel() | translate }}</th>
+              <th class="text-end" [attr.rowspan]="methods().length ? 2 : 1">{{ 'REPORTS.DEPT_PAYMENTS.INVOICE_TOTAL' | translate }}</th>
+              <th class="text-end" [attr.rowspan]="methods().length ? 2 : 1">{{ 'REPORTS.DEPT_PAYMENTS.CREDIT_TOTAL' | translate }}</th>
+              <th class="text-end" [attr.rowspan]="methods().length ? 2 : 1">{{ 'REPORTS.DEPT_PAYMENTS.TOTAL' | translate }}</th>
+              @if (methods().length) {
+                <th class="text-center" [attr.colspan]="methods().length">{{ 'REPORTS.DEPT_PAYMENTS.PAYMENTS' | translate }}</th>
+              }
+            </tr>
+            @if (methods().length) {
+              <tr class="header-row">
+                @for (m of methods(); track m) { <th class="text-end">{{ m }}</th> }
+              </tr>
+            }
+          </thead>
+          <tbody>
+            @for (r of records(); track trackRecord($index, r)) {
+              <tr class="data-row">
+                <td class="sticky-col-1">
+                  <strong>{{ r.filterName || '-' }}</strong>
+                  <span class="sub-line">{{ 'REPORTS.DEPT_PAYMENTS.SALES_AMOUNT' | translate }}: {{ num(r.sales_amount) | mycurrency }}</span>
+                  <span class="sub-line">{{ 'REPORTS.DEPT_PAYMENTS.DISCOUNT' | translate }}: {{ num(r.discount) | mycurrency }}</span>
+                  <span class="sub-line">{{ 'REPORTS.DEPT_PAYMENTS.TAX' | translate }}: {{ num(r.tax) | mycurrency }}</span>
+                </td>
+                <td class="text-end">{{ num(r.invoice_total) | mycurrency }}</td>
+                <td class="text-end neg">{{ num(r.credit_total) | mycurrency }}</td>
+                <td class="text-end"><strong>{{ num(r.total) | mycurrency }}</strong></td>
+                @for (m of methods(); track m) {
+                  <td class="text-end">{{ num(r.payments?.[m]) | mycurrency }}</td>
+                }
+              </tr>
+            }
+            <tr class="total-row">
+              <td class="sticky-col-1"><strong>{{ 'REPORTS.SALES_BY_PRODUCT.TOTAL' | translate }}</strong></td>
+              <td class="text-end"><strong>{{ totals().invoice | mycurrency }}</strong></td>
+              <td class="text-end"><strong>{{ totals().credit | mycurrency }}</strong></td>
+              <td class="text-end"><strong>{{ totals().total | mycurrency }}</strong></td>
+              @for (m of methods(); track m) {
+                <td class="text-end"><strong>{{ totals().byMethod[m] | mycurrency }}</strong></td>
+              }
+            </tr>
+          </tbody>
+        </table>
+      </app-bo-table-shell>
+    </div>
+  }
+}

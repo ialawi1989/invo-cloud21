@@ -1,0 +1,38 @@
+<div class="px-6 py-5 border-b border-slate-100 shrink-0">
+  <h2 class="text-lg font-semibold text-slate-900">{{ 'REPORTS.COLUMNS.CUSTOMIZE' | translate }}</h2>
+  <p class="text-sm text-slate-500 mt-0.5">{{ 'REPORTS.COLUMNS.HINT' | translate }}</p>
+</div>
+
+<div class="px-6 py-5 flex-1 min-h-0 overflow-y-auto">
+  <div class="flex items-center justify-between mb-2.5">
+    <span class="text-xs text-slate-500">{{ selected().length }} / {{ columns.length }}</span>
+    <button type="button" class="text-xs font-medium text-brand-600 hover:text-brand-700" (click)="toggleAll()">
+      {{ (allOn() ? 'REPORTS.BO.FILTERS.SELECT_NONE' : 'REPORTS.BO.FILTERS.SELECT_ALL') | translate }}
+    </button>
+  </div>
+  <div class="grid gap-2">
+    @for (c of columns; track c.key) {
+      <label class="flex items-start gap-3 p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors"
+             [class.bg-brand-50]="isOn(c.key)" [class.border-brand-500]="isOn(c.key)">
+        <input type="checkbox" class="mt-0.5 w-4 h-4 rounded border-slate-300 accent-brand-600" [checked]="isOn(c.key)" (change)="toggle(c.key)" />
+        <span>
+          <span class="block text-sm font-medium text-slate-900">{{ label(c) }}</span>
+          @if (description(c)) { <span class="block text-xs text-slate-500 mt-0.5">{{ description(c) }}</span> }
+        </span>
+      </label>
+    }
+  </div>
+  @if (!canApply()) {
+    <p class="text-xs text-red-600 mt-3">{{ 'REPORTS.COLUMNS.MIN_ONE' | translate }}</p>
+  }
+</div>
+
+<div class="flex items-center justify-end gap-2.5 px-6 py-4 border-t border-slate-100 bg-slate-50/50 shrink-0">
+  <button type="button" (click)="cancel()" class="px-4 py-2 text-sm font-medium text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors">
+    {{ 'COMMON.CANCEL' | translate }}
+  </button>
+  <button type="button" (click)="apply()" [disabled]="!canApply()"
+          class="px-5 py-2 text-sm font-medium text-white bg-gradient-to-r from-brand-500 to-brand-700 rounded-lg shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+    {{ 'COMMON.APPLY' | translate }}
+  </button>
+</div>

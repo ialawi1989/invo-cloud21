@@ -1,0 +1,94 @@
+<!-- The buckets: how many, how long, in what unit -->
+<div class="ag-config">
+  <span class="ag-config-title">{{ 'REPORTS.CUSTOMER_AGING.INTERVALS' | translate }}</span>
+  <label class="ag-field"><span>{{ 'REPORTS.CUSTOMER_AGING.COUNT' | translate }}</span>
+    <input type="number" min="1" max="12" [value]="intervals()" (change)="setIntervals($any($event.target).value)" /></label>
+  <label class="ag-field"><span>{{ 'REPORTS.CUSTOMER_AGING.EVERY' | translate }}</span>
+    <input type="number" min="1" max="365" [value]="size()" (change)="setSize($any($event.target).value)" /></label>
+  <app-segmented-toggle size="sm" [options]="unitOptions" [value]="unit()" (valueChange)="setUnit($event)" />
+</div>
+
+@if (loading() && !detail() && !summary()) {
+  <div class="ls-loading" aria-busy="true"><div class="ls-skel"></div></div>
+} @else if (error()) {
+  <app-report-error [message]="error()" (retry)="load()" />
+} @else if (isEmpty()) {
+  <app-report-empty />
+} @else if (mode() === 'detail' && detail(); as d) {
+  <div class="ls" [class.stale]="loading()">
+    <app-bo-table-shell [periods]="[]" hintKey="customerAging_scrollHint">
+      <table class="bo-table">
+        <thead>
+          <tr class="header-row">
+            <th class="sticky-col-1">{{ (isSupplier() ? 'REPORTS.CUSTOMER_AGING.COLUMNS.billDate' : 'REPORTS.CUSTOMER_AGING.COLUMNS.date') | translate }}</th>
+            <th class="text-start">{{ (isSupplier() ? 'REPORTS.CUSTOMER_AGING.COLUMNS.bill' : 'REPORTS.CUSTOMER_AGING.COLUMNS.invoice') | translate }}</th>
+            <th class="text-start">{{ 'REPORTS.CUSTOMER_AGING.COLUMNS.status' | translate }}</th>
+            <th class="text-start">{{ (isSupplier() ? 'REPORTS.CUSTOMER_AGING.COLUMNS.supplier' : 'REPORTS.CUSTOMER_AGING.COLUMNS.customer') | translate }}</th>
+            <th class="text-end">{{ 'REPORTS.CUSTOMER_AGING.COLUMNS.age' | translate }}</th>
+            <th class="text-end">{{ 'REPORTS.CUSTOMER_AGING.COLUMNS.amount' | translate }}</th>
+            <th class="text-end">{{ 'REPORTS.CUSTOMER_AGING.COLUMNS.balanceDue' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (b of buckets(); track b.label) {
+            <tr class="ag-bucket">
+              <td class="sticky-col-1" colspan="5"><strong>{{ b.label }}</strong> <span class="ag-count">{{ b.agingGroups.length }}</span></td>
+              <td class="text-end"><strong>{{ bucketTotal(b, 'Amount') | mycurrency }}</strong></td>
+              <td class="text-end"><strong>{{ bucketTotal(b, 'BalanceDue') | mycurrency }}</strong></td>
+            </tr>
+            @for (r of b.agingGroups; track r.id + '|' + $index) {
+              <tr class="data-row">
+                <td class="sticky-col-1">{{ r.Date | date: 'dd/MM/yyyy' }}</td>
+                <td>@if (invoiceLink(r); as href) { <a class="account-link" [routerLink]="href" target="_blank" rel="noopener">{{ r.InvoiceNumber }}</a> } @else { {{ r.InvoiceNumber }} }</td>
+                <td><app-status-badge [status]="r.Status" /></td>
+                <td>{{ r.CustomerName }}</td>
+                <td class="text-end">
+                  {{ num(r.Age) }} {{ 'REPORTS.CUSTOMER_AGING.DAYS_SHORT' | translate }}
+                  @if (r.dueDate) { <small class="ag-due">{{ 'REPORTS.CUSTOMER_AGING.DUE' | translate }}: {{ r.dueDate | date: 'dd/MM/yyyy' }}</small> }
+                </td>
+                <td class="text-end">{{ num(r.Amount) | mycurrency }}</td>
+                <td class="text-end">{{ num(r.BalanceDue) | mycurrency }}</td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </app-bo-table-shell>
+    <app-pagination
+      [page]="page()" [pageSize]="pageSize()" [count]="d.count" [pageCount]="d.pageCount"
+      [pageSizeOptions]="sizes" [disabled]="loading()"
+      (pageChange)="goTo($event)" (pageSizeChange)="setPageSize($event)" />
+  </div>
+} @else if (mode() === 'summary' && summary()) {
+  <div class="ls" [class.stale]="loading()">
+    <app-bo-table-shell [periods]="[]" hintKey="customerAgingSummary_scrollHint">
+      <table class="bo-table">
+        <thead>
+          <tr class="header-row">
+            <th class="sticky-col-1">{{ (isSupplier() ? 'REPORTS.CUSTOMER_AGING.COLUMNS.supplier' : 'REPORTS.CUSTOMER_AGING.COLUMNS.customer') | translate }}</th>
+            @for (l of ranges(); track l) { <th class="text-end">{{ l }}</th> }
+            <th class="text-end">{{ 'REPORTS.SALES_BY_PRODUCT.TOTAL' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (c of customers(); track $index) {
+            <tr class="data-row">
+              <td class="sticky-col-1">
+                @if (c.customerId && c.customerId !== 'null') {
+                  <a class="account-link" [routerLink]="['/reports/view', isSupplier() ? 'supplier-aging' : 'customer-aging']" [queryParams]="customerParams(c)" target="_blank" rel="noopener">{{ c.customerName }}</a>
+                } @else { {{ c.customerName }} }
+              </td>
+              @for (l of ranges(); track l) { <td class="text-end">{{ cell(c, l) | mycurrency }}</td> }
+              <td class="text-end"><strong>{{ rowTotal(c) | mycurrency }}</strong></td>
+            </tr>
+          }
+          <tr class="total-row">
+            <td class="sticky-col-1"><strong>{{ 'REPORTS.SALES_BY_PRODUCT.TOTAL' | translate }}</strong></td>
+            @for (l of ranges(); track l) { <td class="text-end"><strong>{{ columnTotal(l) | mycurrency }}</strong></td> }
+            <td class="text-end"><strong>{{ grandTotal() | mycurrency }}</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </app-bo-table-shell>
+  </div>
+}

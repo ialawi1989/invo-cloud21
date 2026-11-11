@@ -20,6 +20,7 @@ import { resolveEmployeeName } from '../../../auth/auth.models';
 import { FeatureService } from '../../../auth/feature.service';
 import { hrGrantFor } from '../../../../features/employees/hr-privilege';
 import { CompanyService } from '../../../auth/company.service';
+import { EmployeeEarningsFeature, isEmployeeEarningsEnabled } from '../../../auth/employee-earnings';
 import { EmployeeOptionsService } from '../../services/employee-options.service';
 import { FavoritesService } from '../../services/favorites.service';
 
@@ -48,6 +49,8 @@ interface SideMenuItem {
   requiredHrGrant?: { group: string; action: string };
   /** An HR module's feature key (e.g. `hr.payroll`): hidden when the company has not got it. */
   requiredHrFeature?: string;
+  /** Commission / tips: hidden until the company switches the feature on (an array means any of them). */
+  requiredEarningsFeature?: EmployeeEarningsFeature | EmployeeEarningsFeature[];
   /** Optional translation key rendered as a subtle heading *above* this
    *  sub-item. Used to visually group a run of related sub-items (e.g. all
    *  bulk-operation pages under Products). Only honoured inside a submenu. */
@@ -105,13 +108,24 @@ export const SIDE_MENU: SideMenuItem[] = [
     id: 4, label: 'MENU.EMPLOYEES', icon: 'employee',
     requiredPermission: '',
     subItems: [
-      { id: 41, label: 'MENU.SUB.EMPLOYEE_LIST', link: '/employees', matchLinks: ['/employees/invitation', '/employees/my-account'], requiredPermission: 'employeeSecurity.actions.view.access' },
+      { id: 41, section: 'MENU.SECTION.PEOPLE', label: 'MENU.SUB.EMPLOYEE_LIST', link: '/employees', matchLinks: ['/employees/invitation', '/employees/my-account'], requiredPermission: 'employeeSecurity.actions.view.access' },
       { id: 42, label: 'MENU.SUB.PRIVILEGES', link: '/employees/privileges', requiredPermission: 'privilegeSecurity.actions.view.access' },
       { id: 45, label: 'MENU.SUB.ACCESS_REQUESTS', link: '/employees/access-requests', requiredPermission: 'privilegeSecurity.actions.view.access' },
-      { id: 43, label: 'MENU.SUB.SCHEDULE', link: '/employees/schedule', requiredPermission: 'employeeScheduleSecurity.actions.view.access' },
+      { id: 43, section: 'MENU.SECTION.TIME', label: 'MENU.SUB.SCHEDULE', link: '/employees/schedule', requiredPermission: 'employeeScheduleSecurity.actions.view.access' },
       { id: 44, label: 'MENU.SUB.ATTENDANCE', link: '/employees/attendance', requiredPermission: 'employeeAttendenceSecurity.actions.view.access' },
+    ],
+  },
+  // ── Payroll & earnings (HR money side; each item is gated by its own feature / grant) ──
+  {
+    id: 49, label: 'MENU.PAYROLL_EARNINGS', icon: 'account',
+    requiredPermission: '',
+    subItems: [
       { id: 46, label: 'MENU.SUB.PAYROLL', link: '/employees/payroll-run',
         requiredHrFeature: 'hr.payroll', requiredHrGrant: { group: 'employeePayrollSecurity', action: 'viewPay' } },
+      { id: 47, label: 'MENU.SUB.EMPLOYEE_PAYOUTS', link: '/employees/payouts', requiredPermission: 'employeePayoutSecurity.actions.view.access',
+        requiredEarningsFeature: ['commission', 'tips'] },
+      { id: 48, label: 'MENU.SUB.TIPS', link: '/employees/tips', requiredPermission: 'tipsSecurity.actions.view.access',
+        requiredEarningsFeature: 'tips' },
     ],
   },
   // ── Appointments ───────────────────────────────────────────────────
@@ -125,7 +139,7 @@ export const SIDE_MENU: SideMenuItem[] = [
   },
   // ── Accounts ───────────────────────────────────────────────────────
   {
-    id: 6, label: 'MENU.ACCOUNTS', icon: 'account',
+    id: 6, label: 'MENU.ACCOUNTS', icon: 'calculator',
     requiredPermission: '',
     subItems: [
       { id: 61, label: 'MENU.SUB.CHART_OF_ACCOUNTS', link: '/account/chart-of-accounts', requiredPermission: 'accountSecurity.actions.view.access' },
@@ -259,7 +273,6 @@ export const SIDE_MENU: SideMenuItem[] = [
       { id: 131, label: 'MENU.SUB.PAGE_BUILDER', link: '/page-builder', requiredPermission: 'websiteBuilderSecurity.actions.view.access' },
       { id: 132, label: 'MENU.SUB.NAVIGATION', link: '/navigation-list', matchLinks: ['/mobile-icon-bar'], requiredPermission: 'websiteBuilderSecurity.actions.view.access' },
       { id: 136, label: 'Content Library', link: '/website/content-library', requiredPermission: 'websiteBuilderSecurity.actions.view.access' },
-      { id: 138, label: 'MENU.SUB.MULTILINGUAL', link: '/settings/translations', requiredPermission: '' },
       { id: 133, label: 'MENU.SUB.WEBSITE_SETTINGS', link: '/website-settings', requiredPermission: 'websiteSettingsSecurity.actions.view.access' },
       { id: 134, label: 'MENU.SUB.DOMAIN_SETTINGS', link: '/domain-settings', requiredPermission: 'DomainSettingsSecurity.actions.view.access' },
       { id: 135, label: 'MENU.SUB.PAGING_SYSTEM', link: '/paging', requiredPermission: 'pagingSecurity.actions.view.access' },
@@ -356,7 +369,8 @@ interface FavoritePage { label: string; link: string; }
                     </svg>
                   }
                 </button>
-                @if (!collapsed && item.expanded) {
+                @if (!collapsed) {
+                  <div class="submenu-wrap" [class.open]="item.expanded" [attr.inert]="item.expanded ? null : ''">
                   <ul class="submenu">
                     @for (sub of item.subItems!; track sub.id) {
                       @if (subVisible(sub)) {
@@ -372,6 +386,7 @@ interface FavoritePage { label: string; link: string; }
                       }
                     }
                   </ul>
+                  </div>
                 }
               </li>
             } @else {
@@ -400,12 +415,22 @@ interface FavoritePage { label: string; link: string; }
       <!-- ══ Footer ══ -->
       @if (!collapsed) {
         <div class="sidebar-footer">
-          <a routerLink="/page-builder" class="design-site-btn">
+          @if (designSiteUrl(); as url) {
+            <!-- The storefront's own theme editor lives on the company's store domain. -->
+            <a [href]="url" target="_blank" rel="noopener" class="design-site-btn">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
             </svg>
             {{ 'MENU.DESIGN_SITE' | translate }}
           </a>
+          } @else {
+            <a routerLink="/page-builder" class="design-site-btn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+            </svg>
+            {{ 'MENU.DESIGN_SITE' | translate }}
+          </a>
+          }
         </div>
       }
 
@@ -646,6 +671,21 @@ interface FavoritePage { label: string; link: string; }
     .badge--warning { background: rgba(241,180,76,.2);  color: #f1b44c; }
 
     /* Submenu */
+    .submenu-wrap {
+      display: grid;
+      grid-template-rows: 0fr;
+      opacity: 0;
+      visibility: hidden;
+      transition: grid-template-rows .28s ease, opacity .22s ease, visibility 0s linear .28s;
+    }
+    .submenu-wrap.open {
+      grid-template-rows: 1fr;
+      opacity: 1;
+      visibility: visible;
+      transition: grid-template-rows .28s ease, opacity .22s ease .04s, visibility 0s;
+    }
+    .submenu-wrap > .submenu { overflow: hidden; min-height: 0; }
+    @media (prefers-reduced-motion: reduce) { .submenu-wrap, .submenu-wrap.open { transition: none; } }
     .submenu { list-style: none; margin: 0; padding: 2px 0 4px 0; }
     .sub-row {
       display: block; padding: 8px 14px 8px 44px;
@@ -754,6 +794,12 @@ export class SidebarComponent implements OnInit {
     this.favsService.recentPages().filter(r => !this.favsService.isFavorite(r.link))
   );
 
+  /** `https://<company slug>.invopos.store/admin/theme`; null until the company (and its slug) is known. */
+  designSiteUrl = computed<string | null>(() => {
+    const slug = (this.companyService.currentCompany()?.slug ?? '').trim();
+    return slug ? `https://${encodeURIComponent(slug)}.invopos.store/admin/theme` : null;
+  });
+
   visibleMenuItems = computed(() =>
     SIDE_MENU.filter(item => this.canShow(item))
   );
@@ -787,6 +833,9 @@ export class SidebarComponent implements OnInit {
   /** The HR gate: module feature on AND explicit grant held. Absent fields pass. */
   private hrGateOk(item: SideMenuItem): boolean {
     if (item.requiredHrFeature && !this.featureService.isEnabled(item.requiredHrFeature)) return false;
+    if (item.requiredEarningsFeature && !isEmployeeEarningsEnabled(this.companyService.settings(), item.requiredEarningsFeature)) return false;
+    // Sub-items are not filtered by `requiredPermission` elsewhere; these two are (the feature is opt-in and the privilege is new).
+    if (item.requiredEarningsFeature && item.requiredPermission && !this.privilegeService.check(item.requiredPermission)) return false;
     if (item.requiredHrGrant
         && !hrGrantFor(this.privilegeService, this.authService, item.requiredHrGrant.group, item.requiredHrGrant.action)) {
       return false;
@@ -805,16 +854,21 @@ export class SidebarComponent implements OnInit {
 
   private canShow(item: SideMenuItem): boolean {
     if (!this.hrGateOk(item)) return false;
+    // A group whose every sub-item is gated off (feature not switched on, no grant) would be an empty heading.
+    if (item.subItems?.length && !item.subItems.some(sub => this.subVisible(sub))) return false;
     if (!item.requiredPermission) return true;
     return this.privilegeService.check(item.requiredPermission);
   }
 
   private expandActiveParent(): void {
     const url = this.router.url;
-    SIDE_MENU.forEach(item => {
-      if (item.subItems?.some(sub => this.linkMatchesUrl(sub, url)))
-        item.expanded = true;
-    });
+    const active = SIDE_MENU.find(item => item.subItems?.some(sub => this.linkMatchesUrl(sub, url)));
+    if (active) this.openOnly(active);
+  }
+
+  /** Accordion: expand `item` and collapse every other group. */
+  private openOnly(item: SideMenuItem): void {
+    SIDE_MENU.forEach(i => { i.expanded = i === item; });
   }
 
   /** True when `url` falls under the item's own `link` or any of its
@@ -907,15 +961,19 @@ export class SidebarComponent implements OnInit {
     if (this.qaHostEl) { document.body.removeChild(this.qaHostEl); this.qaHostEl = null; }
   }
 
-  toggleSub(item: SideMenuItem): void { item.expanded = !item.expanded; }
+  toggleSub(item: SideMenuItem): void {
+    if (item.expanded) item.expanded = false; else this.openOnly(item);
+  }
 
   handleParentClick(item: SideMenuItem, event: MouseEvent): void {
     if (this.collapsed) {
       this.collapsed = false;
       this.collapsedChange.emit(false);
-      item.expanded = true;
+      this.openOnly(item);
+    } else if (item.expanded) {
+      item.expanded = false;
     } else {
-      item.expanded = !item.expanded;
+      this.openOnly(item);
     }
 
     // When expanding, scroll the parent + its submenu into view so the user
@@ -1005,6 +1063,7 @@ export class SidebarComponent implements OnInit {
       inventory: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
       invoice: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`,
       employee: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+      calculator: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><line x1="8" y1="10" x2="8.01" y2="10"/><line x1="12" y1="10" x2="12.01" y2="10"/><line x1="16" y1="10" x2="16.01" y2="10"/><line x1="8" y1="14" x2="8.01" y2="14"/><line x1="12" y1="14" x2="12.01" y2="14"/><line x1="8" y1="18" x2="8.01" y2="18"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>`,
       account: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`,
       purchase: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>`,
       ticket: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg>`,

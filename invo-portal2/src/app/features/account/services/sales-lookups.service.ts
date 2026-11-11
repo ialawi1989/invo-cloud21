@@ -101,10 +101,12 @@ export class SalesLookupsService {
   }
 
   /** Payment methods usable at a branch (`accounts/getMiniPaymentMethodList/`). */
-  async getMiniPaymentMethods(branchId: string | null, paymentMethodId?: string | null, type?: string): Promise<any[]> {
+  async getMiniPaymentMethods(branchId: string | null, paymentMethodId?: string | null, type?: string, isBillPayment = false): Promise<any[]> {
     const body: any = { branchId };
     if (paymentMethodId) body.paymentMethodId = paymentMethodId;
     if (type) body.type = type;
+    /** Only methods an admin has switched on for accounting (`showInAccount`). */
+    if (isBillPayment) body.isBillPayment = true;
     return (await this.post('accounts/getMiniPaymentMethodList/', body))?.list ?? [];
   }
 

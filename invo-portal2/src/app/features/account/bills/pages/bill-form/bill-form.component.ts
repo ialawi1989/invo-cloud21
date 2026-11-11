@@ -304,7 +304,8 @@ export class BillFormComponent extends DocumentFormBase {
     b.lines.forEach(l => {
       const line = l as BillLine;
       if (b.allowBillOfEntry) line.clearTax();
-      if (b.id == null && !line.productId) line.accountId = s?.costCenter || this.accounts[0]?.id || null;
+      // a clone has id == null too but its lines already carry the source bill's accounts
+      if (b.id == null && this.formStatus != 'clone' && !line.productId) line.accountId = s?.costCenter || this.accounts[0]?.id || null;
     });
     b.calculateTotal();
     this.markDirty();

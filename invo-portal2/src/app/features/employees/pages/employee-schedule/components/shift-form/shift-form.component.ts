@@ -12,16 +12,17 @@ import { MODAL_DATA, MODAL_REF } from '@shared/modal/modal.tokens';
 import type { ModalRef } from '@shared/modal/modal.service';
 import { ModalHeaderComponent } from '@shared/modal/modal-header.component';
 import { ModalFooterComponent } from '@shared/modal/modal-footer.component';
-import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { ToastService } from '@shared/components/toast/toast.service';
 
 import {
   ScheduleShift,
-  buildTimeOptions,
-  buildEndTimeOptions,
   noOverlaps,
   validTimeOrder,
 } from '../../employee-schedule.types';
+import {
+  DayShiftsEditorComponent,
+  DayShiftsState,
+} from '../day-shifts-editor/day-shifts-editor.component';
 
 export interface ShiftFormData {
   employee: { employeeId: string; employeeName: string; avatar?: string };
@@ -61,7 +62,7 @@ export interface ShiftFormResult {
     TranslateModule,
     ModalHeaderComponent,
     ModalFooterComponent,
-    SearchDropdownComponent,
+    DayShiftsEditorComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './shift-form.component.html',
@@ -72,54 +73,21 @@ export class ShiftFormComponent {
   private ref   = inject<ModalRef<ShiftFormResult>>(MODAL_REF);
   private toast = inject(ToastService);
 
-  readonly times = buildTimeOptions();
-  /** End-of-shift choices: the same list plus 23:59. */
-  readonly endTimes = buildEndTimeOptions();
-
   employee = this.data.employee;
   date     = this.data.day?.date ?? '';
 
-  /** Existing (locked) shifts — deletable only. */
-  existing = signal<ScheduleShift[]>([...(this.data.day?.shift ?? [])]);
-  /** New editable shift rows. */
-  newShifts = signal<ScheduleShift[]>([]);
-  /** Existing shifts the user removed — sent as exceptions. */
-  private removed: ScheduleShift[] = [];
+  /** The day's shifts as loaded; the editor owns the editing state. */
+  readonly dayShifts: ScheduleShift[] = this.data.day?.shift ?? [];
 
-  isEdit = computed(() => this.existing().length > 0);
+  /** Latest edit state reported by `<app-day-shifts-editor>`. */
+  state = signal<DayShiftsState>({ kept: [], removed: [], added: [] });
 
-  constructor() {
-    // Mirror the legacy behaviour: an empty day opens with one blank row.
-    if (this.existing().length === 0) this.addShift();
-  }
-
-  addShift(): void {
-    this.newShifts.update((rows) => [...rows, { from: '00:00', to: '00:00' }]);
-  }
-
-  removeExisting(index: number): void {
-    this.existing.update((rows) => {
-      const removed = rows[index];
-      if (removed) this.removed.push(removed);
-      return rows.filter((_, i) => i !== index);
-    });
-  }
-
-  removeNew(index: number): void {
-    this.newShifts.update((rows) => rows.filter((_, i) => i !== index));
-  }
-
-  setFrom(shift: ScheduleShift, value: string | string[] | null): void {
-    shift.from = Array.isArray(value) ? value[0] ?? '' : value ?? '';
-  }
-  setTo(shift: ScheduleShift, value: string | string[] | null): void {
-    shift.to = Array.isArray(value) ? value[0] ?? '' : value ?? '';
-  }
-
-  canSave = computed(() => this.existing().length > 0 || this.newShifts().length > 0);
+  isEdit  = computed(() => this.dayShifts.length > 0);
+  canSave = computed(() => this.state().kept.length > 0 || this.state().added.length > 0);
 
   save(): void {
-    const all = [...this.existing(), ...this.newShifts()];
+    const { kept, removed, added } = this.state();
+    const all = [...kept, ...added];
     if (!noOverlaps(all)) {
       this.toast.error('EMPLOYEES.SCHEDULE.SHIFT_OVERLAP');
       return;
@@ -133,8 +101,8 @@ export class ShiftFormComponent {
       employeeId:         this.employee.employeeId,
       employeeScheduleId: this.data.day?.employeeScheduleId ?? null,
       date:               this.date,
-      exceptions:         this.removed,
-      additionalShifts:   this.newShifts(),
+      exceptions:         removed,
+      additionalShifts:   added,
     });
   }
 

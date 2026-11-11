@@ -14,19 +14,25 @@
 // caller changes are needed.
 // ────────────────────────────────────────────────────────────────────
 
-const PROD_BACKEND_URL   = 'https://devback.invopos.co/v1/app/';
-const DEV_BACKEND_URL    = 'http://10.2.2.89:3001/v1/app/';
+import { envOverrides as o } from './environment.generated';
+
+// Each constant below is a DEFAULT. `.env` / `.env.local` (same key names,
+// e.g. `DEV_BACKEND_URL=...`) override it — `scripts/apply-env.mjs` turns
+// them into the gitignored `environment.generated.ts` imported above, on
+// every `npm start` / `build` / `test` / `install`.
+const PROD_BACKEND_URL   = o.PROD_BACKEND_URL   ?? 'https://devback.invopos.co/v1/app/';
+const DEV_BACKEND_URL    = o.DEV_BACKEND_URL    ?? 'https://devback.invopos.co/v1/app/';
 
 // Socket.IO server root (no `/v1/app` suffix, no trailing slash) — the
 // Tracking Map feature connects its `/tracking` namespace to this host.
-const PROD_SOCKET_URL    = 'https://devback.invopos.co';
-const DEV_SOCKET_URL     = 'http://10.2.2.89:3001';
+const PROD_SOCKET_URL    = o.PROD_SOCKET_URL    ?? 'https://devback.invopos.co';
+const DEV_SOCKET_URL     = o.DEV_SOCKET_URL     ?? 'https://devback.invopos.co';
 
-const PROD_DASHBOARD_URL = '';
-const DEV_DASHBOARD_URL  = 'http://localhost:4700';
+const PROD_DASHBOARD_URL = o.PROD_DASHBOARD_URL ?? '';
+const DEV_DASHBOARD_URL  = o.DEV_DASHBOARD_URL  ?? 'http://localhost:4700';
 
-const PROD_WEBSITE_URL   = '';
-const DEV_WEBSITE_URL    = 'http://localhost:4600';
+const PROD_WEBSITE_URL   = o.PROD_WEBSITE_URL   ?? '';
+const DEV_WEBSITE_URL    = o.DEV_WEBSITE_URL    ?? 'http://localhost:4600';
 
 /** Deployment tier inferred from the page's hostname.
  *

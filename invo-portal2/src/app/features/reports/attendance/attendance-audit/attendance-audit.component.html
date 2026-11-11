@@ -1,0 +1,86 @@
+@if (error()) {
+  <app-report-error [message]="error()" (retry)="load()" />
+} @else if (data(); as d) {
+  @if (d.rows.length === 0 && !actorId()) {
+    <app-report-empty />
+  } @else {
+    <div class="au" [class.stale]="loading()">
+      <div class="au-main">
+        @if (actorId()) {
+          <div class="au-filter">
+            <span class="au-pill">{{ 'REPORTS.ATTENDANCE.FILTERED_BY_ACTOR' | translate }}</span>
+            <button type="button" class="au-clear" (click)="clearActor()">
+              {{ 'REPORTS.ATTENDANCE.CLEAR_ACTOR' | translate }}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+        }
+
+        <div class="au-card">
+          <div class="au-scroll">
+            <table class="au-table">
+              <thead>
+                <tr>
+                  <th>{{ 'REPORTS.ATTENDANCE.ADJUSTED_AT' | translate }}</th><th>{{ 'REPORTS.ATTENDANCE.SUBJECT' | translate }}</th><th>{{ 'REPORTS.ATTENDANCE.BRANCH' | translate }}</th>
+                  <th>{{ 'REPORTS.ATTENDANCE.CLOCKED_IN' | translate }}</th><th>{{ 'REPORTS.ATTENDANCE.CLOCKED_OUT' | translate }}</th><th>{{ 'REPORTS.ATTENDANCE.ADJUSTED_BY' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (r of d.rows; track r.attendanceId) {
+                  <tr [class.self]="isSelfEdit(r)">
+                    <td class="nowrap">{{ r.adjustedAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+                    <td>
+                      <strong>{{ r.subjectName }}</strong>
+                      @if (isSelfEdit(r)) { <span class="au-self">{{ 'REPORTS.ATTENDANCE.SELF_EDIT' | translate }}</span> }
+                    </td>
+                    <td>{{ r.branchName }}</td>
+                    <td class="diff">
+                      @if (r.adjClockedIn) {
+                        <span class="raw">{{ r.rawClockedIn ? (r.rawClockedIn | date: 'dd/MM/yyyy HH:mm') : '—' }}</span>
+                        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                        <span class="adj in">{{ r.adjClockedIn | date: 'dd/MM/yyyy HH:mm' }}</span>
+                      } @else { <span class="same">{{ r.rawClockedIn ? (r.rawClockedIn | date: 'dd/MM/yyyy HH:mm') : '—' }}</span> }
+                    </td>
+                    <td class="diff">
+                      @if (r.adjClockedOut) {
+                        <span class="raw">{{ r.rawClockedOut ? (r.rawClockedOut | date: 'dd/MM/yyyy HH:mm') : '—' }}</span>
+                        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                        <span class="adj out">{{ r.adjClockedOut | date: 'dd/MM/yyyy HH:mm' }}</span>
+                      } @else { <span class="same">{{ r.rawClockedOut ? (r.rawClockedOut | date: 'dd/MM/yyyy HH:mm') : '—' }}</span> }
+                      @if (r.clockOutReason) { <small class="reason">{{ 'REPORTS.ATTENDANCE.REASON' | translate }}: {{ r.clockOutReason }}</small> }
+                    </td>
+                    <td>
+                      @if (r.adjClockedInByName) { <div class="by"><small>{{ 'REPORTS.ATTENDANCE.CLOCKED_IN' | translate }}:</small> {{ r.adjClockedInByName }}</div> }
+                      @if (r.adjClockedOutByName) { <div class="by"><small>{{ 'REPORTS.ATTENDANCE.CLOCKED_OUT' | translate }}:</small> {{ r.adjClockedOutByName }}</div> }
+                      @if (!r.adjClockedInByName && !r.adjClockedOutByName) { <span class="same">—</span> }
+                    </td>
+                  </tr>
+                } @empty { <tr><td colspan="6" class="au-none">{{ 'REPORTS.ATTENDANCE.NO_ADJUSTMENTS' | translate }}</td></tr> }
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <app-pagination [page]="page()" [pageSize]="pageSize()" [count]="d.count" [pageCount]="d.pageCount" [pageSizeOptions]="sizes" [disabled]="loading()"
+          (pageChange)="goTo($event)" (pageSizeChange)="setPageSize($event)" />
+      </div>
+
+      @if (d.actors.length) {
+        <aside class="au-side">
+          <h4>{{ 'REPORTS.ATTENDANCE.TOP_ACTORS' | translate }}</h4>
+          <table>
+            <thead><tr><th>{{ 'REPORTS.ATTENDANCE.MANAGER' | translate }}</th><th class="end">{{ 'REPORTS.ATTENDANCE.COUNT' | translate }}</th></tr></thead>
+            <tbody>
+              @for (a of d.actors; track a.managerId) {
+                <tr [class.active]="a.managerId === actorId()" (click)="selectActor(a)" tabindex="0" (keydown.enter)="selectActor(a)" [attr.aria-pressed]="a.managerId === actorId()">
+                  <td>{{ a.managerName }}</td><td class="end"><span class="au-count">{{ count(a) }}</span></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </aside>
+      }
+    </div>
+  }
+} @else {
+  <div class="au-skel"></div>
+}

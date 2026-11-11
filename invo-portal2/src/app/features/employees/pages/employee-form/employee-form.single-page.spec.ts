@@ -329,58 +329,28 @@ describe('the employee form is one page', () => {
   });
 
   /**
-   * Changing how an existing employee is paid.
-   *
-   * `/employees/:id/edit?section=payment`. `paymentMethod` is a column on the
-   * PAY REVISION, so it goes to `savePayroll`; posting it to `saveBankDetails`
-   * (which has no such column) dropped it, and picking Cash skipped that call
-   * entirely, so nothing whatsoever was written.
+   * Payment details no longer have a card on an existing employee's form — they
+   * live on the Payroll tab, next to the pay revision they belong to. An old
+   * `?section=payment` link (bookmark, earlier overview pencil) is sent there
+   * instead of landing on an empty page. The payment method and bank account
+   * are still written on CREATE, in the same save (covered above).
    */
-  describe('changing the payment method on an existing employee', () => {
-    const editPayment = () =>
-      setup({ parentId: 'emp-77', section: 'payment', features: ['hr.payroll'] });
-
-    it('records a CASH choice, and writes no account', async () => {
-      const ctx = editPayment();
+  describe('an old ?section=payment link on an existing employee', () => {
+    it('redirects to the Payroll tab, replacing the history entry', async () => {
+      const ctx = setup({ parentId: 'emp-77', section: 'payment', features: ['hr.payroll'] });
       await load(ctx.fixture);
 
-      ctx.component.selectPaymentMethod('Cash');
-      await ctx.component.save();
+      expect(ctx.router.navigate).toHaveBeenCalledWith(
+        ['/employees', 'emp-77', 'payroll'], { replaceUrl: true },
+      );
+    });
 
+    it('writes nothing when it redirects', async () => {
+      const ctx = setup({ parentId: 'emp-77', section: 'payment', features: ['hr.payroll'] });
+      await load(ctx.fixture);
+
+      expect(ctx.recordChange).not.toHaveBeenCalled();
       expect(ctx.saveBankDetails).not.toHaveBeenCalled();
-      expect(ctx.recordChange).toHaveBeenCalledTimes(1);
-      const sent = ctx.recordChange.mock.calls[0][0];
-      expect(sent.paymentMethod).toBe('Cash');
-      // Carried forward, never restated: changing the method must not move
-      // anybody's salary.
-      expect(sent.basicSalary).toBe(950);
-      expect(sent.currency).toBe('BHD');
-    });
-
-    it('writes no revision when the method did not change', async () => {
-      // Seeded from the record as BankTransfer. Re-picking it must not
-      // manufacture a revision that changes nothing.
-      const ctx = editPayment();
-      await load(ctx.fixture);
-
-      ctx.component.selectPaymentMethod('BankTransfer');
-      await ctx.component.save();
-
-      expect(ctx.recordChange).not.toHaveBeenCalled();
-    });
-
-    it('cannot store a method when the employee has no pay on file', async () => {
-      const ctx = setup({
-        parentId: 'emp-77', section: 'payment', features: ['hr.payroll'], pay: null,
-      });
-      await load(ctx.fixture);
-
-      expect(ctx.component.canStoreMethod()).toBe(false);
-
-      ctx.component.selectPaymentMethod('Cheque');
-      await ctx.component.save();
-
-      expect(ctx.recordChange).not.toHaveBeenCalled();
     });
   });
 

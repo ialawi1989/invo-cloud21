@@ -1,0 +1,59 @@
+@use '../../styles/report-theme' as rp;
+
+:host { @include rp.tokens; display: block; }
+
+/* Sortable headers: the header text is a button; the arrows show the direction, the active column is brand-coloured. */
+.ls-sort {
+  display: inline-flex; align-items: center; gap: 6px; padding: 0; border: 0; background: transparent; cursor: pointer;
+  font: inherit; color: inherit; text-transform: inherit; letter-spacing: inherit; white-space: nowrap;
+  .ls-sort-icon { opacity: .45; transition: opacity .15s; }
+  &:hover { color: var(--rp-brand); .ls-sort-icon { opacity: 1; } }
+  &:focus-visible { outline: 2px solid var(--rp-brand); outline-offset: 3px; border-radius: 4px; }
+  &.active { color: var(--rp-brand); .ls-sort-icon { opacity: 1; } }
+}
+:host ::ng-deep th.text-end .ls-sort { justify-content: flex-end; }
+
+.ls { transition: opacity .15s; }
+.ls.stale { opacity: .55; pointer-events: none; }
+.neg { color: var(--rp-expense); }
+
+
+@keyframes ls-shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+.ls-loading { display: flex; flex-direction: column; gap: 16px; }
+.ls-skel {
+  height: 360px; border-radius: 12px; background: linear-gradient(90deg, #eef2f6 0%, #f6f8fa 50%, #eef2f6 100%);
+  background-size: 200% 100%; animation: ls-shimmer 1.4s ease-in-out infinite;
+}
+.ls-error {
+  @include rp.card; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 50px 20px;
+  p { margin: 0; color: var(--rp-muted); font-size: 14px; text-align: center; }
+}
+@media (prefers-reduced-motion: reduce) { .ls-skel { animation: none; } }
+
+/* Space between the table and its pager. */
+app-pagination { display: block; margin-top: 16px; }
+.pos { color: var(--rp-income); }
+.fl-danger { color: var(--rp-expense); font-weight: 600; }
+.fl-days { display: block; margin-top: 2px; font-size: 11px; color: var(--rp-muted); }
+.fl-code { display: inline-block; margin-inline-start: 8px; padding: 1px 8px; border-radius: 999px; background: var(--rp-surface-3); color: var(--rp-text-2); font-size: 11px; font-weight: 600; }
+.fl-badge { display: inline-block; padding: 1px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 600; background: var(--rp-surface-3); color: var(--rp-text-2); font-variant-numeric: tabular-nums; }
+.fl-ok { background: var(--rp-income-soft); color: var(--rp-income); }
+.fl-warn { background: #fef3c7; color: #b45309; }
+.fl-bad { background: var(--rp-expense-soft); color: var(--rp-expense); }
+.fl-muted { background: var(--rp-surface-3); color: var(--rp-muted); }
+.fl-info { background: #e0f2fe; color: #0369a1; }
+.fl-text-bad { color: var(--rp-expense); font-weight: 600; }
+.fl-text-warn { color: #b45309; font-weight: 600; }
+.fl-bold { font-weight: 800; }
+.ag-config {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; padding: 10px 14px;
+  background: #fff; border: 1px solid var(--rp-border); border-radius: 12px;
+}
+.ag-config-title { font-size: 12.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--rp-muted); }
+.ag-field {
+  display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--rp-text-2);
+  input { width: 72px; padding: 6px 8px; border: 1px solid var(--rp-border-strong, #cbd5e1); border-radius: 8px; font: inherit; &:focus { outline: 2px solid var(--rp-brand); outline-offset: 1px; } }
+}
+:host ::ng-deep tr.ag-bucket td { background: var(--rp-surface-2) !important; }
+.ag-count { margin-inline-start: 8px; padding: 1px 9px; border-radius: 999px; background: var(--rp-brand-soft); color: var(--rp-brand); font-size: 11.5px; font-weight: 700; }
+.ag-due { display: block; font-size: 11px; color: var(--rp-muted); }

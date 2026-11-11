@@ -1,8 +1,12 @@
-<app-breadcrumbs [items]="breadcrumbs()" />
-
-<div class="hol">
-  <header class="hol__head">
-    <h1 class="hol__title">{{ 'EMPLOYEES.HOLIDAYS.TITLE' | translate }}</h1>
+<div class="hol-page">
+  <header class="hol-head">
+    <div>
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron" />
+      <h1 class="hol-title">{{ 'EMPLOYEES.HOLIDAYS.TITLE' | translate }}</h1>
+      <!-- Says what the calendar does NOT do. The leave suggestion is the server's
+           to change, and this screen must not read as though it already has. -->
+      <p class="hol-intro">{{ 'EMPLOYEES.HOLIDAYS.SCOPE_NOTE' | translate }}</p>
+    </div>
     @if (available()) {
       <button type="button" class="btn btn-primary" (click)="addCalendar()">
         {{ 'EMPLOYEES.HOLIDAYS.ADD_CALENDAR' | translate }}
@@ -10,105 +14,110 @@
     }
   </header>
 
-  <!-- Says what the calendar does NOT do. The leave suggestion is the server's
-       to change, and this screen must not read as though it already has. -->
-  <p class="hol__note">{{ 'EMPLOYEES.HOLIDAYS.SCOPE_NOTE' | translate }}</p>
-
   @if (!available()) {
     <!-- NOT an empty list. An empty list reads as "this company observes no
          public holidays", which is the opposite of what is true. -->
-    <div class="hol__unavailable" role="status">
+    <div class="hol-unavailable" role="status">
       <p>{{ 'EMPLOYEES.HOLIDAYS.UNAVAILABLE' | translate }}</p>
       @if (unavailableReason(); as reason) {
-        <p class="hol__unavailable-detail">{{ reason }}</p>
+        <p class="hol-unavailable__detail">{{ reason }}</p>
       }
     </div>
-  } @else if (!calendars().length) {
-    <p class="hol__empty">{{ 'EMPLOYEES.HOLIDAYS.NONE' | translate }}</p>
+  } @else if (!calendars().length && !loading()) {
+    <div class="hol-empty">
+      <p>{{ 'EMPLOYEES.HOLIDAYS.NONE' | translate }}</p>
+      <button type="button" class="btn btn-default" (click)="addCalendar()">
+        {{ 'EMPLOYEES.HOLIDAYS.ADD_CALENDAR' | translate }}
+      </button>
+    </div>
   } @else {
-    <ul class="hol__list">
+    <ul class="hol-list">
       @for (cal of calendars(); track trackCalendar($index, cal)) {
-        <li class="hol-cal">
-          <div class="hol-cal__head">
-            <button type="button" class="hol-cal__toggle" (click)="toggle(cal.id)">
-              {{ cal.name || ('EMPLOYEES.HOLIDAYS.UNNAMED' | translate) }}
-              <span class="hol-cal__count">
-                {{ cal.days.length }} {{ 'EMPLOYEES.HOLIDAYS.DAYS' | translate }}
-              </span>
-            </button>
-          </div>
+        <li class="hol-cal" [class.hol-cal--open]="openId() === cal.id">
+          <button type="button" class="hol-cal__head" (click)="toggle(cal.id)"
+                  [attr.aria-expanded]="openId() === cal.id">
+            <svg class="hol-cal__chev" [class.hol-cal__chev--open]="openId() === cal.id"
+                 width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+            <span class="hol-cal__name">{{ cal.name || ('EMPLOYEES.HOLIDAYS.UNNAMED' | translate) }}</span>
+            @if (cal.country) { <span class="hol-chip">{{ cal.country }}</span> }
+            <span class="hol-cal__count">{{ cal.days.length }} {{ 'EMPLOYEES.HOLIDAYS.DAYS' | translate }}</span>
+          </button>
 
           @if (openId() === cal.id) {
             <div class="hol-cal__body">
-              <div class="hol-cal__fields">
+              <div class="hol-grid">
                 <label class="hol-field">
-                  <span class="hol-field__label">{{ 'EMPLOYEES.HOLIDAYS.NAME' | translate }}</span>
-                  <input class="form-control" type="text" [value]="cal.name"
+                  <span>{{ 'EMPLOYEES.HOLIDAYS.NAME' | translate }}</span>
+                  <input class="input" type="text" [value]="cal.name"
                          (input)="onCalendarName(cal.id, $event)" />
                 </label>
-                <label class="hol-field">
-                  <span class="hol-field__label">{{ 'EMPLOYEES.HOLIDAYS.COUNTRY' | translate }}</span>
-                  <input class="form-control" type="text" maxlength="2" [value]="cal.country ?? ''"
-                         (input)="onCalendarCountry(cal.id, $event)" />
-                </label>
+                <div class="hol-field">
+                  <span>{{ 'EMPLOYEES.HOLIDAYS.COUNTRY' | translate }}</span>
+                  <app-search-dropdown
+                    [items]="countries()"
+                    [value]="selectedCountry(cal)"
+                    [displayWith]="countryLabel"
+                    [toValue]="countryValue"
+                    [compareWith]="countryMatches"
+                    [placeholder]="'EMPLOYEES.HOLIDAYS.COUNTRY' | translate"
+                    (valueChange)="setCountry(cal.id, $any($event))" />
+                </div>
               </div>
 
               @if (duplicates()[cal.id]; as dupes) {
-                <p class="hol-cal__error" role="alert">
+                <p class="hol-error" role="alert">
                   {{ 'EMPLOYEES.HOLIDAYS.DUPLICATE_DATES' | translate }} — {{ dupes.join(', ') }}
                 </p>
               }
 
-              <table class="hol-days">
-                <thead>
-                  <tr>
-                    <th>{{ 'EMPLOYEES.HOLIDAYS.DATE' | translate }}</th>
-                    <th>{{ 'EMPLOYEES.HOLIDAYS.DAY_NAME' | translate }}</th>
-                    <th>{{ 'EMPLOYEES.HOLIDAYS.RECURRING' | translate }}</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (day of cal.days; track trackDay($index)) {
-                    <tr>
-                      <td>
-                        <input class="form-control" type="date" [value]="day.date"
-                               (change)="onDayDate(cal.id, $index, $event)" />
-                      </td>
-                      <td>
-                        <input class="form-control" type="text" [value]="day.name"
-                               (input)="onDayName(cal.id, $index, $event)" />
-                      </td>
-                      <td>
-                        <input type="checkbox" [checked]="day.recurring"
-                               (change)="onDayRecurring(cal.id, $index, $event)" />
-                      </td>
-                      <td>
-                        <button type="button" class="btn btn-ghost btn-sm btn-danger"
-                                (click)="removeDay(cal.id, $index)">
-                          {{ 'COMMON.DELETE' | translate }}
-                        </button>
-                      </td>
-                    </tr>
-                  } @empty {
-                    <tr><td colspan="4" class="hol-days__empty">
-                      {{ 'EMPLOYEES.HOLIDAYS.NO_DAYS' | translate }}
-                    </td></tr>
-                  }
-                </tbody>
-              </table>
+              <div class="hol-days">
+                @if (cal.days.length) {
+                  <div class="hol-days__head">
+                    <span>{{ 'EMPLOYEES.HOLIDAYS.DATE' | translate }}</span>
+                    <span>{{ 'EMPLOYEES.HOLIDAYS.DAY_NAME' | translate }}</span>
+                    <span>{{ 'EMPLOYEES.HOLIDAYS.RECURRING' | translate }}</span>
+                    <span></span>
+                  </div>
+                }
+                @for (day of cal.days; track trackDay($index)) {
+                  <div class="hol-day">
+                    <app-date-field triggerClass="input" [value]="day.date || null"
+                                    (changed)="setDayDate(cal.id, $index, $event)" />
+                    <input class="input" type="text" [value]="day.name"
+                           (input)="onDayName(cal.id, $index, $event)" />
+                    <label class="hol-check">
+                      <input type="checkbox" [checked]="day.recurring"
+                             (change)="onDayRecurring(cal.id, $index, $event)" />
+                      <span class="hol-check__label">{{ 'EMPLOYEES.HOLIDAYS.RECURRING' | translate }}</span>
+                    </label>
+                    <button type="button" class="hol-remove" (click)="removeDay(cal.id, $index)"
+                            [attr.aria-label]="'COMMON.DELETE' | translate"
+                            [title]="'COMMON.DELETE' | translate">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/>
+                      </svg>
+                    </button>
+                  </div>
+                } @empty {
+                  <p class="hol-days__empty">{{ 'EMPLOYEES.HOLIDAYS.NO_DAYS' | translate }}</p>
+                }
+              </div>
 
-              <div class="hol-cal__actions">
-                <button type="button" class="btn btn-ghost" (click)="addDay(cal.id)">
-                  {{ 'EMPLOYEES.HOLIDAYS.ADD_DAY' | translate }}
+              <div class="hol-actions">
+                <button type="button" class="btn btn-default" (click)="addDay(cal.id)">
+                  + {{ 'EMPLOYEES.HOLIDAYS.ADD_DAY' | translate }}
                 </button>
-                <button type="button" class="btn btn-primary" [disabled]="saving()"
-                        (click)="save(cal)">
-                  {{ 'COMMON.SAVE' | translate }}
-                </button>
-                <button type="button" class="btn btn-ghost btn-danger" [disabled]="saving()"
+                <span class="hol-actions__spacer"></span>
+                <button type="button" class="btn btn-default hol-actions__danger" [disabled]="saving()"
                         (click)="remove(cal)">
                   {{ 'COMMON.DELETE' | translate }}
+                </button>
+                <button type="button" class="btn btn-primary" [disabled]="saving()" (click)="save(cal)">
+                  {{ 'COMMON.SAVE' | translate }}
                 </button>
               </div>
             </div>

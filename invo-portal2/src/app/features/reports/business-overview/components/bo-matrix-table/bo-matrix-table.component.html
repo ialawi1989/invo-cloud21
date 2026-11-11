@@ -1,0 +1,74 @@
+<app-bo-table-shell [periods]="periods()" [hintKey]="hintKey()">
+  <table class="bo-table" [class.has-comparison]="periods().length > 1">
+    <thead>
+      <tr class="header-row">
+        <th class="sticky-col-1" [attr.rowspan]="hasSub() ? 2 : 1">{{ 'REPORTS.BO.COLUMNS.ACCOUNT_NAME' | translate }}</th>
+        <th class="sticky-col-2" [attr.rowspan]="hasSub() ? 2 : 1">{{ 'REPORTS.BO.COLUMNS.ACCOUNT_CODE' | translate }}</th>
+        @for (c of columns(); track c; let i = $index) {
+          <th class="text-end" [attr.data-period-index]="i" [attr.colspan]="hasSub() ? subColumns().length : 1"
+              [class]="c === 'Total' ? 'total-header' : 'bo-p' + slot(i)">{{ c | boColumn }}</th>
+        }
+      </tr>
+      @if (hasSub()) {
+        <tr class="subheader-row">
+          @for (c of columns(); track c; let ci = $index) {
+            @for (s of subColumns(); track s) {
+              <th class="text-end" [attr.data-p]="ci" [class]="c === 'Total' ? 'total-header' : 'bo-p' + slot(ci)">{{ s | boColumn }}</th>
+            }
+          }
+        </tr>
+      }
+    </thead>
+
+    @for (sec of renderSections(); track sec.key) {
+      <tbody>
+        @if (sec.labelKey) {
+          <tr class="parent-type-row" [class]="sec.tone ? 'parent-type-row tone-' + sec.tone : 'parent-type-row'">
+            <td class="sticky-col-1"><strong>{{ sec.labelKey | translate }}</strong></td>
+            <td class="sticky-col-2"></td>
+            <td [attr.colspan]="valueCols()"></td>
+          </tr>
+        }
+        @for (r of sec.records; track r.accountId ?? r.account ?? $index) {
+          <tr class="data-row">
+            <td class="sticky-col-1 account-cell" [class.ps-4]="!!sec.labelKey">
+              @if (linkable(r)) {
+                <a class="account-link" href="#" (click)="$event.preventDefault(); open.emit(r)">{{ r.account | boAccountName }}</a>
+              } @else {
+                {{ r.account | boAccountName }}
+              }
+            </td>
+            <td class="sticky-col-2 code-cell">{{ r.code }}</td>
+            @for (c of columns(); track c; let ci = $index) {
+              @if (hasSub()) {
+                @for (s of subColumns(); track s) {
+                  @let v = sub(r.summary, c, s);
+                  <td class="text-end" [class]="c === 'Total' ? 'total-cell' : 'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci" [class.negative]="v < 0">{{ fmt(v) }}</td>
+                }
+              } @else {
+                @let v = val(r.summary, c);
+                <td class="text-end" [class]="c === 'Total' ? 'total-cell' : 'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci" [class.negative]="v < 0">{{ fmt(v) }}</td>
+              }
+            }
+          </tr>
+        }
+      </tbody>
+    }
+
+    <tbody>
+      <tr class="total-row">
+        <td class="sticky-col-1"><strong>{{ 'REPORTS.BO.COLUMNS.TOTAL' | translate }}</strong></td>
+        <td class="sticky-col-2"></td>
+        @for (c of columns(); track c; let ci = $index) {
+          @if (hasSub()) {
+            @for (s of subColumns(); track s) {
+              <td class="text-end" [class]="c === 'Total' ? 'total-cell' : 'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci"><strong>{{ fmt(subTotals()[c][s]) }}</strong></td>
+            }
+          } @else {
+            <td class="text-end" [class]="c === 'Total' ? 'total-cell' : 'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci"><strong>{{ fmt(plainTotals()[c]) }}</strong></td>
+          }
+        }
+      </tr>
+    </tbody>
+  </table>
+</app-bo-table-shell>

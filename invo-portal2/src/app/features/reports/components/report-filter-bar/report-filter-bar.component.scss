@@ -125,3 +125,43 @@ app-date-picker {
 }
 .fb-compare.on .fb-knob { transform: translateX(14px); }
 [dir="rtl"] .fb-compare.on .fb-knob { transform: translateX(-14px); }
+
+/* The single "Filters" button (branches + switches live in its dialog). */
+.fb-filters {
+  display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 14px;
+  background: #fff; border: 1px solid #d1d5db; border-radius: 8px; color: #111827;
+  font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer; transition: background .2s, border-color .2s;
+  svg { width: 15px; height: 15px; flex-shrink: 0; }
+  .fb-caret { width: 12px; height: 12px; }
+  &:hover { background: #f0fafc; border-color: #1e8c9f; }
+  &:focus-visible { outline: 2px solid #1e8c9f; outline-offset: 2px; }
+  &.on { border-color: #1e8c9f; }
+}
+.fb-badge {
+  min-width: 18px; padding: 1px 6px; border-radius: 999px; background: #1e8c9f; color: #fff;
+  font-size: 11.5px; font-weight: 600; text-align: center;
+}
+
+.fb-clear {
+  display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 14px; background: #fff; border: 1px solid #fca5a5; border-radius: 8px;
+  color: #dc2626; font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer; transition: background .2s;
+  svg { width: 14px; height: 14px; }
+  &:hover { background: #fef2f2; }
+  &:focus-visible { outline: 2px solid #dc2626; outline-offset: 2px; }
+}
+.fb-applied { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; padding: .75rem 1rem; margin-top: 12px; background: #f3f4f6; border-radius: .5rem; }
+.fb-applied-label { font-size: .875rem; font-weight: 500; color: #6b7280; }
+.fb-tag {
+  display: inline-flex; align-items: center; gap: .5rem; padding: .25rem .75rem; background: #fff; border-radius: 9999px; font-size: .75rem; color: #111827;
+  button { background: transparent; border: 0; padding: 0; font-size: 1rem; line-height: 1; color: #6b7280; cursor: pointer; &:hover { color: #111827; } }
+}
+
+/* Month arrows around the month picker */
+.fb-month { display: inline-flex; align-items: center; gap: 6px; app-date-picker { width: 190px; } }
+.fb-step {
+  display: inline-grid; place-items: center; width: 38px; height: 38px; background: #fff; border: 1px solid #d1d5db; border-radius: 8px; color: #374151; cursor: pointer; transition: background .15s, border-color .15s;
+  svg { width: 16px; height: 16px; }
+  &:hover:not(:disabled) { background: #f0fafc; border-color: #1e8c9f; color: #0f6f80; }
+  &:focus-visible { outline: 2px solid #1e8c9f; outline-offset: 2px; }
+  &:disabled { opacity: .4; cursor: not-allowed; }
+}

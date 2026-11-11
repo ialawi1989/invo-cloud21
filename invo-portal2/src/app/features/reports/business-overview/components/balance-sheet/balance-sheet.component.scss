@@ -1,0 +1,12 @@
+@use '../../../styles/report-theme' as rp;
+
+:host { @include rp.tokens; display: block; }
+
+.bs { transition: opacity .15s; }
+.bs.stale { opacity: .55; pointer-events: none; }
+
+/* Only what is specific to the Balance Sheet: its chart row. */
+.bs-charts-bar { display: flex; justify-content: flex-end; margin: -4px 0 10px; }
+.bs-charts { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 16px; margin-bottom: 4px; }
+.bs-chart-title { margin: 0 0 6px; font-size: 13px; font-weight: 600; color: var(--rp-text-2); }
+@media (max-width: 900px) { .bs-charts { grid-template-columns: 1fr; } }

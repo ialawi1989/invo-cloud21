@@ -192,6 +192,11 @@ export class InvoiceFormComponent extends DocumentFormBase {
   protected override async afterInit(): Promise<void> {
     await this.actions.refresh(this.inv.branchId || null); // the period lock decides whether Delete shows, as on the view / list
     const d = this.inv;
+    if (this.formStatus !== 'edit') {
+      /** a new (or cloned / converted) invoice is always gross: a fixed order discount on an inclusive invoice includes the tax */
+      d.orderDiscountAmountBasis = 'gross';
+      d.calculateTotal();
+    }
     if (this.formStatus === 'new') { d.paymentTerm = 'net7'; this.onTerm('net7'); }
     else { this.selectedTerm = d.paymentTerm ?? 'custome'; this.onTerm(this.selectedTerm, true); }
     if (this.formStatus === 'new' && this.route.snapshot.queryParamMap.get('aiDraft')) await this.applyAssistantDraft();

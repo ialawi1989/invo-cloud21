@@ -1,0 +1,35 @@
+@if (error()) {
+  <app-report-error [message]="error()" (retry)="load()" />
+} @else if (isEmpty()) {
+  <app-report-empty />
+} @else if (data(); as d) {
+  <div class="at" [class.stale]="loading()">
+    <div class="at-legend" role="list">
+      @for (s of statuses; track s) {
+        <span class="at-key" role="listitem"><i [class]="'at-dot st-' + s">{{ letter(s) }}</i>{{ 'REPORTS.ATTENDANCE.STATUS.' + s | translate }} <b>{{ counts()[s] ?? 0 }}</b></span>
+      }
+    </div>
+    <div class="at-scroll">
+      <table class="at-table">
+        <thead>
+          <tr>
+            <th class="at-name">{{ 'REPORTS.ATTENDANCE.EMPLOYEE' | translate }}</th>
+            @for (dt of d.dates; track dt) { <th class="at-day" [attr.title]="dt"><span>{{ label(dt) }}</span></th> }
+          </tr>
+        </thead>
+        <tbody>
+          @for (e of d.employees; track e.id) {
+            <tr>
+              <th class="at-name" scope="row"><a class="at-link" [routerLink]="['/reports/view', 'attendance-detail']" [queryParams]="detailQuery(e.id)" target="_blank" rel="noopener">{{ e.name }}</a></th>
+              @for (s of e.statuses; track $index) {
+                <td class="at-cell"><span [class]="'at-chip st-' + s" [attr.title]="title(d.dates[$index], s)" [attr.aria-label]="title(d.dates[$index], s)">{{ letter(s) }}</span></td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+} @else {
+  <div class="at-skel"></div>
+}

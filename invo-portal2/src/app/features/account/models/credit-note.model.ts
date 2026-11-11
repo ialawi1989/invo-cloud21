@@ -146,8 +146,6 @@ export class CreditNote extends Invoice {
   remainingCredit = 0;
 
   creditTaxTotal = 0;
-  /** display only: the discount with its tax on an inclusive credit note */
-  discountTotalWithTax = 0;
   /** true when the credited invoice spread its discount over its lines: the share is not entered by hand */
   linesHoldTheDiscount = false;
 

@@ -193,6 +193,32 @@
           </div>
           }
 
+          <!-- Phones: only when the page opts in — list (cards) + its extra views. -->
+          @if (isMobile() && mobileExtraViews && extraViewModes.length) {
+          <div class="flex gap-1 bg-slate-100 rounded-lg p-1">
+            <button (click)="showMobileList()"
+              [appTooltip]="'COMMON.TABLE_VIEW' | translate"
+              [class]="
+                  'p-2 rounded transition-colors ' +
+                  (viewMode() === 'grid' ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-600 hover:text-slate-900')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+                <path d="M8 6h13 M8 12h13 M8 18h13 M3 6h.01 M3 12h.01 M3 18h.01"/>
+              </svg>
+            </button>
+            @for (extra of extraViewModes; track extra.id) {
+              <button (click)="setViewMode(extra.id)"
+                [appTooltip]="(extra.labelKey ?? '') | translate"
+                [class]="
+                    'p-2 rounded transition-colors ' +
+                    (viewMode() === extra.id ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-600 hover:text-slate-900')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+                  <path [attr.d]="extra.iconPath || ''"/>
+                </svg>
+              </button>
+            }
+          </div>
+          }
+
           <!-- Consumer toolbar-end slot (e.g. a mobile language icon that
                should sit on the search row). Optional; empty by default. -->
           <ng-content select="[listToolbarEnd]"/>

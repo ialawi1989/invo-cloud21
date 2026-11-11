@@ -5,6 +5,7 @@
     "ADD_NEW": "New Invoice",
     "SEARCH_PLACEHOLDER": "Search invoices",
     "EMPTY": "There are no invoices",
+    "BOARD": { "VOID_OTHER": "Void / Written off" },
     "CREATED_DATE": "Created date",
     "LIST": {
       "INVOICES_LIST": "Invoices",

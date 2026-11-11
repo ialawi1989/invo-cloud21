@@ -49,3 +49,5 @@ Thumbs.db
 # example.env.local to get started. See scripts/apply-env.mjs.
 .env
 .env.local
+# Generated from the above by scripts/apply-env.mjs
+src/environments/environment.generated.ts

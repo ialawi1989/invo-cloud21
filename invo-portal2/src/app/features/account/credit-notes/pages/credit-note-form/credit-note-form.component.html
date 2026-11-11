@@ -69,7 +69,7 @@
       <app-doc-lines-table
         [doc]="c" [editor]="editor!" [config]="linesConfig" [formStatus]="formStatus"
         (changed)="markDirty()">
-        <app-doc-totals [doc]="c" [editor]="editor!" [readonlyTotals]="true" notesHintKey="CREDIT_NOTES.FORM.NOTES_HINT" (changed)="markDirty()"/>
+        <app-doc-totals [doc]="c" [editor]="editor!" [readonlyTotals]="true" [inclusiveDisplay]="true" notesHintKey="CREDIT_NOTES.FORM.NOTES_HINT" (changed)="markDirty()"/>
       </app-doc-lines-table>
     }
 

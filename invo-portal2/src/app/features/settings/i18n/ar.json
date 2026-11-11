@@ -77,6 +77,8 @@
       "ESTIMATE_BUILDER_DESC":     "بناء قالب عرض السعر الخاص بك.",
       "ESTIMATE_OPTIONS":          "خيارات عرض السعر",
       "ESTIMATE_OPTIONS_DESC":     "تكوين خيارات عرض السعر والملاحظات الافتراضية والشروط والأحكام.",
+      "COMMISSION_SETTINGS": "إعدادات العمولة",
+      "COMMISSION_SETTINGS_DESC": "تفعيل عمولة الموظفين والبقشيش وتحديد وقت استحقاق العمولة ودورة الصرف.",
 
       "EXPENSE_BUILDER":           "منشئ المصروفات",
       "EXPENSE_BUILDER_DESC":      "بناء قالب المصروفات الخاص بك.",

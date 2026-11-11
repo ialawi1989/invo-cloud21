@@ -13,6 +13,10 @@
   [fitContent]="true"
   [emptyState]="emptyState"
   [entityType]="'estimate'"
+  [showGridView]="false"
+  [extraViewModes]="extraViewModes"
+  [mobileExtraViews]="true"
+  (viewModeChange)="onViewMode($event)"
   (rowClicked)="onRowClick($event)">
 
   <div listHeaderActions class="flex items-center gap-3">
@@ -74,4 +78,16 @@
       }
     </div>
   </ng-template>
+
+  <!-- Status board / week calendar — shown by the list page for the extra view modes. -->
+  <div listCustomView>
+    @switch (viewMode()) {
+      @case ('board') {
+        <app-doc-board-view [fetch]="viewFetch" [adapter]="viewAdapter" [query]="query()" />
+      }
+      @case ('calendar') {
+        <app-doc-calendar-view [fetch]="viewFetch" [adapter]="viewAdapter" [query]="query()" />
+      }
+    }
+  </div>
 </app-list-page>

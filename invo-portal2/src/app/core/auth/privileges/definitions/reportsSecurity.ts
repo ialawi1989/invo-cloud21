@@ -199,6 +199,50 @@ export function reportsSecurity() {
         name: "Driver Details Report",
         securityType: "cloud",
       }),
+      "AttendanceMissingPunches": new PrivilegeSetting({
+        name: "Attendance Missing Punches",
+        securityType: "cloud",
+      }),
+      "AttendanceHoursSummary": new PrivilegeSetting({
+        name: "Attendance Hours Summary",
+        securityType: "cloud",
+      }),
+      "AttendanceOvertime": new PrivilegeSetting({
+        name: "Attendance Overtime",
+        securityType: "cloud",
+      }),
+      "AttendanceLateAndEarly": new PrivilegeSetting({
+        name: "Attendance Late And Early",
+        securityType: "cloud",
+      }),
+      "AttendanceAudit": new PrivilegeSetting({
+        name: "Attendance Adjustments Audit",
+        securityType: "cloud",
+      }),
+      "AttendanceDailySheet": new PrivilegeSetting({
+        name: "Daily Attendance Sheet",
+        securityType: "cloud",
+      }),
+      "AttendanceAbsence": new PrivilegeSetting({
+        name: "Attendance Absence",
+        securityType: "cloud",
+      }),
+      "AttendanceTrends": new PrivilegeSetting({
+        name: "Attendance Trends And Heatmap",
+        securityType: "cloud",
+      }),
+      "AttendanceBranchComparison": new PrivilegeSetting({
+        name: "Attendance Branch Comparison",
+        securityType: "cloud",
+      }),
+      "AttendanceScorecard": new PrivilegeSetting({
+        name: "Punctuality Scorecard",
+        securityType: "cloud",
+      }),
+      "AttendanceEmployeeDetail": new PrivilegeSetting({
+        name: "Attendance Employee Detail",
+        securityType: "cloud",
+      }),
       "AttendenceReport": new PrivilegeSetting({
         name: "Attendence Report",
         securityType: "cloud",
@@ -300,7 +344,7 @@ export function reportsSecurity() {
         securityType: "cloud",
       }),
       "SupplierChangePriceReport": new PrivilegeSetting({
-        name: "Supplier Balance Report",
+        name: "Supplier Change Price Report",
         securityType: "cloud",
       }),
       "CustomReport": new PrivilegeSetting({
@@ -345,6 +389,10 @@ export function reportsSecurity() {
       }),
       "PurchaseByItemSub": new PrivilegeSetting({
         name: "Purchase By Item Sub Report",
+        securityType: "cloud",
+      }),
+      "OpenPendingPOReport": new PrivilegeSetting({
+        name: "Open / Pending PO Report",
         securityType: "cloud",
       }),
       "PurchaseByCategory": new PrivilegeSetting({
@@ -427,6 +475,10 @@ export function reportsSecurity() {
         name: "Customer Balance Summary",
         securityType: "cloud",
       }),
+      "CustomerTableByEmployee": new PrivilegeSetting({
+        name: "Customer Table By Employee",
+        securityType: "cloud",
+      }),
       "GuestReport": new PrivilegeSetting({
         name: "Guest Report",
         securityType: "cloud",
@@ -449,6 +501,14 @@ export function reportsSecurity() {
       }),
       "SalesByServiceVsProducts": new PrivilegeSetting({
         name: "Sales By Service Vs Products",
+        securityType: "cloud",
+      }),
+      "SalesByHoursByProduct": new PrivilegeSetting({
+        name: "Sales By Hours By Product",
+        securityType: "cloud",
+      }),
+      "VoidedSales": new PrivilegeSetting({
+        name: "Voided Sales",
         securityType: "cloud",
       }),
       "VoidRansactions": new PrivilegeSetting({

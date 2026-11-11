@@ -1,0 +1,223 @@
+@if (loading() && !data()) {
+  <div class="ls-loading" aria-busy="true"><div class="ls-skel"></div></div>
+} @else if (error()) {
+  <app-report-error [message]="error()" (retry)="load()" />
+} @else if (data(); as d) {
+  @if (isEmpty()) {
+    <app-report-empty />
+  } @else {
+    <div class="ls" [class.stale]="loading()">
+      @if (total(); as t) {
+        <div class="ls-cards">
+          <div class="ls-card">
+            <div class="ls-card-label">{{ 'REPORTS.VOIDED_SALES.CARDS.VOIDED_INVOICES' | translate }}</div>
+            <div class="ls-card-value">{{ num(t.voidedInvoices) }}</div>
+          </div>
+          <div class="ls-card">
+            <div class="ls-card-label">{{ 'REPORTS.VOIDED_SALES.CARDS.VOID_AMOUNT' | translate }}</div>
+            <div class="ls-card-value neg">{{ num(t.voidAmount) | mycurrency }}</div>
+            <div class="ls-card-hint">{{ 'REPORTS.VOIDED_SALES.CARDS.INCL_TAX' | translate }} · {{ 'REPORTS.VOIDED_SALES.CARDS.EXCL_TAX' | translate }}: {{ num(t.salesAmount) | mycurrency }}</div>
+          </div>
+          <div class="ls-card">
+            <div class="ls-card-label">{{ 'REPORTS.VOIDED_SALES.CARDS.VOIDED_ITEMS' | translate }}</div>
+            <div class="ls-card-value">{{ num(t.voidedQty) }}</div>
+          </div>
+        </div>
+      }
+
+      <app-bo-table-shell [periods]="[]" hintKey="voidedSales_scrollHint">
+        <table class="bo-table">
+          <thead>
+            <tr class="header-row">
+              <th class="sticky-col-1" [attr.aria-sort]="ariaSort('invoiceNumber')">
+                <button type="button" class="ls-sort" [class.active]="sort()?.sortValue === 'invoiceNumber'" (click)="sortBy('invoiceNumber')">
+                  {{ 'REPORTS.VOIDED_SALES.COLUMNS.ORIGINAL_INVOICE' | translate }}
+                  <svg class="ls-sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 4 18 9" [style.opacity]="ariaSort('invoiceNumber') === 'descending' ? .25 : 1"/><polyline points="6 15 12 20 18 15" [style.opacity]="ariaSort('invoiceNumber') === 'ascending' ? .25 : 1"/></svg>
+                </button>
+              </th>
+              <th class="text-start" [attr.aria-sort]="ariaSort('invoiceDate')">
+                <button type="button" class="ls-sort" [class.active]="sort()?.sortValue === 'invoiceDate'" (click)="sortBy('invoiceDate')">
+                  {{ 'REPORTS.VOIDED_SALES.COLUMNS.ORIGINAL_DATE' | translate }}
+                  <svg class="ls-sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 4 18 9" [style.opacity]="ariaSort('invoiceDate') === 'descending' ? .25 : 1"/><polyline points="6 15 12 20 18 15" [style.opacity]="ariaSort('invoiceDate') === 'ascending' ? .25 : 1"/></svg>
+                </button>
+              </th>
+              <th class="text-start" [attr.aria-sort]="ariaSort('voidDate')">
+                <button type="button" class="ls-sort" [class.active]="sort()?.sortValue === 'voidDate'" (click)="sortBy('voidDate')">
+                  {{ 'REPORTS.VOIDED_SALES.COLUMNS.VOID_DATE' | translate }}
+                  <svg class="ls-sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 4 18 9" [style.opacity]="ariaSort('voidDate') === 'descending' ? .25 : 1"/><polyline points="6 15 12 20 18 15" [style.opacity]="ariaSort('voidDate') === 'ascending' ? .25 : 1"/></svg>
+                </button>
+              </th>
+              <th class="text-start" [attr.aria-sort]="ariaSort('customerName')">
+                <button type="button" class="ls-sort" [class.active]="sort()?.sortValue === 'customerName'" (click)="sortBy('customerName')">
+                  {{ 'REPORTS.VOIDED_SALES.COLUMNS.CUSTOMER' | translate }}
+                  <svg class="ls-sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 4 18 9" [style.opacity]="ariaSort('customerName') === 'descending' ? .25 : 1"/><polyline points="6 15 12 20 18 15" [style.opacity]="ariaSort('customerName') === 'ascending' ? .25 : 1"/></svg>
+                </button>
+              </th>
+              <th class="text-end" [attr.aria-sort]="ariaSort('itemsCount')">
+                <button type="button" class="ls-sort" [class.active]="sort()?.sortValue === 'itemsCount'" (click)="sortBy('itemsCount')">
+                  {{ 'REPORTS.VOIDED_SALES.COLUMNS.ITEMS_COUNT' | translate }}
+                  <svg class="ls-sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 4 18 9" [style.opacity]="ariaSort('itemsCount') === 'descending' ? .25 : 1"/><polyline points="6 15 12 20 18 15" [style.opacity]="ariaSort('itemsCount') === 'ascending' ? .25 : 1"/></svg>
+                </button>
+              </th>
+              <th class="text-end" [attr.aria-sort]="ariaSort('voidedQty')">
+                <button type="button" class="ls-sort" [class.active]="sort()?.sortValue === 'voidedQty'" (click)="sortBy('voidedQty')">
+                  {{ 'REPORTS.VOIDED_SALES.COLUMNS.TOTAL_QTY' | translate }}
+                  <svg class="ls-sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 4 18 9" [style.opacity]="ariaSort('voidedQty') === 'descending' ? .25 : 1"/><polyline points="6 15 12 20 18 15" [style.opacity]="ariaSort('voidedQty') === 'ascending' ? .25 : 1"/></svg>
+                </button>
+              </th>
+              <th class="text-end" [attr.aria-sort]="ariaSort('saleAmount')">
+                <button type="button" class="ls-sort" [class.active]="sort()?.sortValue === 'saleAmount'" (click)="sortBy('saleAmount')">
+                  {{ 'REPORTS.VOIDED_SALES.COLUMNS.SALE_AMOUNT' | translate }}
+                  <svg class="ls-sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 4 18 9" [style.opacity]="ariaSort('saleAmount') === 'descending' ? .25 : 1"/><polyline points="6 15 12 20 18 15" [style.opacity]="ariaSort('saleAmount') === 'ascending' ? .25 : 1"/></svg>
+                </button>
+              </th>
+              <th class="text-end" [attr.aria-sort]="ariaSort('voidAmount')">
+                <button type="button" class="ls-sort" [class.active]="sort()?.sortValue === 'voidAmount'" (click)="sortBy('voidAmount')">
+                  {{ 'REPORTS.VOIDED_SALES.COLUMNS.VOID_AMOUNT' | translate }}
+                  <svg class="ls-sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 4 18 9" [style.opacity]="ariaSort('voidAmount') === 'descending' ? .25 : 1"/><polyline points="6 15 12 20 18 15" [style.opacity]="ariaSort('voidAmount') === 'ascending' ? .25 : 1"/></svg>
+                </button>
+              </th>
+              <th class="text-start" [attr.aria-sort]="ariaSort('employeeName')">
+                <button type="button" class="ls-sort" [class.active]="sort()?.sortValue === 'employeeName'" (click)="sortBy('employeeName')">
+                  {{ 'REPORTS.VOIDED_SALES.COLUMNS.VOIDED_BY' | translate }}
+                  <svg class="ls-sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 4 18 9" [style.opacity]="ariaSort('employeeName') === 'descending' ? .25 : 1"/><polyline points="6 15 12 20 18 15" [style.opacity]="ariaSort('employeeName') === 'ascending' ? .25 : 1"/></svg>
+                </button>
+              </th>
+              <th class="text-center">{{ 'REPORTS.VOIDED_SALES.COLUMNS.ACTIONS' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of records(); track trackRow($index, r)) {
+              <tr class="data-row" [class.ls-open]="isExpanded(r)">
+                <td class="sticky-col-1">
+                  @if (invoiceLink(r); as href) { <a class="account-link" [routerLink]="href" target="_blank" rel="noopener">{{ r.invoiceNumber }}</a> }
+                  @else { {{ r.invoiceNumber }} }
+                </td>
+                <td>{{ r.invoiceDate | date: 'dd/MM/yyyy HH:mm' }}</td>
+                <td>
+                  <div>{{ r.voidDate | date: 'dd/MM/yyyy HH:mm' }}</div>
+                  <span class="ls-badge" [class]="'ls-badge ls-timing-' + r.voidTiming">{{ 'REPORTS.FILTER.VOID_TIMING.' + r.voidTiming | translate }}</span>
+                </td>
+                <td>{{ r.customerName }}</td>
+                <td class="text-end">{{ num(r.itemsCount) }}</td>
+                <td class="text-end">{{ num(r.voidedQty) }}</td>
+                <td class="text-end">{{ num(r.saleAmount) | mycurrency }}</td>
+                <td class="text-end neg">{{ num(r.voidAmount) | mycurrency }}</td>
+                <td>{{ r.employeeName || '—' }}</td>
+                <td class="text-center">
+                  <button type="button" class="ls-details-btn" (click)="toggleRow(r)" [attr.aria-expanded]="isExpanded(r)">
+                    {{ (isExpanded(r) ? 'REPORTS.VOIDED_SALES.DETAILS.HIDE_DETAILS' : 'REPORTS.VOIDED_SALES.DETAILS.VIEW_DETAILS') | translate }}
+                  </button>
+                </td>
+              </tr>
+              @if (isExpanded(r)) {
+                <tr class="ls-details-row">
+                  <td colspan="10">
+                    <div class="ls-details">
+                      <section class="ls-card ls-info">
+                        <h4 class="ls-card-title">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                          {{ 'REPORTS.VOIDED_SALES.DETAILS.TITLE' | translate }}
+                          <span class="ls-badge" [class]="'ls-badge ls-timing-' + r.voidTiming">{{ 'REPORTS.FILTER.VOID_TIMING.' + r.voidTiming | translate }}</span>
+                        </h4>
+                        <dl>
+                          <dt>{{ 'REPORTS.VOIDED_SALES.COLUMNS.ORIGINAL_INVOICE' | translate }}</dt><dd>{{ r.invoiceNumber }}</dd>
+                          <dt>{{ 'REPORTS.VOIDED_SALES.COLUMNS.ORIGINAL_DATE' | translate }}</dt><dd>{{ r.invoiceDate | date: 'dd/MM/yyyy HH:mm' }}</dd>
+                          <dt>{{ 'REPORTS.VOIDED_SALES.COLUMNS.VOID_DATE' | translate }}</dt><dd>{{ r.voidDate | date: 'dd/MM/yyyy HH:mm' }}</dd>
+                          <dt>{{ 'REPORTS.VOIDED_SALES.DETAILS.VOID_TIMING' | translate }}</dt>
+                          <dd>{{ 'REPORTS.FILTER.VOID_TIMING.' + r.voidTiming | translate }} @if (timingPeriod(r); as p) { <span class="ls-muted">({{ p }})</span> }</dd>
+                          <dt>{{ 'REPORTS.VOIDED_SALES.COLUMNS.CUSTOMER' | translate }}</dt><dd>{{ r.customerName }}</dd>
+                          <dt>{{ 'REPORTS.VOIDED_SALES.COLUMNS.VOIDED_BY' | translate }}</dt><dd>{{ r.employeeName || '—' }}</dd>
+                          <dt>{{ 'REPORTS.VOIDED_SALES.DETAILS.VOID_REASON' | translate }}</dt>
+                          <dd [class.ls-muted]="!r.voidReason">{{ r.voidReason || ('REPORTS.VOIDED_SALES.DETAILS.NO_REASON' | translate) }}</dd>
+                        </dl>
+                      </section>
+
+                      <section class="ls-card ls-items">
+                        <h4 class="ls-card-title">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><polyline points="3.3 7 12 12 20.7 7"/><line x1="12" y1="22" x2="12" y2="12"/></svg>
+                          {{ 'REPORTS.VOIDED_SALES.DETAILS.VOIDED_ITEMS' | translate }}
+                          @if (detail(r); as dd) { @if (!dd.loading && dd.rows.length) { <span class="ls-count">{{ dd.rows.length }}</span> } }
+                        </h4>
+                        @if (detail(r); as dt) {
+                          @if (dt.loading) {
+                            <p class="ls-muted">{{ 'REPORTS.VOIDED_SALES.DETAILS.LOADING' | translate }}</p>
+                          } @else if (dt.error) {
+                            <p class="neg">{{ dt.error }} <button type="button" class="ls-link" (click)="loadDetails(r)">{{ 'REPORTS.VIEW.RETRY' | translate }}</button></p>
+                          } @else if (!dt.rows.length) {
+                            <p class="ls-muted">{{ 'REPORTS.SALES_BY_PRODUCT.NO_DATA' | translate }}</p>
+                          } @else {
+                            <div class="ls-items-scroll">
+                              <table class="ls-items-table">
+                                <thead>
+                                  <tr>
+                                    <th>{{ 'REPORTS.VOIDED_SALES.COLUMNS.PRODUCT_NAME' | translate }}</th>
+                                    <th>{{ 'REPORTS.VOIDED_SALES.COLUMNS.BARCODE' | translate }}</th>
+                                    <th class="text-end">{{ 'REPORTS.VOIDED_SALES.COLUMNS.QTY' | translate }}</th>
+                                    <th class="text-end">{{ 'REPORTS.VOIDED_SALES.COLUMNS.UNIT_PRICE' | translate }}</th>
+                                    <th class="text-end">{{ 'REPORTS.VOIDED_SALES.COLUMNS.DISCOUNT' | translate }}</th>
+                                    <th class="text-end">{{ 'REPORTS.VOIDED_SALES.COLUMNS.TAX' | translate }}</th>
+                                    <th class="text-end" [attr.title]="'REPORTS.VOIDED_SALES.COLUMNS.LINE_TOTAL_HINT' | translate">{{ 'REPORTS.VOIDED_SALES.COLUMNS.LINE_TOTAL' | translate }}</th>
+                                    <th class="text-end">{{ 'REPORTS.VOIDED_SALES.COLUMNS.VOID_AMOUNT' | translate }}</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  @for (row of dt.rows; track trackItem($index, row)) {
+                                    <tr [class.ls-filtered]="isFilteredProduct(row.item)">
+                                      <td [style.padding-inline-start.px]="12 + row.depth * 20">
+                                        @if (row.depth > 0) { <span class="ls-muted" aria-hidden="true">↳ </span> }
+                                        {{ row.item.productName }}
+                                        @if (row.item.waste) { <span class="ls-badge ls-badge-void" [attr.title]="'REPORTS.VOIDED_SALES.DETAILS.WASTE_HINT' | translate">{{ 'REPORTS.VOIDED_SALES.DETAILS.WASTE' | translate }}</span> }
+                                      </td>
+                                      <td class="ls-muted">{{ row.item.barcode || '—' }}</td>
+                                      <td class="text-end">{{ num(row.item.voidedQty) }}</td>
+                                      <td class="text-end">{{ num(row.item.unitPrice) | mycurrency }}</td>
+                                      <td class="text-end">{{ num(row.item.discountTotal) | mycurrency }}</td>
+                                      <td class="text-end">{{ num(row.item.taxTotal) | mycurrency }}</td>
+                                      <td class="text-end">{{ num(row.item.originalAmount) | mycurrency }}</td>
+                                      <td class="text-end neg">{{ num(row.item.voidAmount) | mycurrency }}</td>
+                                    </tr>
+                                  }
+                                  @if (dt.total; as tt) {
+                                    <tr class="ls-items-total">
+                                      <td colspan="2"><strong>{{ 'REPORTS.SALES_BY_PRODUCT.TOTAL' | translate }}</strong></td>
+                                      <td class="text-end"><strong>{{ num(tt.voidedQty) }}</strong></td>
+                                      <td></td>
+                                      <td class="text-end"><strong>{{ num(tt.discountTotal) | mycurrency }}</strong></td>
+                                      <td class="text-end"><strong>{{ num(tt.taxTotal) | mycurrency }}</strong></td>
+                                      <td></td>
+                                      <td class="text-end neg"><strong>{{ num(tt.voidAmount) | mycurrency }}</strong></td>
+                                    </tr>
+                                  }
+                                </tbody>
+                              </table>
+                            </div>
+                          }
+                        }
+                      </section>
+                    </div>
+                  </td>
+                </tr>
+              }
+            }
+            @if (total(); as t) {
+              <tr class="total-row">
+                <td class="sticky-col-1"><strong>{{ 'REPORTS.SALES_BY_PRODUCT.TOTAL' | translate }}</strong></td>
+                <td></td><td></td><td></td><td></td>
+                <td class="text-end"><strong>{{ num(t.voidedQty) }}</strong></td>
+                <td></td>
+                <td class="text-end neg"><strong>{{ num(t.voidAmount) | mycurrency }}</strong></td>
+                <td></td><td></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </app-bo-table-shell>
+
+      <app-pagination
+        [page]="page()" [pageSize]="pageSize()" [count]="d.count" [pageCount]="d.pageCount"
+        [pageSizeOptions]="sizes" [disabled]="loading()"
+        (pageChange)="goTo($event)" (pageSizeChange)="setSize($event)" />
+    </div>
+  }
+}

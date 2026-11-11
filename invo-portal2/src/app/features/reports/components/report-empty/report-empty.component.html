@@ -1,0 +1,35 @@
+<div class="rem" role="status">
+  <svg class="rem-art" viewBox="0 0 260 190" fill="none" aria-hidden="true">
+    <!-- soft backdrop -->
+    <ellipse cx="130" cy="168" rx="92" ry="11" class="rem-shadow"/>
+    <circle cx="130" cy="86" r="74" class="rem-blob"/>
+    <circle cx="48" cy="52" r="5" class="rem-dot d1"/>
+    <circle cx="216" cy="40" r="4" class="rem-dot d2"/>
+    <circle cx="228" cy="118" r="6" class="rem-dot d3"/>
+    <path d="M34 126l5-5m0 5l-5-5" class="rem-spark"/>
+    <path d="M206 150l5-5m0 5l-5-5" class="rem-spark"/>
+
+    <g class="rem-float">
+      <!-- the empty sheet -->
+      <rect x="78" y="28" width="104" height="128" rx="14" class="rem-sheet"/>
+      <rect x="78" y="28" width="104" height="30" rx="14" class="rem-head"/>
+      <rect x="78" y="44" width="104" height="14" class="rem-head"/>
+      <circle cx="94" cy="43" r="3.5" class="rem-led a"/>
+      <circle cx="105" cy="43" r="3.5" class="rem-led b"/>
+      <circle cx="116" cy="43" r="3.5" class="rem-led c"/>
+      <!-- empty rows -->
+      <rect x="92" y="72" width="76" height="8" rx="4" class="rem-row"/>
+      <rect x="92" y="90" width="58" height="8" rx="4" class="rem-row"/>
+      <rect x="92" y="108" width="68" height="8" rx="4" class="rem-row"/>
+      <rect x="92" y="126" width="40" height="8" rx="4" class="rem-row"/>
+      <!-- magnifier -->
+      <circle cx="170" cy="124" r="26" class="rem-lens"/>
+      <circle cx="170" cy="124" r="18" class="rem-lens-in"/>
+      <path d="M189 143l16 16" class="rem-handle"/>
+      <path d="M162 124h16" class="rem-minus"/>
+    </g>
+  </svg>
+
+  <h3 class="rem-title">{{ titleKey() | translate }}</h3>
+  <p class="rem-hint">{{ hintKey() | translate }}</p>
+</div>

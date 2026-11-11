@@ -24,6 +24,7 @@ import {
  *   POST accounts/reports/export/{path}    body { filter }   → Blob (xlsx/csv)
  *   POST accounts/reports/exportPdf/{path} body { filter }   → Blob (pdf)
  */
+
 @Injectable({ providedIn: 'root' })
 export class ReportsService {
   private api = inject(ApiService);
@@ -108,17 +109,49 @@ export class ReportsService {
     try {
       const { blob } = await this.requestFlat(path, 'pdf', params, path);
       if (!blob || !w) { w?.close(); return; }
-      const url = URL.createObjectURL(blob);
-      // Full-size frame: a hidden / 0x0 frame makes the PDF viewer print only the first page.
-      w.document.write(
-        `<html><body style="margin:0"><iframe id="pdf" src="${url}" style="width:100%;height:100vh;border:none"></iframe>` +
-        `<script>document.getElementById('pdf').onload=function(){this.contentWindow.focus();this.contentWindow.print();}<\/script></body></html>`,
-      );
-      w.document.close();
+      this.printBlob(w, blob);
     } catch (e) {
       w?.close();
       throw e;
     }
+  }
+
+  /**
+   * Prints the backend's own PDF of a report — the document `exportPath(path, 'pdf', …)` downloads —
+   * by opening it in a new window and calling print. For `{ filter }`-style routes.
+   * Must be called straight from a click: the window is opened before the (slow) request so the
+   * popup blocker allows it.
+   */
+  async printPath(path: string, filter: Record<string, any>): Promise<void> {
+    const w = window.open('', '_blank');
+    try {
+      const response = await firstValueFrom(
+        this.http.post(`${environment.backendUrl}accounts/reports/exportPdf/${path}`, { filter: clean(filter) }, {
+          responseType: 'blob',
+          observe: 'response',
+        }),
+      );
+      const blob = response.body;
+      if (!blob || !w) { w?.close(); return; }
+      this.printBlob(w, blob);
+    } catch (e) {
+      w?.close();
+      throw e;
+    }
+  }
+
+  /** Shows a PDF in `w` and opens the print dialog once it has loaded. */
+  private printBlob(w: Window, blob: Blob): void {
+    // The backend streams the file without a content type; without one the browser downloads it
+    // instead of displaying it, so state it explicitly.
+    const pdf = blob.type === 'application/pdf' ? blob : new Blob([blob], { type: 'application/pdf' });
+    const url = URL.createObjectURL(pdf);
+    // Full-size frame: a hidden / 0x0 frame makes the PDF viewer print only the first page.
+    w.document.write(
+      `<html><body style="margin:0"><iframe id="pdf" src="${url}" style="width:100%;height:100vh;border:none"></iframe>` +
+      `<script>document.getElementById('pdf').onload=function(){this.contentWindow.focus();this.contentWindow.print();}<\/script></body></html>`,
+    );
+    w.document.close();
   }
 
   private async requestFlat(path: string, type: 'pdf' | 'xlsx', params: Record<string, any>, fileBase: string) {
@@ -218,10 +251,19 @@ function guessType(key: string): ReportColumn['type'] {
   return 'text';
 }
 
-function parseFilename(contentDisposition: string | null): string | undefined {
+/**
+ * File name from a `Content-Disposition` header. The backend writes
+ * `attachment; filename= "Report.pdf"` — with a SPACE after the `=` — so whitespace
+ * there must be allowed, otherwise the name comes out as " " and the download has
+ * no name or extension. Returns undefined when no usable name is present.
+ */
+export function parseFilename(contentDisposition: string | null): string | undefined {
   if (!contentDisposition) return undefined;
-  const match = /filename\*?=(?:UTF-8'')?"?([^";]+)"?/i.exec(contentDisposition);
-  return match ? decodeURIComponent(match[1]) : undefined;
+  const match = /filename\*?=\s*(?:UTF-8'')?\s*"?([^";]+)"?/i.exec(contentDisposition);
+  if (!match) return undefined;
+  let name = match[1].trim();
+  try { name = decodeURIComponent(name); } catch { /* keep the raw text */ }
+  return name || undefined;
 }
 
 function downloadBlob(blob: Blob, filename: string): void {

@@ -1,0 +1,77 @@
+// Shared chrome for the employee-earnings pages (payouts list / view / form, tips, commission settings).
+// Mirrors the settings pages (estimate-options) so they read as one family.
+
+:host { display: block; }
+
+.ep-page { max-width: 1200px; padding: 0 0 96px; position: relative; }
+
+.ep-header {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 20px;
+  &__titles { min-width: 0; flex: 1; }
+  &__actions { flex-shrink: 0; display: flex; gap: 8px; }
+}
+.ep-title { font-size: 20px; font-weight: 700; color: #1e293b; margin: 6px 0 0; }
+.ep-sub   { font-size: 13px; color: #64748b; margin: 2px 0 0; }
+
+.ep-card {
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 16px;
+  &__head { padding: 16px 20px 12px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  &__title { margin: 0; font-size: 15px; font-weight: 600; color: #0f172a; flex: 1; }
+  &__sub { margin: 4px 0 0; font-size: 12px; color: #64748b; }
+  &__body { padding: 18px 20px; }
+}
+
+.ep-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.ep-grid--1 { grid-template-columns: 1fr; }
+
+.ep-field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.ep-label { font-size: 13px; font-weight: 500; color: #0f172a; }
+.ep-hint  { margin: 0; font-size: 11.5px; color: #94a3b8; }
+.ep-muted { color: #64748b; font-size: 13px; margin: 0 0 10px; }
+.ep-note  { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; border-radius: 8px; padding: 10px 12px; font-size: 13px; margin-bottom: 14px; }
+
+.ep-input {
+  width: 100%; padding: 9px 12px; font-size: 14px; color: #0f172a; background: #fff;
+  border: 1px solid #e2e8f0; border-radius: 8px; font-family: inherit; box-sizing: border-box;
+  &:focus { outline: none; border-color: #32acc1; box-shadow: 0 0 0 3px rgba(50, 172, 193, .12); }
+  &:disabled { background: #f8fafc; color: #94a3b8; }
+  &.is-invalid { border-color: #ef4444; }
+  &--num { text-align: end; }
+}
+
+.ep-btn {
+  display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; font-size: 13.5px; font-weight: 500;
+  border-radius: 8px; border: 1px solid #e2e8f0; background: #fff; color: #334155; cursor: pointer; font-family: inherit;
+  &:hover:not(:disabled) { background: #f8fafc; }
+  &:disabled { opacity: .55; cursor: default; }
+  &--primary { background: #32acc1; border-color: #32acc1; color: #fff; &:hover:not(:disabled) { background: #2b97aa; } }
+  &--danger  { background: #fff; border-color: #fecaca; color: #dc2626; &:hover:not(:disabled) { background: #fef2f2; } }
+}
+
+.ep-table-wrap { overflow-x: auto; }
+.ep-table {
+  width: 100%; border-collapse: collapse; font-size: 13.5px; color: #334155;
+  th { text-align: start; font-weight: 600; font-size: 12px; color: #64748b; padding: 10px 12px; border-bottom: 1px solid #e2e8f0; white-space: nowrap; }
+  td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+  tfoot th, tfoot td { border-top: 1px solid #e2e8f0; border-bottom: 0; color: #0f172a; font-weight: 600; }
+  .num { text-align: end; white-space: nowrap; }
+  tr.is-offset td { background: #fffbeb; }
+  tr.is-click { cursor: pointer; &:hover td { background: #f8fafc; } }
+  .empty { text-align: center; color: #94a3b8; padding: 28px 12px; }
+}
+.neg { color: #dc2626; }
+
+.ep-kv { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;
+  dt { font-size: 12px; color: #64748b; margin: 0 0 2px; } dd { margin: 0; font-weight: 600; color: #0f172a; } }
+
+.ep-pager { display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-top: 12px; font-size: 13px; color: #475569; }
+
+.ep-check { display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; color: #0f172a; cursor: pointer; input { width: 16px; height: 16px; accent-color: #32acc1; } }
+.ep-radio { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #0f172a; padding: 6px 0; cursor: pointer; input { accent-color: #32acc1; } }
+
+.ep-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.ep-chip { background: #ecfeff; color: #0e7490; border-radius: 999px; padding: 3px 10px; font-size: 12.5px; }
+
+.ep-loading { display: flex; justify-content: center; padding: 60px 0; }
+.ep-spinner { width: 30px; height: 30px; border-radius: 50%; border: 3px solid #e2e8f0; border-top-color: #32acc1; animation: ep-spin .8s linear infinite; }
+@keyframes ep-spin { to { transform: rotate(360deg); } }

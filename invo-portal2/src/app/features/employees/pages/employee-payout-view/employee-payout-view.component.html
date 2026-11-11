@@ -1,0 +1,100 @@
+<div class="ep-page">
+  <header class="ep-header">
+    <div class="ep-header__titles">
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="ep-title">{{ 'EMPLOYEE_PAYOUT.PAYOUT' | translate }}@if (payout()?.reference) { · {{ payout().reference }} }</h1>
+    </div>
+    <div class="ep-header__actions">
+      <button type="button" class="ep-btn" (click)="back()">{{ 'COMMON.BACK' | translate }}</button>
+      @if (payout() && canEdit) {
+        <button type="button" class="ep-btn" (click)="edit()">{{ 'EMPLOYEE_PAYOUT.EDIT' | translate }}</button>
+      }
+      @if (payout() && canDelete) {
+        <button type="button" class="ep-btn ep-btn--danger" (click)="remove()">{{ 'COMMON.DELETE' | translate }}</button>
+      }
+    </div>
+  </header>
+
+  @if (payout(); as p) {
+    <section class="ep-card">
+      <div class="ep-card__body">
+        <dl class="ep-kv">
+          <div><dt>{{ 'EMPLOYEE_PAYOUT.EMPLOYEE' | translate }}</dt><dd>{{ p.employeeName }}</dd></div>
+          <div><dt>{{ 'EMPLOYEE_PAYOUT.PAYMENT_DATE' | translate }}</dt><dd>{{ p.paymentDate | date: 'yyyy-MM-dd' }}</dd></div>
+          <div><dt>{{ 'EMPLOYEE_PAYOUT.PAYMENT_ACCOUNT' | translate }}</dt><dd>{{ p.paymentAccountName }}</dd></div>
+          @if (p.reference) { <div><dt>{{ 'EMPLOYEE_PAYOUT.REFERENCE' | translate }}</dt><dd>{{ p.reference }}</dd></div> }
+          @if (p.notes) { <div><dt>{{ 'EMPLOYEE_PAYOUT.NOTES' | translate }}</dt><dd style="font-weight:400">{{ p.notes }}</dd></div> }
+        </dl>
+      </div>
+    </section>
+
+    <section class="ep-card">
+      <header class="ep-card__head"><h2 class="ep-card__title">{{ 'EMPLOYEE_PAYOUT.ITEMS' | translate }}</h2></header>
+      <div class="ep-card__body ep-table-wrap">
+        <table class="ep-table">
+          <thead>
+            <tr>
+              <th>{{ 'EMPLOYEE_PAYOUT.COLUMNS.SOURCE' | translate }}</th>
+              <th>{{ 'EMPLOYEE_PAYOUT.COLUMNS.INVOICE' | translate }}</th>
+              <th>{{ 'EMPLOYEE_PAYOUT.COLUMNS.DATE' | translate }}</th>
+              <th>{{ 'EMPLOYEE_PAYOUT.COLUMNS.DESCRIPTION' | translate }}</th>
+              <th class="num">{{ 'EMPLOYEE_PAYOUT.AMOUNT' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (line of p.lines; track $index) {
+              <tr>
+                <td>{{ 'EMPLOYEE_PAYOUT.SOURCES.' + line.source | translate }}</td>
+                <td>{{ line.invoiceNumber }}</td>
+                <td>{{ line.date ? (line.date | date: 'yyyy-MM-dd') : '' }}</td>
+                <td>{{ line.description }}</td>
+                <td class="num" [class.neg]="line.amount < 0">{{ line.amount | mycurrency }}</td>
+              </tr>
+            }
+          </tbody>
+          <tfoot>
+            <tr>
+              <th colspan="4" class="num">{{ 'EMPLOYEE_PAYOUT.TOTAL' | translate }}</th>
+              <th class="num">{{ p.amount | mycurrency }}</th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </section>
+
+    @if (journal().length) {
+      <section class="ep-card">
+        <header class="ep-card__head"><h2 class="ep-card__title">{{ 'EMPLOYEE_PAYOUT.JOURNAL' | translate }}</h2></header>
+        <div class="ep-card__body ep-table-wrap">
+          <table class="ep-table">
+            <thead>
+              <tr>
+                <th>{{ 'EMPLOYEE_PAYOUT.ACCOUNT' | translate }}</th>
+                <th class="num">{{ 'EMPLOYEE_PAYOUT.DEBIT' | translate }}</th>
+                <th class="num">{{ 'EMPLOYEE_PAYOUT.CREDIT' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of journal(); track $index) {
+                <tr>
+                  <td>{{ row.accountType }}</td>
+                  <td class="num">{{ row.debit ? (row.debit | mycurrency) : '' }}</td>
+                  <td class="num">{{ row.credit ? (row.credit | mycurrency) : '' }}</td>
+                </tr>
+              }
+            </tbody>
+            <tfoot>
+              <tr>
+                <th>{{ 'EMPLOYEE_PAYOUT.TOTAL' | translate }}</th>
+                <th class="num">{{ journalDebit() | mycurrency }}</th>
+                <th class="num">{{ journalCredit() | mycurrency }}</th>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </section>
+    }
+  }
+
+  <app-loading-overlay [show]="busy()" [message]="'COMMON.LOADING' | translate"/>
+</div>

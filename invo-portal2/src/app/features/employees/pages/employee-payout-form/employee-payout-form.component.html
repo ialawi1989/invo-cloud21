@@ -1,0 +1,132 @@
+<div class="ep-page">
+  <header class="ep-header">
+    <div class="ep-header__titles">
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="ep-title">{{ (isEdit ? 'EMPLOYEE_PAYOUT.EDIT' : 'EMPLOYEE_PAYOUT.NEW') | translate }}</h1>
+    </div>
+  </header>
+
+  @if (loading) {
+    <div class="ep-loading"><span class="ep-spinner"></span></div>
+  } @else {
+    <section class="ep-card">
+      <div class="ep-card__body">
+        <div class="ep-grid">
+          <div class="ep-field">
+            <label class="ep-label">{{ 'EMPLOYEE_PAYOUT.EMPLOYEE' | translate }}</label>
+            <app-search-dropdown [items]="employees" [displayWith]="displayName" [compareWith]="sameId" [value]="employee"
+              [clearable]="false" [disabled]="isEdit" [placeholder]="'EMPLOYEE_PAYOUT.SELECT_EMPLOYEE' | translate"
+              (valueChange)="onEmployee($any($event))"/>
+          </div>
+
+          <div class="ep-field">
+            <label class="ep-label">{{ 'EMPLOYEE_PAYOUT.BRANCH' | translate }}</label>
+            <app-search-dropdown [items]="branches" [displayWith]="displayName" [compareWith]="sameId" [value]="branch"
+              [clearable]="false" (valueChange)="onBranch($any($event))"/>
+          </div>
+
+          <div class="ep-field">
+            <label class="ep-label">{{ 'EMPLOYEE_PAYOUT.PAYMENT_DATE' | translate }}</label>
+            <app-date-field [value]="paymentDate" (changed)="paymentDate = $event; dirty = true"/>
+          </div>
+
+          <div class="ep-field">
+            <label class="ep-label">{{ 'EMPLOYEE_PAYOUT.PAYMENT_METHOD' | translate }}</label>
+            <app-search-dropdown [items]="paymentMethods" [displayWith]="displayName" [compareWith]="sameId" [value]="method"
+              [clearable]="false" [placeholder]="'EMPLOYEE_PAYOUT.PAYMENT_METHOD' | translate"
+              (valueChange)="method = $any($event); dirty = true">
+              <ng-template #item let-item>
+                <div>{{ item.name }}</div>
+                @if (item.accountName) {
+                  <small class="ep-hint">{{ 'EMPLOYEE_PAYOUT.ACCOUNT' | translate }}: {{ item.accountName }}</small>
+                }
+              </ng-template>
+            </app-search-dropdown>
+            <p class="ep-hint">{{ 'EMPLOYEE_PAYOUT.PAYMENT_METHOD_HINT' | translate }}</p>
+          </div>
+
+          <div class="ep-field">
+            <label class="ep-label" for="po-ref">{{ 'EMPLOYEE_PAYOUT.REFERENCE' | translate }}</label>
+            <input id="po-ref" class="ep-input" type="text" [(ngModel)]="reference" (ngModelChange)="dirty = true"/>
+          </div>
+
+          <div class="ep-field">
+            <label class="ep-label" for="po-notes">{{ 'EMPLOYEE_PAYOUT.NOTES' | translate }}</label>
+            <input id="po-notes" class="ep-input" type="text" [(ngModel)]="notes" (ngModelChange)="dirty = true"/>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    @if (employee) {
+      <section class="ep-card">
+        <header class="ep-card__head">
+          <h2 class="ep-card__title">{{ 'EMPLOYEE_PAYOUT.ITEMS' | translate }}</h2>
+          <button type="button" class="ep-btn" [disabled]="loadingPayables" (click)="loadPayables()"
+                  [title]="'EMPLOYEE_PAYOUT.REFRESH_HINT' | translate">{{ 'EMPLOYEE_PAYOUT.REFRESH' | translate }}</button>
+        </header>
+        <div class="ep-card__body">
+          @if (payablesLoaded && !isEdit) {
+            <p class="ep-muted">
+              @if (periodEnd) { {{ 'EMPLOYEE_PAYOUT.PERIOD_ENDS' | translate: { date: (periodEnd | date: 'yyyy-MM-dd') } }} }
+              @else { {{ 'EMPLOYEE_PAYOUT.MANUAL_CYCLE' | translate }} }
+            </p>
+          }
+          @if (hasOffsets) { <p class="ep-muted">{{ 'EMPLOYEE_PAYOUT.OFFSET_HINT' | translate }}</p> }
+
+          <div class="ep-table-wrap">
+            <table class="ep-table">
+              <thead>
+                <tr>
+                  <th style="width:40px"></th>
+                  <th>{{ 'EMPLOYEE_PAYOUT.COLUMNS.SOURCE' | translate }}</th>
+                  <th>{{ 'EMPLOYEE_PAYOUT.COLUMNS.INVOICE' | translate }}</th>
+                  <th>{{ 'EMPLOYEE_PAYOUT.COLUMNS.DATE' | translate }}</th>
+                  <th>{{ 'EMPLOYEE_PAYOUT.COLUMNS.DESCRIPTION' | translate }}</th>
+                  <th>{{ 'EMPLOYEE_PAYOUT.COLUMNS.STATUS' | translate }}</th>
+                  <th class="num">{{ 'EMPLOYEE_PAYOUT.COLUMNS.OUTSTANDING' | translate }}</th>
+                  <th class="num" style="width:170px">{{ 'EMPLOYEE_PAYOUT.COLUMNS.PAY' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (line of lines; track line.record.source + line.record.id) {
+                  <tr [class.is-offset]="line.isOffset">
+                    <td><label class="ep-check"><input type="checkbox" [(ngModel)]="line.selected" (ngModelChange)="dirty = true"/></label></td>
+                    <td>{{ 'EMPLOYEE_PAYOUT.SOURCES.' + line.record.source | translate }}</td>
+                    <td>{{ line.record.invoiceNumber }}</td>
+                    <td>{{ line.record.date ? (line.record.date | date: 'yyyy-MM-dd') : '' }}</td>
+                    <td>{{ line.record.description }}</td>
+                    <td>{{ line.record.status ? (('EMPLOYEE_EARNINGS_STATUS.' + line.record.status) | translate) : '' }}</td>
+                    <td class="num" [class.neg]="line.isOffset">{{ line.record.outstandingAmount | mycurrency }}</td>
+                    <td class="num">
+                      <input class="ep-input ep-input--num" type="number" [class.is-invalid]="line.amountError"
+                             [(ngModel)]="line.amount" (ngModelChange)="dirty = true" [disabled]="!line.selected"/>
+                      @if (line.amountError) { <small class="neg" style="display:block;text-align:start">{{ line.amountError | translate }}</small> }
+                    </td>
+                  </tr>
+                } @empty {
+                  @if (payablesLoaded) {
+                    <tr><td colspan="8" class="empty">{{ 'EMPLOYEE_PAYOUT.NO_ITEMS' | translate }}</td></tr>
+                  }
+                }
+              </tbody>
+              <tfoot>
+                <tr>
+                  <th colspan="7" class="num">{{ 'EMPLOYEE_PAYOUT.TOTAL' | translate }}</th>
+                  <th class="num" [class.neg]="total <= 0">{{ total | mycurrency }}</th>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </section>
+    }
+  }
+
+  <app-loading-overlay [show]="saving" [message]="'COMMON.SAVING' | translate"/>
+
+  <app-form-sticky-footer>
+    <button type="button" class="btn btn-cancel" (click)="cancel()" [disabled]="saving">{{ 'COMMON.CANCEL' | translate }}</button>
+    <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving || loading">{{ 'COMMON.SAVE' | translate }}</button>
+  </app-form-sticky-footer>
+</div>

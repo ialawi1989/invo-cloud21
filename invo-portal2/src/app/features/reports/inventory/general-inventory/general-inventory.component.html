@@ -1,0 +1,55 @@
+@if (loading() && !data()) {
+  <div class="ls-loading" aria-busy="true"><div class="ls-skel"></div></div>
+} @else if (error()) {
+  <app-report-error [message]="error()" (retry)="load()" />
+} @else if (data(); as d) {
+  @if (isEmpty()) {
+    <app-report-empty />
+  } @else {
+    <div class="ls" [class.stale]="loading()">
+      <app-bo-table-shell [periods]="[]" hintKey="generalInventory_scrollHint">
+        <table class="bo-table">
+          <thead>
+            <tr class="header-row">
+              <th class="sticky-col-1">{{ 'REPORTS.GENERAL_INVENTORY.COLUMNS.product' | translate }}</th>
+              <th class="text-start">{{ 'REPORTS.GENERAL_INVENTORY.COLUMNS.category' | translate }}</th>
+              @for (c of cols; track c.key) {
+                <th class="text-end" [class]="'text-end gi-' + c.sec">{{ 'REPORTS.GENERAL_INVENTORY.COLUMNS.' + c.label | translate }}</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of records(); track trackRow($index, r)) {
+              <tr class="data-row">
+                <td class="sticky-col-1">
+                  @if (r.productId) {
+                    <a class="account-link" [routerLink]="['/reports/view', 'product-movement']" [queryParams]="movementParams(r)"
+                       [attr.title]="'REPORTS.GENERAL_INVENTORY.VIEW_MOVEMENT' | translate" target="_blank" rel="noopener">{{ r.productName }}</a>
+                  } @else { {{ r.productName }} }
+                  @if (r.barcode) { <span class="gi-barcode">{{ r.barcode }}</span> }
+                </td>
+                <td>{{ r.categoryName || '—' }}</td>
+                @for (c of cols; track c.key) {
+                  <td [class]="'text-end gi-cell gi-' + c.sec" [class.neg]="num(r[c.key]) < 0">{{ c.money ? (num(r[c.key]) | mycurrency) : (num(r[c.key]) | number) }}</td>
+                }
+              </tr>
+            }
+            @if (total(); as t) {
+              <tr class="total-row">
+                <td class="sticky-col-1"><strong>{{ 'REPORTS.SALES_BY_PRODUCT.TOTAL' | translate }}</strong></td>
+                <td></td>
+                @for (c of cols; track c.key) {
+                  <td [class]="'text-end gi-cell gi-' + c.sec"><strong>{{ c.money ? (num(t[c.key]) | mycurrency) : (num(t[c.key]) | number) }}</strong></td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </app-bo-table-shell>
+      <app-pagination
+        [page]="page()" [pageSize]="pageSize()" [count]="d.count" [pageCount]="d.pageCount"
+        [pageSizeOptions]="sizes" [disabled]="loading()"
+        (pageChange)="goTo($event)" (pageSizeChange)="setSize($event)" />
+    </div>
+  }
+}

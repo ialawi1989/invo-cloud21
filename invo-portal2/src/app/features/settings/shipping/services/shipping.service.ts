@@ -1,3 +1,4 @@
+import { companySavePayload } from '@core/auth/employee-earnings';
 import { Injectable, inject, signal } from '@angular/core';
 import { ApiService } from '@core/http';
 import { CompanyService } from '@core/auth/company.service';
@@ -193,7 +194,7 @@ export class ShippingService {
         deliveryChargeTaxId: opts.deliveryChargeTaxId ?? '',
       };
       const res = await this.api.request<any>(
-        this.api.post('company/saveCompany', payload),
+        this.api.post('company/saveCompany', companySavePayload(payload)),
       );
       companyOk  = !!res?.success;
       companyMsg = res?.msg;

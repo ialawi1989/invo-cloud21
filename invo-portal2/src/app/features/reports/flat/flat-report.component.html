@@ -1,0 +1,135 @@
+@if (loading() && !data()) {
+  <div class="ls-loading" aria-busy="true"><div class="ls-skel"></div></div>
+} @else if (error()) {
+  <app-report-error [message]="error()" (retry)="load()" />
+} @else if (data(); as d) {
+  @if (isEmpty()) {
+    <app-report-empty />
+  } @else {
+    <div class="ls" [class.stale]="loading()">
+      @if (kpiItems().length) { <app-report-kpi-row [kpis]="kpiItems()" [columns]="kpiItems().length > 4 ? 5 : kpiItems().length" /> }
+      @if (summaryItems().length) { <app-report-kpi-row [kpis]="summaryItems()" [columns]="summaryItems().length > 4 ? 3 : summaryItems().length" /> }
+      <app-bo-table-shell [periods]="[]" [hintKey]="'flat_' + slug() + '_scrollHint'">
+        <table class="bo-table" [class.tn-table]="hasTones()">
+          <thead>
+            <tr class="header-row">
+              @for (c of columns(); track c.key; let first = $first) {
+                <th [class.sticky-col-1]="first" [class.text-end]="c.end" [class.text-start]="!c.end" [class]="c.tone ? 'tn-' + c.tone : ''"><span class="fl-th">{{ labelOf(c) | translate }}@if (c.hint) { <svg class="fl-hint" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [attr.title]="c.hint | translate" role="img" [attr.aria-label]="c.hint | translate"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> }</span></th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track trackRow($index, row)) {
+              @if (row.kind === 'data') {
+                <tr class="data-row" [class.fl-group-start]="groupColumn() && row.first && $index > 0">
+                  @for (c of columns(); track c.key; let first = $first) {
+                    @if ((!groupColumn() || c.key !== groupColumn() || row.first) && (!secondColumn() || c.key !== secondColumn() || row.first2)) {
+                    <td [class.sticky-col-1]="first" [class.text-end]="c.end" [class.fl-danger]="c.danger" [class.tn]="!!c.tone" [attr.data-tone]="c.tone"
+                        [class.fl-group-cell]="c.key === groupColumn()" [class.fl-sub-cell]="c.key === secondColumn()" [attr.rowspan]="c.key === groupColumn() ? row.span : (c.key === secondColumn() ? row.span2 : null)">
+                      @switch (c.type) {
+                        @case ('number') {
+                          @if (c.drill && row.rec[c.drill.idKey] && num(row.rec[c.key]) > 0) {
+                            <a class="account-link" [routerLink]="['/reports/view', c.drill.slug]" [queryParams]="drillParams(row.rec, c)" target="_blank" rel="noopener">{{ num(row.rec[c.key]) | number }}</a>
+                          } @else if (c.dashZero && !num(row.rec[c.key])) { - } @else { {{ num(row.rec[c.key]) | number }} }
+                        }
+                        @case ('currency') { {{ num(row.rec[c.key]) | mycurrency }} }
+                        @case ('date') { {{ isEmptyVal(row.rec[c.key]) ? '-' : (row.rec[c.key] | date: 'dd/MM/yyyy') }} }
+                        @case ('datetime') { {{ isEmptyVal(row.rec[c.key]) ? '-' : (row.rec[c.key] | date: 'dd/MM/yyyy HH:mm') }} }
+                        @case ('profit') { <span [class.neg]="num(row.rec[c.key]) < 0" [class.pos]="num(row.rec[c.key]) > 0">{{ num(row.rec[c.key]) | mycurrency }}</span> }
+                        @case ('profitPct') { <span class="fl-badge" [class]="'fl-badge ' + profitPctClass(row.rec[c.key])">{{ num(row.rec[c.key]) | number: '1.2-2' }}%</span> }
+                        @case ('direction') {
+                          @if (isEmptyVal(row.rec[c.key])) { - } @else { <span [class]="'fl-badge ' + directionClass(row.rec[c.key])">{{ row.rec[c.key] }}</span> }
+                        }
+                        @case ('stock') { <span [class]="stockClass(row.rec, c.key)">{{ num(row.rec[c.key]) | number }}</span> }
+                        @case ('orderQty') { <span class="fl-badge fl-warn">{{ num(row.rec[c.key]) | number }}</span> }
+                        @case ('stockout') {
+                          @if (isEmptyVal(row.rec[c.key])) { - } @else { <span [class]="'fl-badge ' + stockoutClass(row.rec[c.key])">{{ row.rec[c.key] | date: 'dd/MM/yyyy' }}</span> }
+                        }
+                        @case ('pct') { {{ num(row.rec[c.key]) | number: '1.1-1' }}% }
+                        @case ('score') { <strong>{{ num(row.rec[c.key]) | number: '1.1-1' }}</strong> }
+                        @case ('rank') { <span [class]="'fl-rank fl-rank-' + (num(row.rec[c.key]) === 1 ? 'first' : num(row.rec[c.key]) <= 3 ? 'top' : 'rest')">#{{ num(row.rec[c.key]) }}</span> }
+                        @case ('tag') { <span [class]="'fl-badge ' + tagClass(row.rec[c.key])">{{ tagText(row.rec[c.key]) }}</span> }
+                        @case ('age') {
+                          @if (isEmptyVal(row.rec[c.key])) { - } @else {
+                            <span class="fl-badge fl-bad fl-age"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>{{ ageText(row.rec[c.key]) }}</span>
+                          }
+                        }
+                        @case ('time') { {{ timeOf(row.rec[c.key]) }} }
+                        @case ('yesno') {
+                          @if (row.rec[c.key]) { <svg class="fl-tick" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-label="yes"><polyline points="20 6 9 17 4 12"/></svg> } @else { - }
+                        }
+                        @case ('seconds') { {{ seconds(row.rec[c.key]) }} }
+                        @case ('interval') { {{ interval(row.rec[c.key]) }} }
+                        @case ('conversion') { <span [class]="'fl-badge ' + conversionClass(row.rec[c.key])">{{ 'REPORTS.FLAT.CONVERSION.' + conversionKey(row.rec[c.key]) | translate }}</span> }
+                        @case ('status') {
+                          @if (isEmptyVal(row.rec[c.key])) { - } @else { <span [class]="'fl-badge ' + statusClass(row.rec[c.key])">{{ row.rec[c.key] }}</span> }
+                        }
+                        @case ('expiry') {
+                          @if (isEmptyVal(row.rec[c.key])) { - } @else {
+                            <span [class]="'fl-badge ' + expiryClass(row.rec[c.key])">{{ row.rec[c.key] | date: 'dd/MM/yyyy' }}</span>
+                            @if (daysTo(row.rec[c.key]); as n) {
+                              <small class="fl-days">{{ (n < 0 ? 'REPORTS.FLAT.DAYS_AGO' : 'REPORTS.FLAT.DAYS_LEFT') | translate: { count: n < 0 ? -n : n } }}</small>
+                            } @else { <small class="fl-days">{{ 'REPORTS.FLAT.TODAY' | translate }}</small> }
+                          }
+                        }
+                        @default {
+                          @if (c.doc && row.rec[c.doc.idKey] && docLink(row.rec, c) && !isEmptyVal(row.rec[c.key])) {
+                            <a class="account-link" [routerLink]="docLink(row.rec, c)" target="_blank" rel="noopener">{{ row.rec[c.key] }}</a>
+                          } @else if (c.link === 'product' && row.rec['productId'] && !isEmptyVal(row.rec[c.key])) {
+                            <a class="account-link" [routerLink]="['/reports/view', 'product-movement']" [queryParams]="movementParams(row.rec)"
+                               [attr.title]="'REPORTS.GENERAL_INVENTORY.VIEW_MOVEMENT' | translate" target="_blank" rel="noopener">{{ row.rec[c.key] }}</a>
+                          } @else if (c.drill && row.rec[c.drill.idKey] && !isEmptyVal(row.rec[c.key])) {
+                            <a class="account-link" [routerLink]="['/reports/view', c.drill.slug]" [queryParams]="drillParams(row.rec, c)" target="_blank" rel="noopener">{{ row.rec[c.key] }}</a>
+                          } @else if (!isEmptyVal(row.rec[c.key]) && (!groupColumn() || c.key !== groupColumn() || row.first)) { {{ row.rec[c.key] }} }
+                          @else if (!groupColumn() || c.key !== groupColumn()) { - }
+                        }
+                      }
+                      @if (c.badge && row.rec[c.badge]) { <span class="fl-code">{{ row.rec[c.badge] }}</span> }
+                    </td>
+                    }
+                  }
+                </tr>
+              } @else {
+                <tr class="subtotal-row">
+                  @for (c of columns(); track c.key; let first = $first) {
+                    @if (c.key !== groupColumn()) {
+                    <td [class.sticky-col-1]="first" [class.text-end]="c.end" [class.tn]="!!c.tone" [attr.data-tone]="c.tone">
+                      @if (c.key === labelColumn()) { <strong>{{ 'REPORTS.FLAT.SUBTOTAL' | translate }}</strong> }
+                      @else if (c.total) { <strong>{{ c.type === 'currency' ? (num(row.rec[c.key]) | mycurrency) : (num(row.rec[c.key]) | number) }}</strong> }
+                    </td>
+                    }
+                  }
+                </tr>
+              }
+            }
+            @if (hasTotal()) {
+              <tr class="total-row">
+                @for (c of columns(); track c.key; let first = $first) {
+                  <td [class.sticky-col-1]="first" [class.text-end]="c.end" [class.tn]="!!c.tone" [attr.data-tone]="c.tone">
+                    @if (first) { <strong>{{ 'REPORTS.SALES_BY_PRODUCT.TOTAL' | translate }}</strong> }
+                    @else if (c.total) {
+                      <strong>
+                        @switch (c.type) {
+                          @case ('currency') { {{ totals()[c.key] | mycurrency }} }
+                          @case ('profit') { {{ totals()[c.key] | mycurrency }} }
+                          @case ('profitPct') { {{ totals()[c.key] | number: '1.2-2' }}% }
+                          @default { {{ totals()[c.key] | number }} }
+                        }
+                      </strong>
+                    }
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </app-bo-table-shell>
+      @if (config().paged) {
+        <app-pagination
+          [page]="page()" [pageSize]="pageSize()" [count]="d.count" [pageCount]="d.pageCount"
+          [pageSizeOptions]="sizes" [disabled]="loading()"
+          (pageChange)="goTo($event)" (pageSizeChange)="setSize($event)" />
+      }
+    </div>
+  }
+}

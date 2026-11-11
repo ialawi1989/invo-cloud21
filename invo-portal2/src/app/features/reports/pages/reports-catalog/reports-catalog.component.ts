@@ -1,14 +1,21 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { DomSanitizer } from '@angular/platform-browser';
+import { Router, RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService } from '@core/i18n/language.service';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
+import { CompanyService } from '@core/auth/company.service';
+import { isEmployeeEarningsEnabled } from '@core/auth/employee-earnings';
 import { REPORT_CATALOG, ALL_REPORTS } from '../../models/report-catalog';
 import { ReportGroup, ReportMeta } from '../../models/report.model';
 import { reportIcon } from '../../models/report-icons';
 import { ReportsFavoritesService } from '../../services/reports-favorites.service';
+import { ReportsRecentService } from '../../services/reports-recent.service';
+import { groupAccent } from '../../models/report-accents';
+import { scheduleTypeFor } from '../../models/report-schedule';
+import { SegmentedToggleComponent, SegmentedToggleOption } from '@shared/components/segmented-toggle/segmented-toggle.component';
 
 /** Meta-tabs shown before the business categories. */
 type MetaTab = 'all' | 'favorites' | 'new';
@@ -16,7 +23,7 @@ type MetaTab = 'all' | 'favorites' | 'new';
 @Component({
   selector: 'app-reports-catalog',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule],
+  imports: [CommonModule, FormsModule, RouterLink, TranslateModule, SegmentedToggleComponent],
   templateUrl: './reports-catalog.component.html',
   styleUrl: './reports-catalog.component.scss',
 })
@@ -24,7 +31,10 @@ export class ReportsCatalogComponent implements OnInit {
   private router = inject(Router);
   private lang = inject(LanguageService);
   private privileges = inject(PrivilegeService);
+  private company = inject(CompanyService);
   private favs = inject(ReportsFavoritesService);
+  private sanitizer = inject(DomSanitizer);
+  private recent = inject(ReportsRecentService);
 
   readonly groups = REPORT_CATALOG;
 
@@ -33,7 +43,10 @@ export class ReportsCatalogComponent implements OnInit {
 
   /** Reports the user is allowed to see (permission-gated). */
   private visibleReports = computed(() =>
-    ALL_REPORTS.filter(r => !r.permission || this.privileges.check(r.permission)),
+    ALL_REPORTS.filter(r =>
+      (!r.permission || this.privileges.check(r.permission))
+      && (!r.earningsFeature || isEmployeeEarningsEnabled(this.company.settings(), r.earningsFeature)),
+    ),
   );
 
   /** Groups filtered to allowed reports (drops empty groups). */
@@ -46,7 +59,7 @@ export class ReportsCatalogComponent implements OnInit {
   favoriteSlugs = computed(() => this.favs.slugs());
 
   /** The reports to render given the active tab + search term. */
-  filteredGroups = computed<ReportGroup[]>(() => {
+  private baseGroups = computed<ReportGroup[]>(() => {
     const term = this.search().trim().toLowerCase();
     const tab = this.activeTab();
 
@@ -79,13 +92,85 @@ export class ReportsCatalogComponent implements OnInit {
       .filter(g => g.reports.length > 0);
   });
 
+  /** How the lists are ordered: the legacy order, or by name (groups and the reports inside them). */
+  sort = signal<'default' | 'az' | 'za'>(this.readSort());
+  readonly sortOptions: SegmentedToggleOption<'default' | 'az' | 'za'>[] = [
+    { value: 'default', label: 'REPORTS.CATALOG.SORT_DEFAULT' }, { value: 'az', label: 'REPORTS.CATALOG.SORT_AZ' }, { value: 'za', label: 'REPORTS.CATALOG.SORT_ZA' },
+  ];
+  setSort(v: 'default' | 'az' | 'za'): void {
+    this.sort.set(v);
+    try { localStorage.setItem('reports.catalog.sort', v); } catch { /* storage can be unavailable */ }
+  }
+  private readSort(): 'default' | 'az' | 'za' {
+    try { const v = localStorage.getItem('reports.catalog.sort'); return v === 'az' || v === 'za' ? v : 'default'; } catch { return 'default'; }
+  }
+  filteredGroups = computed<ReportGroup[]>(() => {
+    const groups = this.baseGroups();
+    const dir = this.sort() === 'az' ? 1 : this.sort() === 'za' ? -1 : 0;
+    if (!dir) return groups;
+    const by = (a: string, b: string) => dir * this.lang.instant(a).localeCompare(this.lang.instant(b));
+    return groups.map(g => ({ ...g, reports: [...g.reports].sort((a, b) => by(a.titleKey, b.titleKey)) })).sort((a, b) => by(a.titleKey, b.titleKey));
+  });
+
   totalCount = computed(() => this.visibleReports().length);
 
   ngOnInit(): void {
+    // the saved copy of the company settings can predate the Commission / Tips switches: refresh it so those reports show
+    void this.company.loadSettings(true);
     this.favs.seedDefaults(ALL_REPORTS.filter(r => r.starredByDefault).map(r => r.slug));
   }
 
-  icon = (name?: string) => reportIcon(name);
+  /** Our own static SVG — Angular's HTML sanitizer would strip it from `innerHTML`. */
+  icon = (name?: string) => this.sanitizer.bypassSecurityTrustHtml(reportIcon(name));
+
+  accent = groupAccent;
+
+  /** The accent of the group a report really belongs to (the Favorites / New tabs mix groups). */
+  private groupKeyOf = computed(() => {
+    const m = new Map<string, string>();
+    for (const g of this.groups) for (const r of g.reports) m.set(r.slug, g.key);
+    return m;
+  });
+  accentOf = (r: ReportMeta): string => this.accent(this.groupKeyOf().get(r.slug) ?? 'others');
+
+  /** What a report can do, as small chips on its card. */
+  caps(r: ReportMeta): string[] {
+    const out: string[] = [];
+    if (r.filters?.comparePeriods || r.filters?.compare) out.push('COMPARE');
+    if (r.export && (r.export.pdf || r.export.xlsx)) out.push('EXPORT');
+    if (scheduleTypeFor(r.slug)) out.push('SCHEDULE');
+    return out;
+  }
+
+  favoriteReports = computed(() => {
+    const set = new Set(this.favoriteSlugs());
+    return this.visibleReports().filter(r => set.has(r.slug));
+  });
+  favoriteCount = computed(() => this.favoriteReports().length);
+
+  /** The reports opened last, still allowed for this user. */
+  recentReports = computed(() => {
+    const bySlug = new Map(this.visibleReports().map(r => [r.slug, r] as const));
+    return this.recent.slugs().map(s => bySlug.get(s)).filter((r): r is ReportMeta => !!r).slice(0, 6);
+  });
+  /** Only on the full list and not while searching. */
+  showRecent = computed(() => this.activeTab() === 'all' && !this.search().trim() && this.recentReports().length > 0);
+
+  // ── group cards: first few reports, the rest behind "Show N more" ──
+  readonly PREVIEW = 4;
+  private expandedKeys = signal<ReadonlySet<string>>(new Set());
+  isExpanded = (key: string) => this.expandedKeys().has(key);
+  expand(key: string): void { this.expandedKeys.update(s => new Set(s).add(key)); }
+  collapse(key: string): void { this.expandedKeys.update(s => { const n = new Set(s); n.delete(key); return n; }); }
+  /** Everything is shown when searching, on a single group's tab, or once expanded. */
+  private showAll = (g: ReportGroup) => !!this.search().trim() || this.activeTab() !== 'all' || this.isExpanded(g.key);
+  shown(g: ReportGroup): ReportMeta[] { return this.showAll(g) ? g.reports : g.reports.slice(0, this.PREVIEW); }
+  hiddenCount(g: ReportGroup): number { return this.showAll(g) ? 0 : Math.max(0, g.reports.length - this.PREVIEW); }
+
+  /** The one-line description under a group's title (none for the synthetic Favorites / New groups). */
+  groupDesc(key: string): string | null {
+    return this.activeTab() === 'favorites' || this.activeTab() === 'new' ? null : `REPORTS.GROUP_DESC.${key}`;
+  }
 
   isNew(r: ReportMeta): boolean {
     if (!r.updated) return false;
@@ -104,6 +189,7 @@ export class ReportsCatalogComponent implements OnInit {
   }
 
   openReport(r: ReportMeta): void {
+    this.recent.push(r.slug);
     this.router.navigate(['/reports/view', r.slug]);
   }
 

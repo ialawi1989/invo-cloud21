@@ -1,3 +1,4 @@
+import { companySavePayload } from '@core/auth/employee-earnings';
 import { Injectable, inject } from '@angular/core';
 import { ApiService } from '@core/http/api.service';
 
@@ -37,7 +38,7 @@ export class TaxSettingsService {
   async saveCompany(payload: any): Promise<any> {
     try {
       const res = await this.api.request(
-        this.api.post('company/saveCompany', payload)
+        this.api.post('company/saveCompany', companySavePayload(payload))
       );
       return res;
     } catch (error) {

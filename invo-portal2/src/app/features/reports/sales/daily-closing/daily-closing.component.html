@@ -1,0 +1,214 @@
+@if (loading() && !data()) {
+  <div class="dc-loading" aria-busy="true"><div class="dc-skel"></div></div>
+} @else if (error()) {
+  <app-report-error [message]="error()" (retry)="load()" />
+} @else if (data(); as d) {
+  <div class="dc" [class.stale]="loading()">
+    <div class="dc-note" role="note">{{ 'REPORTS.DAILY_CLOSING.OPENING_HOUR_NOTE' | translate }}</div>
+
+    <div class="dc-metrics">
+      <div class="dc-metric"><span>{{ 'REPORTS.DAILY_CLOSING.TOTAL_GUESTS' | translate }}</span><b>{{ num(d.totalGuests) }}</b></div>
+      <div class="dc-metric"><span>{{ 'REPORTS.DAILY_CLOSING.TOTAL_ORDERS' | translate }}</span><b>{{ num(d.totalOrders) }}</b></div>
+    </div>
+
+    <div class="dc-grid">
+      <section class="dc-card">
+        <h3>{{ 'REPORTS.DAILY_CLOSING.SALES_BREAKDOWN' | translate }}</h3>
+        <table class="dc-table">
+          <thead><tr>
+            <th>#</th>
+            <th class="n">{{ 'REPORTS.DAILY_CLOSING.SALES' | translate }}</th>
+            <th class="n">{{ 'REPORTS.DAILY_CLOSING.RETURN' | translate }}</th>
+            <th class="n">{{ 'REPORTS.DAILY_CLOSING.TOTAL' | translate }}</th>
+          </tr></thead>
+          <tbody>
+            @for (r of rows(); track r.key) {
+              <tr [class.sub]="r.sub" [class.child]="!r.labelKey">
+                <td>
+                  @if (!r.labelKey) { ↳ {{ taxName(r.key) }} }
+                  @else if (r.key === 'sales') {
+                    <a class="dc-link" [routerLink]="['/reports/view', 'daily-sales-sub']" [queryParams]="drillParams()">{{ 'REPORTS.DAILY_CLOSING.' + r.labelKey | translate }}</a>
+                  } @else { {{ 'REPORTS.DAILY_CLOSING.' + r.labelKey | translate }} }
+                </td>
+                <td class="n">{{ r.sales | mycurrency }}</td>
+                <td class="n neg">{{ r.ret | mycurrency }}</td>
+                <td class="n"><b>{{ r.sales - r.ret | mycurrency }}</b></td>
+              </tr>
+            }
+            <tr class="total">
+              <td>{{ 'REPORTS.DAILY_CLOSING.GRAND_TOTAL' | translate }}</td>
+              <td class="n">{{ grand().sales | mycurrency }}</td>
+              <td class="n neg">{{ grand().ret | mycurrency }}</td>
+              <td class="n">{{ grand().net | mycurrency }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="dc-card">
+        <h3>{{ 'REPORTS.DAILY_CLOSING.ADDITIONAL_SUMMARY' | translate }}</h3>
+        <dl class="dc-list">
+          <div><dt>{{ 'REPORTS.DAILY_CLOSING.NOT_RECEIVED' | translate }}</dt><dd>{{ num(d.notRecievedPayment) | mycurrency }}</dd></div>
+          <div><dt>{{ 'REPORTS.DAILY_CLOSING.TOTAL_REFUND' | translate }}</dt><dd class="neg">{{ num(d.totalRefund) | mycurrency }}</dd></div>
+          <div><dt>{{ 'REPORTS.DAILY_CLOSING.TOTAL_VOID' | translate }}</dt><dd class="warn">{{ num(d.totalVoid) | mycurrency }}</dd></div>
+        </dl>
+      </section>
+
+      @if (d.tenderDetails?.length) {
+        <section class="dc-card">
+          <h3>{{ 'REPORTS.DAILY_CLOSING.INCOME_BY_TENDERS' | translate }}</h3>
+          <table class="dc-table">
+            <thead><tr>
+              <th>{{ 'REPORTS.DAILY_CLOSING.TYPE' | translate }}</th>
+              <th class="n">{{ 'REPORTS.DAILY_CLOSING.INCOME' | translate }}</th>
+              <th class="n">{{ 'REPORTS.DAILY_CLOSING.REFUND' | translate }}</th>
+              <th class="n">{{ 'REPORTS.DAILY_CLOSING.TOTAL' | translate }}</th>
+            </tr></thead>
+            <tbody>
+              @for (t of d.tenderDetails; track $index) {
+                <tr>
+                  <td>{{ t.tenderType }}</td>
+                  <td class="n">{{ num(t.equivalant) | mycurrency }}</td>
+                  <td class="n neg">{{ num(t.refund) | mycurrency }}</td>
+                  <td class="n"><b>{{ num(t.tenderTotal) | mycurrency }}</b></td>
+                </tr>
+              }
+              <tr class="total">
+                <td>{{ 'REPORTS.DAILY_CLOSING.TOTAL' | translate }}</td>
+                <td class="n">{{ sum(d.tenderDetails, 'equivalant') | mycurrency }}</td>
+                <td class="n neg">{{ sum(d.tenderDetails, 'refund') | mycurrency }}</td>
+                <td class="n">{{ sum(d.tenderDetails, 'tenderTotal') | mycurrency }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      }
+
+      @if (d.categoryDetails?.length) {
+        <section class="dc-card wide">
+          <h3>{{ 'REPORTS.DAILY_CLOSING.SALES_BY_CATEGORY' | translate }}</h3>
+          <table class="dc-table">
+            <thead><tr>
+              <th>{{ 'REPORTS.DAILY_CLOSING.CATEGORY' | translate }}</th>
+              <th class="n">{{ 'REPORTS.DAILY_CLOSING.SALES' | translate }}</th>
+              <th class="n">{{ 'REPORTS.DAILY_CLOSING.SALES_QTY' | translate }}</th>
+              <th class="n">{{ 'REPORTS.DAILY_CLOSING.RETURN' | translate }}</th>
+              <th class="n">{{ 'REPORTS.DAILY_CLOSING.RETURN_QTY' | translate }}</th>
+              <th class="n">{{ 'REPORTS.DAILY_CLOSING.TOTAL' | translate }}</th>
+              <th class="n">{{ 'REPORTS.DAILY_CLOSING.NET_QTY' | translate }}</th>
+            </tr></thead>
+            <tbody>
+              @for (g of groupedCategories(); track g.departmentName) {
+                <tr class="group"><td colspan="7"><b>{{ g.departmentName }}</b></td></tr>
+                @for (c of g.categories; track $index) {
+                  <tr>
+                    <td class="indent"><a class="dc-link" [routerLink]="['/reports/view', 'sales-by-category']" [queryParams]="categoryParams()">{{ c.categoryName }}</a></td>
+                    <td class="n">{{ num(c.totalSales) | mycurrency }}</td>
+                    <td class="n">{{ num(c.salesQty) }}</td>
+                    <td class="n neg">{{ num(c.totalReturns) | mycurrency }}</td>
+                    <td class="n neg">{{ num(c.returnQty) }}</td>
+                    <td class="n"><b>{{ num(c.totalSales) - num(c.totalReturns) | mycurrency }}</b></td>
+                    <td class="n">{{ num(c.salesQty) - num(c.returnQty) }}</td>
+                  </tr>
+                }
+              }
+              <tr class="total">
+                <td>{{ 'REPORTS.DAILY_CLOSING.TOTAL' | translate }}</td>
+                <td class="n">{{ sum(d.categoryDetails, 'totalSales') | mycurrency }}</td>
+                <td class="n">{{ sum(d.categoryDetails, 'salesQty') }}</td>
+                <td class="n neg">{{ sum(d.categoryDetails, 'totalReturns') | mycurrency }}</td>
+                <td class="n neg">{{ sum(d.categoryDetails, 'returnQty') }}</td>
+                <td class="n">{{ sum(d.categoryDetails, 'totalSales') - sum(d.categoryDetails, 'totalReturns') | mycurrency }}</td>
+                <td class="n">{{ sum(d.categoryDetails, 'salesQty') - sum(d.categoryDetails, 'returnQty') }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      }
+
+      @if (d.serviceDetails?.length) {
+        <section class="dc-card wide">
+          <h3>{{ 'REPORTS.DAILY_CLOSING.SALES_BY_SERVICE' | translate }}</h3>
+          <table class="dc-table">
+            <thead><tr>
+              <th>{{ 'REPORTS.DAILY_CLOSING.SERVICE' | translate }}</th>
+              <th class="n">{{ 'REPORTS.DAILY_CLOSING.SALES' | translate }}</th>
+              <th class="n">{{ 'REPORTS.DAILY_CLOSING.SALES_QTY' | translate }}</th>
+              <th class="n">{{ 'REPORTS.DAILY_CLOSING.RETURN' | translate }}</th>
+              <th class="n">{{ 'REPORTS.DAILY_CLOSING.RETURN_QTY' | translate }}</th>
+              <th class="n">{{ 'REPORTS.DAILY_CLOSING.TOTAL' | translate }}</th>
+              <th class="n">{{ 'REPORTS.DAILY_CLOSING.NET_QTY' | translate }}</th>
+            </tr></thead>
+            <tbody>
+              @for (s of d.serviceDetails; track $index) {
+                <tr>
+                  <td>@if (s.serviceId) { <a class="dc-link" [routerLink]="['/reports/view', 'sales-by-service-details']" [queryParams]="serviceParams(s)">{{ s.serviceName }}</a> } @else { {{ s.serviceName }} } @if (s.numberOfInvoices) { <span class="dc-badge">{{ s.numberOfInvoices }}</span> }</td>
+                  <td class="n">{{ num(s.totalSales) | mycurrency }}</td>
+                  <td class="n">{{ num(s.salesQty) }}</td>
+                  <td class="n neg">{{ num(s.totalReturns) | mycurrency }}</td>
+                  <td class="n neg">{{ num(s.returnQty) }}</td>
+                  <td class="n"><b>{{ num(s.totalSales) - num(s.totalReturns) | mycurrency }}</b></td>
+                  <td class="n">{{ num(s.salesQty) - num(s.returnQty) }}</td>
+                </tr>
+              }
+              <tr class="total">
+                <td>{{ 'REPORTS.DAILY_CLOSING.TOTAL' | translate }}</td>
+                <td class="n">{{ sum(d.serviceDetails, 'totalSales') | mycurrency }}</td>
+                <td class="n">{{ sum(d.serviceDetails, 'salesQty') }}</td>
+                <td class="n neg">{{ sum(d.serviceDetails, 'totalReturns') | mycurrency }}</td>
+                <td class="n neg">{{ sum(d.serviceDetails, 'returnQty') }}</td>
+                <td class="n">{{ sum(d.serviceDetails, 'totalSales') - sum(d.serviceDetails, 'totalReturns') | mycurrency }}</td>
+                <td class="n">{{ sum(d.serviceDetails, 'salesQty') - sum(d.serviceDetails, 'returnQty') }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      }
+
+      @if (hasSalesDetails()) {
+        <section class="dc-card wide">
+          <h3>{{ 'REPORTS.DAILY_CLOSING.SALES_BY_DATE' | translate }}</h3>
+          <div class="dc-dates">
+            @for (s of d.salesDetails; track $index) {
+              <div class="dc-date">
+                <h4>{{ s.salesDate | date: 'dd/MM/yyyy' }}</h4>
+                <dl class="dc-list">
+                  <div><dt>{{ 'REPORTS.DAILY_CLOSING.TOTAL_SALES' | translate }}</dt><dd><b>{{ num(s.totalSales) | mycurrency }}</b></dd></div>
+                  @if (num(s.itemDiscount)) { <div><dt>{{ 'REPORTS.DAILY_CLOSING.ITEM_DISCOUNT' | translate }}</dt><dd>{{ num(s.itemDiscount) | mycurrency }}</dd></div> }
+                  @if (num(s.taxTotal)) { <div><dt>{{ 'REPORTS.DAILY_CLOSING.TAX_TOTAL' | translate }}</dt><dd>{{ num(s.taxTotal) | mycurrency }}</dd></div> }
+                </dl>
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      @if (d.paymentBreakdown?.length) {
+        <section class="dc-card">
+          <h3>{{ 'REPORTS.DAILY_CLOSING.PAYMENT_BREAKDOWN' | translate }}</h3>
+          <table class="dc-table">
+            <thead><tr>
+              <th>{{ 'REPORTS.DAILY_CLOSING.INVOICE_DATE' | translate }}</th>
+              <th class="n">{{ 'REPORTS.DAILY_CLOSING.INVOICE_QTY' | translate }}</th>
+              <th class="n">{{ 'REPORTS.DAILY_CLOSING.PAYMENT' | translate }}</th>
+            </tr></thead>
+            <tbody>
+              @for (p of d.paymentBreakdown; track $index) {
+                <tr>
+                  <td>{{ p.invoicesDate | date: 'dd/MM/yyyy' }}</td>
+                  <td class="n">{{ num(p.invoiceQty) }}</td>
+                  <td class="n"><b>{{ num(p.paymentReceived) | mycurrency }}</b></td>
+                </tr>
+              }
+              <tr class="total">
+                <td>{{ 'REPORTS.DAILY_CLOSING.TOTAL' | translate }}</td>
+                <td class="n">{{ sum(d.paymentBreakdown, 'invoiceQty') }}</td>
+                <td class="n">{{ sum(d.paymentBreakdown, 'paymentReceived') | mycurrency }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      }
+    </div>
+  </div>
+}

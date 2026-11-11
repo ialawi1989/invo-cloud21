@@ -1,3 +1,4 @@
+import { companySavePayload } from '@core/auth/employee-earnings';
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
@@ -28,7 +29,7 @@ export class BusinessSettingsService {
    * across the app pick up the fresh values immediately.
    */
   async saveCompany(payload: any): Promise<any> {
-    const res = await firstValueFrom(this.api.post<any>('company/saveCompany', payload));
+    const res = await firstValueFrom(this.api.post<any>('company/saveCompany', companySavePayload(payload)));
     if (res?.success) {
       // Force-refresh cached settings so name/logo/etc. propagate everywhere.
       await this.company.loadSettings(true);

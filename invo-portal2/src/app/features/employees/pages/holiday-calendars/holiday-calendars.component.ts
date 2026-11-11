@@ -12,11 +12,15 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { withTranslations } from '@core/i18n/with-translations';
+import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
+import { DateFieldComponent } from '@shared/components/date-field/date-field.component';
 import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { ToastService } from '@shared/components/toast/toast.service';
 
+import { countryOptions } from '../../models/employee-catalogs';
+import type { FieldOption } from '../../models/field-manifest.types';
 import { HolidayCalendarService } from '../../services/holiday-calendar.service';
 import {
   HolidayCalendar,
@@ -55,7 +59,7 @@ import {
 @Component({
   selector: 'app-holiday-calendars',
   standalone: true,
-  imports: [TranslateModule, BreadcrumbsComponent, LoadingOverlayComponent],
+  imports: [TranslateModule, BreadcrumbsComponent, LoadingOverlayComponent, SearchDropdownComponent, DateFieldComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './holiday-calendars.component.html',
   styleUrl: './holiday-calendars.component.scss',
@@ -176,8 +180,25 @@ export class HolidayCalendarsComponent implements OnInit {
     this.updateCalendar(calendarId, { name: (event.target as HTMLInputElement).value });
   }
 
-  onCalendarCountry(calendarId: string, event: Event): void {
-    this.updateCalendar(calendarId, { country: (event.target as HTMLInputElement).value || null });
+  /** Country is an ISO alpha-2 code, picked from the list rather than typed. */
+  readonly countries = computed(() => {
+    this.i18nTick();
+    return countryOptions(this.translate.currentLang || this.translate.defaultLang || 'en');
+  });
+  countryLabel = (o: FieldOption) => o?.label ?? String(o ?? '');
+  countryValue = (o: FieldOption) => o?.value ?? o;
+  countryMatches = (a: any, b: any) => (a?.value ?? a) === (b?.value ?? b);
+  selectedCountry(cal: HolidayCalendar): FieldOption | null {
+    const code = (cal.country ?? '').toUpperCase();
+    return this.countries().find(o => o.value === code) ?? null;
+  }
+
+  setCountry(calendarId: string, value: any): void {
+    this.updateCalendar(calendarId, { country: (value?.value ?? value) || null });
+  }
+
+  setDayDate(calendarId: string, index: number, iso: string | null): void {
+    this.updateDay(calendarId, index, { date: iso ?? '' });
   }
 
   async save(calendar: HolidayCalendar): Promise<void> {

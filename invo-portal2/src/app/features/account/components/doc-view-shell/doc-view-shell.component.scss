@@ -84,12 +84,14 @@ app-doc-view-shell { display: flex; flex: 1; min-height: 0; overflow: hidden; }
 .dv-rail__amount { font-size: 13px; font-weight: 600; color: #0f172a; flex: 0 0 auto; }
 .dv-rail__sub { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #64748b; margin-top: 2px; }
 .dv-rail__status { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 10.5px; font-weight: 700; line-height: 1.5; white-space: nowrap;
-  &--neutral { background: #f1f5f9; color: #334155; }
-  &--draft { background: #fffbeb; color: #b45309; }
-  &--open { background: #ecfdf5; color: #047857; }
-  &--paid { background: #f0fdfa; color: #0f766e; }
-  &--partial { background: #eef2ff; color: #4338ca; }
-  &--void { background: #fef2f2; color: #b91c1c; } }
+  // Legacy <status-badge> palette (solid, white text) — keep in sync with @shared/utils/status-tone.
+  &--neutral { background: #64748b; color: #fff; }   // slate-500
+  &--info { background: #0ea5e9; color: #fff; }      // sky-500
+  &--draft { background: #475569; color: #fff; }     // slate-600
+  &--open { background: #0891b2; color: #fff; }      // cyan-600
+  &--paid { background: #65a30d; color: #fff; }      // lime-600
+  &--partial { background: #fbbf24; color: #fff; }   // amber-400
+  &--void { background: #f87171; color: #fff; } }    // red-400
 .dv-rail__badge { display: inline-block; margin-top: 5px; font-size: 11px; font-weight: 700; letter-spacing: .02em; color: #64748b;
   &--warn { color: #d97706; } }
 .dv-rail__empty, .dv-rail__loading { padding: 24px 16px; text-align: center; color: #94a3b8; font-size: 13px; }
@@ -160,7 +162,7 @@ app-doc-view-shell { display: flex; flex: 1; min-height: 0; overflow: hidden; }
 // start-aligns it when zoomed wider than the viewer — true centering would push the overflow to BOTH
 // sides, and the start side can't be scrolled to, so the page's left edge got cut off.
 .dv-paper__frame { position: relative; overflow: visible; flex: 0 0 auto; margin-inline: auto; }
-.dv-paper__scale { transform-origin: top center; }
+.dv-paper__scale { position: relative; transform-origin: top center; }
 
 // ── PDF-viewer chrome (opt-in via `viewerTools`) ──────────────────────
 // The two anchors are zero-height sticky rows inside `.dv-viewer`, so the bars float over the paper at

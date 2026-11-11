@@ -2,7 +2,9 @@ import { Component, computed, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
-import { ReportColumn, ReportTable } from '../../models/report.model';
+import { RouterLink } from '@angular/router';
+import { ReportCellLink, ReportColumn, ReportLinkContext, ReportTable } from '../../models/report.model';
+import { ReportEmptyComponent } from '../report-empty/report-empty.component';
 
 /**
  * Generic renderer for a normalized `ReportTable`. Handles value formatting
@@ -13,12 +15,14 @@ import { ReportColumn, ReportTable } from '../../models/report.model';
 @Component({
   selector: 'app-report-data-table',
   standalone: true,
-  imports: [CommonModule, TranslateModule, MycurrencyPipe],
+  imports: [ReportEmptyComponent, CommonModule, TranslateModule, MycurrencyPipe, RouterLink],
   templateUrl: './report-data-table.component.html',
   styleUrl: './report-data-table.component.scss',
 })
 export class ReportDataTableComponent {
   table = input.required<ReportTable>();
+  /** The period and branches a linked cell carries to the report it opens. */
+  linkContext = input<ReportLinkContext>({});
 
   /** Emits when the user sorts (report-view may push it to the URL/backend). */
   sortChange = output<{ key: string; direction: 'asc' | 'desc' } | null>();
@@ -57,6 +61,11 @@ export class ReportDataTableComponent {
       this.sortDir.set('asc');
     }
     this.sortChange.emit({ key: col.key, direction: this.sortDir() });
+  }
+
+  /** Where a cell links to, when its column has a link and the row has something to open. */
+  linkOf(row: Record<string, any>, col: ReportColumn): ReportCellLink | null {
+    return col.link && row[col.key] ? col.link(row, this.linkContext()) : null;
   }
 
   cellValue(row: Record<string, any>, col: ReportColumn): any {

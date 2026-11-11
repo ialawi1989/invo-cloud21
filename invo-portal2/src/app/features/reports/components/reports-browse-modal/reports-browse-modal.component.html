@@ -1,0 +1,59 @@
+<div class="px-6 pt-5 pb-3 border-b border-slate-100 shrink-0">
+  <h2 class="flex items-center gap-2.5 text-lg font-semibold text-slate-900">
+    {{ 'REPORTS.BROWSE.TITLE' | translate }}
+    <span class="px-2.5 py-0.5 rounded-full bg-brand-50 text-brand-700 text-xs font-bold tabular-nums" [attr.title]="'REPORTS.BROWSE.TOTAL' | translate: { count: totalCount() }">{{ totalCount() }}</span>
+  </h2>
+
+  <div class="relative mt-3">
+    <svg class="absolute start-3 top-1/2 -translate-y-1/2 text-slate-400" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" class="w-full ps-9 pe-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-brand-500"
+           [value]="search()" (input)="search.set($any($event.target).value)" [placeholder]="'REPORTS.CATALOG.SEARCH' | translate" />
+  </div>
+
+  <button type="button" class="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border transition-colors"
+          [class.bg-brand-50]="onlyFavorites()" [class.border-brand-500]="onlyFavorites()" [class.text-brand-700]="onlyFavorites()"
+          [class.border-slate-300]="!onlyFavorites()" [class.text-slate-600]="!onlyFavorites()"
+          [attr.aria-pressed]="onlyFavorites()" (click)="onlyFavorites.set(!onlyFavorites())">
+    <svg width="13" height="13" viewBox="0 0 24 24" [attr.fill]="onlyFavorites() ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    {{ 'REPORTS.BROWSE.FAVORITES_ONLY' | translate }}
+  </button>
+</div>
+
+<div #listBox class="px-3 pb-3 flex-1 min-h-0 overflow-y-auto">
+  @for (g of groups(); track g.key) {
+    <div class="mb-2">
+      <!-- The group title is a band that stays at the top while its reports scroll under it. -->
+      <div class="sticky top-0 z-10 -mx-3 px-6 py-2.5 mb-1 flex items-center gap-2.5 text-slate-800"
+           [style.background]="'color-mix(in srgb, ' + accent(g.key) + ' 11%, #fff)'">
+        <span class="w-6 h-6 rounded-md text-white inline-flex items-center justify-center [&>svg]:w-3.5 [&>svg]:h-3.5"
+              [style.background]="accent(g.key)" [innerHTML]="icon(g.icon)"></span>
+        <span class="flex-1 text-xs font-bold uppercase tracking-wider">{{ g.titleKey | translate }}</span>
+        <span class="px-2 py-0.5 rounded-full bg-white text-[11px] font-semibold" [style.color]="accent(g.key)">{{ g.reports.length }}</span>
+      </div>
+      @for (r of g.reports; track r.slug) {
+        <div role="button" tabindex="0"
+             class="flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-50"
+             [class.bg-brand-50]="r.slug === data.currentSlug" [attr.data-current]="r.slug === data.currentSlug ? '' : null"
+             (click)="pick(r.slug)" (keydown.enter)="pick(r.slug)" (keydown.space)="$event.preventDefault(); pick(r.slug)">
+          <span class="flex-1 text-sm text-slate-800 truncate" [class.font-semibold]="r.slug === data.currentSlug">{{ r.titleKey | translate }}</span>
+          <button type="button" class="p-1 rounded text-slate-300 hover:text-amber-500" [class.text-amber-500]="isFavorite(r.slug)"
+                  (click)="toggleFavorite(r.slug, $event)" [attr.aria-label]="'REPORTS.VIEW.FAVORITE' | translate">
+            <svg width="16" height="16" viewBox="0 0 24 24" [attr.fill]="isFavorite(r.slug) ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </button>
+          @if (r.slug === data.currentSlug) {
+            <svg class="text-brand-600" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          }
+        </div>
+      }
+    </div>
+  } @empty {
+    <div class="py-12 text-center text-sm text-slate-500">{{ 'REPORTS.CATALOG.NO_RESULTS' | translate }}</div>
+  }
+</div>
+
+<div class="flex items-center justify-between px-6 py-3 border-t border-slate-100 bg-slate-50/50 shrink-0">
+  <span class="text-xs text-slate-500">{{ 'REPORTS.BROWSE.TOTAL' | translate: { count: totalCount() } }}</span>
+  <button type="button" (click)="close()" class="px-4 py-1.5 text-sm font-medium text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50">
+    {{ 'COMMON.CLOSE' | translate }}
+  </button>
+</div>

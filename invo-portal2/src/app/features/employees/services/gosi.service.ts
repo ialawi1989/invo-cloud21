@@ -4,9 +4,11 @@ import {
   GosiCatalog,
   GosiSettingsInput,
   GosiSettingsRow,
+  GosiCountryRule,
+  GosiExemption,
+  GosiSuggestion,
   GosiTier3PolicyInput,
-  GosiTier3PolicyRow,
-} from './gosi.types';
+  GosiTier3PolicyRow, RetirementAges, RetirementAgesInput } from './gosi.types';
 
 /**
  * GosiService
@@ -54,6 +56,64 @@ export class GosiService {
 
   /** Every stored effective period, in whatever order the server returns —
    *  callers sort by `effectiveFrom` descending for display. */
+  /** Suggested, UNCONFIRMED values for the company's country, or null. */
+  async suggestions(): Promise<GosiSuggestion | null> {
+    const res = await this.api.request<any>(this.api.get('employee/gosiSuggestions'));
+    if (res?.success === false) return null;
+    return (res?.data?.suggestion as GosiSuggestion | null) ?? null;
+  }
+
+  /** Waiver windows for one employee, newest first. */
+  async exemptions(employeeId: string): Promise<GosiExemption[]> {
+    const res = await this.api.request<any>(this.api.get('employee/gosiExemptions/' + encodeURIComponent(employeeId)));
+    if (res?.success === false) throw new Error(res?.msg || 'Could not load the exemptions');
+    return Array.isArray(res?.data) ? (res.data as GosiExemption[]) : [];
+  }
+
+  async saveExemption(input: { employeeId: string; fromDate: string; toDate: string | null; scope: string; reason: string }): Promise<GosiExemption> {
+    const res = await this.api.request<any>(this.api.post('employee/saveGosiExemption', input));
+    if (res?.success === false) throw new Error(res?.msg || 'Could not save the exemption');
+    return res.data as GosiExemption;
+  }
+
+  async deleteExemption(id: string): Promise<void> {
+    const res = await this.api.request<any>(this.api.post('employee/deleteGosiExemption', { id }));
+    if (res?.success === false) throw new Error(res?.msg || 'Could not delete the exemption');
+  }
+
+  /** INVO-maintained rules for the company country (every status; payroll applies verified ones only). */
+  async countryRules(): Promise<GosiCountryRule[]> {
+    const res = await this.api.request<any>(this.api.get('employee/gosiCountryRules'));
+    if (res?.success === false) return [];
+    return Array.isArray(res?.data?.rules) ? (res.data.rules as GosiCountryRule[]) : [];
+  }
+
+  async retirementAges(): Promise<RetirementAges | null> {
+    const res = await this.api.request<any>(this.api.get('employee/retirementAges'));
+    if (res?.success === false) return null;
+    const d = res?.data;
+    if (!d) return null;
+    return {
+      country: String(d.country ?? ''),
+      nationalAge: num(d.nationalAge),
+      expatriateAge: num(d.expatriateAge),
+      source: String(d.source ?? ''),
+      own: d.own ? { nationalAge: num(d.own.nationalAge), expatriateAge: num(d.own.expatriateAge) } : null,
+      verify: d.verify !== false,
+      note: String(d.note ?? ''),
+    };
+  }
+
+  async saveRetirementAges(input: RetirementAgesInput): Promise<void> {
+    const res = await this.api.request<any>(this.api.post('employee/saveRetirementAges', input));
+    if (res?.success === false) throw new Error(res?.msg || 'Could not save the retirement ages');
+  }
+
+  async resetRetirementAges(): Promise<void> {
+    const res = await this.api.request<any>(this.api.post('employee/saveRetirementAges', { reset: true }));
+    if (res?.success === false) throw new Error(res?.msg || 'Could not reset the retirement ages');
+  }
+
   async list(): Promise<GosiSettingsRow[]> {
     const res = await this.api.request<any>(this.api.get('employee/gosiSettings'));
     if (res?.success === false) throw new Error(res?.msg || 'Could not load GOSI settings');
@@ -69,6 +129,12 @@ export class GosiService {
     );
     if (res?.success === false) throw new Error(res?.msg || 'Could not save GOSI settings');
     return mapSettingsRow(res?.data ?? {});
+  }
+
+  /** Removes one rate period (company-scoped on the server). */
+  async delete(id: string): Promise<void> {
+    const res = await this.api.request<any>(this.api.post('employee/deleteGosiSettings', { id }));
+    if (res?.success === false) throw new Error(res?.msg || 'Could not delete the GOSI period');
   }
 
   async listTier3Policy(): Promise<GosiTier3PolicyRow[]> {
@@ -115,9 +181,17 @@ function mapSettingsRow(r: any): GosiSettingsRow {
     tier2EmployerRateAnnualIncrementPercent: num(r?.tier2EmployerRateAnnualIncrementPercent),
     tier2EmployerRateEscalationEndYear: num(r?.tier2EmployerRateEscalationEndYear),
 
-    wageBasis: r?.wageBasis === 'basic' || r?.wageBasis === 'basic_plus_allowances' ? r.wageBasis : null,
+    tier3EmployeeRatePercent: num(r?.tier3EmployeeRatePercent),
+    tier3EmployerRatePercent: num(r?.tier3EmployerRatePercent),
+
+    wageBasis: r?.wageBasis === 'basic' || r?.wageBasis === 'basic_plus_allowances'
+      || r?.wageBasis === 'basic_plus_housing' ? r.wageBasis : null,
     wageFloor: num(r?.wageFloor),
+    tier1WageFloor: num(r?.tier1WageFloor),
+    tier2WageFloor: num(r?.tier2WageFloor),
+    tier3WageFloor: num(r?.tier3WageFloor),
     wageCeiling: num(r?.wageCeiling),
+    reduceForAbsence: r?.reduceForAbsence === true,
 
     reviewIntervalMonths: num(r?.reviewIntervalMonths),
 

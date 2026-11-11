@@ -1,10 +1,5 @@
 @if (isEmpty()) {
-  <div class="rt-empty">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="44" height="44">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18M7 14l4-4 4 4 5-5"/>
-    </svg>
-    <p>{{ 'REPORTS.TABLE.NO_DATA' | translate }}</p>
-  </div>
+  <app-report-empty />
 } @else {
   <div class="rt-scroll">
     <table class="rt-table">
@@ -15,7 +10,7 @@
                 [class.rt-center]="col.align === 'center'"
                 (click)="onSort(col)">
               <span class="rt-th">
-                {{ col.label }}
+                {{ col.label | translate }}
                 <span class="rt-sort" [class.active]="sortKey() === col.key">
                   @if (sortKey() === col.key && sortDir() === 'asc') {
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
@@ -40,7 +35,10 @@
                   @case ('number') { {{ (cellValue(row, col) || 0) | number: '1.0-0' }} }
                   @case ('percent') { {{ (cellValue(row, col) || 0) | number: '1.0-2' }}% }
                   @case ('date') { {{ cellValue(row, col) | date: 'mediumDate' }} }
-                  @default { {{ cellValue(row, col) }} }
+                  @default {
+                    @if (linkOf(row, col); as l) { <a class="rt-link" [routerLink]="l.path" [queryParams]="l.query" target="_blank" rel="noopener">{{ cellValue(row, col) }}</a> }
+                    @else { {{ cellValue(row, col) }} }
+                  }
                 }
               </td>
             }

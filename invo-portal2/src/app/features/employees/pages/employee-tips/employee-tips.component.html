@@ -1,0 +1,153 @@
+<div class="ep-page">
+  <header class="ep-header">
+    <div class="ep-header__titles">
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="ep-title">{{ 'TIPS.TITLE' | translate }}</h1>
+    </div>
+  </header>
+
+  @if (canDistribute) {
+    <section class="ep-card">
+      <header class="ep-card__head">
+        <div style="flex:1">
+          <h2 class="ep-card__title">{{ 'TIPS.DISTRIBUTE_TITLE' | translate }}</h2>
+          <p class="ep-card__sub">{{ 'TIPS.DISTRIBUTE_HINT' | translate }}</p>
+        </div>
+      </header>
+      <div class="ep-card__body">
+        <div class="ep-grid">
+          <div class="ep-field">
+            <label class="ep-label">{{ 'TIPS.BRANCH' | translate }}</label>
+            <app-search-dropdown [items]="branches" [displayWith]="displayName" [compareWith]="sameId" [value]="branch"
+              [clearable]="false" (valueChange)="setBranch($any($event))"/>
+          </div>
+          <div class="ep-field">
+            <label class="ep-label">{{ 'TIPS.FROM_DATE' | translate }}</label>
+            <app-date-field [value]="fromDate" (changed)="setFrom($event)"/>
+          </div>
+          <div class="ep-field">
+            <label class="ep-label">{{ 'TIPS.TO_DATE' | translate }}</label>
+            <app-date-field [value]="toDate" (changed)="setTo($event)"/>
+          </div>
+          <div class="ep-field" style="justify-content:flex-end">
+            <button type="button" class="ep-btn" [disabled]="loadingPool" (click)="loadPool()">{{ 'TIPS.LOAD' | translate }}</button>
+          </div>
+        </div>
+
+        @if (poolLoaded) {
+          <div class="ep-table-wrap" style="margin-top:16px">
+            <table class="ep-table">
+              <thead>
+                <tr>
+                  <th>{{ 'TIPS.TIP_DATE' | translate }}</th>
+                  <th>{{ 'TIPS.INVOICE' | translate }}</th>
+                  <th class="num">{{ 'TIPS.AMOUNT' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of poolRows; track $index) {
+                  <tr>
+                    <td>{{ row.tipDate | date: 'yyyy-MM-dd' }}</td>
+                    <td>{{ row.invoiceNumber }}</td>
+                    <td class="num" [class.neg]="row.amount < 0">{{ row.amount | mycurrency }}</td>
+                  </tr>
+                } @empty {
+                  <tr><td colspan="3" class="empty">{{ 'TIPS.NO_POOL_TIPS' | translate }}</td></tr>
+                }
+              </tbody>
+              <tfoot>
+                <tr>
+                  <th colspan="2" class="num">{{ 'TIPS.TOTAL' | translate }}</th>
+                  <th class="num" [class.neg]="poolTotal < 0">{{ poolTotal | mycurrency }}</th>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+          @if (poolTotal < 0) { <div class="ep-note" style="margin-top:12px">{{ 'TIPS.NEGATIVE_TOTAL_HINT' | translate }}</div> }
+
+          @if (poolRows.length) {
+            <div class="ep-grid" style="margin-top:16px">
+              <div class="ep-field">
+                <label class="ep-label">{{ 'TIPS.EMPLOYEES' | translate }}</label>
+                @for (k of [pickerKey]; track k) {
+                  <app-search-dropdown [items]="available" [displayWith]="displayName" [compareWith]="sameId" [value]="null"
+                    [clearable]="false" [placeholder]="'TIPS.EMPLOYEES' | translate" (valueChange)="pick($any($event))"/>
+                }
+                <div class="ep-chips">
+                  @for (e of picked; track e.id; let i = $index) {
+                    <button type="button" class="ep-chip" (click)="unpick(e)" [title]="'COMMON.REMOVE' | translate">{{ i + 1 }}. {{ e.name }} ✕</button>
+                  }
+                </div>
+                <p class="ep-hint">{{ 'TIPS.EMPLOYEE_ORDER_HINT' | translate }}</p>
+              </div>
+              <div class="ep-field">
+                <label class="ep-label">{{ 'TIPS.DISTRIBUTION_DATE' | translate }}</label>
+                <app-date-field [value]="distributionDate" (changed)="distributionDate = $event"/>
+              </div>
+            </div>
+
+            @if (preview.length) {
+              <div style="margin-top:16px">
+                <strong>{{ 'TIPS.PREVIEW' | translate }}</strong>
+                <p class="ep-hint">{{ 'TIPS.PREVIEW_HINT' | translate }}</p>
+                <div class="ep-chips">
+                  @for (s of preview; track $index) {
+                    <span class="ep-chip">{{ $index + 1 }}. {{ s.name }} · {{ s.amount | mycurrency }}</span>
+                  }
+                </div>
+              </div>
+            }
+
+            <div style="display:flex;justify-content:flex-end;margin-top:16px">
+              <button type="button" class="ep-btn ep-btn--primary" [disabled]="distributing" (click)="distribute()">{{ 'TIPS.DISTRIBUTE' | translate }}</button>
+            </div>
+          }
+        }
+      </div>
+    </section>
+  }
+
+  <section class="ep-card">
+    <header class="ep-card__head"><h2 class="ep-card__title">{{ 'TIPS.HISTORY' | translate }}</h2></header>
+    <div class="ep-card__body ep-table-wrap">
+      <table class="ep-table">
+        <thead>
+          <tr>
+            <th>{{ 'TIPS.DISTRIBUTION_DATE' | translate }}</th>
+            <th>{{ 'TIPS.BRANCH' | translate }}</th>
+            <th>{{ 'TIPS.PERIOD' | translate }}</th>
+            <th>{{ 'TIPS.EMPLOYEES' | translate }}</th>
+            <th class="num">{{ 'TIPS.TOTAL' | translate }}</th>
+            @if (canUndo) { <th></th> }
+          </tr>
+        </thead>
+        <tbody>
+          @for (d of history; track d.id) {
+            <tr>
+              <td>{{ d.distributionDate | date: 'yyyy-MM-dd' }}</td>
+              <td>{{ d.branchName }}</td>
+              <td>{{ d.fromDate | date: 'yyyy-MM-dd' }} – {{ d.toDate | date: 'yyyy-MM-dd' }}</td>
+              <td>@for (id of d.employeeIds; track id; let last = $last) { {{ employeeName(id) }}{{ last ? '' : ', ' }} }</td>
+              <td class="num" [class.neg]="d.totalAmount < 0">{{ d.totalAmount | mycurrency }}</td>
+              @if (canUndo) {
+                <td class="num"><button type="button" class="ep-btn ep-btn--danger" (click)="undo(d)">{{ 'TIPS.UNDO' | translate }}</button></td>
+              }
+            </tr>
+          } @empty {
+            <tr><td [attr.colspan]="canUndo ? 6 : 5" class="empty">{{ 'TIPS.NO_HISTORY' | translate }}</td></tr>
+          }
+        </tbody>
+      </table>
+
+      @if (historyPageCount > 1) {
+        <div class="ep-pager">
+          <button type="button" class="ep-btn" [disabled]="historyPage <= 1" (click)="prevHistoryPage()">‹</button>
+          <span>{{ historyPage }} / {{ historyPageCount }}</span>
+          <button type="button" class="ep-btn" [disabled]="historyPage >= historyPageCount" (click)="nextHistoryPage()">›</button>
+        </div>
+      }
+    </div>
+  </section>
+
+  <app-loading-overlay [show]="distributing" [message]="'COMMON.SAVING' | translate"/>
+</div>

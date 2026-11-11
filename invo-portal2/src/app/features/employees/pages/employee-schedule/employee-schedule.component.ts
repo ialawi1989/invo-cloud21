@@ -602,6 +602,11 @@ export class EmployeeScheduleComponent implements OnInit {
     );
     const result = await ref.afterClosed();
     if (!result) return;
+    await this.saveSingleDay(result);
+  }
+
+  /** Persist a one-day change (removed recurring shifts + new one-off shifts). */
+  private async saveSingleDay(result: ShiftFormResult): Promise<void> {
     try {
       if (result.exceptions.length) {
         await this.employeeService.saveShiftExceptions({
@@ -628,7 +633,7 @@ export class EmployeeScheduleComponent implements OnInit {
     }
   }
 
-  async openRegular(employee: ScheduleEmployee): Promise<void> {
+  async openRegular(employee: ScheduleEmployee, mode: 'regular' | 'single' = 'regular', singleDate?: string): Promise<void> {
     const ref = this.modal.open<RegularShiftFormComponent, RegularShiftFormData, RegularShiftFormResult>(
       RegularShiftFormComponent,
       {
@@ -638,11 +643,18 @@ export class EmployeeScheduleComponent implements OnInit {
           employee,
           date: this.currentWeek()[0] ?? '',
           branchId: this.branchId() ?? '',
+          mode,
+          singleDate,
+          week: this.currentWeek(),
         },
       },
     );
     const result = await ref.afterClosed();
     if (!result) return;
+    if (result.kind === 'single') {
+      await this.saveSingleDay(result.day);
+      return;
+    }
     try {
       await this.employeeService.saveEmployeeSchedule(result.schedule);
       await this.afterSave();

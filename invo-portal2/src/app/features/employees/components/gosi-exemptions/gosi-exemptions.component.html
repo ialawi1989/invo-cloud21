@@ -1,0 +1,89 @@
+<section class="gex">
+  <header class="gex__head">
+    <div>
+      <h3 class="gex__title">{{ 'EMPLOYEES.GOSI.EXEMPT.TITLE' | translate }}</h3>
+      <p class="gex__sub">{{ 'EMPLOYEES.GOSI.EXEMPT.SUBTITLE' | translate }}</p>
+    </div>
+    @if (canEdit() && !adding()) {
+      <button type="button" class="btn btn-default btn-sm" (click)="openForm()">
+        {{ 'EMPLOYEES.GOSI.EXEMPT.ADD' | translate }}
+      </button>
+    }
+  </header>
+
+  @if (!rows().length && !adding()) {
+    <p class="gex__empty">{{ 'EMPLOYEES.GOSI.EXEMPT.EMPTY' | translate }}</p>
+  }
+
+  @if (rows().length) {
+    <ul class="gex__list">
+      @for (r of rows(); track r.id) {
+        <li class="gex__row">
+          <div class="gex__main">
+            <strong>
+              {{ r.fromDate }} →
+              {{ r.toDate ?? ('EMPLOYEES.GOSI.EXEMPT.OPEN_ENDED' | translate) }}
+            </strong>
+            <span class="gex__scope">{{ scopeLabelKey(r.scope) | translate }}</span>
+            <span class="gex__reason">{{ r.reason }}</span>
+          </div>
+          <div class="gex__side">
+            <span class="gex__chip gex__chip--{{ status(r) }}">
+              {{ 'EMPLOYEES.GOSI.EXEMPT.STATUS_' + status(r).toUpperCase() | translate }}
+            </span>
+            @if (canEdit()) {
+              <button type="button" class="btn btn-ghost btn-sm gex__del" (click)="remove(r)" [disabled]="saving()">
+                {{ 'EMPLOYEES.GOSI.RATES.DELETE' | translate }}
+              </button>
+            }
+          </div>
+        </li>
+      }
+    </ul>
+  }
+
+  @if (adding()) {
+    <form class="gex__form" [formGroup]="form" (ngSubmit)="save()">
+      <div class="gex__grid">
+        <div class="gex__field">
+          <label class="gex__label" for="gex-from">{{ 'EMPLOYEES.GOSI.EXEMPT.FROM' | translate }} <em>*</em></label>
+          <app-date-field id="gex-from" triggerClass="input" formControlName="fromDate"/>
+        </div>
+        <div class="gex__field">
+          <label class="gex__label" for="gex-to">{{ 'EMPLOYEES.GOSI.EXEMPT.TO' | translate }}</label>
+          <app-date-field id="gex-to" triggerClass="input" formControlName="toDate"/>
+          <span class="gex__hint">{{ 'EMPLOYEES.GOSI.EXEMPT.TO_HINT' | translate }}</span>
+        </div>
+        <div class="gex__field gex__field--wide">
+          <label class="gex__label" for="gex-scope">{{ 'EMPLOYEES.GOSI.EXEMPT.SCOPE' | translate }}</label>
+          <app-search-dropdown
+            id="gex-scope"
+            [items]="scopeOptions"
+            [displayWith]="scopeDisplay"
+            [compareWith]="scopeCompare"
+            [toValue]="scopeToValue"
+            [value]="selectedScope()"
+            [searchable]="false"
+            [clearable]="false"
+            (valueChange)="setScope($any($event))"/>
+        </div>
+        <div class="gex__field gex__field--wide">
+          <label class="gex__label" for="gex-reason">{{ 'EMPLOYEES.GOSI.EXEMPT.REASON' | translate }} <em>*</em></label>
+          <textarea id="gex-reason" class="input" rows="2" formControlName="reason"
+                    [placeholder]="'EMPLOYEES.GOSI.EXEMPT.REASON_PLACEHOLDER' | translate"></textarea>
+          @if (form.get('reason')?.touched && form.get('reason')?.invalid) {
+            <span class="gex__error">{{ 'EMPLOYEES.GOSI.EXEMPT.REASON_REQUIRED' | translate }}</span>
+          }
+        </div>
+      </div>
+      <div class="gex__actions">
+        <button type="button" class="btn btn-ghost btn-sm" (click)="cancel()" [disabled]="saving()">
+          {{ 'COMMON.CANCEL' | translate }}
+        </button>
+        <button type="submit" class="btn btn-primary btn-sm" [disabled]="saving()">
+          {{ 'COMMON.SAVE' | translate }}
+        </button>
+      </div>
+    </form>
+  }
+</section>

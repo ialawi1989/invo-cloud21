@@ -1,0 +1,69 @@
+@if (error()) {
+  <app-report-error [message]="error()" (retry)="load()" />
+} @else if (data(); as d) {
+  @if (d.rows.length === 0) {
+    <app-report-empty />
+  } @else {
+    <div class="ab" [class.stale]="loading()">
+      <div class="ab-bar">
+        <span class="ab-count">{{ d.count }} {{ 'REPORTS.ATTENDANCE.RECORDS' | translate }}</span>
+      </div>
+
+      @if (unauthorized().length) {
+        <app-report-note key="REPORTS.ATTENDANCE.UNAUTHORIZED_COUNT" type="danger" [params]="{ count: unauthorized().length }" />
+        <div class="ab-card">
+          <div class="ab-scroll">
+            <table class="ab-table">
+              <thead><tr>
+                <th>{{ 'REPORTS.ATTENDANCE.EMPLOYEE_NAME' | translate }}</th><th>{{ 'REPORTS.ATTENDANCE.BRANCH' | translate }}</th>
+                <th>{{ 'REPORTS.ATTENDANCE.PERIOD' | translate }}</th><th class="end">{{ 'REPORTS.ATTENDANCE.DAYS_COL' | translate }}</th>
+              </tr></thead>
+              <tbody>
+                @for (r of unauthorized(); track $index) {
+                  <tr>
+                    <td><a class="ab-link" [routerLink]="['/reports/view', 'attendance-detail']" [queryParams]="detailQuery(r)" target="_blank" rel="noopener">{{ r.employeeName }}</a></td>
+                    <td>{{ r.branchName }}</td>
+                    <td class="nowrap">@if (r.days > 1) { {{ r.startDate | date: 'dd/MM/yyyy' }} – {{ r.endDate | date: 'dd/MM/yyyy' }} } @else { {{ r.startDate | date: 'dd/MM/yyyy' }} }</td>
+                    <td class="end"><span class="ab-days bad">{{ r.days }}</span></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+
+      @if (authorized().length) {
+        <app-report-note key="REPORTS.ATTENDANCE.AUTHORIZED_COUNT" type="info" [params]="{ count: authorized().length }" />
+        <div class="ab-card">
+          <div class="ab-scroll">
+            <table class="ab-table">
+              <thead><tr>
+                <th>{{ 'REPORTS.ATTENDANCE.EMPLOYEE_NAME' | translate }}</th><th>{{ 'REPORTS.ATTENDANCE.BRANCH' | translate }}</th>
+                <th>{{ 'REPORTS.ATTENDANCE.PERIOD' | translate }}</th><th class="end">{{ 'REPORTS.ATTENDANCE.DAYS_COL' | translate }}</th>
+                <th>{{ 'REPORTS.ATTENDANCE.LEAVE_TYPE' | translate }}</th><th>{{ 'REPORTS.ATTENDANCE.LEAVE_DESCRIPTION' | translate }}</th>
+              </tr></thead>
+              <tbody>
+                @for (r of authorized(); track $index) {
+                  <tr>
+                    <td><a class="ab-link" [routerLink]="['/reports/view', 'attendance-detail']" [queryParams]="detailQuery(r)" target="_blank" rel="noopener">{{ r.employeeName }}</a></td>
+                    <td>{{ r.branchName }}</td>
+                    <td class="nowrap">@if (r.days > 1) { {{ r.startDate | date: 'dd/MM/yyyy' }} – {{ r.endDate | date: 'dd/MM/yyyy' }} } @else { {{ r.startDate | date: 'dd/MM/yyyy' }} }</td>
+                    <td class="end"><span class="ab-days info">{{ r.days }}</span></td>
+                    <td><span class="ab-type">{{ r.leaveTypeRaw || r.leaveType || '—' }}</span></td>
+                    <td>{{ r.leaveDescription || '—' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+
+      <app-pagination [page]="page()" [pageSize]="pageSize()" [count]="d.count" [pageCount]="d.pageCount" [pageSizeOptions]="sizes" [disabled]="loading()"
+        (pageChange)="goTo($event)" (pageSizeChange)="setPageSize($event)" />
+    </div>
+  }
+} @else {
+  <div class="ab-skel"></div>
+}

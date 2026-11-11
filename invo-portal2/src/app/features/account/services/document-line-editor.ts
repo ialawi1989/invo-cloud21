@@ -239,6 +239,8 @@ export class DocumentLineEditor {
 
   setCharge(surcharge: { id: string; amount: number; percentage: boolean; taxId?: string | null } | undefined): void {
     const inv = this.doc;
+    // reset the previous surcharge's tax so it doesn't carry over to the new selection
+    (inv as any).chargesTaxDetails = null;
     if (!surcharge) {
       inv.chargeId = null;
       inv.chargeAmount = 0;

@@ -13,6 +13,64 @@
   @if (!canView()) {
     <p class="gosi__empty">{{ 'EMPLOYEES.GOSI.NO_PERMISSION' | translate }}</p>
   } @else {
+    <!-- ═══ Country rules maintained by INVO — applied automatically ═══ -->
+    @if (countryRules().length) {
+      <section class="card">
+        <header class="card__head">
+          <h2 class="card__title">{{ 'EMPLOYEES.GOSI.COUNTRY.TITLE' | translate }}</h2>
+          <p class="card__sub">{{ 'EMPLOYEES.GOSI.COUNTRY.SUBTITLE' | translate }}</p>
+        </header>
+        <div class="card__body">
+          <ul class="gosi-country">
+            @for (r of countryRules(); track r.tier + r.effectiveFrom) {
+              <li class="gosi-country__row">
+                <div class="gosi-country__main">
+                  <strong>{{ tierLabelKey(r.tier) | translate }}</strong>
+                  @if (r.bands?.length) {
+                    <span class="gosi-country__rates">
+                      @for (b of r.bands; track b.from) {
+                        <span class="gosi-band">{{ b.from }}{{ b.to === null ? '+' : '–' + b.to }}:
+                          {{ b.employeeRatePercent }}% / {{ b.employerRatePercent }}%</span>
+                      }
+                      <span class="gosi-country__meta">{{ (r.bandMode === 'threshold' ? 'EMPLOYEES.GOSI.COUNTRY.BANDS_THRESHOLD' : 'EMPLOYEES.GOSI.COUNTRY.BANDS_MARGINAL') | translate }}</span>
+                    </span>
+                  } @else {
+                  <span class="gosi-country__rates">
+                    {{ 'EMPLOYEES.GOSI.COUNTRY.EMPLOYEE' | translate }} {{ r.employeeRatePercent ?? '—' }}%
+                    · {{ 'EMPLOYEES.GOSI.COUNTRY.EMPLOYER' | translate }} {{ r.employerRatePercent ?? '—' }}%
+                    @if (r.employerRateAnnualIncrementPercent) {
+                      · {{ 'EMPLOYEES.GOSI.COUNTRY.RISES' | translate: { step: r.employerRateAnnualIncrementPercent, year: r.employerRateEscalationEndYear } }}
+                    }
+                    @if (r.employerRateAfterYears !== null) {
+                      → {{ r.employerRateAfterPercent }}% {{ 'EMPLOYEES.GOSI.COUNTRY.AFTER_YEARS' | translate: { years: r.employerRateAfterYears } }}
+                    }
+                  </span>
+                  }
+                  <span class="gosi-country__meta">
+                    {{ 'EMPLOYEES.GOSI.COUNTRY.FROM' | translate }} {{ r.effectiveFrom }}@if (r.source) { · {{ r.source }} }
+                  </span>
+                  @if (r.status !== 'verified' && r.notes) { <span class="gosi-country__meta">{{ r.notes }}</span> }
+                </div>
+                <span class="gosi-chip" [class.gosi-chip--ok]="r.status === 'verified'">
+                  {{ (r.status === 'verified' ? 'EMPLOYEES.GOSI.COUNTRY.APPLIED' : 'EMPLOYEES.GOSI.COUNTRY.PENDING') | translate }}
+                </span>
+              </li>
+            }
+            @for (t of uncoveredTiers(); track t) {
+              <li class="gosi-country__row">
+                <div class="gosi-country__main">
+                  <strong>{{ tierLabelKey(t) | translate }}</strong>
+                  <span class="gosi-country__meta">{{ 'EMPLOYEES.GOSI.COUNTRY.NO_RULE' | translate }}</span>
+                </div>
+                <span class="gosi-chip">{{ 'EMPLOYEES.GOSI.COUNTRY.ENTER_BELOW' | translate }}</span>
+              </li>
+            }
+          </ul>
+          <p class="field-hint">{{ 'EMPLOYEES.GOSI.COUNTRY.OVERRIDE_HINT' | translate }}</p>
+        </div>
+      </section>
+    }
+
     <!-- ═══ Section A — contribution rates ═══ -->
     <section class="card">
       <header class="card__head">
@@ -38,6 +96,7 @@
                   <th>{{ 'EMPLOYEES.GOSI.RATES.WAGE_CEILING' | translate }}</th>
                   <th>{{ 'EMPLOYEES.GOSI.RATES.SOURCE' | translate }}</th>
                   <th>{{ 'EMPLOYEES.GOSI.RATES.NEXT_REVIEW' | translate }}</th>
+                  @if (canEdit()) { <th class="gosi-table__actions"></th> }
                 </tr>
               </thead>
               <tbody>
@@ -75,9 +134,11 @@
                     <td>
                       {{ p.wageBasis === 'basic_plus_allowances'
                           ? ('EMPLOYEES.GOSI.WAGE_BASIS_BASIC_PLUS_ALLOWANCES' | translate)
-                          : p.wageBasis === 'basic'
-                            ? ('EMPLOYEES.GOSI.WAGE_BASIS_BASIC' | translate)
-                            : '—' }}
+                          : p.wageBasis === 'basic_plus_housing'
+                            ? ('EMPLOYEES.GOSI.WAGE_BASIS_BASIC_PLUS_HOUSING' | translate)
+                            : p.wageBasis === 'basic'
+                              ? ('EMPLOYEES.GOSI.WAGE_BASIS_BASIC' | translate)
+                              : '—' }}
                     </td>
                     <td>{{ p.wageFloor ?? '—' }}</td>
                     <td>{{ p.wageCeiling ?? '—' }}</td>
@@ -89,6 +150,16 @@
                         —
                       }
                     </td>
+                    @if (canEdit()) {
+                      <td class="gosi-table__actions">
+                        <button type="button" class="btn btn-ghost btn-sm" (click)="editPeriod(p)" [disabled]="saving()">
+                          {{ 'EMPLOYEES.GOSI.RATES.EDIT' | translate }}
+                        </button>
+                        <button type="button" class="btn btn-ghost btn-sm gosi-btn-danger" (click)="deletePeriod(p)" [disabled]="saving()">
+                          {{ 'EMPLOYEES.GOSI.RATES.DELETE' | translate }}
+                        </button>
+                      </td>
+                    }
                   </tr>
                 }
               </tbody>
@@ -104,7 +175,27 @@
               {{ 'EMPLOYEES.GOSI.RATES.ADD_PERIOD' | translate }}
             </button>
           } @else {
-            <form class="gosi-form" [formGroup]="periodForm" (ngSubmit)="saveRatePeriod()">
+            <form class="gosi-form" [formGroup]="periodForm" (ngSubmit)="save()">
+              @if (editingPeriod(); as ep) {
+                <div class="gosi-editing" role="note">
+                  <strong>{{ 'EMPLOYEES.GOSI.RATES.EDITING' | translate: { date: ep.effectiveFrom } }}</strong>
+                  <span>{{ 'EMPLOYEES.GOSI.RATES.EDITING_HINT' | translate: { date: ep.effectiveFrom } }}</span>
+                </div>
+              } @else if (suggestion(); as sg) {
+                <div class="gosi-suggest" role="note">
+                  <p class="gosi-suggest__text">
+                    <strong>{{ 'EMPLOYEES.GOSI.SUGGEST.TITLE' | translate }}</strong>
+                    {{ 'EMPLOYEES.GOSI.SUGGEST.BODY' | translate: { authority: sg.authority } }}
+                  </p>
+                  <p class="gosi-suggest__note">{{ sg.note }}</p>
+                  <button type="button" class="btn btn-default btn-sm" (click)="applySuggestion()">
+                    {{ 'EMPLOYEES.GOSI.SUGGEST.APPLY' | translate }}
+                  </button>
+                  @if (suggestionApplied()) {
+                    <p class="gosi-suggest__applied">{{ 'EMPLOYEES.GOSI.SUGGEST.APPLIED' | translate }}</p>
+                  }
+                </div>
+              }
               <div class="field-row">
                 <label class="field-label" for="gosi-effective-from">
                   {{ 'EMPLOYEES.GOSI.RATES.EFFECTIVE_FROM' | translate }} <em>*</em>
@@ -117,31 +208,31 @@
                   <legend>{{ 'EMPLOYEES.GOSI.RATES.TIER1_LEGEND' | translate }}</legend>
 
                   <div class="gosi-tier__row">
-                    <label class="field-label" for="t1-emp">{{ 'EMPLOYEES.GOSI.RATES.EMPLOYEE_RATE' | translate }}</label>
-                    <input id="t1-emp" type="number" class="input input--narrow" min="0" max="100" step="0.01"
-                           formControlName="tier1EmployeeRatePercent" />
-                    <label class="field-label" for="t1-emr">{{ 'EMPLOYEES.GOSI.RATES.EMPLOYER_RATE' | translate }}</label>
-                    <input id="t1-emr" type="number" class="input input--narrow" min="0" max="100" step="0.01"
-                           formControlName="tier1EmployerRatePercent" />
+                    <div class="gf"><label class="field-label" for="t1-emp">{{ 'EMPLOYEES.GOSI.RATES.EMPLOYEE_RATE' | translate }}</label>
+                    <span class="gf__ctl gf__ctl--pct"><input id="t1-emp" type="number" class="input" min="0" max="100" step="0.01"
+                           formControlName="tier1EmployeeRatePercent" /><span class="gf__sfx">%</span></span></div>
+                    <div class="gf"><label class="field-label" for="t1-emr">{{ 'EMPLOYEES.GOSI.RATES.EMPLOYER_RATE' | translate }}</label>
+                    <span class="gf__ctl gf__ctl--pct"><input id="t1-emr" type="number" class="input" min="0" max="100" step="0.01"
+                           formControlName="tier1EmployerRatePercent" /><span class="gf__sfx">%</span></span></div>
                   </div>
 
                   <p class="field-hint">{{ 'EMPLOYEES.GOSI.RATES.ESCALATION_HINT' | translate }}</p>
 
                   <div class="gosi-tier__row">
-                    <label class="field-label" for="t1-emp-inc">{{ 'EMPLOYEES.GOSI.RATES.EMPLOYEE_INCREMENT' | translate }}</label>
-                    <input id="t1-emp-inc" type="number" class="input input--narrow" min="0" max="100" step="0.01"
-                           formControlName="tier1EmployeeRateAnnualIncrementPercent" />
-                    <label class="field-label" for="t1-emp-end">{{ 'EMPLOYEES.GOSI.RATES.ESCALATION_END_YEAR' | translate }}</label>
-                    <input id="t1-emp-end" type="number" class="input input--narrow" min="2000" max="2200" step="1"
-                           formControlName="tier1EmployeeRateEscalationEndYear" />
+                    <div class="gf"><label class="field-label" for="t1-emp-inc">{{ 'EMPLOYEES.GOSI.RATES.EMPLOYEE_INCREMENT' | translate }}</label>
+                    <span class="gf__ctl gf__ctl--pct"><input id="t1-emp-inc" type="number" class="input" min="0" max="100" step="0.01"
+                           formControlName="tier1EmployeeRateAnnualIncrementPercent" /><span class="gf__sfx">%</span></span></div>
+                    <div class="gf"><label class="field-label" for="t1-emp-end">{{ 'EMPLOYEES.GOSI.RATES.ESCALATION_END_YEAR' | translate }}</label>
+                    <input id="t1-emp-end" type="number" class="input" min="2000" max="2200" step="1"
+                           formControlName="tier1EmployeeRateEscalationEndYear" /></div>
                   </div>
                   <div class="gosi-tier__row">
-                    <label class="field-label" for="t1-emr-inc">{{ 'EMPLOYEES.GOSI.RATES.EMPLOYER_INCREMENT' | translate }}</label>
-                    <input id="t1-emr-inc" type="number" class="input input--narrow" min="0" max="100" step="0.01"
-                           formControlName="tier1EmployerRateAnnualIncrementPercent" />
-                    <label class="field-label" for="t1-emr-end">{{ 'EMPLOYEES.GOSI.RATES.ESCALATION_END_YEAR' | translate }}</label>
-                    <input id="t1-emr-end" type="number" class="input input--narrow" min="2000" max="2200" step="1"
-                           formControlName="tier1EmployerRateEscalationEndYear" />
+                    <div class="gf"><label class="field-label" for="t1-emr-inc">{{ 'EMPLOYEES.GOSI.RATES.EMPLOYER_INCREMENT' | translate }}</label>
+                    <span class="gf__ctl gf__ctl--pct"><input id="t1-emr-inc" type="number" class="input" min="0" max="100" step="0.01"
+                           formControlName="tier1EmployerRateAnnualIncrementPercent" /><span class="gf__sfx">%</span></span></div>
+                    <div class="gf"><label class="field-label" for="t1-emr-end">{{ 'EMPLOYEES.GOSI.RATES.ESCALATION_END_YEAR' | translate }}</label>
+                    <input id="t1-emr-end" type="number" class="input" min="2000" max="2200" step="1"
+                           formControlName="tier1EmployerRateEscalationEndYear" /></div>
                   </div>
                 </fieldset>
 
@@ -149,31 +240,44 @@
                   <legend>{{ 'EMPLOYEES.GOSI.RATES.TIER2_LEGEND' | translate }}</legend>
 
                   <div class="gosi-tier__row">
-                    <label class="field-label" for="t2-emp">{{ 'EMPLOYEES.GOSI.RATES.EMPLOYEE_RATE' | translate }}</label>
-                    <input id="t2-emp" type="number" class="input input--narrow" min="0" max="100" step="0.01"
-                           formControlName="tier2EmployeeRatePercent" />
-                    <label class="field-label" for="t2-emr">{{ 'EMPLOYEES.GOSI.RATES.EMPLOYER_RATE' | translate }}</label>
-                    <input id="t2-emr" type="number" class="input input--narrow" min="0" max="100" step="0.01"
-                           formControlName="tier2EmployerRatePercent" />
+                    <div class="gf"><label class="field-label" for="t2-emp">{{ 'EMPLOYEES.GOSI.RATES.EMPLOYEE_RATE' | translate }}</label>
+                    <span class="gf__ctl gf__ctl--pct"><input id="t2-emp" type="number" class="input" min="0" max="100" step="0.01"
+                           formControlName="tier2EmployeeRatePercent" /><span class="gf__sfx">%</span></span></div>
+                    <div class="gf"><label class="field-label" for="t2-emr">{{ 'EMPLOYEES.GOSI.RATES.EMPLOYER_RATE' | translate }}</label>
+                    <span class="gf__ctl gf__ctl--pct"><input id="t2-emr" type="number" class="input" min="0" max="100" step="0.01"
+                           formControlName="tier2EmployerRatePercent" /><span class="gf__sfx">%</span></span></div>
                   </div>
 
                   <p class="field-hint">{{ 'EMPLOYEES.GOSI.RATES.ESCALATION_HINT' | translate }}</p>
 
                   <div class="gosi-tier__row">
-                    <label class="field-label" for="t2-emp-inc">{{ 'EMPLOYEES.GOSI.RATES.EMPLOYEE_INCREMENT' | translate }}</label>
-                    <input id="t2-emp-inc" type="number" class="input input--narrow" min="0" max="100" step="0.01"
-                           formControlName="tier2EmployeeRateAnnualIncrementPercent" />
-                    <label class="field-label" for="t2-emp-end">{{ 'EMPLOYEES.GOSI.RATES.ESCALATION_END_YEAR' | translate }}</label>
-                    <input id="t2-emp-end" type="number" class="input input--narrow" min="2000" max="2200" step="1"
-                           formControlName="tier2EmployeeRateEscalationEndYear" />
+                    <div class="gf"><label class="field-label" for="t2-emp-inc">{{ 'EMPLOYEES.GOSI.RATES.EMPLOYEE_INCREMENT' | translate }}</label>
+                    <span class="gf__ctl gf__ctl--pct"><input id="t2-emp-inc" type="number" class="input" min="0" max="100" step="0.01"
+                           formControlName="tier2EmployeeRateAnnualIncrementPercent" /><span class="gf__sfx">%</span></span></div>
+                    <div class="gf"><label class="field-label" for="t2-emp-end">{{ 'EMPLOYEES.GOSI.RATES.ESCALATION_END_YEAR' | translate }}</label>
+                    <input id="t2-emp-end" type="number" class="input" min="2000" max="2200" step="1"
+                           formControlName="tier2EmployeeRateEscalationEndYear" /></div>
                   </div>
                   <div class="gosi-tier__row">
-                    <label class="field-label" for="t2-emr-inc">{{ 'EMPLOYEES.GOSI.RATES.EMPLOYER_INCREMENT' | translate }}</label>
-                    <input id="t2-emr-inc" type="number" class="input input--narrow" min="0" max="100" step="0.01"
-                           formControlName="tier2EmployerRateAnnualIncrementPercent" />
-                    <label class="field-label" for="t2-emr-end">{{ 'EMPLOYEES.GOSI.RATES.ESCALATION_END_YEAR' | translate }}</label>
-                    <input id="t2-emr-end" type="number" class="input input--narrow" min="2000" max="2200" step="1"
-                           formControlName="tier2EmployerRateEscalationEndYear" />
+                    <div class="gf"><label class="field-label" for="t2-emr-inc">{{ 'EMPLOYEES.GOSI.RATES.EMPLOYER_INCREMENT' | translate }}</label>
+                    <span class="gf__ctl gf__ctl--pct"><input id="t2-emr-inc" type="number" class="input" min="0" max="100" step="0.01"
+                           formControlName="tier2EmployerRateAnnualIncrementPercent" /><span class="gf__sfx">%</span></span></div>
+                    <div class="gf"><label class="field-label" for="t2-emr-end">{{ 'EMPLOYEES.GOSI.RATES.ESCALATION_END_YEAR' | translate }}</label>
+                    <input id="t2-emr-end" type="number" class="input" min="2000" max="2200" step="1"
+                           formControlName="tier2EmployerRateEscalationEndYear" /></div>
+                  </div>
+                </fieldset>
+
+                <fieldset class="gosi-tier">
+                  <legend>{{ 'EMPLOYEES.GOSI.RATES.TIER3_LEGEND' | translate }}</legend>
+                  <p class="field-hint">{{ 'EMPLOYEES.GOSI.RATES.TIER3_HINT' | translate }}</p>
+                  <div class="gosi-tier__row">
+                    <div class="gf"><label class="field-label" for="t3-emp">{{ 'EMPLOYEES.GOSI.RATES.EMPLOYEE_RATE' | translate }}</label>
+                    <span class="gf__ctl gf__ctl--pct"><input id="t3-emp" type="number" class="input" min="0" max="100" step="0.01"
+                           formControlName="tier3EmployeeRatePercent" /><span class="gf__sfx">%</span></span></div>
+                    <div class="gf"><label class="field-label" for="t3-emr">{{ 'EMPLOYEES.GOSI.RATES.EMPLOYER_RATE' | translate }}</label>
+                    <span class="gf__ctl gf__ctl--pct"><input id="t3-emr" type="number" class="input" min="0" max="100" step="0.01"
+                           formControlName="tier3EmployerRatePercent" /><span class="gf__sfx">%</span></span></div>
                   </div>
                 </fieldset>
               </div>
@@ -194,12 +298,32 @@
               </div>
 
               <div class="gosi-tier__row">
-                <label class="field-label" for="gosi-wage-floor">{{ 'EMPLOYEES.GOSI.RATES.WAGE_FLOOR' | translate }}</label>
-                <input id="gosi-wage-floor" type="number" class="input input--narrow" min="0" step="0.001"
-                       formControlName="wageFloor" />
-                <label class="field-label" for="gosi-wage-ceiling">{{ 'EMPLOYEES.GOSI.RATES.WAGE_CEILING' | translate }}</label>
-                <input id="gosi-wage-ceiling" type="number" class="input input--narrow" min="0" step="0.001"
-                       formControlName="wageCeiling" />
+                <div class="gf"><label class="field-label" for="gosi-wage-floor">{{ 'EMPLOYEES.GOSI.RATES.WAGE_FLOOR' | translate }}</label>
+                <input id="gosi-wage-floor" type="number" class="input" min="0" step="0.001"
+                       formControlName="wageFloor" /></div>
+                <div class="gf"><label class="field-label" for="gosi-wage-ceiling">{{ 'EMPLOYEES.GOSI.RATES.WAGE_CEILING' | translate }}</label>
+                <input id="gosi-wage-ceiling" type="number" class="input" min="0" step="0.001"
+                       formControlName="wageCeiling" /></div>
+              </div>
+
+              <!-- Each tier's own minimum wins over the general one, so an expatriate's
+                   base is never lifted to a national minimum. Empty = use the general floor. -->
+              <div class="gosi-tier__row">
+                <div class="gf"><label class="field-label" for="gosi-floor-t1">{{ 'EMPLOYEES.GOSI.RATES.FLOOR_T1' | translate }}</label>
+                <input id="gosi-floor-t1" type="number" class="input" min="0" step="0.001" formControlName="tier1WageFloor" /></div>
+                <div class="gf"><label class="field-label" for="gosi-floor-t2">{{ 'EMPLOYEES.GOSI.RATES.FLOOR_T2' | translate }}</label>
+                <input id="gosi-floor-t2" type="number" class="input" min="0" step="0.001" formControlName="tier2WageFloor" /></div>
+                <div class="gf"><label class="field-label" for="gosi-floor-t3">{{ 'EMPLOYEES.GOSI.RATES.FLOOR_T3' | translate }}</label>
+                <input id="gosi-floor-t3" type="number" class="input" min="0" step="0.001" formControlName="tier3WageFloor" /></div>
+              </div>
+              <p class="field-hint">{{ 'EMPLOYEES.GOSI.RATES.FLOOR_PER_TIER_HINT' | translate }}</p>
+
+              <div class="field-row">
+                <label class="gosi-check">
+                  <input type="checkbox" formControlName="reduceForAbsence" />
+                  <span>{{ 'EMPLOYEES.GOSI.RATES.REDUCE_FOR_ABSENCE' | translate }}</span>
+                </label>
+                <p class="field-hint">{{ 'EMPLOYEES.GOSI.RATES.REDUCE_FOR_ABSENCE_HINT' | translate }}</p>
               </div>
 
               <div class="field-row">
@@ -226,6 +350,9 @@
                 <input id="gosi-source" type="text" class="input"
                        [placeholder]="'EMPLOYEES.GOSI.RATES.SOURCE_PLACEHOLDER' | translate"
                        formControlName="source" />
+                @if (periodForm.get('source')?.touched && periodForm.get('source')?.invalid) {
+                  <p class="field-error">{{ 'EMPLOYEES.GOSI.RATES.SOURCE_REQUIRED' | translate }}</p>
+                }
                 <p class="field-hint">{{ 'EMPLOYEES.GOSI.RATES.SOURCE_HINT' | translate }}</p>
               </div>
 
@@ -235,11 +362,8 @@
               </div>
 
               <div class="gosi-form__actions">
-                <button type="button" class="btn btn-ghost" (click)="toggleAddPeriod()" [disabled]="savingRate()">
+                <button type="button" class="btn btn-ghost" (click)="toggleAddPeriod()" [disabled]="saving()">
                   {{ 'COMMON.CANCEL' | translate }}
-                </button>
-                <button type="submit" class="btn btn-primary" [disabled]="savingRate() || periodForm.invalid">
-                  {{ 'COMMON.SAVE' | translate }}
                 </button>
               </div>
             </form>
@@ -305,23 +429,95 @@
             }
           </ul>
         }
-
-        @if (canEdit()) {
-          <div class="gosi-form__actions">
-            <button type="button" class="btn btn-primary" [disabled]="savingTier3()" (click)="saveTier3Policy()">
-              {{ 'COMMON.SAVE' | translate }}
-            </button>
-          </div>
-        }
       </div>
     </section>
+
+    <!-- ═══ Section C — retirement ages ═══
+         Own card, own Save and Reset: it saves to a different endpoint than the rates.
+         No age is pre-filled. It only drives a WARNING on the payroll run. -->
+    @if (!loading()) {
+      <section class="card" [formGroup]="retirementForm">
+        <header class="card__head">
+          <h2 class="card__title">
+            {{ 'EMPLOYEES.GOSI.RETIREMENT.TITLE' | translate }}
+            <span class="gosi-chip" [class.gosi-chip--ok]="retirementConfirmed()">
+              {{ (retirementConfirmed() ? 'EMPLOYEES.GOSI.RETIREMENT.RECORDED' : 'EMPLOYEES.GOSI.RETIREMENT.UNCONFIRMED') | translate }}
+            </span>
+          </h2>
+          <p class="card__sub">{{ 'EMPLOYEES.GOSI.RETIREMENT.SUBTITLE' | translate }}</p>
+        </header>
+
+        <div class="card__body">
+          @if (retirementUnavailable()) {
+            <!-- Not an empty card: say WHY, so a missing feature is never mistaken for a missing setting. -->
+            <div class="gosi-unavailable" role="status">{{ 'EMPLOYEES.GOSI.RETIREMENT.UNAVAILABLE' | translate }}</div>
+          }
+          <div class="ret-ages">
+            <label class="ret-field" for="gosi-ret-national">
+              <span class="ret-field__label">{{ 'EMPLOYEES.GOSI.RETIREMENT.NATIONAL' | translate }}</span>
+              <span class="ret-field__control">
+                <input id="gosi-ret-national" type="number" class="input ret-field__input" min="40" max="80" step="1"
+                       formControlName="nationalAge" [placeholder]="'EMPLOYEES.GOSI.RETIREMENT.NONE' | translate" />
+                <span class="ret-field__unit">{{ 'EMPLOYEES.GOSI.RETIREMENT.YEARS' | translate }}</span>
+              </span>
+            </label>
+            <label class="ret-field" for="gosi-ret-expat">
+              <span class="ret-field__label">{{ 'EMPLOYEES.GOSI.RETIREMENT.EXPATRIATE' | translate }}</span>
+              <span class="ret-field__control">
+                <input id="gosi-ret-expat" type="number" class="input ret-field__input" min="40" max="80" step="1"
+                       formControlName="expatriateAge" [placeholder]="'EMPLOYEES.GOSI.RETIREMENT.NONE' | translate" />
+                <span class="ret-field__unit">{{ 'EMPLOYEES.GOSI.RETIREMENT.YEARS' | translate }}</span>
+              </span>
+            </label>
+          </div>
+
+          <ul class="ret-notes">
+            <li>{{ 'EMPLOYEES.GOSI.RETIREMENT.HINT' | translate }}</li>
+            <li class="ret-notes__open">{{ 'EMPLOYEES.GOSI.RETIREMENT.GCC_OPEN' | translate }}</li>
+            @if (retirement()?.note; as note) { <li>{{ note }}</li> }
+          </ul>
+
+          <div class="ret-source">
+            <label class="ret-field__label" for="gosi-ret-source">
+              {{ 'EMPLOYEES.GOSI.RETIREMENT.SOURCE' | translate }} <em>*</em>
+            </label>
+            <input id="gosi-ret-source" type="text" class="input" formControlName="source"
+                   [placeholder]="'EMPLOYEES.GOSI.RETIREMENT.SOURCE_PLACEHOLDER' | translate" />
+            @if (retirementForm.get('source')?.touched && !retirementForm.get('source')?.value
+                 && (retirementForm.get('nationalAge')?.value || retirementForm.get('expatriateAge')?.value)) {
+              <p class="field-error">{{ 'EMPLOYEES.GOSI.RETIREMENT.SOURCE_REQUIRED' | translate }}</p>
+            }
+          </div>
+
+          @if (canEdit() && !retirementUnavailable()) {
+            <div class="ret-actions">
+              <button type="button" class="btn btn-default" [disabled]="savingRetirement() || !retirementConfirmed()"
+                      (click)="resetRetirement()">
+                {{ 'EMPLOYEES.GOSI.RETIREMENT.RESET' | translate }}
+              </button>
+            </div>
+          }
+        </div>
+      </section>
+    }
   }
 
   <app-loading-overlay [show]="loading()" />
 
   <app-form-sticky-footer>
+    @if (errorCount() > 0) {
+      <app-form-error-summary [count]="errorCount()" [form]="periodForm" [container]="host"/>
+    }
+    @if (addingPeriod()) {
+      <span class="mandatory-legend">{{ 'COMMON.MANDATORY_LEGEND' | translate }}</span>
+    }
     <button type="button" class="btn btn-ghost" (click)="back()">
       {{ 'COMMON.BACK' | translate }}
     </button>
+    @if (canView() && canEdit()) {
+      <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving() || !hasChanges()">
+        {{ (saving() ? 'COMMON.SAVING' : 'COMMON.SAVE') | translate }}
+      </button>
+    }
   </app-form-sticky-footer>
 </div>

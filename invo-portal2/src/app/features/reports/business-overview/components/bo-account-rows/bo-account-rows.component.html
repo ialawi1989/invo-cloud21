@@ -1,0 +1,67 @@
+@for (g of groups(); track key(g, $index); let gi = $index) {
+  @if (g.hasChildren) {
+    <!-- Parent header: collapsed → own + children folded; expanded → own amount only -->
+    <tr class="data-row group-header-row">
+      <td class="sticky-col-1 account-cell ps-5">
+        <button type="button" class="group-toggle" (click)="toggle(g, gi, $event)"
+                [attr.aria-expanded]="!isCollapsed(g, gi)">{{ isCollapsed(g, gi) ? '+' : '−' }}</button>
+        @if (linkable(g.anchor)) {
+          <a class="account-link" href="#" (click)="go(g.anchor, $event)"><strong>{{ g.anchor.account | boAccountName }}</strong></a>
+        } @else {
+          <strong>{{ g.anchor.account | boAccountName }}</strong>
+        }
+      </td>
+      <td class="sticky-col-2 code-cell">{{ g.anchor.code }}</td>
+      @for (c of columns(); track c; let ci = $index) {
+        @let v = isCollapsed(g, gi) ? g.header[c] : value(g.anchor.summary, c);
+        <td class="data-cell text-end" [class]="'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci" [class.negative]="v < 0"><strong>{{ v | boAmount }}</strong></td>
+      }
+      @if (showTotal()) {
+        <td class="data-cell total-cell text-end"><strong>{{ (isCollapsed(g, gi) ? headerTotal(g) : total(g.anchor.summary, columns())) | boAmount }}</strong></td>
+      }
+    </tr>
+    @if (!isCollapsed(g, gi)) {
+      @for (ch of g.children; track ch.accountId ?? ch.account ?? $index) {
+        <tr class="data-row child-account group-member-row">
+          <td class="sticky-col-1 account-cell ps-6">
+            @if (linkable(ch)) {
+              <a class="account-link" href="#" (click)="go(ch, $event)">{{ ch.account | boAccountName }}</a>
+            } @else {
+              {{ ch.account | boAccountName }}
+            }
+          </td>
+          <td class="sticky-col-2 code-cell">{{ ch.code }}</td>
+          @for (c of columns(); track c; let ci = $index) {
+            @let v = value(ch.summary, c);
+            <td class="data-cell text-end" [class]="'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci" [class.negative]="v < 0">{{ v | boAmount }}</td>
+          }
+          @if (showTotal()) {
+            <td class="data-cell total-cell text-end">{{ total(ch.summary, columns()) | boAmount }}</td>
+          }
+        </tr>
+      }
+    }
+  } @else {
+    <tr class="data-row">
+      <td class="sticky-col-1 account-cell ps-5">
+        @if (isRetained(g.anchor)) {
+          <span>{{ g.anchor.account | boAccountName }}</span>
+        } @else if (isNetProfit(g.anchor) && profitLoss(); as pl) {
+          <a class="account-link" [routerLink]="pl.commands" [queryParams]="pl.queryParams">{{ g.anchor.account | boAccountName }}</a>
+        } @else if (linkable(g.anchor)) {
+          <a class="account-link" href="#" (click)="go(g.anchor, $event)">{{ g.anchor.account | boAccountName }}</a>
+        } @else {
+          {{ g.anchor.account | boAccountName }}
+        }
+      </td>
+      <td class="sticky-col-2 code-cell">{{ g.anchor.code }}</td>
+      @for (c of columns(); track c; let ci = $index) {
+        @let v = value(g.anchor.summary, c);
+        <td class="data-cell text-end" [class]="'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci" [class.negative]="v < 0">{{ v | boAmount }}</td>
+      }
+      @if (showTotal()) {
+        <td class="data-cell total-cell text-end">{{ total(g.anchor.summary, columns()) | boAmount }}</td>
+      }
+    </tr>
+  }
+}

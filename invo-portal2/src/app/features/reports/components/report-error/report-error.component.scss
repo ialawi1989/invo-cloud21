@@ -1,0 +1,41 @@
+@use '../../styles/report-theme' as rp;
+
+:host { @include rp.tokens; display: block; }
+
+.re {
+  @include rp.card;
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  padding: 36px 20px 32px;
+}
+.re-art { width: 190px; height: auto; margin-bottom: 6px; }
+.re-shadow { fill: var(--rp-surface-3, #e2e8f0); opacity: .7; }
+.re-cloud { fill: #eef4f7; stroke: #cbd9e1; stroke-width: 2; }
+.re-line { stroke: var(--rp-expense, #b91c1c); }
+.re-accent { stroke: #f59e0b; }
+.re-sheet { fill: #fff; stroke: #cbd9e1; stroke-width: 2; }
+.re-bar { fill: #e2e8f0; }
+.re-badge { fill: var(--rp-expense, #b91c1c); }
+.re-mark { stroke: #fff; }
+.re-mark-dot { fill: #fff; }
+
+.re-title { margin: 6px 0 4px; font-size: 17px; font-weight: 700; color: var(--rp-text); }
+.re-hint { margin: 0 0 18px; max-width: 420px; font-size: 13.5px; line-height: 1.5; color: var(--rp-muted); }
+
+.re-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.re-retry {
+  display: inline-flex; align-items: center; gap: 7px; padding: 8px 16px; border-radius: 9px; cursor: pointer;
+  border: 1px solid var(--rp-brand); background: var(--rp-brand); color: #fff; font-size: 13.5px; font-weight: 600;
+  transition: filter .15s, transform .1s;
+  &:hover { filter: brightness(1.08); }
+  &:active { transform: translateY(1px); }
+  &:focus-visible { outline: 2px solid var(--rp-brand); outline-offset: 2px; }
+}
+.re-more {
+  padding: 8px 12px; border: 0; background: transparent; color: var(--rp-muted); font-size: 13px; cursor: pointer;
+  text-decoration: underline; text-underline-offset: 3px;
+  &:hover { color: var(--rp-text); }
+}
+.re-details {
+  margin: 16px 0 0; max-width: 100%; padding: 10px 12px; border-radius: 8px; text-align: start;
+  background: var(--rp-surface); color: var(--rp-text-2, #475569); font-size: 12px; white-space: pre-wrap; word-break: break-word;
+}

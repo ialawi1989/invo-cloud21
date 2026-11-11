@@ -1,0 +1,132 @@
+@if (loading() && !data()) {
+  <div class="sp-loading" aria-busy="true"><div class="sp-skel"></div></div>
+} @else if (error()) {
+  <app-report-error [message]="error()" (retry)="load()" />
+} @else if (data(); as d) {
+  @if (isEmpty()) {
+    <app-report-empty />
+  } @else {
+    <div class="sp" [class.stale]="loading()">
+      <app-bo-table-shell [periods]="[]" hintKey="salesByProduct_scrollHint">
+        <table class="bo-table">
+          <thead>
+            <tr class="header-row">
+              <th class="sticky-col-1" [attr.aria-sort]="ariaSort('categoryName')">
+                <button type="button" class="sp-sort" [class.active]="sort()?.sortValue === 'categoryName'" (click)="sortBy('categoryName')">
+                  {{ 'REPORTS.SALES_BY_PRODUCT.CATEGORY_NAME' | translate }}
+                  <svg class="sp-sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 4 18 9" [style.opacity]="ariaSort('categoryName') === 'descending' ? .25 : 1"/><polyline points="6 15 12 20 18 15" [style.opacity]="ariaSort('categoryName') === 'ascending' ? .25 : 1"/></svg>
+                </button>
+              </th>
+              <th class="text-start" [attr.aria-sort]="ariaSort('productName')">
+                <button type="button" class="sp-sort" [class.active]="sort()?.sortValue === 'productName'" (click)="sortBy('productName')">
+                  {{ 'REPORTS.SALES_BY_PRODUCT.PRODUCT_NAME' | translate }}
+                  <svg class="sp-sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 4 18 9" [style.opacity]="ariaSort('productName') === 'descending' ? .25 : 1"/><polyline points="6 15 12 20 18 15" [style.opacity]="ariaSort('productName') === 'ascending' ? .25 : 1"/></svg>
+                </button>
+              </th>
+              <th class="text-end">{{ 'REPORTS.SALES_BY_PRODUCT.SOLD_QTY' | translate }}</th>
+              <th class="text-end">{{ 'REPORTS.SALES_BY_PRODUCT.VOIDED_QTY' | translate }}</th>
+              <th class="text-end">{{ 'REPORTS.SALES_BY_PRODUCT.RETURNED_QTY' | translate }}</th>
+              <th class="text-end" [attr.aria-sort]="ariaSort('qty')">
+                <button type="button" class="sp-sort" [class.active]="sort()?.sortValue === 'qty'" (click)="sortBy('qty')">
+                  {{ 'REPORTS.SALES_BY_PRODUCT.NET_QTY' | translate }}
+                  <svg class="sp-sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 4 18 9" [style.opacity]="ariaSort('qty') === 'descending' ? .25 : 1"/><polyline points="6 15 12 20 18 15" [style.opacity]="ariaSort('qty') === 'ascending' ? .25 : 1"/></svg>
+                </button>
+              </th>
+              <th class="text-end">{{ 'REPORTS.SALES_BY_PRODUCT.GROSS_SALES' | translate }}</th>
+              <th class="text-end" [attr.title]="'REPORTS.SALES_BY_PRODUCT.EXCL_TAX_HINT' | translate">{{ 'REPORTS.SALES_BY_PRODUCT.VOID_AMOUNT' | translate }}</th>
+              <th class="text-end">{{ 'REPORTS.SALES_BY_PRODUCT.RETURNS' | translate }}</th>
+              <th class="text-end" [attr.aria-sort]="ariaSort('salesAmount')">
+                <button type="button" class="sp-sort" [class.active]="sort()?.sortValue === 'salesAmount'" (click)="sortBy('salesAmount')">
+                  {{ 'REPORTS.SALES_BY_PRODUCT.NET_SALES' | translate }}
+                  <svg class="sp-sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 4 18 9" [style.opacity]="ariaSort('salesAmount') === 'descending' ? .25 : 1"/><polyline points="6 15 12 20 18 15" [style.opacity]="ariaSort('salesAmount') === 'ascending' ? .25 : 1"/></svg>
+                </button>
+              </th>
+              <th class="text-end" [attr.aria-sort]="ariaSort('discountTotal')">
+                <button type="button" class="sp-sort" [class.active]="sort()?.sortValue === 'discountTotal'" (click)="sortBy('discountTotal')">
+                  {{ 'REPORTS.SALES_BY_PRODUCT.DISCOUNT_TOTAL' | translate }}
+                  <svg class="sp-sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 4 18 9" [style.opacity]="ariaSort('discountTotal') === 'descending' ? .25 : 1"/><polyline points="6 15 12 20 18 15" [style.opacity]="ariaSort('discountTotal') === 'ascending' ? .25 : 1"/></svg>
+                </button>
+              </th>
+              <th class="text-end" [attr.aria-sort]="ariaSort('taxTotal')">
+                <button type="button" class="sp-sort" [class.active]="sort()?.sortValue === 'taxTotal'" (click)="sortBy('taxTotal')">
+                  {{ 'REPORTS.SALES_BY_PRODUCT.TAX_TOTAL' | translate }}
+                  <svg class="sp-sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 4 18 9" [style.opacity]="ariaSort('taxTotal') === 'descending' ? .25 : 1"/><polyline points="6 15 12 20 18 15" [style.opacity]="ariaSort('taxTotal') === 'ascending' ? .25 : 1"/></svg>
+                </button>
+              </th>
+              <th class="text-end" [attr.aria-sort]="ariaSort('total')">
+                <button type="button" class="sp-sort" [class.active]="sort()?.sortValue === 'total'" (click)="sortBy('total')">
+                  {{ 'REPORTS.SALES_BY_PRODUCT.TOTAL' | translate }}
+                  <svg class="sp-sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 4 18 9" [style.opacity]="ariaSort('total') === 'descending' ? .25 : 1"/><polyline points="6 15 12 20 18 15" [style.opacity]="ariaSort('total') === 'ascending' ? .25 : 1"/></svg>
+                </button>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of records(); track trackRow($index, r)) {
+              <tr class="data-row">
+                <td class="sticky-col-1">{{ r.categoryName }}</td>
+                <td class="sp-product">
+                  @if (canDrillToTransactions(r)) {
+                    <a class="account-link sp-product-name" [routerLink]="['/reports/view', 'sales-by-item-transactions']"
+                       [queryParams]="transactionsParams(r)" [attr.title]="'REPORTS.SALES_BY_PRODUCT.VIEW_TRANSACTIONS' | translate">{{ r.productName }}</a>
+                  } @else {
+                    <span class="sp-product-name">{{ r.productName }}</span>
+                  }
+                  @if (r.barcode) { <small class="sp-barcode">{{ r.barcode }}</small> }
+                </td>
+                <td class="text-end">{{ num(r.soldQty) }}</td>
+                <td class="text-end">
+                  @if (canDrillToVoids(r)) {
+                    <a class="account-link" [routerLink]="['/reports/view', 'voided-sales']" [queryParams]="voidsParams(r)"
+                       [attr.title]="'REPORTS.SALES_BY_PRODUCT.VIEW_VOIDS' | translate" target="_blank" rel="noopener">{{ num(r.voidedQty) }}</a>
+                  } @else { {{ num(r.voidedQty) }} }
+                </td>
+                <td class="text-end">{{ num(r.returnedQty) }}</td>
+                <td class="text-end">
+                  @if (canDrillToTransactions(r)) {
+                    <a class="account-link" [routerLink]="['/reports/view', 'sales-by-item-transactions']"
+                       [queryParams]="transactionsParams(r)" [attr.title]="'REPORTS.SALES_BY_PRODUCT.VIEW_TRANSACTIONS' | translate" target="_blank" rel="noopener">{{ r.qty }}</a>
+                  } @else { {{ r.qty }} }
+                </td>
+                <td class="text-end">{{ num(r.grossSales) | mycurrency }}</td>
+                <td class="text-end">
+                  @if (canDrillToVoids(r)) {
+                    <a class="account-link" [routerLink]="['/reports/view', 'voided-sales']" [queryParams]="voidsParams(r)"
+                       [attr.title]="'REPORTS.SALES_BY_PRODUCT.VIEW_VOIDS' | translate" target="_blank" rel="noopener">{{ num(r.voidAmount) | mycurrency }}</a>
+                  } @else { {{ num(r.voidAmount) | mycurrency }} }
+                </td>
+                <td class="text-end">{{ num(r.returnAmount) | mycurrency }}</td>
+                <td class="text-end">{{ r.salesAmount | mycurrency }}</td>
+                <td class="text-end">{{ r.discountTotal | mycurrency }}</td>
+                <td class="text-end">{{ r.taxTotal | mycurrency }}</td>
+                <td class="text-end">{{ r.total | mycurrency }}</td>
+              </tr>
+            }
+            @if (totals(); as t) {
+              <tr class="total-row">
+                <td class="sticky-col-1"><strong>{{ 'REPORTS.SALES_BY_PRODUCT.TOTAL' | translate }}</strong></td>
+                <td></td>
+                <td class="text-end"><strong>{{ num(t.soldQty) }}</strong></td>
+                <td class="text-end"><strong>{{ num(t.voidedQty) }}</strong></td>
+                <td class="text-end"><strong>{{ num(t.returnedQty) }}</strong></td>
+                <td class="text-end"><strong>{{ t.qty }}</strong></td>
+                <td class="text-end"><strong>{{ num(t.grossSales) | mycurrency }}</strong></td>
+                <td class="text-end"><strong>{{ num(t.voidAmount) | mycurrency }}</strong></td>
+                <td class="text-end"><strong>{{ num(t.returnAmount) | mycurrency }}</strong></td>
+                <td class="text-end"><strong>{{ t.salesAmount | mycurrency }}</strong></td>
+                <td class="text-end"><strong>{{ t.discountTotal | mycurrency }}</strong></td>
+                <td class="text-end"><strong>{{ t.taxTotal | mycurrency }}</strong></td>
+                <td class="text-end"><strong>{{ t.total | mycurrency }}</strong></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </app-bo-table-shell>
+
+      <app-pagination
+        [page]="page()" [pageSize]="pageSize()" [count]="d.count" [pageCount]="d.pageCount"
+        [pageSizeOptions]="sizes" [disabled]="loading()"
+        (pageChange)="goTo($event)" (pageSizeChange)="setSize($event)" />
+    </div>
+  }
+}

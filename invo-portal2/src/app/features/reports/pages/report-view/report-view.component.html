@@ -5,44 +5,21 @@
     <button type="button" class="btn btn-primary" (click)="back()">{{ 'REPORTS.VIEW.BACK_TO_REPORTS' | translate }}</button>
   </div>
 } @else if (meta(); as m) {
-  <div class="report-view">
-    <!-- ── Header ─────────────────────────────────────────────── -->
-    <header class="rv-header">
-      <div class="rv-head-left">
-        <button type="button" class="rv-back" (click)="back()" [attr.aria-label]="'REPORTS.VIEW.BACK' | translate">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-        </button>
-        <span class="rv-icon" [innerHTML]="icon(m.icon)"></span>
-        <div class="rv-titles">
-          <div class="rv-breadcrumb">
-            <span (click)="back()">{{ 'REPORTS.CATALOG.TITLE' | translate }}</span>
-            <span class="rv-sep">/</span>
-            @if (group(); as g) { <span>{{ g.titleKey | translate }}</span> }
-          </div>
-          <h1>
-            {{ m.titleKey | translate }}
-            <button type="button" class="rv-star" [class.on]="isFavorite()" (click)="toggleFavorite()"
-                    [attr.aria-label]="'REPORTS.VIEW.FAVORITE' | translate">
-              <svg viewBox="0 0 24 24" [attr.fill]="isFavorite() ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-              </svg>
-            </button>
-          </h1>
-          @if (m.descriptionKey) { <p class="rv-desc">{{ m.descriptionKey | translate }}</p> }
-        </div>
-      </div>
+  <!-- Keyed by the report: opening another report from "Browse Reports" rebuilds the page (the filter bar reads its state once). -->
+  @for (key of [m.slug]; track key) {
+  <!-- The same page frame as every other report: action bar + title strip + scrolling content. -->
+  <app-report-page-shell
+    [title]="m.titleKey | translate"
+    [subtitle]="(m.descriptionKey ?? '') | translate"
+    [favorite]="isFavorite()"
+    [spinning]="spinning()"
+    (back)="back()" (browse)="openBrowse()" (refresh)="refresh()" (favoriteToggle)="toggleFavorite()">
 
-      <div class="rv-head-actions">
-        @if (exportItems().length) {
-          <app-dropdown-menu-btn [items]="exportItems()" align="end" triggerClass="btn btn-default btn-sm">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>
-            {{ 'REPORTS.EXPORT.LABEL' | translate }}
-          </app-dropdown-menu-btn>
-        }
-      </div>
-    </header>
+    <app-report-schedule-button shellExport [slug]="m.slug" [titleKey]="m.titleKey" [branches]="branchOptions()" />
+
+    @if (m.export) {
+      <app-report-export-button shellExport [formats]="exportFormats()" (exportAs)="export($event)" (print)="print()" />
+    }
 
     <!-- ── Filter bar ─────────────────────────────────────────── -->
     <div class="rv-toolbar">
@@ -54,12 +31,76 @@
       </app-report-filter-bar>
     </div>
 
+    @if (m.note; as n) { <app-report-note [key]="n.key" [type]="n.type" /> }
+
     <!-- ── Body ───────────────────────────────────────────────── -->
-    @if (requiredFiltersMissing()) {
+    @if (requiredFiltersMissing() && m.filters?.requireEmployee) {
+      <app-report-select-prompt />
+    } @else if (requiredFiltersMissing()) {
       <div class="rv-error">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         <p>{{ 'REPORTS.VIEW.SELECT_BRANCH_PROMPT' | translate }}</p>
       </div>
+    } @else if (m.customBody === 'sales-summary') {
+      <!-- A report with its own body (the legacy page is not a flat table); it loads its own data. -->
+      <app-sales-summary [filter]="bodyFilter()" [refresh]="refreshTick()" />
+    } @else if (m.customBody === 'item-transactions') {
+      <app-sales-by-item-transactions [filter]="bodyFilter()" [refresh]="refreshTick()" />
+    } @else if (m.customBody === 'voided-sales') {
+      <app-voided-sales [filter]="bodyFilter()" [refresh]="refreshTick()" />
+    } @else if (m.customBody === 'products-category') {
+      <app-sales-by-products-category [filter]="bodyFilter()" [refresh]="refreshTick()" />
+    } @else if (m.customBody === 'products-vs-options') {
+      <app-sales-by-products-vs-options [filter]="bodyFilter()" [refresh]="refreshTick()" />
+    } @else if (m.customBody === 'sales-by-product') {
+      <app-sales-by-product [filter]="bodyFilter()" [refresh]="refreshTick()" />
+    } @else if (m.customBody === 'general-inventory') {
+      <app-general-inventory [filter]="bodyFilter()" [refresh]="refreshTick()" />
+    } @else if (m.customBody === 'product-movement') {
+      <app-product-movement [filter]="bodyFilter()" [refresh]="refreshTick()" />
+    } @else if (m.customBody === 'flat') {
+      <app-flat-report [slug]="m.slug" [filter]="bodyFilter()" [refresh]="refreshTick()" />
+    } @else if (m.customBody === 'customer-aging') {
+      <app-customer-aging mode="detail" [filter]="bodyFilter()" [refresh]="refreshTick()" />
+    } @else if (m.customBody === 'customer-aging-summary') {
+      <app-customer-aging mode="summary" [filter]="bodyFilter()" [refresh]="refreshTick()" />
+    } @else if (m.customBody === 'attendance-absence') {
+      <app-attendance-absence [filter]="bodyFilter()" [refresh]="refreshTick()" />
+    } @else if (m.customBody === 'attendance-audit') {
+      <app-attendance-audit [filter]="bodyFilter()" [refresh]="refreshTick()" />
+    } @else if (m.customBody === 'attendance-trends') {
+      <app-attendance-trends [filter]="bodyFilter()" [refresh]="refreshTick()" />
+    } @else if (m.customBody === 'attendance-detail') {
+      <app-employee-attendance-detail [filter]="bodyFilter()" [refresh]="refreshTick()" />
+    } @else if (m.customBody === 'cashier-shifts') {
+      <app-cashier-shifts [filter]="bodyFilter()" [refresh]="refreshTick()" />
+    } @else if (m.customBody === 'supplier-aging') {
+      <app-customer-aging entity="supplier" mode="detail" [filter]="bodyFilter()" [refresh]="refreshTick()" />
+    } @else if (m.customBody === 'supplier-aging-summary') {
+      <app-customer-aging entity="supplier" mode="summary" [filter]="bodyFilter()" [refresh]="refreshTick()" />
+    } @else if (m.customBody === 'sales-by-terminal') {
+      <app-sales-by-terminal [filter]="bodyFilter()" [refresh]="refreshTick()" />
+    } @else if (m.customBody === 'sales-by-delivery-area') {
+      <app-sales-by-delivery-area [filter]="bodyFilter()" [refresh]="refreshTick()" />
+    } @else if (m.customBody === 'sales-by-invoice') {
+      <app-sales-by-invoice [filter]="bodyFilter()" [refresh]="refreshTick()" />
+    } @else if (m.customBody === 'sales-by-product-vs-service') {
+      <app-sales-by-product-vs-service [filter]="bodyFilter()" [refresh]="refreshTick()" />
+    } @else if (m.customBody === 'sales-by-hours-by-product') {
+      <app-sales-by-hours-by-product [filter]="bodyFilter()" [refresh]="refreshTick()" />
+    } @else if (m.customBody === 'department-sales-payments') {
+      <app-department-sales-payments [filter]="bodyFilter()" [refresh]="refreshTick()" />
+    } @else if (m.customBody === 'daily-closing') {
+      <app-daily-closing [filter]="bodyFilter()" [refresh]="refreshTick()" />
+    } @else if (m.customBody === 'daily-sales-sub') {
+      <app-daily-sales-sub [filter]="bodyFilter()" [refresh]="refreshTick()" />
+    } @else if (m.customBody === 'aggregator-sub') {
+      <app-sales-by-aggregator-sub [filter]="bodyFilter()" [refresh]="refreshTick()" />
+    } @else if (m.customBody === 'service-details') {
+      <app-sales-by-aggregator-sub kind="service" [filter]="bodyFilter()" [refresh]="refreshTick()" />
+    } @else if (m.customBody === 'comparison') {
+      <app-comparison-report [slug]="m.slug" [filter]="bodyFilter()" [refresh]="refreshTick()"
+        [subColumns]="filterState().subColumns" (subColumnsChange)="onSubColumns($event)" />
     } @else if (loading()) {
       <div class="rv-loading">
         <div class="rv-kpi-skel">
@@ -69,11 +110,7 @@
         <div class="rv-skel-table"></div>
       </div>
     } @else if (error()) {
-      <div class="rv-error">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <p>{{ error() }}</p>
-        <button type="button" class="btn btn-default btn-sm" (click)="load()">{{ 'REPORTS.VIEW.RETRY' | translate }}</button>
-      </div>
+      <app-report-error [message]="error()" (retry)="load()" />
     } @else if (result(); as res) {
       @if (res.kpis?.length) {
         <app-report-kpi-row [kpis]="res.kpis!"></app-report-kpi-row>
@@ -81,7 +118,8 @@
       @if (m.chart) {
         <app-report-chart [config]="m.chart" [rows]="res.chartRows ?? res.table.rows"></app-report-chart>
       }
-      <app-report-data-table [table]="res.table" (sortChange)="onSortChange($event)"></app-report-data-table>
+      <app-report-data-table [table]="res.table" [linkContext]="bodyFilter()" (sortChange)="onSortChange($event)"></app-report-data-table>
     }
-  </div>
+  </app-report-page-shell>
+  }
 }

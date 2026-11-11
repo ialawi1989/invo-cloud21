@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { guestGuard } from './core/guards/guest.guard';
 import { unsavedChangesGuard } from './core/guards/unsaved-changes.guard';
+import { privilegeGuard } from './core/guards/privilege.guard';
 
 export const routes: Routes = [
   // ── Public (blocked for authenticated users) ─────────────────────────────
@@ -204,6 +205,16 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/settings/pages/prefix-settings/prefix-settings.component')
             .then(m => m.PrefixSettingsComponent),
+        canDeactivate: [unsavedChangesGuard],
+      },
+      {
+        // Employee commission + tips: on/off, when commission is earned, the payout cycle.
+        path: 'settings/commission-settings',
+        canActivate: [privilegeGuard],
+        data: { permissionPath: 'companySettingsSecurity.actions.businessSettings' },
+        loadComponent: () =>
+          import('./features/settings/pages/commission-settings/commission-settings.component')
+            .then(m => m.CommissionSettingsComponent),
         canDeactivate: [unsavedChangesGuard],
       },
       {

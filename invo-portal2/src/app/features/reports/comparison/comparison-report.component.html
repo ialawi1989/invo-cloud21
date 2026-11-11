@@ -1,0 +1,105 @@
+@if (loading() && !data()) {
+  <div class="cr-loading" aria-busy="true"><div class="cr-skel"></div><div class="cr-skel cr-skel-chart"></div></div>
+} @else if (error()) {
+  <app-report-error [message]="error()" (retry)="load()" />
+} @else if (data()) {
+  @if (isEmpty()) {
+    <app-report-empty />
+  } @else {
+    <div class="cr" [class.stale]="loading()">
+      <!-- Without a comparison the backend returns every column, so the choice only matters while comparing. -->
+      @if (comparing()) {
+        <div class="cr-toolbar">
+          <app-report-columns-button [slug]="slug()" [selected]="selected()" (selectedChange)="subColumnsChange.emit($event)" />
+        </div>
+      }
+
+      <app-bo-table-shell [periods]="periods()" [hintKey]="'comparison_' + slug() + '_scrollHint'">
+        <table class="bo-table" [class.has-comparison]="periods().length > 1">
+          <thead>
+            <tr class="header-row">
+              <th class="sticky-col-1" [attr.rowspan]="subs().length && !flatHeader() ? 2 : 1">{{ 'REPORTS.COMPARISON.NAME.' + slug() | translate }}</th>
+              @if (flatHeader()) {
+                @for (sc of subs(); track sc) { <th class="text-end total-header" data-p="0">{{ subLabel(sc) }}</th> }
+              } @else {
+                @for (c of columns(); track c; let i = $index) {
+                  <th class="text-end" [attr.colspan]="subs().length || 1" [attr.data-period-index]="i"
+                      [class]="c === 'Total' ? 'total-header' : 'bo-p' + slot(i)">{{ c | boColumn }}</th>
+                }
+              }
+            </tr>
+            @if (subs().length && !flatHeader()) {
+              <tr class="subheader-row">
+                @for (c of columns(); track c; let ci = $index) {
+                  @for (sc of subs(); track sc) {
+                    <th class="text-end" [attr.data-p]="ci" [class]="c === 'Total' ? 'total-header' : 'bo-p' + slot(ci)">{{ subLabel(sc) }}</th>
+                  }
+                }
+              </tr>
+            }
+          </thead>
+          <tbody>
+            @for (g of groups(); track $index) {
+              @if (g.name !== null) {
+                <tr class="group-row"><td class="sticky-col-1" [attr.colspan]="1 + columns().length * (subs().length || 1)"><strong>{{ g.name || '—' }}</strong></td></tr>
+              }
+              @for (r of g.rows; track $index) {
+                <tr class="data-row">
+                  <td class="sticky-col-1">
+                    @if (config().drill && r[config().drill!.idField]) {
+                      <a class="account-link" [routerLink]="['/reports/view', config().drill!.slug]" [queryParams]="drillParams(r)" target="_blank" rel="noopener">{{ nameOf(r) }}</a>
+                    } @else { {{ nameOf(r) }} }
+                  </td>
+                  @for (c of columns(); track c; let ci = $index) {
+                    @if (subs().length) {
+                      @for (sc of subs(); track sc) {
+                        @let v = value(r, c, sc);
+                        <td class="text-end" [class]="'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci" [class.negative]="v < 0">{{ v | boAmount }}</td>
+                      }
+                    } @else {
+                      @let v = value(r, c);
+                      <td class="text-end" [class]="'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci" [class.negative]="v < 0">{{ v | boAmount }}</td>
+                    }
+                  }
+                </tr>
+              }
+              @if (g.name !== null) {
+                <tr class="subtotal-row">
+                  <td class="sticky-col-1"><strong>{{ 'REPORTS.COMPARISON.SUBTOTAL' | translate }}</strong></td>
+                  @for (c of columns(); track c; let ci = $index) {
+                    @if (subs().length) {
+                      @for (sc of subs(); track sc) {
+                        <td class="text-end" [class]="'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci"><strong>{{ groupTotal(g.rows, c, sc) | boAmount }}</strong></td>
+                      }
+                    } @else {
+                      <td class="text-end" [class]="'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci"><strong>{{ groupTotal(g.rows, c) | boAmount }}</strong></td>
+                    }
+                  }
+                </tr>
+              }
+            }
+            <tr class="total-row">
+              <td class="sticky-col-1"><strong>{{ 'REPORTS.COMPARISON.TOTAL' | translate }}</strong></td>
+              @for (c of columns(); track c; let ci = $index) {
+                @if (subs().length) {
+                  @for (sc of subs(); track sc) {
+                    <td class="text-end" [class]="'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci"><strong>{{ columnTotal(c, sc) | boAmount }}</strong></td>
+                  }
+                } @else {
+                  <td class="text-end" [class]="'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci"><strong>{{ columnTotal(c) | boAmount }}</strong></td>
+                }
+              }
+            </tr>
+          </tbody>
+        </table>
+      </app-bo-table-shell>
+
+      @if (config().chart && chartRows().length) {
+        <section class="cr-chart">
+          <h3>{{ 'REPORTS.COMPARISON.CHART.' + slug() | translate }}</h3>
+          <app-report-chart [config]="chart" [rows]="chartRows()" />
+        </section>
+      }
+    </div>
+  }
+}

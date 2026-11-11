@@ -4,6 +4,7 @@ import { LanguageService } from '@core/i18n/language.service';
 import { privilegeGuard } from '@core/guards/privilege.guard';
 import { unsavedChangesGuard } from '@core/guards/unsaved-changes.guard';
 import { hrPrivilegeGuard } from './hr-privilege';
+import { employeeEarningsGuard } from './employee-earnings.guard';
 
 /**
  * Employees — team members, invitations, schedules, privileges & attendance.
@@ -18,6 +19,10 @@ import { hrPrivilegeGuard } from './hr-privilege';
  *   /employees/attendance/:id  → attendance adjust form
  *   /employees/schedule        → team schedule board
  *   /employees/gosi-settings   → GOSI contribution-rate & tier-3 gratuity policy
+ *   /employees/payouts         → commission / tips payouts (needs commission or tips switched on)
+ *   /employees/payouts/view/:id → one payout
+ *   /employees/payouts/:id     → payout form (0 = new)
+ *   /employees/tips            → pool-tip distribution (needs tips switched on)
  *   /employees/my-account      → the signed-in employee's own account
  *   /employees/invitation/:id  → invite / edit invited employee (0 = new)
  *   /employees/0               → add-employee form (single page)
@@ -127,6 +132,36 @@ export const EMPLOYEES_ROUTES: Routes = [
     data: { hrGroup: 'employeePayrollSecurity', hrAction: 'viewPay' },
     loadComponent: () =>
       import('./pages/payroll-run/payroll-run.component').then(m => m.PayrollRunComponent),
+  },
+  {
+    // A payout pays out commission, tips or both, so either feature opens it.
+    path: 'payouts',
+    canActivate: [translationsLoaded, employeeEarningsGuard, privilegeGuard],
+    data: { earningsFeature: ['commission', 'tips'], permissionPath: 'employeePayoutSecurity.actions.view' },
+    loadComponent: () =>
+      import('./pages/employee-payouts-list/employee-payouts-list.component').then(m => m.EmployeePayoutsListComponent),
+  },
+  {
+    path: 'payouts/view/:id',
+    canActivate: [translationsLoaded, employeeEarningsGuard, privilegeGuard],
+    data: { earningsFeature: ['commission', 'tips'], permissionPath: 'employeePayoutSecurity.actions.view' },
+    loadComponent: () =>
+      import('./pages/employee-payout-view/employee-payout-view.component').then(m => m.EmployeePayoutViewComponent),
+  },
+  {
+    path: 'payouts/:id',
+    canActivate: [translationsLoaded, employeeEarningsGuard, privilegeGuard],
+    canDeactivate: [unsavedChangesGuard],
+    data: { earningsFeature: ['commission', 'tips'], permissionPath: 'employeePayoutSecurity.actions.add' },
+    loadComponent: () =>
+      import('./pages/employee-payout-form/employee-payout-form.component').then(m => m.EmployeePayoutFormComponent),
+  },
+  {
+    path: 'tips',
+    canActivate: [translationsLoaded, employeeEarningsGuard, privilegeGuard],
+    data: { earningsFeature: 'tips', permissionPath: 'tipsSecurity.actions.view' },
+    loadComponent: () =>
+      import('./pages/employee-tips/employee-tips.component').then(m => m.EmployeeTipsComponent),
   },
   {
     path: 'leave-types',

@@ -795,6 +795,14 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
    *  Chart-of-Accounts page. */
   @Input() extraViewModes: { id: string; labelKey?: string; iconPath?: string }[] = [];
 
+  /** Opt-in: on phones keep the extra view the user picked (instead of forcing
+   *  the grid / cards body) and show a compact "list | extra views" toggle.
+   *  The consumer's extra views are then responsible for being phone-friendly. */
+  @Input() mobileExtraViews = false;
+
+  /** Mobile "list" button: back to the grid / cards body. */
+  showMobileList(): void { this.setViewMode('grid'); }
+
   /** Fires whenever the active view mode changes — including the
    *  built-in 'table' / 'grid' modes. Useful for parents that need
    *  to load mode-specific data lazily. */
@@ -1434,7 +1442,10 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
       if (!wasMobile) {
         this.preMobileViewMode = this.viewMode();
       }
-      this.viewMode.set('grid');
+      // A consumer extra view the user is on survives (opt-in, and re-checked on
+      // every resize so rotating the phone does not bounce them back to cards).
+      const keepExtra = this.mobileExtraViews && this.extraViewModes.some(e => e.id === this.viewMode());
+      if (!keepExtra) this.viewMode.set('grid');
     } else if (wasMobile) {
       // Leaving mobile: restore whatever the user had on desktop
       // (table by default) instead of staying stuck on grid.

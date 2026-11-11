@@ -1,0 +1,204 @@
+@if (loading() && !data()) {
+  <div class="ss-loading" aria-busy="true">
+    <div class="ss-skel-kpis">@for (i of [1,2,3,4,5,6,7,8]; track i) { <div class="ss-skel"></div> }</div>
+    <div class="ss-skel ss-skel-card"></div>
+    <div class="ss-skel ss-skel-card"></div>
+  </div>
+} @else if (error()) {
+  <app-report-error [message]="error()" (retry)="load()" />
+} @else if (data()) {
+  <div class="ss" [class.stale]="loading()">
+    <app-report-kpi-row [kpis]="kpis()" [columns]="4" />
+
+    <div class="ss-grid">
+      <div class="ss-col">
+        <!-- Sales by category + the totals block -->
+        <section class="ss-card">
+          <h3>{{ 'REPORTS.SALES_SUMMARY.BY_CATEGORY' | translate }}</h3>
+          <div class="ss-scroll">
+            <table class="ss-table">
+              <thead>
+                <tr>
+                  <th>{{ 'REPORTS.SALES_SUMMARY.CATEGORY' | translate }} [{{ 'REPORTS.SALES_SUMMARY.QTY' | translate }}]</th>
+                  <th class="num">{{ 'REPORTS.SALES_SUMMARY.PERCENTAGE' | translate }}</th>
+                  <th class="num">{{ 'REPORTS.SALES_SUMMARY.TOTAL' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (r of categories(); track $index) {
+                  <tr>
+                    <td><span class="dot" [style.background-color]="color($index)"></span>{{ r.category }} [{{ r.qty }}]</td>
+                    <td class="num pct">
+                      <span class="pct-bar" aria-hidden="true"><span [style.width.%]="r.percentage" [style.background-color]="color($index)"></span></span>
+                      {{ r.percentage | mynumber: 2 }}%
+                    </td>
+                    <td class="num strong">{{ r.salesTotal | mynumber }}</td>
+                  </tr>
+                } @empty {
+                  <tr><td colspan="3" class="empty">{{ 'REPORTS.SALES_SUMMARY.NO_DATA' | translate }}</td></tr>
+                }
+                @if (categories().length) {
+                  <tr class="total">
+                    <td>{{ 'REPORTS.SALES_SUMMARY.TOTAL_SALES' | translate }}</td>
+                    <td></td>
+                    <td class="num">{{ categoriesTotal() | mycurrency }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <div class="ss-totals">
+            @if (stats().discountTotal > 0) {
+              <div class="row"><span>{{ 'REPORTS.SALES_SUMMARY.DISCOUNT_TOTAL' | translate }}</span><span class="neg">({{ stats().discountTotal | mycurrency }})</span></div>
+              <div class="row"><span>{{ 'REPORTS.SALES_SUMMARY.AFTER_DISCOUNT' | translate }}</span><span>{{ stats().totalAfterDiscount | mycurrency }}</span></div>
+            }
+            @if (stats().totalCharge > 0) {
+              <div class="row"><span>{{ 'REPORTS.SALES_SUMMARY.CHARGE' | translate }}</span><span>{{ stats().totalCharge | mycurrency }}</span></div>
+            }
+            @if (stats().totalDelivery > 0) {
+              <div class="row"><span>{{ 'REPORTS.SALES_SUMMARY.DELIVERY' | translate }}</span><span>{{ stats().totalDelivery | mycurrency }}</span></div>
+            }
+            @if (stats().totalTax > 0) {
+              <div class="row"><span>{{ 'REPORTS.SALES_SUMMARY.TAX' | translate }}</span><span>{{ stats().totalTax | mycurrency }}</span></div>
+            }
+            @if (stats().totalRounding > 0) {
+              <div class="row"><span>{{ 'REPORTS.SALES_SUMMARY.ROUNDING' | translate }}</span><span>{{ stats().totalRounding | mycurrency }}</span></div>
+            }
+            <div class="row strong top"><span>{{ 'REPORTS.SALES_SUMMARY.TOTAL' | translate }}</span><span>{{ total() | mycurrency }}</span></div>
+            <div class="row"><span>{{ 'REPORTS.SALES_SUMMARY.RETURN' | translate }}</span><span class="neg">({{ (stats().totalReturn || 0) | mycurrency }})</span></div>
+            <div class="row strong top accent"><span>{{ 'REPORTS.SALES_SUMMARY.NET_REVENUE' | translate }}</span><span>{{ (total() - (stats().totalReturn || 0)) | mycurrency }}</span></div>
+          </div>
+        </section>
+
+        <!-- Sales by service -->
+        <section class="ss-card">
+          <h3>{{ 'REPORTS.SALES_SUMMARY.BY_SERVICE' | translate }} ({{ 'REPORTS.SALES_SUMMARY.BEFORE_DISCOUNT' | translate }})</h3>
+          <div class="ss-scroll">
+            <table class="ss-table">
+              <thead>
+                <tr>
+                  <th>{{ 'REPORTS.SALES_SUMMARY.SERVICE' | translate }} [{{ 'REPORTS.SALES_SUMMARY.QTY' | translate }}]</th>
+                  <th class="num">{{ 'REPORTS.SALES_SUMMARY.PERCENTAGE' | translate }}</th>
+                  <th class="num">{{ 'REPORTS.SALES_SUMMARY.SALES_TOTAL' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (r of services(); track $index) {
+                  <tr>
+                    <td><span class="dot" [style.background-color]="color($index)"></span>{{ r.serviceName }} [{{ r.qty }}]</td>
+                    <td class="num pct">
+                      <span class="pct-bar" aria-hidden="true"><span [style.width.%]="r.percentage" [style.background-color]="color($index)"></span></span>
+                      {{ r.percentage | mynumber: 2 }}%
+                    </td>
+                    <td class="num strong">{{ r.salesTotal | mynumber }}</td>
+                  </tr>
+                } @empty {
+                  <tr><td colspan="3" class="empty">{{ 'REPORTS.SALES_SUMMARY.NO_DATA' | translate }}</td></tr>
+                }
+                @if (services().length) {
+                  <tr class="total">
+                    <td>{{ 'REPORTS.SALES_SUMMARY.TOTAL' | translate }}</td>
+                    <td></td>
+                    <td class="num">{{ servicesTotal() | mycurrency }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Tax details -->
+        <section class="ss-card">
+          <h3>{{ 'REPORTS.SALES_SUMMARY.TAX_DETAILS' | translate }}</h3>
+          <div class="ss-scroll">
+            <table class="ss-table">
+              <thead>
+                <tr>
+                  <th>{{ 'REPORTS.SALES_SUMMARY.NAME' | translate }}</th>
+                  <th class="num">{{ 'REPORTS.SALES_SUMMARY.TOTAL' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (r of taxes(); track $index) {
+                  <tr><td>{{ r.name }}</td><td class="num strong">{{ r.taxTotal | mynumber }}</td></tr>
+                } @empty {
+                  <tr><td colspan="2" class="empty">{{ 'REPORTS.SALES_SUMMARY.NO_TAX_DATA' | translate }}</td></tr>
+                }
+                @if (taxes().length) {
+                  <tr class="total"><td>{{ 'REPORTS.SALES_SUMMARY.TOTAL' | translate }}</td><td class="num">{{ taxesTotal() | mycurrency }}</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <div class="ss-col">
+        <!-- Payment received + refund / payout / net income -->
+        <section class="ss-card">
+          <h3>{{ 'REPORTS.SALES_SUMMARY.PAYMENT_RECEIVED' | translate }}</h3>
+          <div class="ss-scroll">
+            <table class="ss-table">
+              <thead>
+                <tr>
+                  <th>{{ 'REPORTS.SALES_SUMMARY.TENDER' | translate }} ({{ 'REPORTS.SALES_SUMMARY.QTY' | translate }})</th>
+                  <th class="num">{{ 'REPORTS.SALES_SUMMARY.AMOUNT_PAID' | translate }}</th>
+                  <th class="num">{{ 'REPORTS.SALES_SUMMARY.ACTUAL_AMOUNT_PAID' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (r of payments(); track $index) {
+                  <tr>
+                    <td>{{ r.name }} ({{ r.total_transaction }})</td>
+                    <td class="num">{{ r.amount_paid | mynumber }}</td>
+                    <td class="num strong">{{ r.actual_amount_paid | mynumber }}</td>
+                  </tr>
+                } @empty {
+                  <tr><td colspan="3" class="empty">{{ 'REPORTS.SALES_SUMMARY.NO_DATA' | translate }}</td></tr>
+                }
+                @if (payments().length) {
+                  <tr class="total">
+                    <td>{{ 'REPORTS.SALES_SUMMARY.TOTAL' | translate }}</td>
+                    <td class="num">{{ paidTotal() | mynumber }}</td>
+                    <td class="num">{{ actualPaidTotal() | mycurrency }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <div class="ss-totals">
+            <div class="row"><span>{{ 'REPORTS.SALES_SUMMARY.TOTAL_REFUND' | translate }}</span><span class="neg">({{ (stats().totalRefund || 0) | mycurrency }})</span></div>
+            <div class="row"><span>{{ 'REPORTS.SALES_SUMMARY.PAYOUT' | translate }}</span><span class="neg">({{ (stats().payout || 0) | mycurrency }})</span></div>
+            <div class="row strong top accent"><span>{{ 'REPORTS.SALES_SUMMARY.NET_INCOME' | translate }}</span><span>{{ netIncome() | mycurrency }}</span></div>
+          </div>
+        </section>
+
+        <!-- Discount -->
+        <section class="ss-card">
+          <h3>{{ 'REPORTS.SALES_SUMMARY.DISCOUNT' | translate }}</h3>
+          <div class="ss-scroll">
+            <table class="ss-table">
+              <thead>
+                <tr>
+                  <th>{{ 'REPORTS.SALES_SUMMARY.NAME' | translate }}</th>
+                  <th class="num">{{ 'REPORTS.SALES_SUMMARY.TOTAL' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (r of discounts(); track $index) {
+                  <tr><td>{{ r.name }}</td><td class="num strong">{{ r.sum | mynumber }}</td></tr>
+                } @empty {
+                  <tr><td colspan="2" class="empty">{{ 'REPORTS.SALES_SUMMARY.NO_DISCOUNTS' | translate }}</td></tr>
+                }
+                @if (discounts().length) {
+                  <tr class="total"><td>{{ 'REPORTS.SALES_SUMMARY.TOTAL' | translate }}</td><td class="num">{{ discountsTotal() | mycurrency }}</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+}

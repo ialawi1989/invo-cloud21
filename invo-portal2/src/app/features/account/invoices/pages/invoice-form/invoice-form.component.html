@@ -83,7 +83,7 @@
     <app-doc-lines-table
       [doc]="inv" [editor]="editor!" [config]="linesConfig" [formStatus]="formStatus"
       (changed)="markDirty()">
-      <app-doc-totals [doc]="inv" [editor]="editor!" [surcharges]="surcharges" notesHintKey="INVOICES.FORM.NOTES_HINT" (changed)="markDirty()"/>
+      <app-doc-totals [doc]="inv" [editor]="editor!" [surcharges]="surcharges" [inclusiveDisplay]="true" notesHintKey="INVOICES.FORM.NOTES_HINT" (changed)="markDirty()"/>
     </app-doc-lines-table>
 
     @if (formStatus === 'edit') {

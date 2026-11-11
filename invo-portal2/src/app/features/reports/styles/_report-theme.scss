@@ -1,0 +1,238 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Common stylesheet for every report in the Reports feature.
+//
+// Usage in a component stylesheet:
+//
+//   @use '../../../styles/report-theme' as rp;
+//   :host { @include rp.tokens; display: block; }
+//   @include rp.data-table('.my-table');          // plain list table
+//   ... then only the styles unique to that report.
+//
+// Colours carry meaning, so reports read the same way everywhere:
+//   income/positive = green   expense/negative = red   profit = teal
+//   assets = blue   liabilities = amber   equity = purple   brand = portal teal
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Semantic tones available as `tone-<name>` on rows and as `[tone]` on KPI tiles.
+$tones: income, expense, profit, asset, liability, equity;
+
+/// Design tokens as CSS custom properties — include once on `:host`.
+@mixin tokens {
+  --rp-surface: #fff;
+  --rp-surface-2: #f8fafc;
+  --rp-surface-3: #f1f5f9;
+  --rp-border: #e2e8f0;
+  --rp-border-strong: #cbd5e1;
+  --rp-text: #0f172a;
+  --rp-text-2: #334155;
+  --rp-muted: #64748b;
+  --rp-radius: 12px;
+
+  // Frozen account / code columns of the statement tables — narrower on phones so amounts keep room.
+  --rp-col1: 260px;
+  --rp-col2: 90px;
+  @media (max-width: 640px) {
+    --rp-col1: 140px;
+    --rp-col2: 52px;
+  }
+
+  --rp-brand: #1e8c9f;
+  --rp-brand-soft: #e6f6f9;
+
+  --rp-income: #047857;     --rp-income-soft: #ecfdf5;
+  --rp-expense: #b91c1c;    --rp-expense-soft: #fef2f2;
+  --rp-profit: #0e7490;     --rp-profit-soft: #ecfeff;
+  --rp-asset: #1d4ed8;      --rp-asset-soft: #eff6ff;
+  --rp-liability: #b45309;  --rp-liability-soft: #fffbeb;
+  --rp-equity: #6d28d9;     --rp-equity-soft: #f5f3ff;
+}
+
+/// White rounded card with a hairline border (tables, charts, panels).
+@mixin card {
+  background: var(--rp-surface);
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, .06), 0 4px 12px rgba(15, 23, 42, .04);
+}
+
+/// Money / count cells: aligned digits, negatives in red.
+@mixin figures {
+  .num { text-align: end; font-variant-numeric: tabular-nums; }
+  .neg { color: var(--rp-expense); }
+  .pos { color: var(--rp-income); }
+}
+
+/// Pills such as a document type or an account badge.
+@mixin pill {
+  display: inline-block; padding: 1px 9px; border-radius: 999px;
+  background: var(--rp-surface-3); color: var(--rp-text-2); font-size: 12px; font-weight: 500;
+}
+
+/// Plain list table (Journal Entries, Account Journals, future list-style reports).
+@mixin data-table($selector) {
+  .rp-table-wrap { @include card; overflow: auto; margin-bottom: 12px; }
+
+  #{$selector} {
+    width: 100%; border-collapse: collapse; font-size: 13px; color: var(--rp-text);
+
+    th, td { padding: 10px 14px; border-bottom: 1px solid var(--rp-surface-3); white-space: nowrap; text-align: start; vertical-align: top; }
+    thead th {
+      position: sticky; top: 0; z-index: 1; background: var(--rp-surface-2); color: var(--rp-muted);
+      font-weight: 600; font-size: 11.5px; text-transform: uppercase; letter-spacing: .04em;
+      border-bottom: 1px solid var(--rp-border);
+    }
+    tbody tr:nth-child(even):not(.total):not(.closing) td { background: #fcfdfe; }
+    tbody tr:hover td { background: var(--rp-brand-soft); }
+
+    @include figures;
+
+    @media (max-width: 640px) {
+      th, td { padding: 8px 10px; }
+      font-size: 12px;
+    }
+
+    tr.total td { background: var(--rp-surface-3); border-top: 2px solid var(--rp-border-strong); font-weight: 700; }
+    tr.closing td { background: var(--rp-brand-soft); color: var(--rp-profit); font-weight: 700; }
+  }
+
+  a.rp-link { color: var(--rp-brand); text-decoration: none; font-weight: 500; &:hover { text-decoration: underline; } }
+}
+
+/// Accounting statement table (P&L, Balance Sheet, Trial Balance, General Ledger):
+/// sticky account/code columns, section + total rows, per-tone colour accents and
+/// ten comparison-column colour slots. Include on `:host ::ng-deep` content.
+@mixin statement-table {
+  table.bo-table {
+    width: 100%; min-width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; color: var(--rp-text);
+
+    th, td { padding: 9px 14px; border-bottom: 1px solid var(--rp-surface-3); white-space: nowrap; background: var(--rp-surface); }
+
+    thead th {
+      position: sticky; top: 0; z-index: 4; background: var(--rp-surface-2); color: var(--rp-muted);
+      font-weight: 600; font-size: 11.5px; text-transform: uppercase; letter-spacing: .04em;
+      text-align: end; border-bottom: 1px solid var(--rp-border);
+    }
+    thead th.sticky-col-1, thead th.sticky-col-2, thead th.text-start { text-align: start; }
+    thead tr.subheader-row th { top: 34px; font-weight: 500; text-transform: none; letter-spacing: 0; }
+
+    .sticky-col-1 { position: sticky; inset-inline-start: 0; z-index: 3; width: var(--rp-col1); min-width: var(--rp-col1); max-width: var(--rp-col1); overflow: hidden; text-overflow: ellipsis; text-align: start; }
+    .sticky-col-2 { position: sticky; inset-inline-start: var(--rp-col1); z-index: 3; width: var(--rp-col2); min-width: var(--rp-col2); max-width: var(--rp-col2); overflow: hidden; text-overflow: ellipsis; text-align: start; color: var(--rp-muted); border-inline-end: 1px solid var(--rp-border); }
+
+    // Phones: tighter cells, smaller type, shallower indents.
+    @media (max-width: 640px) {
+      font-size: 12px;
+      th, td { padding: 8px 10px; }
+      .ps-4 { padding-inline-start: 18px; }
+      .ps-5 { padding-inline-start: 24px; }
+      .ps-6 { padding-inline-start: 46px; }
+      .group-toggle { margin-inline-end: 4px; }
+    }
+    thead .sticky-col-1, thead .sticky-col-2 { z-index: 5; }
+
+    .text-end { text-align: end; font-variant-numeric: tabular-nums; }
+    .ps-4 { padding-inline-start: 28px; }
+    .ps-5 { padding-inline-start: 40px; }
+    // A child account sits under its parent's NAME (the parent's +/− toggle takes ~28px before the name).
+    .ps-6 { padding-inline-start: 68px; }
+
+    // Row kinds (neutral); tones below colour them.
+    tr.parent-type-row td { background: var(--rp-surface-2); font-weight: 700; color: var(--rp-text); border-bottom: 1px solid var(--rp-border); }
+    tr.type-row td { background: var(--rp-surface); font-weight: 600; color: var(--rp-text-2); }
+    tr.subtotal-row td { background: var(--rp-surface); font-weight: 600; border-top: 1px solid var(--rp-border-strong); }
+    tr.total-row td, tr.profit-row td { background: var(--rp-surface-2); font-weight: 700; border-top: 2px solid var(--rp-border-strong); border-bottom: 1px solid var(--rp-border); }
+    tr.grand-total td { border-top-width: 3px; }
+    tr.group-header-row td { font-weight: 600; }
+    tr.child-account td.account-cell { color: var(--rp-muted); }
+    tr.data-row:hover td { background: var(--rp-brand-soft); }
+
+    .negative { color: var(--rp-expense); }
+
+    a.account-link { color: var(--rp-brand); text-decoration: none; cursor: pointer; font-weight: 500; &:hover { text-decoration: underline; } }
+    .group-toggle {
+      width: 20px; height: 20px; margin-inline-end: 8px; border: 1px solid var(--rp-border-strong); background: var(--rp-surface);
+      border-radius: 5px; line-height: 1; cursor: pointer; color: var(--rp-muted);
+      &:hover { color: var(--rp-brand); border-color: var(--rp-brand); }
+    }
+
+    th.total-header, td.total-cell { font-weight: 700; border-inline-start: 1px solid var(--rp-border); }
+    // Legacy look: the Total column is a grey band; on section totals and profit rows it is darker.
+    td.total-cell { background: #eef2f6; }
+    tr.subtotal-row td.total-cell, tr.total-row td.total-cell, tr.profit-row td.total-cell { background: #dde4ec; }
+    th.total-header { background: var(--rp-brand); color: #fff; border-bottom-color: var(--rp-brand); }
+
+    // Section totals (Total income / cost of goods sold / expenses): grey label cells like the legacy.
+    tr.subtotal-row td.sticky-col-1, tr.subtotal-row td.sticky-col-2 { background: #e5e7eb; font-weight: 700; }
+    tr.subtotal-row td { border-bottom: 2px solid #d1d5db; }
+
+    // Gross / operating profit: tinted label cells. Net profit: dark band, white text, brand-coloured Total.
+    tr.profit-row.gross-profit td.sticky-col-1, tr.profit-row.gross-profit td.sticky-col-2 { background: #ddf4f7; }
+    tr.profit-row.operating-profit td.sticky-col-1, tr.profit-row.operating-profit td.sticky-col-2 { background: #dbeafe; }
+    tr.profit-row.net-profit td { background: #1f2937 !important; color: #fff !important; border-top-color: #1f2937; border-bottom: 0; }
+    tr.profit-row.net-profit td.negative { color: #fca5a5 !important; }
+    tr.profit-row.net-profit td.total-cell { background: var(--rp-brand) !important; }
+
+    // Without a comparison the single "Total" column is the ONLY amount column, so it is not set apart:
+    // plain white header and plain cells (the grey / teal Total band is for comparison tables).
+    &:not(.has-comparison) {
+      th.total-header { background: var(--rp-surface); color: var(--rp-text-2); border-bottom-color: var(--rp-border); }
+      td.total-cell { background: transparent; }
+      // Section totals and profit rows are grey across the whole row (label darker, amount lighter), like the legacy.
+      // (Here the amount cell is the single data column — there is no separate Total cell — so match every non-label cell.)
+      tr.subtotal-row td:not(.sticky-col-1):not(.sticky-col-2),
+      tr.total-row td:not(.sticky-col-1):not(.sticky-col-2),
+      tr.profit-row td:not(.sticky-col-1):not(.sticky-col-2) { background: #f3f4f6; }
+      tr.profit-row.net-profit td.total-cell { background: #1f2937 !important; }
+    }
+
+    // Clean, Wix-style statement: white rows, tone only colours the text of section / total rows.
+    @each $t in $tones {
+      tr.tone-#{$t} {
+        &.parent-type-row td, &.total-row td, &.profit-row td { color: var(--rp-#{$t}); }
+      }
+    }
+    // Header: plain white, normal case, a little larger — like the Wix report tables.
+    thead th {
+      background: var(--rp-surface); color: var(--rp-text-2); text-transform: none; letter-spacing: 0;
+      font-size: 14px; font-weight: 500; border-bottom: 1px solid var(--rp-border);
+    }
+
+    // Comparison-column colour slots (10 evenly spread hues).
+    &.has-comparison {
+      // Period headers read as titles (not small grey caps): "Mar 2026" in dark, bold type.
+      thead th[class*="bo-p"] { text-transform: none; letter-spacing: 0; font-size: 13px; font-weight: 700; color: var(--rp-text); padding-top: 11px; padding-bottom: 9px; }
+      @for $i from 1 through 10 {
+        $h: ($i * 47 + 190) % 360;
+        th.bo-p#{$i} { background: linear-gradient(hsla($h, 65%, 55%, .16), hsla($h, 65%, 55%, .16)), #fff; box-shadow: inset 0 -3px 0 hsl($h, 60%, 48%); }
+        td.bo-p#{$i}-cell { background: hsla($h, 60%, 55%, .10); }
+        tr.subtotal-row td.bo-p#{$i}-cell, tr.total-row td.bo-p#{$i}-cell, tr.profit-row td.bo-p#{$i}-cell { background: hsla($h, 60%, 55%, .24); }
+      }
+
+      // The period the user picked (chip / legend): a tinted band down the whole column with fine
+      // edge lines. Drawn as inset shadows so it layers over every row's own colour (sections,
+      // totals) instead of replacing it. Header keeps a thick brand underline.
+      th, td { transition: box-shadow .25s ease, color .25s ease; }
+      td.col-active {
+        box-shadow:
+          inset 1px 0 0 rgba(30, 140, 159, .35),
+          inset -1px 0 0 rgba(30, 140, 159, .35),
+          inset 0 0 0 999px rgba(30, 140, 159, .10);
+      }
+      th.col-active {
+        color: var(--rp-brand);
+        box-shadow:
+          inset 1px 0 0 rgba(30, 140, 159, .35),
+          inset -1px 0 0 rgba(30, 140, 159, .35),
+          inset 0 -4px 0 var(--rp-brand),
+          inset 0 0 0 999px rgba(30, 140, 159, .12);
+      }
+    }
+  }
+}
+
+/// Small colour swatch for a comparison column (legend).
+@mixin period-dots {
+  @for $i from 1 through 10 {
+    $h: ($i * 47 + 190) % 360;
+    .ts-dot.bo-p#{$i} { background: hsl($h, 55%, 52%); }
+  }
+}

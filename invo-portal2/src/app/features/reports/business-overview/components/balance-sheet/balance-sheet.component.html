@@ -1,0 +1,119 @@
+<app-bo-state [loading]="loading() && !data()" [error]="error()" [empty]="isEmpty()" (retry)="load()" />
+
+@if (data(); as d) {
+  @if (!isEmpty()) {
+    <div class="bs" [class.stale]="loading()">
+      <app-report-kpi-row [kpis]="kpis()" />
+
+      <div class="bs-charts-bar">
+        <button type="button" class="btn btn-default btn-sm" (click)="showCharts.set(!showCharts())">
+          {{ (showCharts() ? 'REPORTS.BO.CHART.HIDE' : 'REPORTS.BO.CHART.SHOW') | translate }}
+        </button>
+      </div>
+      @if (showCharts()) {
+        <div class="bs-charts">
+          <div>
+            <h6 class="bs-chart-title">{{ 'REPORTS.BO.CHART.ASSETS_VS_LIABILITIES' | translate }}</h6>
+            <app-report-chart [config]="barChart" [rows]="barRows()" />
+          </div>
+          <div>
+            <h6 class="bs-chart-title">{{ 'REPORTS.BO.CHART.ASSET_COMPOSITION' | translate }}</h6>
+            <app-report-chart [config]="donutChart" [rows]="donutRows()" />
+          </div>
+        </div>
+      }
+
+      <app-bo-table-shell [periods]="periods()" hintKey="boReports_balanceSheet_hint">
+        <table class="bo-table" [class.has-comparison]="periods().length > 1">
+          <thead>
+            <tr class="header-row">
+              <th class="sticky-col-1">{{ 'REPORTS.BO.COLUMNS.ACCOUNT_NAME' | translate }}</th>
+              <th class="sticky-col-2">{{ 'REPORTS.BO.COLUMNS.ACCOUNT_CODE' | translate }}</th>
+              @for (c of d.columns; track c; let i = $index) {
+                <th class="text-end" [attr.data-period-index]="i" [class]="c === 'Total' ? 'total-header' : 'bo-p' + slot(i)">{{ c | boColumn }}</th>
+              }
+              @if (showTotal()) { <th class="text-end total-header">{{ 'REPORTS.BO.COLUMNS.TOTAL' | translate }}</th> }
+            </tr>
+          </thead>
+
+          @for (s of sections(); track s.parentType; let si = $index) {
+            <tbody>
+              <tr [class]="'parent-type-row tone-' + s.tone">
+                <td class="sticky-col-1"><strong>{{ s.parentType | boAccountName }}</strong></td>
+                <td class="sticky-col-2"></td>
+                @for (c of d.columns; track c) { <td></td> }
+                @if (showTotal()) { <td class="total-cell"></td> }
+              </tr>
+            </tbody>
+
+            @if (s.types; as types) {
+              <!-- Current Assets: split by account type, each with its own subtotal -->
+              @for (tb of types; track tb.type) {
+                <tbody>
+                  <tr class="type-row">
+                    <td class="sticky-col-1 ps-4">{{ tb.type | boAccountName }}</td>
+                    <td class="sticky-col-2"></td>
+                    @for (c of d.columns; track c) { <td></td> }
+                    @if (showTotal()) { <td class="total-cell"></td> }
+                  </tr>
+                </tbody>
+                <tbody boAccountRows [childs]="tb.childs" [columns]="d.columns" [profitLoss]="profitLossLink()" (open)="drill($event)"></tbody>
+                <tbody>
+                  <tr [class]="'subtotal-row tone-' + s.tone">
+                    <td class="sticky-col-1" colspan="2">{{ 'REPORTS.BO.SECTIONS.TOTAL_FOR' | translate }} {{ tb.type | boAccountName }}</td>
+                    @for (c of d.columns; track c; let ci = $index) {
+                      <td class="text-end" [class]="'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci" [class.negative]="(tb.total[c] || 0) < 0">{{ tb.total[c] | boAmount }}</td>
+                    }
+                    @if (showTotal()) { <td class="text-end total-cell">{{ sum(tb.total) | boAmount }}</td> }
+                  </tr>
+                </tbody>
+              }
+              <tbody>
+                <tr class="total-row tone-asset">
+                  <td class="sticky-col-1" colspan="2"><strong>{{ 'REPORTS.BO.SECTIONS.TOTAL_FOR' | translate }} {{ 'REPORTS.BO.SECTIONS.CURRENT_ASSETS' | translate }}</strong></td>
+                  @for (c of d.columns; track c; let ci = $index) {
+                    <td class="text-end" [class]="'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci"><strong>{{ currentAssetsTotal()[c] | boAmount }}</strong></td>
+                  }
+                  @if (showTotal()) { <td class="text-end total-cell"><strong>{{ sum(currentAssetsTotal()) | boAmount }}</strong></td> }
+                </tr>
+              </tbody>
+            } @else {
+              <tbody boAccountRows [childs]="s.records" [columns]="d.columns" [profitLoss]="profitLossLink()" (open)="drill($event)"></tbody>
+              <tbody>
+                <tr [class]="'subtotal-row tone-' + s.tone">
+                  <td class="sticky-col-1" colspan="2">{{ 'REPORTS.BO.SECTIONS.TOTAL_FOR' | translate }} {{ s.parentType | boAccountName }}</td>
+                  @for (c of d.columns; track c; let ci = $index) {
+                    <td class="text-end" [class]="'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci" [class.negative]="(s.total[c] || 0) < 0">{{ s.total[c] | boAmount }}</td>
+                  }
+                  @if (showTotal()) { <td class="text-end total-cell">{{ sum(s.total) | boAmount }}</td> }
+                </tr>
+              </tbody>
+            }
+
+            @if (si === lastAssetIndex()) {
+              <tbody>
+                <tr class="total-row tone-asset">
+                  <td class="sticky-col-1" colspan="2"><strong>{{ 'REPORTS.BO.SECTIONS.TOTAL_ASSETS' | translate }}</strong></td>
+                  @for (c of d.columns; track c; let ci = $index) {
+                    <td class="text-end" [class]="'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci"><strong>{{ assetsTotal()[c] | boAmount }}</strong></td>
+                  }
+                  @if (showTotal()) { <td class="text-end total-cell"><strong>{{ sum(assetsTotal()) | boAmount }}</strong></td> }
+                </tr>
+              </tbody>
+            }
+          }
+
+          <tbody>
+            <tr class="total-row grand-total tone-equity">
+              <td class="sticky-col-1" colspan="2"><strong>{{ 'REPORTS.BO.SECTIONS.TOTAL_FOR' | translate }} {{ 'REPORTS.BO.SECTIONS.LIABILITIES_AND_EQUITY' | translate }}</strong></td>
+              @for (c of d.columns; track c; let ci = $index) {
+                <td class="text-end" [class]="'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci"><strong>{{ liabEquityTotal()[c] | boAmount }}</strong></td>
+              }
+              @if (showTotal()) { <td class="text-end total-cell"><strong>{{ sum(liabEquityTotal()) | boAmount }}</strong></td> }
+            </tr>
+          </tbody>
+        </table>
+      </app-bo-table-shell>
+    </div>
+  }
+}

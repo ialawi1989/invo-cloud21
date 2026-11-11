@@ -1,0 +1,48 @@
+@if (loading() && !rows()) {
+  <div class="dc-loading" aria-busy="true"><div class="dc-skel"></div></div>
+} @else if (error()) {
+  <app-report-error [message]="error()" (retry)="load()" />
+} @else if (rows(); as list) {
+  @if (!list.length) {
+    <app-report-empty />
+  } @else {
+    <div class="dc" [class.stale]="loading()">
+      <app-bo-table-shell [periods]="[]" hintKey="dailySalesSub_scrollHint">
+        <table class="bo-table">
+          <thead>
+            <tr class="header-row">
+              <th class="sticky-col-1">{{ 'REPORTS.DAILY_CLOSING.SUB.DATE' | translate }}</th>
+              <th class="text-start">{{ 'REPORTS.DAILY_CLOSING.SUB.INVOICE' | translate }}</th>
+              <th class="text-start">{{ 'REPORTS.DAILY_CLOSING.SUB.CUSTOMER' | translate }}</th>
+              <th class="text-end">{{ 'REPORTS.DAILY_CLOSING.TOTAL_SALES' | translate }}</th>
+              <th class="text-end">{{ 'REPORTS.DAILY_CLOSING.ITEM_DISCOUNT' | translate }}</th>
+              <th class="text-end">{{ 'REPORTS.DAILY_CLOSING.TAX_TOTAL' | translate }}</th>
+              <th class="text-end">{{ 'REPORTS.DAILY_CLOSING.SUB.NET_SALES' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of list; track $index) {
+              <tr class="data-row">
+                <td class="sticky-col-1">{{ r.date | date: 'dd/MM/yyyy HH:mm' }}</td>
+                <td>{{ r.invoiceNumber }}</td>
+                <td>{{ r.customerName }}</td>
+                <td class="text-end">{{ num(r.totalSales) | mycurrency }}</td>
+                <td class="text-end">{{ num(r.itemDiscount) | mycurrency }}</td>
+                <td class="text-end">{{ num(r.taxTotal) | mycurrency }}</td>
+                <td class="text-end">{{ num(r.netSales) | mycurrency }}</td>
+              </tr>
+            }
+            <tr class="total-row">
+              <td class="sticky-col-1"><strong>{{ 'REPORTS.SALES_BY_PRODUCT.TOTAL' | translate }}</strong></td>
+              <td></td><td></td>
+              <td class="text-end"><strong>{{ totals().sales | mycurrency }}</strong></td>
+              <td class="text-end"><strong>{{ totals().discount | mycurrency }}</strong></td>
+              <td class="text-end"><strong>{{ totals().tax | mycurrency }}</strong></td>
+              <td class="text-end"><strong>{{ totals().net | mycurrency }}</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </app-bo-table-shell>
+    </div>
+  }
+}

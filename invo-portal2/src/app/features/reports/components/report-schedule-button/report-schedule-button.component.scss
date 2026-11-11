@@ -1,0 +1,45 @@
+:host { display: inline-block; }
+.rs { position: relative; }
+
+.rs-btn {
+  position: relative; display: flex; align-items: center; justify-content: center; padding: .5rem;
+  background: transparent; border: 0; border-radius: .5rem; cursor: pointer; color: #6b7280; transition: all .2s;
+  &:hover { background: #f3f4f6; }
+  &.has-active { color: #167d8f; }
+  &:focus-visible { outline: 2px solid #1e8c9f; outline-offset: 2px; }
+}
+.rs-badge {
+  position: absolute; top: 1px; inset-inline-end: 0; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 999px;
+  display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; line-height: 1; color: #fff;
+  &.on { background: #167d8f; }
+  &.off { min-width: 9px; width: 9px; height: 9px; padding: 0; background: #9ca3af; }
+}
+
+.rs-backdrop { position: fixed; inset: 0; z-index: 1000; }
+.rs-menu {
+  position: absolute; top: calc(100% + 8px); inset-inline-end: 0; z-index: 1001; width: 300px; max-width: 90vw;
+  padding: 8px; background: #fff; border-radius: .75rem;
+  box-shadow: 0 10px 40px -5px rgba(0, 0, 0, .15), 0 0 0 1px rgba(0, 0, 0, .05);
+  animation: rs-pop .12s ease;
+}
+@keyframes rs-pop { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+
+.rs-list { display: flex; flex-direction: column; gap: 6px; max-height: 280px; overflow-y: auto; margin-bottom: 6px; }
+.rs-card {
+  display: flex; flex-direction: column; gap: 4px; width: 100%; padding: 9px 12px; text-align: start; font-family: inherit; cursor: pointer;
+  background: #f8fafc; border: 1px solid #e5e7eb; border-radius: .5rem; transition: border-color .15s, background .15s;
+  &:hover { background: #f1f5f9; border-color: #167d8f; }
+}
+.rs-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.rs-freq { font-size: .8125rem; font-weight: 600; color: #111827; text-transform: capitalize; }
+.rs-state {
+  padding: 1px 8px; border-radius: 999px; font-size: .6875rem; font-weight: 600; background: #f3f4f6; color: #6b7280;
+  &.on { background: #ecfdf5; color: #047857; }
+}
+.rs-card-dates { display: flex; flex-direction: column; gap: 1px; font-size: .75rem; color: #6b7280; }
+
+.rs-new {
+  display: flex; align-items: center; gap: .5rem; width: 100%; padding: 9px 12px; background: transparent; border: 0; border-radius: .5rem;
+  color: #167d8f; font-size: .875rem; font-weight: 600; font-family: inherit; cursor: pointer; transition: background .15s;
+  &:hover { background: #ecfeff; }
+}

@@ -167,7 +167,6 @@ export class SupplierCreditFormComponent extends DocumentFormBase {
     const ed = this.ce;
     ed.deleteMode = true;
     ed.onDuplicate = () => this.toast.warning(this.lang.instant('SUPPLIER_CREDITS.FORM.ALREADY_ADDED'), '');
-    ed.sourceTotals = id => this.sourceTotals(id);
 
     const c = this.credit;
     if (!isNew && c.billingId && c.billingId !== ALL) {
@@ -197,21 +196,6 @@ export class SupplierCreditFormComponent extends DocumentFormBase {
 
   /** Grand total of the bill being credited - a credit worth more than it gets a warning (legacy). */
   billTotal = 0;
-
-  private billTotalsCache = new Map<string, { beforeTax: number; afterTax: number }>();
-  private async sourceTotals(billingId: string): Promise<{ beforeTax: number; afterTax: number } | null> {
-    if (!billingId) return null;
-    const hit = this.billTotalsCache.get(billingId);
-    if (hit) return hit;
-    try {
-      const bill = new Bill();
-      bill.ParseJson(await this.credits.getBillForCreditRaw(billingId, this.credit.id));
-      bill.calculateTotal();
-      const t = { beforeTax: bill.itemTotalWithoutTax, afterTax: bill.itemTotalWithoutTax + bill.invoiceTaxTotal };
-      this.billTotalsCache.set(billingId, t);
-      return t;
-    } catch { return null; }
-  }
 
   // ── bill ───────────────────────────────────────────────────────────
   /** The supplier's bills at the branch for the "which bill?" picker (new credits only). */
@@ -258,8 +242,6 @@ export class SupplierCreditFormComponent extends DocumentFormBase {
     const bill = new Bill();
     bill.ParseJson(raw);
     bill.calculateTotal();
-    const beforeTax = bill.itemTotalWithoutTax;
-    const afterTax = bill.itemTotalWithoutTax + bill.invoiceTaxTotal;
 
     const keep = { attachment: c.attachment, allowBillOfEntry: c.allowBillOfEntry, number: c.supplierCreditNumber };
     const { lines, ...header } = raw;
@@ -276,7 +258,7 @@ export class SupplierCreditFormComponent extends DocumentFormBase {
 
     const out: SupplierCreditLine[] = [];
     for (const l of (lines ?? []) as any[]) {
-      const line = this.toCreditLine(l, bill, beforeTax, afterTax);
+      const line = this.toCreditLine(l);
       if (line) out.push(line);
     }
     c.lines = out;
@@ -288,7 +270,7 @@ export class SupplierCreditFormComponent extends DocumentFormBase {
 
 
   /** A bill line as a credit line of the full quantity still creditable, or null when nothing is left to credit. */
-  private toCreditLine(l: any, bill: Bill, beforeTax: number, afterTax: number): SupplierCreditLine | null {
+  private toCreditLine(l: any): SupplierCreditLine | null {
     const line = new SupplierCreditLine();
     line.ParseJson(l);
     if (!(line.qty > 0 || line.serials.length || line.batches.length)) return null;
@@ -297,9 +279,7 @@ export class SupplierCreditFormComponent extends DocumentFormBase {
     line.qty = line.maxQty;
     line.tempQty = line.qty;
     line.lineQtyLimit = line.qty;
-    line.billDiscount = bill.discountTotal;
-    line.sourceBillTotalBeforeTax = beforeTax;
-    line.sourceBillTotalAfterTax = afterTax;
+    // billDiscount / returned* come from the server row: the line's own share of the bill's header discount and what other credits took
     // Serials / batches start fully returned; the dialog narrows them.
     line.serials.forEach(s => (s.return = true));
     line.batches.forEach(b => { b.return = true; if (b.qty > b.maxQty) b.qty = b.maxQty; });
@@ -317,9 +297,7 @@ export class SupplierCreditFormComponent extends DocumentFormBase {
     const bill = new Bill();
     bill.ParseJson(raw);
     bill.calculateTotal();
-    const beforeTax = bill.itemTotalWithoutTax;
-    const afterTax = bill.itemTotalWithoutTax + bill.invoiceTaxTotal;
-    const offered = ((raw.lines ?? []) as any[]).map(l => this.toCreditLine(l, bill, beforeTax, afterTax)).filter((l): l is SupplierCreditLine => !!l);
+    const offered = ((raw.lines ?? []) as any[]).map(l => this.toCreditLine(l)).filter((l): l is SupplierCreditLine => !!l);
     // Legacy match: same product, or the same non-empty note for free-text lines.
     const held = c.lines.filter(x => !(x as SupplierCreditLine).isDeleted);
     const taken = (l: SupplierCreditLine) => held.some(x => (x.selectedItem?.id && x.selectedItem.id === l.selectedItem?.id) || (!!x.note && x.note === l.note));

@@ -1,0 +1,52 @@
+<div class="p-4">
+  <div class="flex items-center justify-between sm:justify-end gap-2 flex-wrap mb-3">
+    <button type="button" (click)="today()"
+      class="px-3 h-8 rounded-lg border border-slate-300 text-sm font-medium text-slate-700 hover:bg-slate-50">
+      {{ 'COMMON.TODAY' | translate }}
+    </button>
+    <span class="text-sm text-slate-600 tabular-nums">
+      @if (count() === 1) {
+        {{ start() | date: 'EEE, MMM d, y' }}
+      } @else {
+        {{ start() | date: 'MMM d' }} – {{ end() | date: 'MMM d, y' }}
+      }
+    </span>
+    <div class="flex items-center">
+      <button type="button" (click)="prev()" [attr.aria-label]="'COMMON.PREVIOUS' | translate"
+        class="w-9 h-9 inline-flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-600 rtl:rotate-180">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <button type="button" (click)="next()" [attr.aria-label]="'COMMON.NEXT' | translate"
+        class="w-9 h-9 inline-flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-600 rtl:rotate-180">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <app-doc-h-scroll>
+    <div class="grid border border-slate-200 rounded-xl overflow-hidden bg-white"
+      [style.grid-template-columns]="'repeat(' + count() + ', minmax(0, 1fr))'"
+      [class.min-w-[900px]]="count() === 7"
+      [class.opacity-60]="loading()">
+      @for (d of days(); track d.key) {
+        <div class="border-e border-slate-200 last:border-e-0 min-h-[320px] flex flex-col">
+          <div class="text-center py-2 border-b-2" [ngClass]="d.isToday ? 'border-brand-600 text-brand-700' : 'border-slate-100 text-slate-700'">
+            <div class="text-lg font-semibold leading-tight">{{ d.date | date: 'd' }}</div>
+            <div class="text-xs" [ngClass]="d.isToday ? 'text-brand-600' : 'text-slate-500'">{{ d.date | date: 'EEE' }}</div>
+            @if (d.rows.length) {
+              <div class="mt-1 text-[11px] text-slate-500 tabular-nums">{{ d.rows.length }} · {{ d.total | mycurrency }}</div>
+            }
+          </div>
+          <div class="p-2 flex flex-col gap-1.5">
+            @for (row of d.rows; track row.id) {
+              <app-doc-card [row]="row" [adapter]="adapter()" [compact]="count() === 7" />
+            }
+            @if (!d.rows.length && count() === 1) {
+              <p class="py-10 text-center text-sm text-slate-400">{{ 'COMMON.BOARD_EMPTY_COLUMN' | translate }}</p>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </app-doc-h-scroll>
+</div>

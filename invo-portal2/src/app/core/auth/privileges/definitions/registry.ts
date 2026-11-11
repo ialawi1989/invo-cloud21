@@ -39,6 +39,8 @@ import { employeeAssetSecurity } from './employeeAssetSecurity';
 import { employeeEosSecurity } from './employeeEosSecurity';
 import { employeeGosiSecurity } from './employeeGosiSecurity';
 import { employeeAttendenceSecurity } from './employeeAttendenceSecurity';
+import { employeePayoutSecurity } from './employeePayoutSecurity';
+import { tipsSecurity } from './tipsSecurity';
 import { employeeDisciplinarySecurity } from './employeeDisciplinarySecurity';
 import { employeeDocumentSecurity } from './employeeDocumentSecurity';
 import { employeeInvitationSecurity } from './employeeInvitationSecurity';
@@ -214,6 +216,8 @@ export const SECURITY_DEFINITIONS = {
   employeeGosiSecurity,
   employeeScheduleSecurity,
   employeeAttendenceSecurity,
+  employeePayoutSecurity,
+  tipsSecurity,
   employeeInvitationSecurity,
   companyGroupEmployeesSecurity,
   inventoryPhysicalCountsSecurity,

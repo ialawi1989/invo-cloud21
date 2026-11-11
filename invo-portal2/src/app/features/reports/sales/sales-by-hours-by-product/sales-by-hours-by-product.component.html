@@ -1,0 +1,55 @@
+@if (loading() && !data()) {
+  <div class="ls-loading" aria-busy="true"><div class="ls-skel"></div></div>
+} @else if (error()) {
+  <app-report-error [message]="error()" (retry)="load()" />
+} @else if (data(); as d) {
+  @if (isEmpty()) {
+    <app-report-empty />
+  } @else {
+    <div class="ls" [class.stale]="loading()">
+      <app-bo-table-shell [periods]="[]" hintKey="salesByHoursByProduct_scrollHint">
+        <table class="bo-table">
+          <thead>
+            <tr class="header-row">
+              <th class="sticky-col-1">{{ 'REPORTS.SALES_BY_HOURS_BY_PRODUCT.COLUMNS.HOUR' | translate }}</th>
+              <th class="text-end">{{ 'REPORTS.SALES_BY_HOURS_BY_PRODUCT.COLUMNS.QTY' | translate }}</th>
+              <th class="text-end">{{ 'REPORTS.SALES_BY_HOURS_BY_PRODUCT.COLUMNS.SALES' | translate }}</th>
+              <th class="text-end">{{ 'REPORTS.SALES_BY_HOURS_BY_PRODUCT.COLUMNS.PCT' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of records(); track trackProduct($index, p)) {
+              <tr class="group-row">
+                <td class="sticky-col-1" colspan="4"><strong>{{ p.productName }}</strong></td>
+              </tr>
+              @for (h of p.hours; track $index) {
+                <tr class="data-row">
+                  <td class="sticky-col-1">{{ hourRange(h.hour) }}</td>
+                  <td class="text-end">{{ num(h.qty) | number }}</td>
+                  <td class="text-end">{{ num(h.sales) | mycurrency }}</td>
+                  <td class="text-end">{{ num(h.Dailysales) | number: '1.0-0' }}%</td>
+                </tr>
+              }
+              <tr class="subtotal-row">
+                <td class="sticky-col-1"><strong>{{ 'REPORTS.SALES_BY_PRODUCT.TOTAL' | translate }}</strong></td>
+                <td class="text-end"><strong>{{ num(p.totalQty) | number }}</strong></td>
+                <td class="text-end"><strong>{{ num(p.totalSales) | mycurrency }}</strong></td>
+                <td></td>
+              </tr>
+            }
+            <tr class="total-row">
+              <td class="sticky-col-1"><strong>{{ 'REPORTS.SALES_BY_HOURS_BY_PRODUCT.GRAND_TOTAL' | translate }}</strong></td>
+              <td class="text-end"><strong>{{ grandQty() | number }}</strong></td>
+              <td class="text-end"><strong>{{ grandSales() | mycurrency }}</strong></td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </app-bo-table-shell>
+      <app-pagination
+        [page]="page()" [pageSize]="pageSize()" [count]="d.count" [pageCount]="d.pageCount"
+        [pageSizeOptions]="sizes" [disabled]="loading()"
+        (pageChange)="goTo($event)" (pageSizeChange)="setSize($event)" />
+    </div>
+  }
+}

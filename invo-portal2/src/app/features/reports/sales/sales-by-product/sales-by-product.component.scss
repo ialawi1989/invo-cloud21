@@ -1,0 +1,37 @@
+@use '../../styles/report-theme' as rp;
+
+:host { @include rp.tokens; display: block; }
+
+.sp { transition: opacity .15s; }
+.sp.stale { opacity: .55; pointer-events: none; }
+
+/* Product cell: the name with its barcode under it. */
+.sp-product { white-space: nowrap; }
+.sp-product-name { display: block; font-weight: 500; }
+.sp-barcode { display: block; margin-top: 1px; font-size: 11.5px; color: var(--rp-muted); font-variant-numeric: tabular-nums; }
+
+/* Sortable headers: the header text is a button; the arrows show the direction, the active column is brand-coloured. */
+.sp-sort {
+  display: inline-flex; align-items: center; gap: 6px; padding: 0; border: 0; background: transparent; cursor: pointer;
+  font: inherit; color: inherit; text-transform: inherit; letter-spacing: inherit; white-space: nowrap;
+  .sp-sort-icon { opacity: .45; transition: opacity .15s; }
+  &:hover { color: var(--rp-brand); .sp-sort-icon { opacity: 1; } }
+  &:focus-visible { outline: 2px solid var(--rp-brand); outline-offset: 3px; border-radius: 4px; }
+  &.active { color: var(--rp-brand); .sp-sort-icon { opacity: 1; } }
+}
+:host ::ng-deep th.text-end .sp-sort { justify-content: flex-end; }
+
+@keyframes sp-shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+.sp-loading { display: flex; flex-direction: column; gap: 16px; }
+.sp-skel {
+  height: 360px; border-radius: 12px; background: linear-gradient(90deg, #eef2f6 0%, #f6f8fa 50%, #eef2f6 100%);
+  background-size: 200% 100%; animation: sp-shimmer 1.4s ease-in-out infinite;
+}
+.sp-error {
+  @include rp.card; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 50px 20px;
+  p { margin: 0; color: var(--rp-muted); font-size: 14px; text-align: center; }
+}
+@media (prefers-reduced-motion: reduce) { .sp-skel { animation: none; } }
+
+/* Space between the table card and its pager. */
+app-pagination { display: block; margin-top: 16px; }

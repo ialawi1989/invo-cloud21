@@ -11,6 +11,9 @@ import { DropdownMenuBtnComponent, DropdownMenuBtnItem } from '@shared/component
 
 import { SendDocumentData, SendDocumentModalComponent } from '../../../components/send-document-modal/send-document-modal.component';
 import { DocumentListBase, DocListMeta } from '../../../services/document-list-base';
+import { DocBoardViewComponent } from '../../../components/doc-board-view/doc-board-view.component';
+import { DocCalendarViewComponent } from '../../../components/doc-calendar-view/doc-calendar-view.component';
+import { DocViewAdapter } from '../../../components/doc-views/doc-views.types';
 import { EstimatesService } from '../../services/estimates.service';
 import { EstimateActions } from '../../services/estimate-actions';
 
@@ -22,7 +25,7 @@ import { EstimateActions } from '../../services/estimate-actions';
 @Component({
   selector: 'app-estimates-list',
   standalone: true,
-  imports: [CommonModule, TranslateModule, ListPageComponent, ListCellTemplateDirective, ListRowActionsDirective, DropdownMenuBtnComponent, MycurrencyPipe],
+  imports: [CommonModule, TranslateModule, ListPageComponent, ListCellTemplateDirective, ListRowActionsDirective, DropdownMenuBtnComponent, MycurrencyPipe, DocBoardViewComponent, DocCalendarViewComponent],
   templateUrl: './estimates-list.component.html',
 })
 export class EstimatesListComponent extends DocumentListBase implements OnInit {
@@ -87,8 +90,36 @@ export class EstimatesListComponent extends DocumentListBase implements OnInit {
     ];
   }
 
+  /**
+   * How the board / calendar present and act on an estimate (same rules as the table).
+   * An estimate has no status column: it is Converted once an invoice references it, else Open.
+   */
+  readonly viewAdapter: DocViewAdapter = {
+    numberKey: 'estimateNumber',
+    refKey: 'refrenceNumber',
+    partyKey: 'customerName',
+    dateKey: 'estimateDate',
+    dueKey: 'estimateExpDate',
+    dueLabelKey: 'ESTIMATES.LIST.EXPIRY_DATE',
+    settledStatuses: ['Converted'],
+    columns: [
+      { id: 'open',      labelKey: 'ESTIMATES.STATUS.Open',      statuses: ['Open'],      tone: 'bg-emerald-500' },
+      { id: 'converted', labelKey: 'ESTIMATES.STATUS.Converted', statuses: ['Converted'], tone: 'bg-indigo-500' },
+    ],
+    statusOf: r => (r.invoiceId ? 'Converted' : 'Open'),
+    statusLabel: s => this.lang.instant('ESTIMATES.STATUS.' + s),
+    statusClass: s => (s === 'Converted' ? 'bg-indigo-50 text-indigo-700' : 'bg-emerald-50 text-emerald-700'),
+    chips: r => (r.invoiceNumber ? [{ text: r.invoiceNumber, classes: 'bg-slate-100 text-slate-700' }] : []),
+    view: r => this.view(r),
+    edit: r => this.edit(r),
+    canEdit: r => this.actions.edit(r),
+    menu: (r, after) => this.rowMenu(r, after),
+  };
+
   /** Secondary row actions live in the "⋯" menu (View + Edit stay outside). */
-  rowMenu(r: any): DropdownMenuBtnItem[] { return this.actions.menu(r, r.id, () => this.listPage?.refresh?.()); }
+  rowMenu(r: any, after: () => void = () => this.listPage?.refresh?.()): DropdownMenuBtnItem[] {
+    return this.actions.menu(r, r.id, after);
+  }
 
   add(): void { void this.router.navigate(['/account/estimate', 'new']); }
   view(r: any): void { void this.router.navigate(['/account/estimate/view', r.id]); }

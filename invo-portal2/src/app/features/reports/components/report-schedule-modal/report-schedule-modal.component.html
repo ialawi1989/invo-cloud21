@@ -1,0 +1,139 @@
+<!-- Header -->
+<div class="px-6 py-5 border-b border-slate-100 shrink-0">
+  <h2 class="text-lg font-semibold text-slate-900">{{ 'REPORTS.SCHEDULE.TITLE' | translate }}</h2>
+  <p class="mt-0.5 text-sm text-slate-500">{{ 'REPORTS.SCHEDULE.REPORT_NAME' | translate }}: <strong class="text-slate-700">{{ data.titleKey | translate }}</strong></p>
+  @if (isEdit && (previousRun() || nextRun())) {
+    <p class="mt-1 text-xs text-slate-400">
+      @if (previousRun()) { {{ 'REPORTS.SCHEDULE.PREVIOUS_RUN' | translate }}: {{ previousRun() | date: 'dd/MM/yyyy HH:mm' }} }
+      @if (previousRun() && nextRun()) { · }
+      @if (nextRun()) { {{ 'REPORTS.SCHEDULE.NEXT_RUN' | translate }}: {{ nextRun() | date: 'dd/MM/yyyy HH:mm' }} }
+    </p>
+  }
+</div>
+
+<!-- Body -->
+<div class="px-6 py-5 space-y-6 flex-1 min-h-0 overflow-y-auto" [class.opacity-60]="loading()">
+
+  <!-- When -->
+  <section class="space-y-3">
+    <h3 class="text-sm font-semibold text-slate-800">{{ 'REPORTS.SCHEDULE.WHEN' | translate }}</h3>
+    <app-segmented-toggle [options]="frequencyOptions" [value]="frequency()" (valueChange)="frequency.set($event)" />
+    <p class="text-xs text-slate-500">{{ hint() | translate }}</p>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div>
+        <label class="block text-xs font-medium text-slate-600 mb-1">{{ 'REPORTS.SCHEDULE.START_DATE' | translate }}</label>
+        <app-date-field [value]="startDate()" (valueChange)="startDate.set($event)" [min]="today" triggerClass="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white" />
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-slate-600 mb-1">{{ 'REPORTS.SCHEDULE.START_TIME' | translate }}</label>
+        <app-time-picker [ngModel]="time()" (ngModelChange)="time.set($event)" [step]="1" />
+      </div>
+    </div>
+  </section>
+
+  <!-- What it runs with -->
+  @if (data.caps.asOfOptional || data.caps.branches || data.caps.comparison) {
+    <section class="space-y-3">
+      <h3 class="text-sm font-semibold text-slate-800">{{ 'REPORTS.SCHEDULE.FILTER' | translate }}</h3>
+
+      @if (data.caps.asOfOptional) {
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">{{ 'REPORTS.SCHEDULE.DATE_MODE' | translate }}</label>
+          <app-segmented-toggle [options]="rangeOptions" [value]="asOf() ? 'asOf' : 'range'" (valueChange)="asOf.set($event === 'asOf')" />
+        </div>
+      }
+
+      @if (data.caps.branches && data.branches.length) {
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">{{ 'REPORTS.BO.FILTERS.BRANCHES' | translate }}</label>
+          <app-search-dropdown [multiple]="true" [loadFn]="loadBranches" [displayWith]="branchLabel" [toValue]="branchValue"
+            [compareWith]="sameBranch" [value]="$any(branchIds())" (valueChange)="branchIds.set(ids($event))"
+            [placeholder]="'REPORTS.SCHEDULE.ALL_BRANCHES' | translate" triggerClass="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white" />
+        </div>
+      }
+
+      @if (data.caps.comparison) {
+        <div class="space-y-2">
+          <label class="block text-xs font-medium text-slate-600">{{ 'REPORTS.SCHEDULE.COMPARISON' | translate }}</label>
+          <app-segmented-toggle [options]="compareOptions" [value]="compareOn() ? 'on' : 'off'" (valueChange)="compareOn.set($event === 'on')" />
+          @if (compareOn()) {
+            <div class="flex items-center gap-2.5 flex-wrap">
+              <input type="number" min="1" max="60" class="w-20 px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-brand-500"
+                     [ngModel]="compareQty()" (ngModelChange)="setQty($event)" [attr.aria-label]="'REPORTS.SCHEDULE.QTY' | translate" />
+              <app-segmented-toggle [options]="periodOptions" [value]="comparePeriod()" (valueChange)="comparePeriod.set($event)" />
+              <span class="text-xs text-slate-500">{{ 'REPORTS.SCHEDULE.PREVIOUS' | translate }}</span>
+            </div>
+          }
+        </div>
+      }
+    </section>
+  }
+
+  <!-- Who gets it -->
+  <section class="space-y-3">
+    <h3 class="text-sm font-semibold text-slate-800">{{ 'REPORTS.SCHEDULE.RECIPIENT_DETAILS' | translate }}</h3>
+    <div>
+      <label class="block text-xs font-medium text-slate-600 mb-1">{{ 'REPORTS.SCHEDULE.EMAIL_RECIPIENTS' | translate }}</label>
+      <app-search-dropdown [multiple]="true" [loadFn]="loadEmployees" [displayWith]="employeeLabel" [toValue]="employeeId"
+        [compareWith]="sameEmployee" [value]="$any(recipientIds())" (valueChange)="recipientIds.set(ids($event))"
+        [placeholder]="'REPORTS.SCHEDULE.SELECT_EMPLOYEE' | translate" triggerClass="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white" />
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-slate-600 mb-1">{{ 'REPORTS.SCHEDULE.ADDITIONAL_RECIPIENTS' | translate }}</label>
+      <div class="flex gap-2">
+        <input type="email" class="flex-1 min-w-0 px-3 py-2 text-sm border rounded-lg focus:outline-none focus:border-brand-500"
+               [class.border-slate-300]="!emailError()" [class.border-red-500]="emailError()"
+               [placeholder]="'REPORTS.SCHEDULE.ENTER_EMAIL' | translate" [ngModel]="emailDraft()"
+               (ngModelChange)="emailDraft.set($event); emailError.set(false)" (keydown.enter)="$event.preventDefault(); addEmail()" />
+        <button type="button" (click)="addEmail()" class="px-3.5 py-2 text-sm font-medium text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors">
+          {{ 'REPORTS.SCHEDULE.ADD_EMAIL' | translate }}
+        </button>
+      </div>
+      @if (emailError()) { <p class="mt-1 text-xs text-red-600">{{ 'REPORTS.SCHEDULE.INVALID_EMAIL' | translate }}</p> }
+      @if (emails().length) {
+        <div class="mt-2 flex flex-wrap gap-1.5">
+          @for (e of emails(); track e) {
+            <span class="inline-flex items-center gap-1.5 ps-2.5 pe-1.5 py-1 rounded-full bg-slate-100 text-xs text-slate-700">
+              {{ e }}
+              <button type="button" (click)="removeEmail(e)" class="w-4 h-4 rounded-full text-slate-500 hover:bg-slate-200 leading-none" [attr.aria-label]="'COMMON.REMOVE' | translate">×</button>
+            </span>
+          }
+        </div>
+      }
+      <p class="mt-1.5 text-xs text-slate-400">{{ 'REPORTS.SCHEDULE.EMAIL_HINT' | translate }}</p>
+      @if (noRecipient()) { <p class="mt-1 text-xs text-amber-600">{{ 'REPORTS.SCHEDULE.RECIPIENT_REQUIRED' | translate }}</p> }
+    </div>
+  </section>
+
+  <!-- Format + status -->
+  <section class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+    <div>
+      <label class="block text-xs font-medium text-slate-600 mb-1.5">{{ 'REPORTS.SCHEDULE.ATTACH_AS' | translate }}</label>
+      <app-segmented-toggle [options]="attachOptions" [value]="attachment()" (valueChange)="attachment.set($event)" />
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-slate-600 mb-1.5">{{ 'REPORTS.SCHEDULE.STATUS' | translate }}</label>
+      <app-segmented-toggle [options]="statusOptions" [value]="active() ? 'active' : 'inactive'" (valueChange)="active.set($event === 'active')" />
+    </div>
+  </section>
+</div>
+
+<!-- Footer -->
+<div class="flex items-center justify-between px-6 py-4 border-t border-slate-100 bg-slate-50/50 shrink-0">
+  @if (isEdit) {
+    <button type="button" (click)="remove()" [disabled]="saving()"
+            class="text-sm font-medium text-red-600 hover:text-red-700 transition-colors disabled:opacity-50">
+      {{ (confirmingDelete() ? 'REPORTS.SCHEDULE.CONFIRM_DELETE' : 'COMMON.DELETE') | translate }}
+    </button>
+  } @else { <span></span> }
+  <div class="flex items-center gap-2.5">
+    <button type="button" (click)="cancel()" class="px-4 py-2 text-sm font-medium text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors">
+      {{ 'COMMON.CANCEL' | translate }}
+    </button>
+    <button type="button" (click)="save()" [disabled]="!canSave()"
+            class="px-5 py-2 text-sm font-medium text-white bg-gradient-to-r from-brand-500 to-brand-700 rounded-lg shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none">
+      {{ 'COMMON.SAVE' | translate }}
+    </button>
+  </div>
+</div>

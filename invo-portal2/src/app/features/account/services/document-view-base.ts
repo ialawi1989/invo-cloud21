@@ -44,7 +44,7 @@ export interface DocRailItem {
   badgeKind?: 'warn' | 'neutral';
   /** The document's status as a small colored pill, inline with `sub` (e.g. "Open", "Paid", "Draft"). */
   statusText?: string;
-  statusKind?: 'draft' | 'open' | 'paid' | 'partial' | 'void' | 'neutral';
+  statusKind?: 'draft' | 'open' | 'paid' | 'partial' | 'void' | 'neutral' | 'info';
   /** The raw record, so bulk actions can apply their own rules (e.g. which statuses may be deleted). */
   data?: any;
 }

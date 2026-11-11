@@ -1,0 +1,82 @@
+@if (loading() && !data()) {
+  <div class="gl-loading" aria-busy="true"><div class="gl-skel"></div></div>
+} @else if (error()) {
+  <app-report-error [message]="error()" (retry)="load()" />
+} @else if (data(); as d) {
+  @if (isEmpty()) {
+    <app-report-empty />
+  } @else {
+    <div class="gl" [class.stale]="loading()">
+      <app-bo-table-shell [periods]="[]" hintKey="salesByProductsVsOptions_scrollHint">
+        <table class="bo-table">
+          <thead>
+            <tr class="header-row">
+              <th class="sticky-col-1" [attr.aria-sort]="ariaSort('productName')">
+                <button type="button" class="gl-sort" [class.active]="sort()?.sortValue === 'productName'" (click)="sortBy('productName')">
+                  {{ 'REPORTS.SALES_BY_PRODUCT.PRODUCT_NAME' | translate }} <svg class="gl-sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 4 18 9" [style.opacity]="ariaSort('productName') === 'descending' ? .25 : 1"/><polyline points="6 15 12 20 18 15" [style.opacity]="ariaSort('productName') === 'ascending' ? .25 : 1"/></svg>
+                </button>
+              </th>
+              <th class="text-end" [attr.aria-sort]="ariaSort('lineQty')">
+                <button type="button" class="gl-sort" [class.active]="sort()?.sortValue === 'lineQty'" (click)="sortBy('lineQty')">
+                  {{ 'REPORTS.PRODUCTS_VS_OPTIONS.LINE_QTY' | translate }} <svg class="gl-sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 4 18 9" [style.opacity]="ariaSort('lineQty') === 'descending' ? .25 : 1"/><polyline points="6 15 12 20 18 15" [style.opacity]="ariaSort('lineQty') === 'ascending' ? .25 : 1"/></svg>
+                </button>
+              </th>
+              <th class="text-start" [attr.aria-sort]="ariaSort('optionName')">
+                <button type="button" class="gl-sort" [class.active]="sort()?.sortValue === 'optionName'" (click)="sortBy('optionName')">
+                  {{ 'REPORTS.PRODUCTS_VS_OPTIONS.OPTION_NAME' | translate }} <svg class="gl-sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 4 18 9" [style.opacity]="ariaSort('optionName') === 'descending' ? .25 : 1"/><polyline points="6 15 12 20 18 15" [style.opacity]="ariaSort('optionName') === 'ascending' ? .25 : 1"/></svg>
+                </button>
+              </th>
+              <th class="text-end" [attr.aria-sort]="ariaSort('optionPrice')">
+                <button type="button" class="gl-sort" [class.active]="sort()?.sortValue === 'optionPrice'" (click)="sortBy('optionPrice')">
+                  {{ 'REPORTS.PRODUCTS_VS_OPTIONS.UNIT_PRICE' | translate }} <svg class="gl-sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 4 18 9" [style.opacity]="ariaSort('optionPrice') === 'descending' ? .25 : 1"/><polyline points="6 15 12 20 18 15" [style.opacity]="ariaSort('optionPrice') === 'ascending' ? .25 : 1"/></svg>
+                </button>
+              </th>
+              <th class="text-end" [attr.aria-sort]="ariaSort('qty')">
+                <button type="button" class="gl-sort" [class.active]="sort()?.sortValue === 'qty'" (click)="sortBy('qty')">
+                  {{ 'REPORTS.PRODUCTS_CATEGORY.QUANTITY' | translate }} <svg class="gl-sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 4 18 9" [style.opacity]="ariaSort('qty') === 'descending' ? .25 : 1"/><polyline points="6 15 12 20 18 15" [style.opacity]="ariaSort('qty') === 'ascending' ? .25 : 1"/></svg>
+                </button>
+              </th>
+              <th class="text-end" [attr.aria-sort]="ariaSort('totalOptionPrice')">
+                <button type="button" class="gl-sort" [class.active]="sort()?.sortValue === 'totalOptionPrice'" (click)="sortBy('totalOptionPrice')">
+                  {{ 'REPORTS.SALES_BY_PRODUCT.TOTAL' | translate }} <svg class="gl-sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 4 18 9" [style.opacity]="ariaSort('totalOptionPrice') === 'descending' ? .25 : 1"/><polyline points="6 15 12 20 18 15" [style.opacity]="ariaSort('totalOptionPrice') === 'ascending' ? .25 : 1"/></svg>
+                </button>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (g of groups(); track g.productName) {
+              @for (r of g.records; track $index; let first = $first) {
+                <tr class="data-row">
+                  <td class="sticky-col-1">@if (first) { <span class="gl-group">{{ r.productName }}</span> }</td>
+                  <td class="text-end">@if (first) { {{ g.lineQty }} }</td>
+                  <td>{{ r.optionName }}</td>
+                  <td class="text-end">{{ num(r.optionPrice) | mycurrency }}</td>
+                  <td class="text-end">{{ num(r.qty) }}</td>
+                  <td class="text-end">{{ num(r.totalOptionPrice) | mycurrency }}</td>
+                </tr>
+              }
+              <tr class="subtotal-row">
+                <td class="sticky-col-1"><strong>{{ 'REPORTS.PRODUCTS_CATEGORY.SUBTOTAL' | translate }}</strong></td>
+                <td></td><td></td><td></td>
+                <td class="text-end">{{ g.qty }}</td>
+                <td class="text-end">{{ g.total | mycurrency }}</td>
+              </tr>
+            }
+            <tr class="total-row">
+              <td class="sticky-col-1"><strong>{{ 'REPORTS.SALES_BY_PRODUCT.TOTAL' | translate }}</strong></td>
+              <td class="text-end"><strong>{{ grandLineQty() }}</strong></td>
+              <td></td><td></td>
+              <td class="text-end"><strong>{{ grandQty() }}</strong></td>
+              <td class="text-end"><strong>{{ grandTotal() | mycurrency }}</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </app-bo-table-shell>
+
+      <app-pagination
+        [page]="page()" [pageSize]="pageSize()" [count]="d.count" [pageCount]="d.pageCount"
+        [pageSizeOptions]="sizes" [disabled]="loading()"
+        (pageChange)="goTo($event)" (pageSizeChange)="setSize($event)" />
+    </div>
+  }
+}

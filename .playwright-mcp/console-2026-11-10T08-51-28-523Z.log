@@ -1,0 +1,9 @@
+[     503ms] [WARNING] The `useDefaultLang` and `defaultLanguage` options are deprecated. Please use `fallbackLang` instead. @ http://10.2.2.89:4700/@fs/D:/Users/Invo/Downloads/angular-customizer/invo-portal2/.angular/cache/21.2.3/invo-admin/vite/deps/@ngx-translate_core.js?v=5a0de236:1178
+[     521ms] [INFO] [i18n] apply(en) — triggering base load… @ http://10.2.2.89:4700/chunk-A7JGAUIH.js:304
+[     526ms] [INFO] [i18n] onLangChange fired for "en" @ http://10.2.2.89:4700/chunk-A7JGAUIH.js:307
+[     526ms] [INFO] [i18n] use("en") observable emitted @ http://10.2.2.89:4700/chunk-A7JGAUIH.js:320
+[     527ms] [INFO] [i18n] → loading feature "products" for "en" (i18n/features/products/i18n/en.json) @ http://10.2.2.89:4700/chunk-A7JGAUIH.js:197
+[     538ms] [INFO] [i18n] ← fetched "products" (12ms) — top-level keys: [PF, PRODUCTS, COMMON, TAB_BUILDER] @ http://10.2.2.89:4700/chunk-A7JGAUIH.js:201
+[     540ms] [INFO] [i18n] ✓ merged "products"; translations[en] top-level keys now: [] @ http://10.2.2.89:4700/chunk-A7JGAUIH.js:210
+[     548ms] [LOG] Angular is running in development mode. @ http://10.2.2.89:4700/@fs/D:/Users/Invo/Downloads/angular-customizer/invo-portal2/.angular/cache/21.2.3/invo-admin/vite/deps/chunk-AYBD3LBV.js?v=5a0de236:11110
+[     704ms] [VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) %o @ http://10.2.2.89:4700/login?returnUrl=:1

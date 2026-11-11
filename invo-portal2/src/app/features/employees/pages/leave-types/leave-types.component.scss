@@ -101,3 +101,24 @@
   &__x { color: #64748b; font-weight: 600; }
   &__hint { font-size: 11px; color: #64748b; line-height: 1.4; }
 }
+
+/* Page-local input style (the app has no global .input): same look as the GOSI settings page. */
+.input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  font-size: 13px;
+  color: #0f172a;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+
+  &::placeholder { color: #94a3b8; }
+  &:hover { border-color: #cbd5e1; }
+  &:focus {
+    outline: none;
+    border-color: var(--color-brand-500);
+    box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.12);
+  }
+}

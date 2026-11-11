@@ -1,0 +1,41 @@
+:host { display: block; }
+
+.bo-fb { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; margin-bottom: 1.25rem; }
+.bo-date { display: inline-block; width: auto; min-width: 240px; max-width: 100%; }
+
+/* Legacy `.btn-filter` look — applied to our buttons and to the shared date-picker trigger. */
+.bo-btn,
+:host ::ng-deep .bo-btn {
+  display: inline-flex; align-items: center; gap: .5rem;
+  padding: .625rem 1rem; height: auto;
+  background: #fff; border: 1px solid #d1d5db; border-radius: .5rem;
+  color: #111827; font-size: .875rem; font-weight: 500; font-family: inherit; line-height: 1.25;
+  cursor: pointer; transition: background .2s, border-color .2s, box-shadow .2s;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .06);
+  svg { flex-shrink: 0; }
+  &:hover { background: #f0fafc; border-color: #1e8c9f; }
+  &:focus-visible { outline: 2px solid #1e8c9f; outline-offset: 2px; }
+}
+
+.bo-date-btn { justify-content: space-between; width: 100%; }
+.bo-date-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.bo-badge { padding: .125rem .5rem; background: #1e8c9f; color: #fff; border-radius: 9999px; font-size: .75rem; font-weight: 600; }
+.bo-clear { border-color: #fca5a5; color: #dc2626; &:hover { background: #fef2f2; } }
+
+.bo-applied { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; padding: .75rem 1rem; margin-bottom: 1.25rem; background: #f3f4f6; border-radius: .5rem; }
+.bo-applied-label { font-size: .875rem; font-weight: 500; color: #6b7280; }
+.bo-tag {
+  display: inline-flex; align-items: center; gap: .5rem; padding: .25rem .75rem; background: #fff; border-radius: 9999px; font-size: .75rem; color: #111827;
+  button { background: transparent; border: 0; padding: 0; font-size: 1rem; line-height: 1; color: #6b7280; cursor: pointer; &:hover { color: #111827; } }
+}
+
+@media (max-width: 640px) {
+  .bo-fb { gap: .5rem; margin-bottom: 1rem; }
+  /* Date picker takes the full row; Filters / Clear all sit side by side below it. */
+  .bo-date { display: block; width: 100%; min-width: 0; }
+  .bo-btn, :host ::ng-deep .bo-btn { padding: .55rem .85rem; }
+  .bo-btn:not(.bo-clear) { flex: 1 1 auto; justify-content: center; }
+  :host ::ng-deep .bo-date .bo-btn { width: 100%; justify-content: space-between; }
+  .bo-applied { padding: .6rem .75rem; margin-bottom: 1rem; }
+}

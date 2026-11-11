@@ -94,6 +94,15 @@ export class Invoice {
    */
   applyDiscountBeforeTax = true;
   discountIncludesTax = true;
+  /**
+   * How a fixed order discount amount is read on an inclusive tax invoice: 'gross' (includes the tax,
+   * set by the POS), 'net' (before tax) or null (saved before the field existed, treated as 'net').
+   * Only 'gross' invoices use the inclusive calculation (see inclusiveDiscountShares), the rest stay as net.
+   */
+  orderDiscountAmountBasis: 'gross' | 'net' | null = null;
+  /** display only : the items total and the invoice discount with the tax in them (inclusive invoices), the charge is calculated from the net values */
+  itemTotalWithTax = 0;
+  discountTotalWithTax = 0;
   /** the tax the invoice discount removed from the lines */
   taxReduction = 0;
   chargeId: string | null = null;
@@ -187,8 +196,14 @@ export class Invoice {
           element.isVoided
           ? 0
           : element.total;
-      subTotal += MathUtils.sub(element.subTotal, element.discountTotal);
-      taxTotal += element.taxTotal;
+      /** a line voided in full whose void lines are not loaded takes no part in the invoice, nor does its tax */
+      const voidedInFull =
+        element.isVoided &&
+        (element.voidedItems == null || element.voidedItems.length == 0);
+      if (!voidedInFull) {
+        subTotal += MathUtils.sub(element.subTotal, element.discountTotal);
+        taxTotal += element.taxTotal;
+      }
       let voidedQty = 0;
       if (element.voidedItems && element.voidedItems.length > 0) {
         element.voidedItems.forEach((voided) => {
@@ -222,10 +237,13 @@ export class Invoice {
    * "voidedItems" of the line it was voided from, or - when the line is voided in full and its
    * void lines are not loaded - the line itself is flagged "isVoided" and is left out.
    */
-  transactionDiscountEntries(): { line: InvoiceLine; net: number }[] {
+  transactionDiscountEntries(
+    withTax: boolean = false,
+  ): { line: InvoiceLine; net: number }[] {
     const entries: { line: InvoiceLine; net: number }[] = [];
+    /** withTax weighs a line by its value with tax (an inclusive discount holds the tax); an inclusive line total holds it already */
     const netOf = (line: InvoiceLine) =>
-      MathUtils.sub2(line.total, line.taxTotal);
+      withTax ? line.total : MathUtils.sub2(line.total, line.taxTotal);
 
     this.lines.forEach((element) => {
       if (!(element.isVoided && element.voidedItems.length == 0)) {
@@ -258,11 +276,98 @@ export class Invoice {
     return base;
   }
 
+  /**
+   * With inclusive tax a fixed invoice (transaction) level discount entered on a 'gross' invoice has its
+   * tax in it : the invoice total drops by exactly that amount. It is spread over the lines by their value
+   * with tax and the tax of each share is taken out of it, so only the net part is the discount and the
+   * tax part is the tax reduction. (A percentage gives the same result either way.)
+   *
+   * @returns null when the invoice is not a 'gross' inclusive one or there is nothing to spread it over
+   */
+  inclusiveDiscountShares(): {
+    entries: { line: InvoiceLine; net: number }[];
+    shares: number[];
+    taxes: number[];
+  } | null {
+    if (
+      this.orderDiscountAmountBasis !== 'gross' ||
+      !this.isInclusiveTax ||
+      !this.applyDiscountBeforeTax ||
+      this.discountType == 'itemDiscount' ||
+      this.discountPercentage ||
+      this.discountAmount <= 0
+    )
+      return null;
+
+    const entries = this.transactionDiscountEntries(true);
+    let base = 0;
+    entries.forEach((entry) => {
+      base = MathUtils.add2(base, entry.net);
+    });
+    if (entries.length == 0 || base <= 0) return null;
+
+    const discount = this.discountAmount > base ? base : this.discountAmount;
+    const shares = this.spreadDiscount(discount, entries, base);
+    const taxes = entries.map((entry, index) =>
+      entry.line.taxInInclusiveAmount(shares[index]),
+    );
+    return { entries, shares, taxes };
+  }
+
+  /** the discount split by the weight of each entry, the rounding left over goes to the biggest one so the shares add up to the discount */
+  private spreadDiscount(
+    discount: number,
+    entries: { line: InvoiceLine; net: number }[],
+    base: number,
+  ): number[] {
+    const shares: number[] = [];
+    let allocated = 0;
+    let biggest = 0;
+
+    entries.forEach((entry, index) => {
+      /** a void line weighs nothing : the discount of what it took back is already off its line */
+      /** the ratio is kept unrounded so the shares stay as close as possible to the line values */
+      const share =
+        entry.net == 0
+          ? 0
+          : MathUtils.roundDecimal(
+              MathUtils.multiply2(
+                discount,
+                MathUtils.division2(entry.net, base),
+              ),
+            );
+
+      shares.push(share);
+      allocated = MathUtils.add2(allocated, share);
+
+      if (Math.abs(entry.net) > Math.abs(entries[biggest].net)) biggest = index;
+    });
+
+    shares[biggest] = MathUtils.add2(
+      shares[biggest],
+      MathUtils.sub2(discount, allocated),
+    );
+    return shares;
+  }
+
   get invoiceDiscount(): number {
     if (this.discountType == 'itemDiscount') return 0;
 
     if (this.applyDiscountBeforeTax) {
       if (this.discountAmount <= 0) return 0;
+
+      const inclusive = this.inclusiveDiscountShares();
+      if (inclusive) {
+        /** the discount is its net part, the tax in it comes off the tax of the invoice */
+        let net = 0;
+        inclusive.shares.forEach((share, index) => {
+          net = MathUtils.add2(
+            net,
+            MathUtils.sub2(share, inclusive.taxes[index]),
+          );
+        });
+        return net;
+      }
       const base = this.transactionDiscountBase();
       if (base <= 0) return 0;
 
@@ -296,38 +401,27 @@ export class Invoice {
   applyTransactionDiscount() {
     this.taxReduction = 0;
 
+    const inclusive = this.inclusiveDiscountShares();
+    if (inclusive && this.discountTotal > 0) {
+      /** each share keeps the tax it holds : the net part is the line's discount, the tax part its tax reduction */
+      inclusive.entries.forEach((entry, index) => {
+        const net = MathUtils.sub2(
+          inclusive.shares[index],
+          inclusive.taxes[index],
+        );
+        this.taxReduction = MathUtils.add2(
+          this.taxReduction,
+          entry.line.applyInvoiceDiscount(net, inclusive.taxes[index]),
+        );
+      });
+      return;
+    }
+
     const entries = this.transactionDiscountEntries();
     const base = this.transactionDiscountBase();
     if (entries.length == 0 || base <= 0 || this.discountTotal <= 0) return;
 
-    const shares: number[] = [];
-    let allocated = 0;
-    let biggest = 0;
-
-    entries.forEach((entry, index) => {
-      /** a void line weighs nothing : the discount of what it took back is already off its line */
-      /** the ratio is kept unrounded so the shares stay as close as possible to the line values */
-      const share =
-        entry.net == 0
-          ? 0
-          : MathUtils.roundDecimal(
-              MathUtils.multiply2(
-                this.discountTotal,
-                MathUtils.division2(entry.net, base),
-              ),
-            );
-
-      shares.push(share);
-      allocated = MathUtils.add2(allocated, share);
-
-      if (Math.abs(entry.net) > Math.abs(entries[biggest].net)) biggest = index;
-    });
-
-    /** the rounding left over goes to the biggest line so the shares always add up to the invoice discount */
-    shares[biggest] = MathUtils.add2(
-      shares[biggest],
-      MathUtils.sub2(this.discountTotal, allocated),
-    );
+    const shares = this.spreadDiscount(this.discountTotal, entries, base);
 
     entries.forEach((entry, index) => {
       this.taxReduction = MathUtils.add2(
@@ -352,6 +446,9 @@ export class Invoice {
     this.subTotal = this.total;
     /** the net value of the lines, the base the invoice discount is taken from */
     this.itemTotalWithoutTax = MathUtils.sub2(this.total, this.invoiceTaxTotal);
+    this.itemTotalWithTax = this.isInclusiveTax
+      ? this.total
+      : this.itemTotalWithoutTax;
     this.taxReduction = 0;
 
     this.discountTotal = this.invoiceDiscount;
@@ -368,6 +465,10 @@ export class Invoice {
         );
       }
     }
+
+    this.discountTotalWithTax = this.isInclusiveTax
+      ? MathUtils.add2(this.discountTotal, this.taxReduction)
+      : this.discountTotal;
 
     this.chargeTotal = this.chargeAmount;
     if (this.chargeAmount > 0) {
@@ -686,6 +787,8 @@ export class InvoiceLine {
 
   /** the share of the invoice level discount that belongs to this line */
   invoiceDiscount = 0;
+  /** the tax of the invoice discount share when it is known up front (inclusive 'gross' discount), null when it is calculated again */
+  invoiceDiscountTax: number | null = null;
   /** the part of "taxTotal" that share removed, "taxTotal" keeps the tax before it */
   taxReduction = 0;
   /** the net value the tax of the line is calculated on, after the line and the invoice discount */
@@ -811,16 +914,31 @@ export class InvoiceLine {
   }
 
   /**
+   * The tax held in an amount that includes this line's tax (the share of an inclusive invoice discount).
+   * It works on a copy, the tax of the line itself is left as it is.
+   */
+  taxInInclusiveAmount(amount: number): number {
+    if (amount == 0 || this.taxId == null || this.taxId == '') return 0;
+    const copy = Object.assign(new InvoiceLine(), this);
+    copy.taxes = (this.taxes ?? []).map((tax) => Object.assign({}, tax));
+    copy.calculateTax(amount, true);
+    return MathUtils.roundDecimal(copy.taxTotal);
+  }
+
+  /**
    * Applies the share of the invoice (transaction) level discount that belongs to this line.
    * The invoice discount is always taken before tax, so the tax of the line is calculated again
    * on the taxable amount : the net value left after the line discount and the invoice discount.
    *
    * The line total is left as it is, the invoice discount is only taken off the invoice total.
    *
+   * @param taxReduction the tax the discount removed when it is already known (an inclusive discount
+   * holds its own tax), otherwise it is the difference with the tax calculated again on the taxable amount
    * @returns the tax amount the invoice discount took off this line
    */
-  applyInvoiceDiscount(invoiceDiscount: number): number {
+  applyInvoiceDiscount(invoiceDiscount: number, taxReduction?: number): number {
     const taxBeforeInvoiceDiscount = this.taxTotal;
+    this.invoiceDiscountTax = taxReduction ?? null;
 
     /** the line total holds the tax when it is exclusive and includes it when it is inclusive, in both cases the net is total - tax */
     const net = MathUtils.sub2(this.total, this.taxTotal);
@@ -829,8 +947,12 @@ export class InvoiceLine {
     this.taxableAmount = MathUtils.sub2(net, invoiceDiscount);
 
     if (invoiceDiscount != 0 && this.taxId != null && this.taxId != '') {
-      /** always calculated as exclusive tax, the taxable amount is already a net amount */
-      this.calculateTax(this.taxableAmount, false);
+      if (taxReduction !== undefined) {
+        this.taxTotal = MathUtils.sub2(this.taxTotal, taxReduction);
+      } else {
+        /** always calculated as exclusive tax, the taxable amount is already a net amount */
+        this.calculateTax(this.taxableAmount, false);
+      }
     }
 
     this.taxReduction = MathUtils.sub2(
@@ -880,7 +1002,10 @@ export class InvoiceLine {
      * it is reset by the invoice in itemTotal() before it is spread over the lines again
      */
     if (this.invoiceDiscount != 0) {
-      this.applyInvoiceDiscount(this.invoiceDiscount);
+      this.applyInvoiceDiscount(
+        this.invoiceDiscount,
+        this.invoiceDiscountTax ?? undefined,
+      );
     }
 
     return total;

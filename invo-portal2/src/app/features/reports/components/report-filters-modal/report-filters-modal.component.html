@@ -1,0 +1,353 @@
+<!-- Header -->
+<div class="px-6 py-5 border-b border-slate-100 shrink-0">
+  <h2 class="text-lg font-semibold text-slate-900">{{ 'COMMON.FILTERS' | translate }}</h2>
+</div>
+
+<!-- Body -->
+<div class="px-6 py-5 space-y-6 flex-1 min-h-0 overflow-y-auto">
+
+  @if (data.branches.length) {
+    <section>
+      <div class="flex items-center justify-between mb-2.5">
+        <h3 class="text-sm font-semibold text-slate-800">
+          {{ 'REPORTS.BO.FILTERS.BRANCHES' | translate }}@if (data.requireBranch) { <span class="text-red-600 ms-0.5" aria-hidden="true">*</span> }
+          @if (selected().length > 0) {
+            <span class="ms-1.5 px-2 py-0.5 rounded-full bg-brand-50 text-brand-700 text-xs font-semibold">{{ selected().length }}</span>
+          }
+        </h3>
+        @if (!data.singleBranch) {
+          <button type="button" class="text-xs font-medium text-brand-600 hover:text-brand-700" (click)="toggleAllVisible()">
+            {{ (allVisibleSelected() ? 'REPORTS.BO.FILTERS.SELECT_NONE' : 'REPORTS.BO.FILTERS.SELECT_ALL') | translate }}
+          </button>
+        }
+      </div>
+
+      @if (data.branches.length > 6) {
+        <input type="text" class="w-full mb-2.5 px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-brand-500"
+               [value]="search()" (input)="search.set($any($event.target).value)"
+               [placeholder]="'REPORTS.BO.SEARCH_BRANCH' | translate" />
+      }
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-56 overflow-y-auto pe-1">
+        @for (b of visibleBranches(); track b.value) {
+          <label class="flex items-center gap-2.5 px-3 py-2 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors"
+                 [class.bg-brand-50]="isSelected(b.value)" [class.border-brand-500]="isSelected(b.value)">
+            <input type="checkbox" class="rounded border-slate-300" [checked]="isSelected(b.value)" (change)="toggleBranch(b.value)" />
+            <span class="text-sm text-slate-800 truncate">{{ b.label }}</span>
+          </label>
+        } @empty {
+          <p class="col-span-full text-sm text-slate-400 py-3 text-center">{{ 'REPORTS.BO.FILTERS.NO_BRANCH_MATCH' | translate }}</p>
+        }
+      </div>
+      @if (data.requireBranch) {
+        <p class="text-xs mt-2" [class.text-red-600]="missingRequired()" [class.text-slate-400]="!missingRequired()">{{ 'REPORTS.BO.FILTERS.BRANCH_REQUIRED' | translate }}</p>
+      } @else {
+        <p class="text-xs text-slate-400 mt-2">{{ 'REPORTS.BO.FILTERS.BRANCH_HELP' | translate }}</p>
+      }
+    </section>
+  }
+
+  @if (data.products) {
+    <section>
+      <h3 class="text-sm font-semibold text-slate-800 mb-2.5">
+        {{ (data.singleProduct ? 'REPORTS.FILTER.PRODUCT' : 'REPORTS.FILTER.PRODUCTS') | translate }}@if (data.requireProduct) { <span class="text-red-600 ms-0.5" aria-hidden="true">*</span> }
+        @if (!data.singleProduct && productIds().length > 0) {
+          <span class="ms-1.5 px-2 py-0.5 rounded-full bg-brand-50 text-brand-700 text-xs font-semibold">{{ productIds().length }}</span>
+        }
+      </h3>
+      <app-search-dropdown [multiple]="!data.singleProduct" [clearable]="!data.requireProduct" [loadFn]="loadProducts" [displayWith]="productLabel" [toValue]="productId"
+        [compareWith]="sameProduct" [value]="$any(data.singleProduct ? (productIds()[0] ?? null) : productIds())" (valueChange)="setProducts($event)"
+        [placeholder]="(data.requireProduct ? 'REPORTS.FILTER.SELECT_PRODUCT' : 'REPORTS.FILTER.ALL_PRODUCTS') | translate" triggerClass="w-full px-3 py-2 text-sm border rounded-lg bg-white"
+        [class.border-red-400]="data.requireProduct && productIds().length === 0" />
+      @if (data.requireProduct && productIds().length === 0) { <p class="mt-1.5 text-xs text-red-600">{{ 'REPORTS.FILTER.PRODUCT_REQUIRED' | translate }}</p> }
+    </section>
+  }
+
+  @if (data.categories) {
+    <section>
+      <h3 class="text-sm font-semibold text-slate-800 mb-2.5">
+        {{ 'REPORTS.FILTER.CATEGORIES' | translate }}
+        @if (categoryIds().length > 0) {
+          <span class="ms-1.5 px-2 py-0.5 rounded-full bg-brand-50 text-brand-700 text-xs font-semibold">{{ categoryIds().length }}</span>
+        }
+      </h3>
+      <app-search-dropdown [multiple]="true" [loadFn]="loadCategories" [displayWith]="categoryLabel" [toValue]="categoryValue"
+        [compareWith]="sameCategory" [value]="$any(categoryIds())" (valueChange)="categoryIds.set(ids($event))"
+        [placeholder]="'REPORTS.FILTER.ALL_CATEGORIES' | translate" triggerClass="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white" />
+    </section>
+  }
+
+  @if (data.purchaseMode) {
+    <section>
+      <h3 class="text-sm font-semibold text-slate-800 mb-2.5">{{ 'REPORTS.FILTER.PURCHASE_MODE' | translate }}</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-1.5">
+        @for (o of modeOptions; track o) {
+          <label class="flex items-center gap-2.5 px-3 py-2 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors"
+                 [class.bg-brand-50]="mode() === o" [class.border-brand-500]="mode() === o">
+            <input type="radio" name="purchaseMode" class="border-slate-300" [checked]="mode() === o" (change)="mode.set(o)" />
+            <span class="text-sm text-slate-800">{{ 'REPORTS.FILTER.PURCHASE_MODE_OPTION.' + o | translate }}</span>
+          </label>
+        }
+      </div>
+    </section>
+  }
+
+  @if (data.filterByOptions.length) {
+    <section>
+      <h3 class="text-sm font-semibold text-slate-800 mb-2.5">{{ data.filterByLabel | translate }}</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-1.5">
+        @for (o of data.filterByOptions; track o) {
+          <label class="flex items-center gap-2.5 px-3 py-2 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors"
+                 [class.bg-brand-50]="filterBy() === o" [class.border-brand-500]="filterBy() === o">
+            <input type="radio" name="filterBy" class="border-slate-300" [checked]="filterBy() === o" (change)="filterBy.set(o)" />
+            <span class="text-sm text-slate-800">{{ 'REPORTS.FILTER.FILTER_BY_OPTION.' + o | translate }}</span>
+          </label>
+        }
+      </div>
+    </section>
+  }
+
+  @if (data.customerTypeOn) {
+    <section>
+      <h3 class="text-sm font-semibold text-slate-800 mb-2.5">{{ 'REPORTS.FILTER.CUSTOMER_TYPE' | translate }}</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-1.5">
+        @for (o of customerTypeOptions; track o) {
+          <label class="flex items-center gap-2.5 px-3 py-2 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors"
+                 [class.bg-brand-50]="customerType() === o" [class.border-brand-500]="customerType() === o">
+            <input type="radio" name="customerType" class="border-slate-300" [checked]="customerType() === o" (change)="customerType.set(o)" />
+            <span class="text-sm text-slate-800">{{ 'REPORTS.FILTER.CUSTOMER_TYPE_OPTION.' + (o || 'any') | translate }}</span>
+          </label>
+        }
+      </div>
+    </section>
+  }
+
+  @if (data.customers) {
+    <section>
+      <h3 class="text-sm font-semibold text-slate-800 mb-2.5">
+        {{ 'REPORTS.FILTER.CUSTOMERS' | translate }}
+        @if (customerIds().length > 0) {
+          <span class="ms-1.5 px-2 py-0.5 rounded-full bg-brand-50 text-brand-700 text-xs font-semibold">{{ customerIds().length }}</span>
+        }
+      </h3>
+      <app-search-dropdown [multiple]="true" [loadFn]="loadCustomers" [displayWith]="customerLabel" [toValue]="customerId"
+        [compareWith]="sameCustomer" [value]="$any(customerIds())" (valueChange)="customerIds.set(ids($event))"
+        [placeholder]="'REPORTS.FILTER.ALL_CUSTOMERS' | translate" triggerClass="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white" />
+    </section>
+  }
+
+  @if (data.suppliers) {
+    <section>
+      <h3 class="text-sm font-semibold text-slate-800 mb-2.5">
+        {{ 'REPORTS.FILTER.SUPPLIERS' | translate }}
+        @if (supplierIds().length > 0) {
+          <span class="ms-1.5 px-2 py-0.5 rounded-full bg-brand-50 text-brand-700 text-xs font-semibold">{{ supplierIds().length }}</span>
+        }
+      </h3>
+      <app-search-dropdown [multiple]="true" [loadFn]="loadSuppliers" [displayWith]="supplierLabel" [toValue]="supplierId"
+        [compareWith]="sameSupplier" [value]="$any(supplierIds())" (valueChange)="supplierIds.set(ids($event))"
+        [placeholder]="'REPORTS.FILTER.ALL_SUPPLIERS' | translate" triggerClass="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white" />
+    </section>
+  }
+
+  @if (data.salesEmployeeOn) {
+    <section>
+      <label class="flex items-start gap-2.5 px-3 py-2.5 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors"
+             [class.bg-brand-50]="salesEmployee()" [class.border-brand-500]="salesEmployee()">
+        <input type="checkbox" class="mt-0.5 rounded border-slate-300" [checked]="salesEmployee()" (change)="salesEmployee.set(!salesEmployee())" />
+        <span>
+          <span class="block text-sm font-medium text-slate-800">{{ 'REPORTS.FILTER.SALES_EMPLOYEE' | translate }}</span>
+          <span class="block text-xs text-slate-500">{{ 'REPORTS.FILTER.SALES_EMPLOYEE_DESC' | translate }}</span>
+        </span>
+      </label>
+    </section>
+  }
+
+  @if (data.balanceOnly) {
+    <section>
+      <label class="flex items-start gap-2.5 px-3 py-2.5 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors"
+             [class.bg-brand-50]="balanceOnly()" [class.border-brand-500]="balanceOnly()">
+        <input type="checkbox" class="mt-0.5 rounded border-slate-300" [checked]="balanceOnly()" (change)="balanceOnly.set(!balanceOnly())" />
+        <span>
+          <span class="block text-sm font-medium text-slate-800">{{ 'REPORTS.FILTER.BALANCE_ONLY' | translate }}</span>
+          <span class="block text-xs text-slate-500">{{ 'REPORTS.FILTER.BALANCE_ONLY_DESC' | translate }}</span>
+        </span>
+      </label>
+    </section>
+  }
+
+  @if (data.productTypeOptions.length) {
+    <section>
+      <h3 class="text-sm font-semibold text-slate-800 mb-2.5">
+        {{ 'REPORTS.FILTER.PRODUCT_TYPES' | translate }}
+        @if (productTypes().length > 0) {
+          <span class="ms-1.5 px-2 py-0.5 rounded-full bg-brand-50 text-brand-700 text-xs font-semibold">{{ productTypes().length }}</span>
+        }
+      </h3>
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+        @for (t of data.productTypeOptions; track t) {
+          <label class="flex items-center gap-2.5 px-3 py-2 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors"
+                 [class.bg-brand-50]="isType(t)" [class.border-brand-500]="isType(t)">
+            <input type="checkbox" class="rounded border-slate-300" [checked]="isType(t)" (change)="toggleType(t)" />
+            <span class="text-sm text-slate-800 capitalize">{{ t }}</span>
+          </label>
+        }
+      </div>
+    </section>
+  }
+
+  @if (data.locations) {
+    <section>
+      <h3 class="text-sm font-semibold text-slate-800 mb-2.5">
+        {{ 'REPORTS.FILTER.LOCATIONS' | translate }}
+        @if (locationIds().length > 0) {
+          <span class="ms-1.5 px-2 py-0.5 rounded-full bg-brand-50 text-brand-700 text-xs font-semibold">{{ locationIds().length }}</span>
+        }
+      </h3>
+      <app-search-dropdown [multiple]="true" [loadFn]="loadLocations" [displayWith]="locationLabel" [toValue]="locationId"
+        [compareWith]="sameLocation" [value]="$any(locationIds())" (valueChange)="locationIds.set(ids($event))"
+        [placeholder]="'REPORTS.FILTER.ALL_LOCATIONS' | translate" triggerClass="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white" />
+    </section>
+  }
+
+  @if (data.hideDeleted) {
+    <section>
+      <label class="flex items-start gap-2.5 px-3 py-2.5 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors"
+             [class.bg-brand-50]="hideDeleted()" [class.border-brand-500]="hideDeleted()">
+        <input type="checkbox" class="mt-0.5 rounded border-slate-300" [checked]="hideDeleted()" (change)="hideDeleted.set(!hideDeleted())" />
+        <span>
+          <span class="block text-sm font-medium text-slate-800">{{ 'REPORTS.FILTER.HIDE_DELETED' | translate }}</span>
+          <span class="block text-xs text-slate-500">{{ 'REPORTS.FILTER.HIDE_DELETED_DESC' | translate }}</span>
+        </span>
+      </label>
+    </section>
+  }
+
+  @if (data.voidedBy || data.singleEmployee) {
+    <section>
+      <h3 class="text-sm font-semibold text-slate-800 mb-2.5">
+        {{ (data.singleEmployee ? (data.employeeLabel || 'REPORTS.FILTER.EMPLOYEE') : 'REPORTS.FILTER.VOIDED_BY') | translate }}@if (data.requireEmployee) { <span class="text-red-500" aria-hidden="true"> *</span> }
+        @if (employeeIds().length > 0) {
+          <span class="ms-1.5 px-2 py-0.5 rounded-full bg-brand-50 text-brand-700 text-xs font-semibold">{{ employeeIds().length }}</span>
+        }
+      </h3>
+      <app-search-dropdown [multiple]="!data.singleEmployee" [loadFn]="loadEmployees" [displayWith]="employeeLabel" [toValue]="employeeId"
+        [compareWith]="sameEmployee" [value]="$any(data.singleEmployee ? (employeeIds()[0] ?? null) : employeeIds())" (valueChange)="employeeIds.set(data.singleEmployee ? ids($event).slice(0, 1) : ids($event))"
+        [clearable]="!data.requireEmployee" [placeholder]="(data.requireEmployee ? 'REPORTS.FILTER.SELECT_EMPLOYEE' : 'REPORTS.FILTER.ALL_EMPLOYEES') | translate" triggerClass="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white" />
+      @if (data.requireEmployee && employeeIds().length === 0) { <p class="mt-1.5 text-xs text-red-600">{{ 'REPORTS.FILTER.EMPLOYEE_REQUIRED' | translate }}</p> }
+    </section>
+  }
+
+  @if (data.voidReasons && reasonOptions().length) {
+    <section>
+      <h3 class="text-sm font-semibold text-slate-800 mb-2.5">{{ 'REPORTS.FILTER.VOID_REASONS' | translate }}</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+        @for (r of reasonOptions(); track r) {
+          <label class="flex items-center gap-2.5 px-3 py-2 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors"
+                 [class.bg-brand-50]="isReason(r)" [class.border-brand-500]="isReason(r)">
+            <input type="checkbox" class="rounded border-slate-300" [checked]="isReason(r)" (change)="toggleReason(r)" />
+            <span class="text-sm text-slate-800">{{ r }}</span>
+          </label>
+        }
+      </div>
+    </section>
+  }
+
+  @if (data.voidTimings) {
+    <section>
+      <h3 class="text-sm font-semibold text-slate-800 mb-2.5">{{ 'REPORTS.FILTER.VOID_TIMINGS' | translate }}</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+        @for (t of timingOptions; track t) {
+          <label class="flex items-center gap-2.5 px-3 py-2 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors"
+                 [class.bg-brand-50]="isTiming(t)" [class.border-brand-500]="isTiming(t)">
+            <input type="checkbox" class="rounded border-slate-300" [checked]="isTiming(t)" (change)="toggleTiming(t)" />
+            <span class="text-sm text-slate-800">{{ 'REPORTS.FILTER.VOID_TIMING.' + t | translate }}</span>
+          </label>
+        }
+      </div>
+    </section>
+  }
+
+  @if (data.sourceOptions.length) {
+    <section>
+      <h3 class="text-sm font-semibold text-slate-800 mb-2.5">{{ (data.sourceLabel || 'REPORTS.FILTER.SOURCE') | translate }}</h3>
+      <div class="grid grid-cols-2 gap-1.5">
+        @for (o of data.sourceOptions; track o) {
+          <label class="flex items-center gap-2.5 px-3 py-2 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors"
+                 [class.bg-brand-50]="isSource(o)" [class.border-brand-500]="isSource(o)">
+            <input type="checkbox" class="rounded border-slate-300" [checked]="isSource(o)" (change)="toggleSource(o)" />
+            <span class="text-sm text-slate-800">{{ data.sourceOptionPrefix ? ((data.sourceOptionPrefix + o) | translate) : o }}</span>
+          </label>
+        }
+      </div>
+    </section>
+  }
+
+  @if (data.openingHour) {
+    <section>
+      <label class="flex items-center justify-between gap-3 p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors">
+        <span>
+          <span class="block text-sm font-medium text-slate-900">{{ 'REPORTS.FILTER.OPENING_HOURS' | translate }}</span>
+          <span class="block text-xs text-slate-500 mt-0.5">{{ 'REPORTS.FILTER.OPENING_HOURS_DESC' | translate }}</span>
+        </span>
+        <input type="checkbox" role="switch" class="w-5 h-5 accent-brand-600 cursor-pointer shrink-0"
+               [checked]="openingHour()" (change)="openingHour.set($any($event.target).checked)" />
+      </label>
+    </section>
+  }
+
+  @if (data.comparePeriods) {
+    <section>
+      <h3 class="text-sm font-semibold text-slate-800 mb-2.5">{{ 'REPORTS.BO.COMPARE.LABEL' | translate }}</h3>
+      <div class="grid gap-2" role="radiogroup">
+        <div role="radio" tabindex="0" class="opt text-start p-3 rounded-xl border border-slate-200 cursor-pointer"
+             [class.opt-on]="!comparison()" [attr.aria-checked]="!comparison()"
+             (click)="setComparison(false)" (keydown.enter)="setComparison(false)" (keydown.space)="$event.preventDefault(); setComparison(false)">
+          <span class="block text-sm font-medium text-slate-900">{{ 'REPORTS.BO.COMPARE.NONE' | translate }}</span>
+          <span class="block text-xs text-slate-500 mt-0.5">{{ 'REPORTS.BO.COMPARE.NONE_DESC' | translate }}</span>
+        </div>
+        <div role="radio" tabindex="0" class="opt text-start p-3 rounded-xl border border-slate-200 cursor-pointer"
+             [class.opt-on]="!!comparison()" [attr.aria-checked]="!!comparison()"
+             (click)="setComparison(true)" (keydown.enter)="setComparison(true)" (keydown.space)="$event.preventDefault(); setComparison(true)">
+          <span class="block text-sm font-medium text-slate-900">{{ 'REPORTS.BO.COMPARE.PERIOD' | translate }}</span>
+          <span class="block text-xs text-slate-500 mt-0.5">{{ 'REPORTS.BO.COMPARE.PERIOD_DESC' | translate }}</span>
+          @if (comparison(); as c) {
+            <span class="flex items-center gap-2 mt-3" (click)="$event.stopPropagation()">
+              <app-search-dropdown class="w-20" [items]="qtyOptions" [clearable]="false" [searchable]="false" [value]="c.qty" (valueChange)="setQty(+$any($event))" triggerClass="px-2.5 py-1.5 text-sm border border-slate-300 rounded-lg bg-white" />
+              <span class="inline-flex rounded-lg border border-slate-300 overflow-hidden text-sm">
+                <button type="button" class="px-3 py-1.5" [class.bg-brand-500]="c.period === 'Year'" [class.text-white]="c.period === 'Year'" (click)="setPeriod('Year')">{{ 'REPORTS.BO.COMPARE.YEARS' | translate }}</button>
+                <button type="button" class="px-3 py-1.5 border-s border-slate-300" [class.bg-brand-500]="c.period === 'Month'" [class.text-white]="c.period === 'Month'" (click)="setPeriod('Month')">{{ 'REPORTS.BO.COMPARE.MONTHS' | translate }}</button>
+              </span>
+            </span>
+          }
+        </div>
+      </div>
+    </section>
+  }
+
+  @if (data.compare) {
+    <section>
+      <label class="flex items-center justify-between gap-3 p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors">
+        <span class="text-sm font-medium text-slate-900">{{ 'REPORTS.FILTER.COMPARE' | translate }}</span>
+        <input type="checkbox" role="switch" class="w-5 h-5 accent-brand-600 cursor-pointer shrink-0"
+               [checked]="compare()" (change)="compare.set($any($event.target).checked)" />
+      </label>
+    </section>
+  }
+</div>
+
+<!-- Footer -->
+<div class="flex items-center justify-between px-6 py-4 border-t border-slate-100 bg-slate-50/50 shrink-0">
+  <button type="button" (click)="clearAll()" class="text-sm text-slate-500 hover:text-slate-700 font-medium transition-colors">
+    {{ 'COMMON.CLEAR_ALL' | translate }}
+  </button>
+  <div class="flex items-center gap-2.5">
+    <button type="button" (click)="cancel()" class="px-4 py-2 text-sm font-medium text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors">
+      {{ 'COMMON.CANCEL' | translate }}
+    </button>
+    <button type="button" (click)="apply()" [disabled]="missingRequired()"
+            class="px-5 py-2 text-sm font-medium text-white bg-gradient-to-r from-brand-500 to-brand-700 rounded-lg shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none">
+      {{ 'COMMON.APPLY' | translate }}
+    </button>
+  </div>
+</div>

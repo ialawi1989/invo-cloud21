@@ -1,0 +1,94 @@
+@use '../../styles/report-theme' as rp;
+
+:host { @include rp.tokens; display: block; }
+
+/* Summary cards above the table. */
+.ls-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.ls-card { @include rp.card; padding: 14px 16px; }
+.ls-card-label { display: flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--rp-muted); }
+.ls-card-value { margin-top: 6px; font-size: 22px; font-weight: 700; color: var(--rp-text); font-variant-numeric: tabular-nums; }
+.ls-card-value.neg { color: var(--rp-expense); }
+.ls-card-hint { margin-top: 4px; font-size: 12px; color: var(--rp-muted); }
+
+/* Sortable headers: the header text is a button; the arrows show the direction, the active column is brand-coloured. */
+.ls-sort {
+  display: inline-flex; align-items: center; gap: 6px; padding: 0; border: 0; background: transparent; cursor: pointer;
+  font: inherit; color: inherit; text-transform: inherit; letter-spacing: inherit; white-space: nowrap;
+  .ls-sort-icon { opacity: .45; transition: opacity .15s; }
+  &:hover { color: var(--rp-brand); .ls-sort-icon { opacity: 1; } }
+  &:focus-visible { outline: 2px solid var(--rp-brand); outline-offset: 3px; border-radius: 4px; }
+  &.active { color: var(--rp-brand); .ls-sort-icon { opacity: 1; } }
+}
+:host ::ng-deep th.text-end .ls-sort { justify-content: flex-end; }
+
+.ls { transition: opacity .15s; }
+.ls.stale { opacity: .55; pointer-events: none; }
+.sub-line { display: block; margin-top: 1px; font-size: 11.5px; color: var(--rp-muted); }
+.neg { color: var(--rp-expense); }
+
+@keyframes ls-shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+.ls-loading { display: flex; flex-direction: column; gap: 16px; }
+.ls-skel {
+  height: 360px; border-radius: 12px; background: linear-gradient(90deg, #eef2f6 0%, #f6f8fa 50%, #eef2f6 100%);
+  background-size: 200% 100%; animation: ls-shimmer 1.4s ease-in-out infinite;
+}
+.ls-error {
+  @include rp.card; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 50px 20px;
+  p { margin: 0; color: var(--rp-muted); font-size: 14px; text-align: center; }
+}
+@media (prefers-reduced-motion: reduce) { .ls-skel { animation: none; } }
+
+.ls-muted { color: var(--rp-muted); }
+.ls-badge { display: inline-block; margin-top: 3px; padding: 1px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 600; background: var(--rp-surface-3); color: var(--rp-text-2); }
+.ls-badge-void { background: var(--rp-liability-soft); color: var(--rp-liability); margin-inline-start: 6px; margin-top: 0; }
+.ls-timing-sameDay { background: var(--rp-income-soft); color: var(--rp-income); }
+.ls-timing-differentDay { background: var(--rp-liability-soft); color: var(--rp-liability); }
+.ls-timing-differentMonth { background: var(--rp-equity-soft); color: var(--rp-equity); }
+.ls-timing-differentYear { background: var(--rp-expense-soft); color: var(--rp-expense); }
+
+.ls-details-btn {
+  padding: 4px 12px; border: 1px solid var(--rp-border-strong); border-radius: 8px; background: var(--rp-surface);
+  color: var(--rp-text-2); font: inherit; font-size: 12.5px; font-weight: 500; cursor: pointer; transition: border-color .15s, color .15s;
+  &:hover { border-color: var(--rp-brand); color: var(--rp-brand); }
+  &:focus-visible { outline: 2px solid var(--rp-brand); outline-offset: 2px; }
+}
+.ls-link { padding: 0; border: 0; background: transparent; color: var(--rp-brand); font: inherit; text-decoration: underline; cursor: pointer; }
+:host ::ng-deep tr.ls-open td { background: var(--rp-brand-soft); }
+
+/* Expanded row: two cards — the invoice's facts on the left, its voided items on the right. The panel is pinned to the
+   visible width of the (horizontally scrolling) table, so it never slides off-screen while the columns scroll. */
+:host ::ng-deep .ts-scroll { container-type: inline-size; }
+.ls-details-row > td { padding: 0 !important; background: var(--rp-surface-2) !important; }
+.ls-details {
+  position: sticky; inset-inline-start: 0; width: 100cqw; box-sizing: border-box;
+  display: grid; grid-template-columns: minmax(260px, 340px) minmax(0, 1fr); gap: 16px; padding: 16px 18px; white-space: normal; align-items: start;
+}
+@media (max-width: 900px) { .ls-details { grid-template-columns: minmax(0, 1fr); } }
+
+.ls-card { background: var(--rp-surface); border: 1px solid var(--rp-border); border-radius: 12px; box-shadow: 0 1px 2px rgba(15, 23, 42, .04); overflow: hidden; min-width: 0; }
+.ls-card-title {
+  display: flex; align-items: center; gap: 8px; margin: 0; padding: 12px 16px; font-size: 13.5px; font-weight: 700; color: var(--rp-text);
+  background: var(--rp-surface-2); border-bottom: 1px solid var(--rp-border);
+  svg { color: var(--rp-brand); flex: none; }
+  .ls-badge { margin: 0; margin-inline-start: auto; }
+}
+.ls-count { margin-inline-start: auto; padding: 1px 9px; border-radius: 999px; background: var(--rp-brand-soft); color: var(--rp-brand); font-size: 11.5px; font-weight: 700; }
+
+.ls-info dl { display: grid; grid-template-columns: auto minmax(0, 1fr); margin: 0; font-size: 13px; }
+.ls-info dt, .ls-info dd { padding: 9px 16px; border-bottom: 1px solid var(--rp-surface-3); }
+.ls-info dt { color: var(--rp-muted); padding-inline-end: 12px; }
+.ls-info dd { margin: 0; color: var(--rp-text); font-weight: 500; text-align: end; overflow-wrap: anywhere; }
+.ls-info dt:nth-last-of-type(1), .ls-info dd:last-of-type { border-bottom: 0; }
+.ls-items > p { margin: 0; padding: 16px; font-size: 13px; }
+.ls-items-scroll { overflow-x: auto; }
+.ls-items-table {
+  width: 100%; border-collapse: collapse; font-size: 12.5px; background: var(--rp-surface);
+  th, td { padding: 8px 12px; border-bottom: 1px solid var(--rp-surface-3); white-space: nowrap; text-align: start; }
+  thead th { color: var(--rp-muted); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; background: var(--rp-surface-2); }
+  .text-end { text-align: end; font-variant-numeric: tabular-nums; }
+  .ls-filtered td { background: var(--rp-brand-soft); }
+  .ls-items-total td { background: #f3f4f6; border-top: 2px solid var(--rp-border-strong); }
+}
+
+/* Space between the table card and its pager. */
+app-pagination { display: block; margin-top: 16px; }

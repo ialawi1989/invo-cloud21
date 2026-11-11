@@ -1,0 +1,50 @@
+@if (loading() && !records()) {
+  <div class="ls-loading" aria-busy="true"><div class="ls-skel"></div></div>
+} @else if (error()) {
+  <app-report-error [message]="error()" (retry)="load()" />
+} @else if (records(); as rows) {
+  @if (isEmpty()) {
+    <app-report-empty />
+  } @else {
+    <div class="ls" [class.stale]="loading()">
+      <app-bo-table-shell [periods]="[]" hintKey="salesByTerminal_scrollHint">
+        <table class="bo-table">
+          <thead>
+            <tr class="header-row">
+              <th class="sticky-col-1" [attr.aria-sort]="ariaSort('terminalName')">
+                <button type="button" class="ls-sort" [class.active]="sort()?.sortValue === 'terminalName'" (click)="sortBy('terminalName')">
+                  {{ 'REPORTS.SALES_BY_TERMINAL.COLUMNS.TERMINAL' | translate }}
+                  <svg class="ls-sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 4 18 9" [style.opacity]="ariaSort('terminalName') === 'descending' ? .25 : 1"/><polyline points="6 15 12 20 18 15" [style.opacity]="ariaSort('terminalName') === 'ascending' ? .25 : 1"/></svg>
+                </button>
+              </th>
+              @for (c of cols; track c.key) {
+                <th class="text-end" [attr.aria-sort]="ariaSort(c.key)">
+                  <button type="button" class="ls-sort" [class.active]="sort()?.sortValue === c.key" (click)="sortBy(c.key)">
+                    {{ 'REPORTS.SALES_BY_TERMINAL.COLUMNS.' + c.labelKey | translate }}
+                    <svg class="ls-sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 4 18 9" [style.opacity]="ariaSort(c.key) === 'descending' ? .25 : 1"/><polyline points="6 15 12 20 18 15" [style.opacity]="ariaSort(c.key) === 'ascending' ? .25 : 1"/></svg>
+                  </button>
+                </th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of rows; track trackRow($index, r)) {
+              <tr class="data-row">
+                <td class="sticky-col-1">{{ r.terminalName }}</td>
+                @for (c of cols; track c.key) {
+                  <td class="text-end" [class.neg]="num(r[c.key]) < 0">{{ c.money ? (num(r[c.key]) | mycurrency) : num(r[c.key]) }}</td>
+                }
+              </tr>
+            }
+            <tr class="total-row">
+              <td class="sticky-col-1"><strong>{{ 'REPORTS.SALES_BY_PRODUCT.TOTAL' | translate }}</strong></td>
+              @for (c of cols; track c.key) {
+                <td class="text-end"><strong>{{ c.money ? (totals()[c.key] | mycurrency) : totals()[c.key] }}</strong></td>
+              }
+            </tr>
+          </tbody>
+        </table>
+      </app-bo-table-shell>
+    </div>
+  }
+}

@@ -27,20 +27,20 @@ import { DocumentLineEditor } from '../../services/document-line-editor';
       }
 
       <div class="it__totals">
-        <div class="it__row"><b>{{ 'DOC_FORM.SUB_TOTAL' | translate }}</b><b>{{ inv.itemTotalWithoutTax | mycurrency }}</b></div>
+        <div class="it__row"><b>{{ 'DOC_FORM.SUB_TOTAL' | translate }}@if (inc()) { (inc) }</b><b>{{ (inc() ? inv.itemTotalWithTax : inv.itemTotalWithoutTax) | mycurrency }}</b></div>
 
         @if (simple()) {
         } @else if (readonlyTotals()) {
-          @if (inv.discountTotal) { <div class="it__row"><span>{{ 'DOC_FORM.DISCOUNT' | translate }}</span><span>({{ inv.discountTotal | mycurrency }})</span></div> }
+          @if (inv.discountTotal) { <div class="it__row"><span>{{ 'DOC_FORM.DISCOUNT' | translate }}@if (inc()) { (inc) }</span><span>({{ (inc() ? inv.discountTotalWithTax : inv.discountTotal) | mycurrency }})</span></div> }
         } @else if (inv.discountType !== 'itemDiscount') {
           <div class="it__row it__row--field">
-            <span>{{ 'DOC_FORM.DISCOUNT' | translate }}</span>
+            <span>{{ 'DOC_FORM.DISCOUNT' | translate }}@if (inc()) { (inc) }</span>
             <app-discount-field [amount]="inv.discountAmount" [percentage]="inv.discountPercentage" (changed)="onDiscount($event)"/>
-            <span>({{ inv.discountTotal | mycurrency }})</span>
+            <span>({{ (inc() ? inv.discountTotalWithTax : inv.discountTotal) | mycurrency }})</span>
           </div>
         }
 
-        <div class="it__row"><span>{{ 'DOC_FORM.TAX_TOTAL' | translate }}</span><span>{{ inv.invoiceTaxTotal | mycurrency }}</span></div>
+        <div class="it__row"><span>{{ 'DOC_FORM.TAX_TOTAL' | translate }}@if (inc()) { (inc) }</span><span>{{ inv.invoiceTaxTotal | mycurrency }}</span></div>
 
         @if (simple()) {
         } @else if (readonlyTotals()) {
@@ -95,6 +95,9 @@ import { DocumentLineEditor } from '../../services/document-line-editor';
 })
 export class DocTotalsComponent {
   doc = input.required<Invoice>();
+  /** Sales documents (invoice / credit note): on an inclusive-tax document show the sub total and discount with their tax in them, labelled "(inc)". */
+  inclusiveDisplay = input(false);
+  inc = () => this.inclusiveDisplay() && this.doc().isInclusiveTax;
   /** i18n key of the hint under the notes box (names the document). */
   notesHintKey = input<string>('DOC_FORM.NOTES_HINT');
   editor = input.required<DocumentLineEditor>();

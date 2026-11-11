@@ -113,6 +113,12 @@ export class DatePickerComponent implements ControlValueAccessor {
   /** Trigger placeholder when nothing is selected. */
   placeholder = input<string>('Select date');
 
+  /**
+   * Month picker: opens on the months grid and picking a month commits the 1st of it (single mode only).
+   * Pair with `displayFormat="MMMM yyyy"`.
+   */
+  monthOnly = input<boolean>(false);
+
   /** Render the calendar inline (no trigger / popover). */
   inline = input<boolean>(false);
 
@@ -139,6 +145,9 @@ export class DatePickerComponent implements ControlValueAccessor {
   /** Show the Clear / Today footer. */
   showFooter = input<boolean>(true);
 
+  /** Allow emptying the value (the × in the field and the footer's Clear). Off where a date is mandatory. */
+  clearable = input<boolean>(true);
+
   /**
    * Show an inline time stepper (HH:MM + AM/PM) at the bottom of the
    * calendar panel. Combined with `mode='single'` this turns the
@@ -164,6 +173,18 @@ export class DatePickerComponent implements ControlValueAccessor {
    * presets are ignored in single mode.
    */
   presets = input<DatePreset[]>([]);
+
+  /** Also show the presets in single mode; picking one sets the date to the END of that preset's range. */
+  singlePresets = input<boolean>(false);
+
+  /**
+   * Show an "As of" checkbox inside the panel (legacy date modal). Ticked = the parent uses single mode, unticked =
+   * range mode; the parent flips `mode` / `value` when `asOfChange` fires, and the panel stays open.
+   */
+  asOfOption = input<boolean>(false);
+  asOfChecked = input<boolean>(true);
+  asOfLabel = input<string>('As of');
+  asOfChange = output<boolean>();
 
   /**
    * Number of months rendered side-by-side. Defaults to `1`. Useful in range
@@ -458,7 +479,7 @@ export class DatePickerComponent implements ControlValueAccessor {
     const w = this.triggerEl()?.nativeElement.offsetWidth ?? 0;
     if (w > 0) this.triggerWidth.set(w);
     this.isOpen.set(true);
-    this.view.set('days');
+    this.view.set(this.monthOnly() ? 'months' : 'days');
     this.opened.emit();
   }
 
@@ -572,7 +593,14 @@ export class DatePickerComponent implements ControlValueAccessor {
   selectMonth(idx: number, disabled: boolean): void {
     if (disabled) return;
     const c = this.cursor();
-    this.cursor.set(new Date(c.getFullYear(), idx, 1));
+    const first = new Date(c.getFullYear(), idx, 1);
+    this.cursor.set(first);
+    if (this.monthOnly() && !this.isRangeMode()) {
+      this.value.set(first);
+      this._onChange(first);
+      if (!this.inline()) this.close();
+      return;
+    }
     this.view.set('days');
   }
 
@@ -609,8 +637,8 @@ export class DatePickerComponent implements ControlValueAccessor {
   goToToday(): void {
     const today = clampDate(new Date(), this.min(), this.max());
     this.cursor.set(today);
-    this.view.set('days');
-    const day = startOfDay(today);
+    this.view.set(this.monthOnly() ? 'months' : 'days');
+    const day = this.monthOnly() ? new Date(today.getFullYear(), today.getMonth(), 1) : startOfDay(today);
     if (this.isRangeMode()) {
       const range: DateRange = { start: day, end: day };
       this.value.set(range);
@@ -629,8 +657,15 @@ export class DatePickerComponent implements ControlValueAccessor {
    * because presets describe a `{ start, end }` range.
    */
   applyPreset(preset: DatePreset): void {
-    if (!this.isRangeMode()) return;
     const r = preset.range();
+    if (!this.isRangeMode()) {
+      if (!this.singlePresets() || !r.end) return;
+      this.value.set(r.end);
+      this._onChange(r.end);
+      this.cursor.set(r.end);
+      if (!this.inline()) this.close();
+      return;
+    }
     this.value.set(r);
     this._onChange(r);
     this.rangeAnchor.set(null);

@@ -1,0 +1,33 @@
+@use '../styles/report-theme' as rp;
+
+:host { @include rp.tokens; display: block; }
+
+.cr { transition: opacity .15s; }
+.cr.stale { opacity: .55; pointer-events: none; }
+
+.cr-toolbar { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+
+.cr-chart {
+  @include rp.card; margin-top: 16px; padding: 0; overflow: hidden;
+  h3 {
+    margin: 0; padding: 14px 18px; font-size: 14px; font-weight: 700; color: var(--rp-text);
+    display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--rp-border);
+    &::before { content: ''; width: 4px; height: 16px; border-radius: 2px; background: var(--rp-brand); flex-shrink: 0; }
+  }
+  /* The chart brings its own bordered card; inside this card it is just the plot. */
+  app-report-chart { display: block; margin: 0; padding: 8px 12px 12px; }
+  app-report-chart ::ng-deep .rc-card { border: 0; border-radius: 0; box-shadow: none; background: transparent; padding: 0; }
+}
+
+@keyframes cr-shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+.cr-loading { display: flex; flex-direction: column; gap: 16px; }
+.cr-skel {
+  height: 260px; border-radius: 12px; background: linear-gradient(90deg, #eef2f6 0%, #f6f8fa 50%, #eef2f6 100%);
+  background-size: 200% 100%; animation: cr-shimmer 1.4s ease-in-out infinite;
+}
+.cr-skel-chart { height: 300px; }
+.cr-error {
+  @include rp.card; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 50px 20px;
+  p { margin: 0; color: var(--rp-muted); font-size: 14px; text-align: center; }
+}
+@media (prefers-reduced-motion: reduce) { .cr-skel { animation: none; } }

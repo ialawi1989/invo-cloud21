@@ -1,0 +1,121 @@
+@if (needsEmployee()) {
+  <app-report-select-prompt />
+} @else if (error()) {
+  <app-report-error [message]="error()" (retry)="load()" />
+} @else if (isEmpty()) {
+  <app-report-empty />
+} @else if (data(); as d) {
+  <div class="ed" [class.stale]="loading()">
+    <header class="ed-head">
+      <div class="ed-avatar">
+        @if (d.employee?.mediaUrl && !photoFailed()) { <img [src]="d.employee!.mediaUrl" alt="" (error)="photoFailed.set(true)" /> } @else { <span>{{ d.employee?.name?.charAt(0) }}</span> }
+      </div>
+      <div>
+        <strong>{{ d.employee?.name }}</strong>
+        <small>@if (d.employee?.type) { {{ d.employee?.type }} · } {{ d.employee?.branchName }}</small>
+        <small class="ed-period">{{ 'REPORTS.ATTENDANCE.PERIOD' | translate }}: {{ d.period.fromDate | date: 'dd/MM/yyyy' }} – {{ d.period.toDate | date: 'dd/MM/yyyy' }}</small>
+      </div>
+      <a class="ed-sales" [routerLink]="['/reports/view', 'sales-by-employee']" [queryParams]="salesQuery()" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+        {{ 'REPORTS.ATTENDANCE.VIEW_SALES' | translate }}
+      </a>
+    </header>
+
+    @if (d.summary) { <app-report-kpi-row [kpis]="kpis()" [columns]="5" /> }
+
+    <h4 class="ed-h">{{ 'REPORTS.ATTENDANCE.DAYS' | translate }}</h4>
+    <div class="ed-card">
+      <table>
+        <thead><tr>
+          <th>{{ 'REPORTS.ATTENDANCE.DATE' | translate }}</th><th>{{ 'REPORTS.ATTENDANCE.WEEKDAY' | translate }}</th><th>{{ 'REPORTS.ATTENDANCE.SCHEDULE' | translate }}</th>
+          <th class="h-in">{{ 'REPORTS.ATTENDANCE.CLOCKED_IN' | translate }}</th><th class="h-out">{{ 'REPORTS.ATTENDANCE.CLOCKED_OUT' | translate }}</th>
+          <th class="end h-hrs">{{ 'REPORTS.ATTENDANCE.HOURS' | translate }}</th><th class="mid">{{ 'REPORTS.ATTENDANCE.PHOTOS' | translate }}</th><th>{{ 'REPORTS.ATTENDANCE.STATUS_COL' | translate }}</th>
+        </tr></thead>
+        <tbody>
+          @for (day of d.days; track day.date) {
+            <tr>
+              <td class="nowrap"><strong>{{ day.date | date: 'dd/MM/yyyy' }}</strong></td>
+              <td class="muted">{{ day.weekday }}@if (day.shiftCount > 1) { <span class="ed-split" [attr.title]="day.shiftCount + ' shifts'">×{{ day.shiftCount }}</span> }</td>
+              <td class="nowrap">@if (day.expectedStartLocal) { {{ day.expectedStartLocal }} – {{ day.expectedEndLocal }} } @else { <span class="muted">—</span> }</td>
+              <td class="in">
+                @for (sh of day.shifts; track sh.id; let i = $index) {
+                  <div class="ed-shift" [class.divided]="i > 0">
+                    @if (sh.clockedInEff || sh.clockedInRaw) {
+                      <span class="eff">{{ (sh.clockedInEff || sh.clockedInRaw) | date: 'HH:mm' }}</span>
+                      @if (isAdjusted(sh.clockedInRaw, sh.clockedInEff)) { <span class="raw">{{ sh.clockedInRaw | date: 'HH:mm' }}</span> }
+                      @if (sh.adjClockedInByName) { <small class="adj-by">{{ 'REPORTS.ATTENDANCE.ADJ_BY' | translate }} {{ sh.adjClockedInByName }}</small> }
+                    } @else { <span class="muted">—</span> }
+                  </div>
+                } @empty { <span class="muted">—</span> }
+              </td>
+              <td class="out">
+                @for (sh of day.shifts; track sh.id; let i = $index) {
+                  <div class="ed-shift" [class.divided]="i > 0">
+                    @if (sh.clockedOutEff || sh.clockedOutRaw) {
+                      <span class="eff">{{ (sh.clockedOutEff || sh.clockedOutRaw) | date: 'HH:mm' }}</span>
+                      @if (isAdjusted(sh.clockedOutRaw, sh.clockedOutEff)) { <span class="raw">{{ sh.clockedOutRaw | date: 'HH:mm' }}</span> }
+                      @if (sh.adjClockedOutByName) { <small class="adj-by">{{ 'REPORTS.ATTENDANCE.ADJ_BY' | translate }} {{ sh.adjClockedOutByName }}</small> }
+                      @if (sh.clockOutReason) { <small class="reason">{{ sh.clockOutReason }}</small> }
+                    } @else { <span class="muted">—</span> }
+                  </div>
+                } @empty { <span class="muted">—</span> }
+              </td>
+              <td class="end hrs">{{ hours(day.workedMinutes) }}</td>
+              <td class="mid">
+                @for (sh of day.shifts; track sh.id; let i = $index) {
+                  <div class="ed-shift ph" [class.divided]="i > 0">
+                    @for (side of ['in', 'out']; track side) {
+                      @let url = side === 'in' ? sh.clockedInMediaUrl : sh.clockedOutMediaUrl;
+                      @let lbl = (side === 'in' ? 'REPORTS.ATTENDANCE.CLOCKED_IN' : 'REPORTS.ATTENDANCE.CLOCKED_OUT') | translate;
+                      @if (url) {
+                        <a class="ph-btn" [href]="url" target="_blank" rel="noopener" [attr.aria-label]="lbl"
+                           (mouseenter)="showPhoto($event, url, lbl)" (mouseleave)="hidePhoto()" (focus)="showPhoto($event, url, lbl)" (blur)="hidePhoto()">
+                          <svg class="ph-ico on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                        </a>
+                      } @else {
+                        <svg class="ph-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [attr.title]="lbl" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                      }
+                    }
+                  </div>
+                }
+              </td>
+              <td><span [class]="'ed-tag ' + tagClass(day.status)">{{ tagText(day.status) }}</span></td>
+            </tr>
+          } @empty { <tr><td colspan="8" class="ed-none">{{ 'REPORTS.ATTENDANCE.NONE' | translate }}</td></tr> }
+        </tbody>
+      </table>
+    </div>
+
+    <h4 class="ed-h">{{ 'REPORTS.ATTENDANCE.ADJUSTMENTS_LIST' | translate }}</h4>
+    <div class="ed-card">
+      @if (d.adjustments.length) {
+        <table>
+          <thead><tr>
+            <th>{{ 'REPORTS.ATTENDANCE.DATE' | translate }}</th><th>{{ 'REPORTS.ATTENDANCE.FIELD' | translate }}</th><th class="h-raw">{{ 'REPORTS.ATTENDANCE.ORIGINAL' | translate }}</th>
+            <th class="h-adj">{{ 'REPORTS.ATTENDANCE.ADJUSTED' | translate }}</th><th>{{ 'REPORTS.ATTENDANCE.BY' | translate }}</th><th>{{ 'REPORTS.ATTENDANCE.REASON' | translate }}</th>
+          </tr></thead>
+          <tbody>
+            @for (a of d.adjustments; track $index) {
+              <tr>
+                <td>{{ a.date | date: 'dd/MM/yyyy' }}</td>
+                <td>{{ a.field }}</td>
+                <td class="raw">{{ a.rawValue ? (a.rawValue | date: 'HH:mm') : '—' }}</td>
+                <td [class]="a.field === 'clockedIn' ? 'adj in' : 'adj out'"><strong>{{ a.adjustedValue ? (a.adjustedValue | date: 'HH:mm') : '—' }}</strong></td>
+                <td>{{ a.actorName || '—' }}</td>
+                <td class="muted">{{ a.reason || '—' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      } @else { <p class="ed-none">{{ 'REPORTS.ATTENDANCE.NO_ADJUSTMENTS' | translate }}</p> }
+    </div>
+    @if (photo(); as p) {
+      <div class="ed-pop" [class.below]="p.below" [style.left.px]="p.x" [style.top.px]="p.y" role="tooltip">
+        <img [src]="p.url" [alt]="p.label" />
+        <small>{{ p.label }}</small>
+      </div>
+    }
+  </div>
+} @else {
+  <div class="ed-skel"></div>
+}

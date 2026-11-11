@@ -1,0 +1,52 @@
+@if (isPhone()) {
+  <!-- Phone: a status selector (with live counts) and ONE column at a time. -->
+  <div class="flex gap-2 overflow-x-auto px-4 pt-4 pb-1" role="tablist">
+    @for (c of adapter().columns; track c.id) {
+      <button type="button" role="tab" (click)="pick(c.id)"
+        [attr.aria-selected]="c.id === activeId()"
+        class="shrink-0 inline-flex items-center gap-1.5 px-3 h-9 rounded-full border text-sm font-medium transition-colors"
+        [ngClass]="c.id === activeId()
+          ? 'bg-brand-600 border-brand-600 text-white'
+          : 'bg-white border-slate-200 text-slate-600'">
+        <span class="w-2 h-2 rounded-full" [ngClass]="c.tone"></span>
+        {{ c.labelKey | translate }}
+        <span class="text-xs tabular-nums opacity-80">{{ col(c.id).count }}</span>
+      </button>
+    }
+  </div>
+}
+
+<app-doc-h-scroll>
+<div class="flex gap-4 p-4 items-start" [class.w-max]="!isPhone()" [class.min-w-full]="!isPhone()">
+  @for (c of visibleColumns(); track c.id) {
+    @let s = col(c.id);
+    <section class="rounded-xl bg-slate-50 border border-slate-100 flex flex-col"
+      [ngClass]="isPhone() ? 'w-full' : 'w-72 shrink-0 max-h-[calc(100dvh-20rem)] min-h-[16rem]'">
+      @if (!isPhone()) {
+        <header class="flex items-center gap-2 px-3 py-3">
+          <span class="w-2.5 h-2.5 rounded-full" [ngClass]="c.tone"></span>
+          <h3 class="text-sm font-semibold text-slate-800">{{ c.labelKey | translate }}</h3>
+          <span class="ms-auto text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">{{ s.count }}</span>
+        </header>
+      }
+
+      <div class="px-3 flex flex-col gap-2" [ngClass]="isPhone() ? 'py-3' : 'pb-3 overflow-y-auto'">
+        @for (row of s.rows; track row.id) {
+          <app-doc-card [row]="row" [adapter]="adapter()" (changed)="reloadAll()" />
+        }
+
+        @if (s.loading) {
+          <div class="h-16 rounded-xl bg-slate-100 animate-pulse"></div>
+        } @else if (!s.rows.length) {
+          <p class="py-8 text-center text-xs text-slate-400">{{ 'COMMON.BOARD_EMPTY_COLUMN' | translate }}</p>
+        } @else if (s.page < s.pages) {
+          <button type="button" (click)="loadMore(c)"
+            class="py-2 text-xs font-medium text-brand-700 rounded-lg hover:bg-white">
+            {{ 'COMMON.LOAD_MORE' | translate }}
+          </button>
+        }
+      </div>
+    </section>
+  }
+</div>
+</app-doc-h-scroll>

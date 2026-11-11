@@ -1,0 +1,74 @@
+@use '../../styles/report-theme' as rp;
+
+:host { @include rp.tokens; display: block; }
+
+.ss { transition: opacity .15s; }
+.ss.stale { opacity: .55; pointer-events: none; }
+
+/* Two columns of cards on wide screens, one on narrow ones. */
+.ss-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+.ss-col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+@media (max-width: 1000px) { .ss-grid { grid-template-columns: minmax(0, 1fr); } }
+
+.ss-card { @include rp.card; padding: 0; min-width: 0; overflow: hidden; }
+/* Card title: a brand accent bar, a hairline under it. */
+.ss-card h3 {
+  margin: 0; padding: 14px 18px; font-size: 14px; font-weight: 700; color: var(--rp-text);
+  display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--rp-border);
+  &::before { content: ''; width: 4px; height: 16px; border-radius: 2px; background: var(--rp-brand); flex-shrink: 0; }
+}
+
+.ss-scroll { overflow-x: auto; padding: 4px 8px 6px; }
+.ss-table {
+  width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; color: var(--rp-text);
+  th, td { padding: 10px 12px; border-bottom: 1px solid var(--rp-surface-3); text-align: start; white-space: nowrap; }
+  thead th {
+    background: var(--rp-surface); color: var(--rp-muted); font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .06em; border-bottom: 2px solid var(--rp-border);
+  }
+  .num { text-align: end; font-variant-numeric: tabular-nums; }
+  .strong { font-weight: 600; }
+  tbody tr:nth-child(even):not(.total) td { background: #fafbfd; }
+  tbody tr:hover:not(.total) td { background: var(--rp-brand-soft); }
+  /* The total row: brand-tinted, so it reads as the sum of the rows above. */
+  .total td { background: var(--rp-brand-soft); color: var(--rp-brand); font-weight: 700; border-top: 2px solid var(--rp-brand); border-bottom: 0; }
+  .total td:first-child { border-bottom-left-radius: 8px; }
+  .total td:last-child { border-bottom-right-radius: 8px; }
+  .empty { text-align: center; color: var(--rp-muted); padding: 22px 10px; font-style: italic; }
+}
+.dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-inline-end: 8px; vertical-align: 1px; }
+
+/* Percentage: a thin share bar in front of the number. */
+.pct { white-space: nowrap; }
+.pct-bar {
+  display: inline-block; width: 56px; height: 5px; margin-inline-end: 8px; border-radius: 3px;
+  background: var(--rp-surface-3); vertical-align: middle; overflow: hidden;
+  > span { display: block; height: 100%; border-radius: 3px; max-width: 100%; }
+}
+
+/* Totals block under a table (discount, tax, total, refund … ). */
+.ss-totals {
+  margin: 8px 8px 6px; padding: 6px 0 0;
+  .row { display: flex; justify-content: space-between; gap: 12px; padding: 8px 12px; font-size: 13px; color: var(--rp-text-2); font-variant-numeric: tabular-nums; border-radius: 8px; }
+  .row:nth-child(odd) { background: #fafbfd; }
+  .strong { font-weight: 700; color: var(--rp-text); }
+  .top { margin-top: 6px; border-top: 1px solid var(--rp-border); border-radius: 0 0 8px 8px; padding-top: 10px; }
+  /* The bottom line (Net revenue / Net income): a tinted band. */
+  .accent { background: var(--rp-profit-soft) !important; color: var(--rp-profit); font-size: 14px; border-top: 1px solid color-mix(in srgb, var(--rp-profit) 30%, transparent); border-radius: 8px; }
+  .neg { color: var(--rp-expense); }
+}
+
+/* Loading + error */
+@keyframes ss-shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+.ss-loading { display: flex; flex-direction: column; gap: 16px; }
+.ss-skel-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+.ss-skel {
+  height: 86px; border-radius: 12px; background: linear-gradient(90deg, #eef2f6 0%, #f6f8fa 50%, #eef2f6 100%);
+  background-size: 200% 100%; animation: ss-shimmer 1.4s ease-in-out infinite;
+}
+.ss-skel-card { height: 220px; }
+.ss-error {
+  @include rp.card; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 50px 20px;
+  p { margin: 0; color: var(--rp-muted); font-size: 14px; text-align: center; }
+}
+@media (prefers-reduced-motion: reduce) { .ss-skel { animation: none; } }

@@ -1,0 +1,54 @@
+:host { display: block; }
+.stale { opacity: .6; pointer-events: none; transition: opacity .15s; }
+
+.au { display: flex; gap: 20px; align-items: flex-start; }
+@media (max-width: 1000px) { .au { flex-direction: column; } }
+.au-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+
+.au-filter { display: flex; align-items: center; gap: 8px; }
+.au-pill { padding: 3px 12px; border-radius: 999px; background: #1e8c9f; color: #fff; font-size: 12px; font-weight: 600; }
+.au-clear { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; background: #fff; border: 1px solid #94a3b8; border-radius: 6px; color: #475569; font: inherit; font-size: 12px; cursor: pointer;
+  svg { width: 11px; height: 11px; } &:hover { background: #f1f5f9; } &:focus-visible { outline: 2px solid #1e8c9f; outline-offset: 2px; } }
+
+.au-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; }
+.au-scroll { overflow-x: auto; }
+.au-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.au-table th { padding: 12px 14px; text-align: start; background: #0f172a; color: #fff; font-size: 12.5px; font-weight: 700; white-space: nowrap; border-inline-end: 1px solid rgba(255, 255, 255, .08); }
+.au-table td { padding: 12px 14px; border-bottom: 1px solid #f1f5f9; border-inline-end: 1px solid #f1f5f9; color: #111827; vertical-align: top; }
+.au-table tbody tr:nth-child(even) td { background: #f8fafc; }
+.au-table tbody tr:last-child td { border-bottom: 0; }
+/* the subject edited their own punch: the whole row is amber */
+.au-table tbody tr.self td { background: #fef3c7; }
+.au-table tbody tr.self:nth-child(even) td { background: #fde68a; }
+.nowrap { white-space: nowrap; }
+/* column widths: the short cells stay on one line (the Self-edit badge no longer wraps under the name), the time cells keep room for "old → new" */
+.au-table th:nth-child(1), .au-table td:nth-child(1) { width: 150px; }
+.au-table th:nth-child(2), .au-table td:nth-child(2) { width: 210px; white-space: nowrap; }
+.au-table th:nth-child(3), .au-table td:nth-child(3) { width: 120px; white-space: nowrap; }
+.au-table th:nth-child(4), .au-table td:nth-child(4), .au-table th:nth-child(5), .au-table td:nth-child(5) { min-width: 210px; }
+.au-table th:nth-child(6), .au-table td:nth-child(6) { min-width: 170px; }
+.au-self { white-space: nowrap; margin-inline-start: 6px; padding: 1px 8px; border-radius: 999px; background: #fbbf24; color: #78350f; font-size: 11px; font-weight: 700; }
+
+.diff { white-space: nowrap; }
+.diff .raw { color: #94a3b8; text-decoration: line-through; font-size: 12.5px; }
+.diff .arrow { width: 13px; height: 13px; margin: 0 6px; color: #64748b; vertical-align: -2px; }
+.diff .adj { font-weight: 700; &.in { color: #047857; } &.out { color: #c2410c; } }
+.diff .same { color: #64748b; }
+.diff .reason { display: block; margin-top: 4px; color: #6b7280; white-space: normal; }
+.by { line-height: 1.5; small { color: #6b7280; } }
+.same { color: #94a3b8; }
+.au-none { text-align: center; color: #6b7280; padding: 24px !important; }
+
+.au-side { width: 280px; flex-shrink: 0; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; }
+@media (max-width: 1000px) { .au-side { width: 100%; } }
+.au-side h4 { margin: 0; padding: 14px 16px 8px; font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: #374151; }
+.au-side table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.au-side th { padding: 8px 16px; text-align: start; font-size: 12px; font-weight: 700; color: #475569; background: #f8fafc; border-block: 1px solid #e5e7eb; }
+.au-side td { padding: 10px 16px; border-bottom: 1px solid #f1f5f9; color: #111827; }
+.au-side tbody tr { cursor: pointer; transition: background .12s; &:hover { background: #f1f5f9; } &:focus-visible { outline: 2px solid #1e8c9f; outline-offset: -2px; } &.active { background: #dbeafe; } }
+.au-side .end { text-align: end; }
+.au-count { display: inline-block; min-width: 26px; padding: 1px 8px; border-radius: 999px; background: #e0f2fe; color: #0369a1; font-weight: 700; font-size: 12px; text-align: center; }
+
+@keyframes au-shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+.au-skel { height: 360px; border-radius: 12px; background: linear-gradient(90deg, #eef2f6 0%, #f6f8fa 50%, #eef2f6 100%); background-size: 200% 100%; animation: au-shimmer 1.4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .au-skel { animation: none; } }

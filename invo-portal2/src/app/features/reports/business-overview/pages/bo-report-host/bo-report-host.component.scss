@@ -1,0 +1,32 @@
+:host { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+
+/* The page frame (action bar, title strip, scrolling content) is <app-report-page-shell>; only what is specific to
+   the Business Overview reports stays here. */
+
+/* Applied-filter chips on the title line — they appear once the filter bar has scrolled out of view. */
+.pts-filters {
+  display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .5rem; max-width: 100%;
+  margin-top: .125rem;
+  opacity: 0; visibility: hidden; transform: translateY(-4px); pointer-events: none;
+  transition: opacity .18s ease, transform .18s ease, visibility 0s .18s;
+  &.shown { opacity: 1; visibility: visible; transform: none; pointer-events: auto; transition-delay: 0s; }
+}
+@media (prefers-reduced-motion: reduce) { .pts-filters { transition: none; } }
+.pts-chip {
+  display: inline-flex; align-items: center; gap: .4rem; max-width: 280px; padding: .3rem .75rem;
+  border: 1px solid #d1d5db; border-radius: 999px; background: #f9fafb; color: #334155; font-size: .8125rem; font-weight: 500;
+  svg { flex-shrink: 0; color: #64748b; }
+  span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  &[data-kind='branches'] { background: #ecfeff; border-color: #a5e3ee; color: #0e7490; svg { color: #0e7490; } }
+  &[data-kind='compare'] { background: #f5f3ff; border-color: #d8cff7; color: #6d28d9; svg { color: #6d28d9; } }
+}
+
+.rv-denied { flex: 1; text-align: center; padding: 80px 20px; color: #64748b; }
+
+@media (max-width: 768px) {
+  .pts-filters { justify-content: flex-start; }
+}
+@media print {
+  :host ::ng-deep app-bo-filter-bar { display: none !important; }
+  :host ::ng-deep .ts-scroll { overflow: visible; }
+}

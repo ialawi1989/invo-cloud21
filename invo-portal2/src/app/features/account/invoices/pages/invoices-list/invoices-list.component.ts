@@ -10,6 +10,7 @@ import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { statusClass } from '@shared/utils/status-tone';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 import { downloadPdf } from '@core/utils/pdf-download';
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 import { ModalService } from '@shared/modal/modal.service';
 import { ToastService } from '@shared/components/toast/toast.service';
 import { ListPageComponent } from '@shared/components/list-page/components/list-page.component';
@@ -28,6 +29,11 @@ import { CustomerAddress } from '../../../customers/models/customer.model';
 import { SendDocumentData, SendDocumentModalComponent } from '../../../components/send-document-modal/send-document-modal.component';
 import { InvoicesService } from '../../services/invoices.service';
 import { InvoiceActions } from '../../services/invoice-actions';
+import { DocBoardViewComponent } from '../../../components/doc-board-view/doc-board-view.component';
+import { DocCalendarViewComponent } from '../../../components/doc-calendar-view/doc-calendar-view.component';
+import { DocFetch, DocViewAdapter } from '../../../components/doc-views/doc-views.types';
+import { DocListQuery, makeDocViewFetch } from '../../../components/doc-views/doc-view-fetch';
+import { DOC_EXTRA_VIEW_MODES } from '../../../services/document-list-base';
 
 const ymd = (v: any): string | null => {
   if (!v) return null;
@@ -49,7 +55,8 @@ const arr = (v: any): any[] => (v == null || v === '' ? [] : Array.isArray(v) ? 
   standalone: true,
   imports: [
     CommonModule, TranslateModule, ListPageComponent, ListCellTemplateDirective,
-    ListRowActionsDirective, DropdownMenuBtnComponent, MycurrencyPipe,
+    ListRowActionsDirective, DropdownMenuBtnComponent, MycurrencyPipe, TooltipDirective,
+    DocBoardViewComponent, DocCalendarViewComponent,
   ],
   templateUrl: './invoices-list.component.html',
 })
@@ -154,7 +161,61 @@ export class InvoicesListComponent implements OnInit {
     };
   }
 
+  // ── board / calendar views ─────────────────────────────────────────
+  /** Active body: the list's table, or one of the extra views projected into it. */
+  viewMode = signal<'table' | 'board' | 'calendar'>('table');
+
+  readonly extraViewModes = DOC_EXTRA_VIEW_MODES;
+
+  onViewMode(mode: string): void {
+    this.viewMode.set(mode === 'board' || mode === 'calendar' ? mode : 'table');
+  }
+
+  /**
+   * The list's latest search / sort / filters. The list page re-calls
+   * `loadInvoices` whenever any of them change (whatever view is showing), so
+   * recording them here is what keeps the board and calendar in step with it.
+   */
+  readonly query = signal<DocListQuery>({});
+
+  /** Fetch for the board / calendar: the list's query plus per-view overrides. */
+  readonly viewFetch: DocFetch = makeDocViewFetch({
+    query: () => this.query(),
+    buildBody: q => this.buildBody(q),
+    fetch: body => this.service.getInvoiceList(body),
+  });
+
+  /** How the board / calendar present and act on an invoice (same rules as the table). */
+  readonly viewAdapter: DocViewAdapter = {
+    numberKey: 'invoiceNumber',
+    refKey: 'refrenceNumber',
+    partyKey: 'customerName',
+    dateKey: 'invoiceDate',
+    dueKey: 'dueDate',
+    dueLabelKey: 'INVOICES.LIST.DUE_DATE',
+    settledStatuses: ['Paid', 'Closed', 'Void', 'writeOff', 'merged', 'Draft'],
+    columns: [
+      { id: 'draft',   labelKey: 'INVOICES.STATUS.Draft',          statuses: ['Draft'],          tone: 'bg-amber-400' },
+      { id: 'open',    labelKey: 'INVOICES.STATUS.Open',           statuses: ['Open'],           tone: 'bg-emerald-500' },
+      { id: 'partial', labelKey: 'INVOICES.STATUS.Partially Paid', statuses: ['Partially Paid'], tone: 'bg-indigo-500' },
+      { id: 'paid',    labelKey: 'INVOICES.STATUS.Paid',           statuses: ['Paid'],           tone: 'bg-teal-500' },
+      { id: 'closed',  labelKey: 'INVOICES.STATUS.Closed',         statuses: ['Closed'],         tone: 'bg-slate-400' },
+      { id: 'other',   labelKey: 'INVOICES.BOARD.VOID_OTHER',      statuses: ['Void', 'writeOff', 'merged'], tone: 'bg-red-400' },
+    ],
+    statusLabel: s => this.lang.instant('INVOICES.STATUS.' + s),
+    statusClass,
+    chips: r => r.onlineData?.onlineStatus
+      ? [{ text: r.onlineData.onlineStatus, classes: 'bg-sky-50 text-sky-700' }]
+      : [],
+    view: r => this.view(r),
+    edit: r => this.edit(r),
+    canEdit: r => this.actions.edit(r),
+    editBlockedReason: r => this.actions.editBlockedReason(r),
+    menu: (r, after) => this.rowMenu(r, after),
+  };
+
   loadInvoices = async (params: ListQueryParams) => {
+    this.query.set({ searchTerm: params.searchTerm, sortBy: params.sortBy, filter: params.filter });
     const body: any = { page: params.page, limit: params.limit, ...this.buildBody(params) };
     if (params.columns?.length) body.columns = params.columns;
     const data = await this.service.getInvoiceList(body);
@@ -177,12 +238,12 @@ export class InvoicesListComponent implements OnInit {
     this.paged('product/getProductsListByType', { page: p.page, limit: p.pageSize, searchTerm: p.search, sortBy: {} }, x => ({ value: x.id, label: x.name }), p.page);
 
   /** Secondary row actions live in the "⋯" menu so the Actions column stays narrow (View + Edit stay outside). */
-  rowMenu(r: any): DropdownMenuBtnItem[] {
+  rowMenu(r: any, after: () => void = () => this.listPage?.refresh?.()): DropdownMenuBtnItem[] {
     // Pay lives here too, first in the list, so only View and Edit sit outside.
     const pay: DropdownMenuBtnItem[] = this.actions.pay(r)
       ? [{ label: this.lang.instant('INVOICES.LIST.PAY'), click: () => this.actions.goPay(r.id) }]
       : [];
-    return [...pay, ...this.actions.menu(r, r.id, () => this.listPage?.refresh?.())];
+    return [...pay, ...this.actions.menu(r, r.id, after)];
   }
 
   // ── navigation / actions ───────────────────────────────────────────

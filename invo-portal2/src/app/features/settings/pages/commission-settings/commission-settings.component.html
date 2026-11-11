@@ -1,0 +1,106 @@
+<div class="ep-page">
+  <header class="ep-header">
+    <div class="ep-header__titles">
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="ep-title">{{ 'COMMISSION_SETTINGS.TITLE' | translate }}</h1>
+      <p class="ep-sub">{{ 'COMMISSION_SETTINGS.DESCRIPTION' | translate }}</p>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="ep-loading"><span class="ep-spinner"></span></div>
+  } @else {
+    @let opts = options();
+    @let tips = tipOptions();
+
+    <!-- ═══ Commission ═══ -->
+    <section class="ep-card">
+      <header class="ep-card__head">
+        <div style="flex:1">
+          <h2 class="ep-card__title">{{ 'COMMISSION_SETTINGS.TITLE' | translate }}</h2>
+          <p class="ep-card__sub">{{ 'COMMISSION_SETTINGS.ENABLED_HINT' | translate }}</p>
+        </div>
+        <app-toggle [checked]="opts.enabled" [label]="'COMMISSION_SETTINGS.ENABLED' | translate"
+                    (checkedChange)="setCommission({ enabled: $event })"/>
+      </header>
+
+      @if (opts.enabled) {
+        <div class="ep-card__body">
+          @if (notSavedYet()) {
+            <div class="ep-note">{{ 'COMMISSION_SETTINGS.NOT_SAVED_YET' | translate }}</div>
+          }
+
+          <div class="ep-grid">
+            <div class="ep-field">
+              <label class="ep-label">{{ 'COMMISSION_SETTINGS.ELIGIBILITY' | translate }}</label>
+              @for (c of eligibilityChoices(); track c.value) {
+                <label class="ep-radio" [style.opacity]="isEligibilityDisabled(c) ? .5 : 1">
+                  <input type="radio" name="eligibility" [value]="c.value" [checked]="opts.eligibilityType === c.value"
+                         [disabled]="isEligibilityDisabled(c)" (change)="setCommission({ eligibilityType: c.value })"/>
+                  {{ c.label }}
+                </label>
+              }
+              @if (!hasReturnPeriod()) {
+                <p class="ep-hint">{{ 'COMMISSION_SETTINGS.NO_RETURN_PERIOD_HINT' | translate }}</p>
+              }
+            </div>
+
+            @if (opts.needsDays) {
+              <div class="ep-field">
+                <label class="ep-label" for="cs-days">{{ 'COMMISSION_SETTINGS.ELIGIBILITY_DAYS' | translate }}</label>
+                <input id="cs-days" class="ep-input" type="number" min="1" step="1" [ngModel]="opts.eligibilityDays"
+                       (ngModelChange)="setCommission({ eligibilityDays: $event === '' || $event == null ? null : +$event })"/>
+              </div>
+            }
+          </div>
+
+          <div class="ep-grid" style="margin-top:16px">
+            <div class="ep-field">
+              <label class="ep-label">{{ 'COMMISSION_SETTINGS.PAYMENT_CYCLE' | translate }}</label>
+              <app-search-dropdown [items]="cycleChoices()" [displayWith]="$any(cycleLabel)" [compareWith]="$any(sameValue)"
+                [value]="$any(cycleOf(opts.paymentCycle))" [clearable]="false" [searchable]="false"
+                (valueChange)="setCommission({ paymentCycle: $any($event)?.value })"/>
+              <p class="ep-hint">{{ 'COMMISSION_SETTINGS.PAYMENT_CYCLE_HINT' | translate }}</p>
+            </div>
+
+            @if (opts.needsStartDate) {
+              <div class="ep-field">
+                <label class="ep-label">{{ 'COMMISSION_SETTINGS.CYCLE_START_DATE' | translate }}</label>
+                <app-date-field [value]="opts.paymentCycleStartDate" (changed)="setCommission({ paymentCycleStartDate: $event })"/>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </section>
+
+    <!-- ═══ Tips ═══ -->
+    <section class="ep-card">
+      <header class="ep-card__head">
+        <div style="flex:1">
+          <h2 class="ep-card__title">{{ 'TIPS_SETTINGS.SECTION' | translate }}</h2>
+          <p class="ep-card__sub">{{ 'TIPS_SETTINGS.ENABLED_HINT' | translate }}</p>
+        </div>
+        <app-toggle [checked]="tips.enabled" [label]="'TIPS_SETTINGS.ENABLED' | translate"
+                    (checkedChange)="setTips({ enabled: $event })"/>
+      </header>
+
+      @if (tips.enabled) {
+        <div class="ep-card__body">
+          <app-toggle [checked]="tips.deductCardFeeFromTips" [label]="'TIPS_SETTINGS.DEDUCT_CARD_FEE' | translate"
+                      [hint]="'TIPS_SETTINGS.DEDUCT_CARD_FEE_HINT' | translate"
+                      (checkedChange)="setTips({ deductCardFeeFromTips: $event })"/>
+          <p class="ep-hint" style="margin-top:8px">{{ 'TIPS_SETTINGS.UNPAID_ONLY' | translate }}</p>
+          <div class="ep-note" style="margin-top:12px">{{ 'TIPS_SETTINGS.LAWFUL_WARNING' | translate }}</div>
+        </div>
+      }
+    </section>
+  }
+
+  <app-loading-overlay [show]="saving()" [message]="'COMMON.SAVING' | translate"/>
+
+  <app-form-sticky-footer>
+    <button type="button" class="btn btn-cancel" (click)="back()" [disabled]="saving()">{{ 'COMMON.CANCEL' | translate }}</button>
+    <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving() || loading()">{{ 'COMMON.SAVE' | translate }}</button>
+  </app-form-sticky-footer>
+</div>

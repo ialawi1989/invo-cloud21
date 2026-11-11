@@ -3,12 +3,16 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
+    "postinstall": "node scripts/apply-env.mjs",
     "prestart": "node scripts/apply-env.mjs",
     "start": "ng serve --host 0.0.0.0 --port 4700",
     "prebuild": "node scripts/apply-env.mjs",
     "build": "ng build",
+    "prewatch": "node scripts/apply-env.mjs",
     "watch": "ng build --watch --configuration development",
+    "pretest": "node scripts/apply-env.mjs",
     "test": "ng test --no-watch",
+    "pretest:watch": "node scripts/apply-env.mjs",
     "test:watch": "ng test",
     "verify": "npm run test && npm run i18n:check",
     "i18n:check": "node scripts/check-i18n.mjs"

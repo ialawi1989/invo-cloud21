@@ -5,6 +5,7 @@
     "ADD_NEW": "فاتورة جديدة",
     "SEARCH_PLACEHOLDER": "البحث في الفواتير",
     "EMPTY": "لا توجد فواتير",
+    "BOARD": { "VOID_OTHER": "ملغاة / مشطوبة" },
     "CREATED_DATE": "تاريخ الإنشاء",
     "LIST": {
       "INVOICES_LIST": "الفواتير",

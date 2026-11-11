@@ -74,6 +74,8 @@ export interface PayrollRow {
   socialInsuranceApplicable: boolean | null;
   wpsEnabled: boolean | null;
   gosiNumber: string | null;
+  /** First registration with the social-insurance authority (not the hire date). */
+  socialInsuranceRegisteredOn: string | null;
   /** Tax information — stored only, never used in any calculation. */
   taxIdentifier: string | null;
   taxCountry: string | null;
@@ -273,6 +275,7 @@ export class EmployeePayrollService {
         typeof r?.socialInsuranceApplicable === 'boolean' ? r.socialInsuranceApplicable : null,
       wpsEnabled: typeof r?.wpsEnabled === 'boolean' ? r.wpsEnabled : null,
       gosiNumber: r?.gosiNumber ?? null,
+      socialInsuranceRegisteredOn: r?.socialInsuranceRegisteredOn ? String(r.socialInsuranceRegisteredOn).slice(0, 10) : null,
       taxIdentifier: r?.taxIdentifier ?? null,
       taxCountry: r?.taxCountry ?? null,
       // Postgres numeric arrives as a STRING. Left as a number here so the

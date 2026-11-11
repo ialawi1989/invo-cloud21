@@ -1,0 +1,28 @@
+@use '../../styles/report-theme' as rp;
+
+:host { @include rp.tokens; display: block; }
+
+
+.ls { transition: opacity .15s; }
+.ls.stale { opacity: .55; pointer-events: none; }
+.neg { color: var(--rp-expense); }
+
+
+@keyframes ls-shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+.ls-loading { display: flex; flex-direction: column; gap: 16px; }
+.ls-skel {
+  height: 360px; border-radius: 12px; background: linear-gradient(90deg, #eef2f6 0%, #f6f8fa 50%, #eef2f6 100%);
+  background-size: 200% 100%; animation: ls-shimmer 1.4s ease-in-out infinite;
+}
+.ls-error {
+  @include rp.card; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 50px 20px;
+  p { margin: 0; color: var(--rp-muted); font-size: 14px; text-align: center; }
+}
+@media (prefers-reduced-motion: reduce) { .ls-skel { animation: none; } }
+
+.subtotal-row td { background: var(--rp-subtle, #f1f5f9); }
+
+/* Space between the table and its pager. */
+app-pagination { display: block; margin-top: 16px; }
+
+.sub-line { display: block; margin-top: 1px; font-size: 11.5px; color: var(--rp-muted); font-weight: 400; }

@@ -1,0 +1,60 @@
+<app-bo-state [loading]="loading() && !data()" [error]="error()" [empty]="isEmpty()" (retry)="load()" />
+
+@if (data(); as d) {
+  @if (lines().length) {
+    <div class="aj" [class.stale]="loading()">
+      <div class="rp-table-wrap">
+        <table class="aj-table">
+          <thead>
+            <tr>
+              <th>{{ 'REPORTS.BO.COLUMNS.DATE' | translate }}</th>
+              <th>{{ 'REPORTS.BO.COLUMNS.TYPE' | translate }}</th>
+              <th>{{ 'REPORTS.BO.COLUMNS.CODE' | translate }}</th>
+              <th class="num">{{ 'REPORTS.BO.COLUMNS.DEBIT' | translate }}</th>
+              <th class="num">{{ 'REPORTS.BO.COLUMNS.CREDIT' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (j of lines(); track $index) {
+              <tr>
+                <td>{{ j.createdAt | date: 'dd/MM/yyyy' }}</td>
+                <td>
+                  <span class="aj-type">{{ j.type }}</span>
+                  @if (j.userName) { <div class="aj-user">{{ j.userName }}</div> }
+                </td>
+                <td>
+                  @if (j.referenceId && link(j.type, j.referenceId); as href) {
+                    <a class="rp-link" [routerLink]="href">{{ j.code || ('REPORTS.BO.VIEW_DETAILS' | translate) }}</a>
+                  } @else {
+                    {{ j.code || '-' }}
+                  }
+                </td>
+                <td class="num aj-debit">@if ((j.debit ?? 0) > 0) { {{ j.debit | mycurrency }} }</td>
+                <td class="num aj-credit">@if ((j.credit ?? 0) > 0) { {{ j.credit | mycurrency }} }</td>
+              </tr>
+            }
+            <tr class="total">
+              <td><strong>{{ 'REPORTS.BO.COLUMNS.TOTAL' | translate }}</strong></td>
+              <td></td>
+              <td></td>
+              <td class="num"><strong>{{ totals().debit | mycurrency }}</strong></td>
+              <td class="num"><strong>{{ totals().credit | mycurrency }}</strong></td>
+            </tr>
+            <tr class="closing">
+              <td><strong>{{ 'REPORTS.BO.COLUMNS.CLOSING_BALANCE' | translate }}</strong></td>
+              <td></td>
+              <td></td>
+              <td class="num"><strong [class.pos]="closing() > 0" [class.neg]="closing() < 0">{{ closing() | mycurrency }}</strong></td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <app-pagination
+        [page]="page()" [pageSize]="pageSize()" [count]="d.count" [pageCount]="d.pageCount"
+        [pageSizeOptions]="sizes" [disabled]="loading()"
+        (pageChange)="goTo($event)" (pageSizeChange)="setSize($event)" />
+    </div>
+  }
+}

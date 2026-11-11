@@ -1,0 +1,50 @@
+<div class="rvh">
+  <!-- ── Action bar ─────────────────────────────────────────────── -->
+  <header class="main-header">
+    <div class="header-left">
+      <button type="button" class="btn-back" (click)="back.emit()">
+        <svg class="flip-rtl" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        <span class="hide-xs">{{ 'REPORTS.VIEW.BACK' | translate }}</span>
+      </button>
+
+      <button type="button" class="btn-browse" (click)="browse.emit()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span class="hide-xs">{{ 'REPORTS.BROWSE.BUTTON' | translate }}</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+    </div>
+
+    <div class="header-right">
+      <button type="button" class="btn-run" [class.spinning]="spinning()" (click)="refresh.emit()" [attr.title]="'REPORTS.BO.REFRESH' | translate">
+        <svg class="run-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        <span class="hide-sm">{{ 'REPORTS.BO.REFRESH' | translate }}</span>
+      </button>
+
+      @if (showFavorite()) {
+        <button type="button" class="btn-icon btn-favorite" [class.active]="favorite()" (click)="favoriteToggle.emit()"
+                [attr.aria-pressed]="favorite()" [attr.aria-label]="'REPORTS.VIEW.FAVORITE' | translate">
+          <svg width="20" height="20" viewBox="0 0 24 24" [attr.fill]="favorite() ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </button>
+      }
+
+      <ng-content select="[shellExport]" />
+    </div>
+  </header>
+
+  <!-- ── Title strip ────────────────────────────────────────────── -->
+  <div class="page-title-section">
+    <div class="pts-text">
+      <h2 class="page-title">
+        {{ title() }}
+        @if (titleChip()) { <span class="rv-account">{{ titleChip() }}</span> }
+      </h2>
+      @if (subtitle()) { <p class="page-subtitle">{{ subtitle() }}</p> }
+    </div>
+    <ng-content select="[shellTitleExtra]" />
+  </div>
+
+  <!-- ── Content ────────────────────────────────────────────────── -->
+  <main class="content-area" #contentArea>
+    <ng-content />
+  </main>
+</div>

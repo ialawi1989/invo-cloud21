@@ -356,3 +356,6 @@
 }
 .pay-reveal { margin-inline-start: 8px; padding-block: 0; }
 .pay-panel--loans { margin-top: 16px; }
+
+.pay-check { flex-direction: row; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; }
+.pay-field__hint { font-size: 11px; color: #94a3b8; line-height: 1.4; }

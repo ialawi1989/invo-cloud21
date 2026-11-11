@@ -10,7 +10,7 @@
  */
 
 /** How wages are counted toward the contribution base. */
-export type WageBasis = 'basic' | 'basic_plus_allowances';
+export type WageBasis = 'basic' | 'basic_plus_allowances' | 'basic_plus_housing';
 
 /** One effective-dated GOSI contribution-rate period. */
 export interface GosiSettingsRow {
@@ -35,9 +35,20 @@ export interface GosiSettingsRow {
   tier2EmployerRateAnnualIncrementPercent: number | null;
   tier2EmployerRateEscalationEndYear: number | null;
 
+  /** Expatriate (non-national, non-GCC) shares. Both empty = outside the scheme.
+   *  An employer-only charge is employee 0 + employer n. */
+  tier3EmployeeRatePercent: number | null;
+  tier3EmployerRatePercent: number | null;
+
   wageBasis: WageBasis | null;
   wageFloor: number | null;
+  /** Per-tier minimums; each wins over `wageFloor` for its tier when set. */
+  tier1WageFloor: number | null;
+  tier2WageFloor: number | null;
+  tier3WageFloor: number | null;
   wageCeiling: number | null;
+  /** Scale the contributory wage down for unpaid leave and absence. Default off. */
+  reduceForAbsence: boolean;
 
   /** Months between required re-checks of this row's figures against the
    *  official source (12 or 24 today), or `null` for no reminder. The
@@ -86,4 +97,88 @@ export interface GosiCatalog {
   tiers: string[];
   wageBases: string[];
   computationAvailable: boolean;
+}
+
+/**
+ * Suggested, UNCONFIRMED values for the company's country. They only pre-fill the
+ * form — nothing is saved or deducted until the user reviews and saves.
+ */
+export interface GosiSuggestion {
+  country: string;
+  unconfirmed: true;
+  authority: string;
+  note: string;
+  values: {
+    tier1EmployeeRatePercent: number | null;
+    tier1EmployerRatePercent: number | null;
+    tier3EmployeeRatePercent: number | null;
+    tier3EmployerRatePercent: number | null;
+    wageBasis: WageBasis | null;
+    wageFloor: number | null;
+    tier1WageFloor: number | null;
+    tier2WageFloor: number | null;
+    tier3WageFloor: number | null;
+    wageCeiling: number | null;
+    reduceForAbsence: boolean;
+  };
+}
+
+/**
+ * A company's retirement ages (pension / social-insurance retirement age — used only
+ * to WARN on the payroll run, never to stop a calculation). Empty = no figure.
+ */
+export interface RetirementAges {
+  country: string;
+  /** Effective ages: the company's own entry, else the country default (empty today). */
+  nationalAge: number | null;
+  expatriateAge: number | null;
+  source: string;
+  /** The company's OWN saved entry, or null when it has never saved one. */
+  own: { nationalAge: number | null; expatriateAge: number | null } | null;
+  /** True while the figures are unconfirmed. */
+  verify: boolean;
+  note: string;
+}
+
+export interface RetirementAgesInput {
+  nationalAge: number | null;
+  expatriateAge: number | null;
+  source: string;
+}
+
+/** An INVO-maintained statutory rule for the company country (read-only). Payroll applies only `verified` ones. */
+export interface GosiCountryRule {
+  country: string;
+  tier: 'Tier1Bahraini' | 'Tier2Gcc' | 'Tier3NonGccExpatriate';
+  effectiveFrom: string;
+  employeeRatePercent: number | null;
+  employerRatePercent: number | null;
+  employerRateAfterYears: number | null;
+  employerRateAfterPercent: number | null;
+  /** The employer rate climbs by this many points each calendar year, up to `employerRateEscalationEndYear`. */
+  employerRateAnnualIncrementPercent?: number | null;
+  employerRateEscalationEndYear?: number | null;
+  wageBasis: WageBasis | null;
+  wageFloor: number | null;
+  wageCeiling: number | null;
+  /** Wage bands (the flat rates above are then only the first band, for reference). */
+  bands?: { from: number; to: number | null; employeeRatePercent: number; employerRatePercent: number }[] | null;
+  bandMode?: 'marginal' | 'threshold' | null;
+  status: 'verified' | 'awaiting_signoff';
+  source: string | null;
+  notes: string | null;
+}
+
+/** What a company-granted exemption waives for one employee. */
+export type GosiExemptionScope = 'both' | 'employee' | 'employer';
+
+/** A period during which one employee's contribution is waived. `toDate` null = open-ended. */
+export interface GosiExemption {
+  id: string;
+  employeeId: string;
+  fromDate: string;
+  toDate: string | null;
+  scope: GosiExemptionScope;
+  reason: string;
+  createdAt: string;
 }

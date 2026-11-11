@@ -1,3 +1,4 @@
+import { companySavePayload } from '@core/auth/employee-earnings';
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
@@ -34,7 +35,7 @@ export class InvoiceOptionsService {
    * After successful save we re-load settings so cached signals propagate.
    */
   async saveCompany(payload: any): Promise<any> {
-    const res = await firstValueFrom(this.api.post<any>('company/saveCompany', payload));
+    const res = await firstValueFrom(this.api.post<any>('company/saveCompany', companySavePayload(payload)));
     if (res?.success) {
       await this.company.loadSettings(true);
     }

@@ -77,6 +77,8 @@
       "ESTIMATE_BUILDER_DESC":     "Build your estimate template.",
       "ESTIMATE_OPTIONS":          "Estimate Options",
       "ESTIMATE_OPTIONS_DESC":     "Configure estimate options, default notes, terms and conditions.",
+      "COMMISSION_SETTINGS": "Commission Settings",
+      "COMMISSION_SETTINGS_DESC": "Switch employee commission and tips on, set when commission is earned and the payout cycle.",
 
       "EXPENSE_BUILDER":           "Expense Builder",
       "EXPENSE_BUILDER_DESC":      "Build your expense template.",

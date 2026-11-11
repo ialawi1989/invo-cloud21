@@ -7,6 +7,9 @@ import { LanguageService } from '@core/i18n/language.service';
 import { ModalService } from '@shared/modal/modal.service';
 import { LogsDrawerComponent, LogsDrawerData } from '@shared/components/logs-drawer/logs-drawer.component';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
+import { AuthService } from '@core/auth/auth.service';
+import { DropdownMenuBtnComponent, DropdownMenuBtnItem } from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
+import { hrGrantFor } from '../../hr-privilege';
 import { ListPageComponent } from '@shared/components/list-page/components/list-page.component';
 import {
   ListCellTemplateDirective,
@@ -33,6 +36,7 @@ import { EmployeeSummary } from '../../models/employee.types';
     CommonModule,
     TranslateModule,
     ListPageComponent,
+    DropdownMenuBtnComponent,
     ListCellTemplateDirective,
     ListRowActionsDirective,
   ],
@@ -44,10 +48,18 @@ export class EmployeesListComponent implements OnInit {
   private router     = inject(Router);
   private lang       = inject(LanguageService);
   private privileges = inject(PrivilegeService);
+  private auth       = inject(AuthService);
   private modal      = inject(ModalService);
 
   readonly canAdd    = this.privileges.check('employeeSecurity.actions.add.access');
   readonly canInvite = this.privileges.check('employeeInvitationSecurity.actions.add.access');
+
+  /**
+   * The three-dots menu: shortcuts to HR configuration pages that have no sidebar
+   * entry. Each is offered only to someone the page itself would let in (the same
+   * checks the routes use), so no item leads to a refusal.
+   */
+  moreItems: DropdownMenuBtnItem[] = [];
 
   columns: TableColumn[] = [];
 
@@ -63,6 +75,15 @@ export class EmployeesListComponent implements OnInit {
 
   private initTranslations(): void {
     const t = (k: string) => this.lang.instant(k);
+    const go = (url: string) => () => void this.router.navigate([url]);
+    this.moreItems = [
+      ...(hrGrantFor(this.privileges, this.auth, 'employeeLeaveSecurity', 'edit')
+        ? [{ label: t('EMPLOYEES.MORE.LEAVE_TYPES'), click: go('/employees/leave-types') }] : []),
+      ...(this.privileges.check('employeeLeaveSecurity.actions.view')
+        ? [{ label: t('EMPLOYEES.MORE.HOLIDAY_CALENDARS'), click: go('/employees/holiday-calendars') }] : []),
+      ...(hrGrantFor(this.privileges, this.auth, 'employeeGosiSecurity', 'view')
+        ? [{ label: t('EMPLOYEES.MORE.GOSI_SETTINGS'), click: go('/employees/gosi-settings') }] : []),
+    ];
     this.columns = [
       { key: 'name',  label: t('EMPLOYEES.LIST.NAME'),  sortable: true, primary: true, locked: true, interactive: true, customTemplate: true, visible: true, order: 0 },
       { key: 'email', label: t('EMPLOYEES.LIST.EMAIL'), sortable: true, visible: true, order: 1 },

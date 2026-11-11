@@ -9,6 +9,9 @@ import { ListCellTemplateDirective, ListRowActionsDirective } from '@shared/comp
 import { DropdownMenuBtnComponent, DropdownMenuBtnItem } from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
 
 import { DocumentListBase, DocListMeta } from '../../../services/document-list-base';
+import { DocBoardViewComponent } from '../../../components/doc-board-view/doc-board-view.component';
+import { DocCalendarViewComponent } from '../../../components/doc-calendar-view/doc-calendar-view.component';
+import { DocViewAdapter } from '../../../components/doc-views/doc-views.types';
 import { PurchaseOrdersService } from '../../services/purchase-orders.service';
 import { PurchaseOrderActions } from '../../services/purchase-order-actions';
 
@@ -21,7 +24,7 @@ import { PurchaseOrderActions } from '../../services/purchase-order-actions';
 @Component({
   selector: 'app-purchase-orders-list',
   standalone: true,
-  imports: [CommonModule, TranslateModule, ListPageComponent, ListCellTemplateDirective, ListRowActionsDirective, DropdownMenuBtnComponent, MycurrencyPipe],
+  imports: [CommonModule, TranslateModule, ListPageComponent, ListCellTemplateDirective, ListRowActionsDirective, DropdownMenuBtnComponent, MycurrencyPipe, DocBoardViewComponent, DocCalendarViewComponent],
   templateUrl: './purchase-orders-list.component.html',
 })
 export class PurchaseOrdersListComponent extends DocumentListBase implements OnInit {
@@ -39,7 +42,49 @@ export class PurchaseOrdersListComponent extends DocumentListBase implements OnI
     dashboardCrumbKey: 'PURCHASE_ORDERS.DASHBOARD',
   };
 
-  protected fetch = (body: any) => this.service.getPurchaseList(body);
+  /**
+   * The table always sends its visible columns. The board / calendar send none, and the API's default
+   * set has no `status`, so ask for the view's columns explicitly (status drives the board's cards).
+   */
+  private static readonly VIEW_COLUMNS = [
+    'id', 'purchaseDate', 'dueDate', 'purchaseNumber', 'reference', 'total', 'createdAt',
+    'branchName', 'supplierName', 'employeeName', 'billingNumber', 'billingCount', 'isBill', 'status',
+  ];
+
+  protected fetch = (body: any) =>
+    this.service.getPurchaseList(body.columns?.length ? body : { ...body, columns: PurchaseOrdersListComponent.VIEW_COLUMNS });
+
+  private static readonly STATUS_KEYS: Record<string, string> = {
+    'Not Converted': 'PURCHASE_ORDERS.LIST.STATUS_NOT_CONVERTED',
+    'Partially Converted': 'PURCHASE_ORDERS.LIST.STATUS_PARTIALLY_CONVERTED',
+    'Fully Converted': 'PURCHASE_ORDERS.LIST.STATUS_FULLY_CONVERTED',
+  };
+
+  /**
+   * How the board / calendar present and act on a purchase order (same rules as the table). The API
+   * filters by purchase date, so the calendar places orders on it; the expiry date shows on the card.
+   */
+  readonly viewAdapter: DocViewAdapter = {
+    numberKey: 'purchaseNumber',
+    refKey: 'reference',
+    partyKey: 'supplierName',
+    dateKey: 'purchaseDate',
+    dueKey: 'dueDate',
+    dueLabelKey: 'PURCHASE_ORDERS.LIST.EXPIRY_DATE',
+    settledStatuses: ['Fully Converted'],
+    columns: [
+      { id: 'not',     labelKey: PurchaseOrdersListComponent.STATUS_KEYS['Not Converted'],       statuses: ['Not Converted'],       tone: 'bg-amber-400' },
+      { id: 'partial', labelKey: PurchaseOrdersListComponent.STATUS_KEYS['Partially Converted'], statuses: ['Partially Converted'], tone: 'bg-indigo-500' },
+      { id: 'fully',   labelKey: PurchaseOrdersListComponent.STATUS_KEYS['Fully Converted'],     statuses: ['Fully Converted'],     tone: 'bg-emerald-500' },
+    ],
+    statusLabel: s => this.lang.instant(PurchaseOrdersListComponent.STATUS_KEYS[s] ?? s),
+    statusClass,
+    chips: r => this.bills(r).map(b => ({ text: b.billNumber, classes: 'bg-slate-100 text-slate-700' })),
+    view: r => this.view(r),
+    edit: r => this.edit(r),
+    canEdit: r => this.actions.edit(r),
+    menu: (r, after) => this.rowMenu(r, after),
+  };
 
   async ngOnInit(): Promise<void> {
     await this.initBase();
@@ -83,7 +128,9 @@ export class PurchaseOrdersListComponent extends DocumentListBase implements OnI
   bills(r: any): { id: string; billNumber: string }[] { return Array.isArray(r.billingNumber) ? r.billingNumber : []; }
 
   /** Secondary row actions live in the "⋯" menu (View + Edit stay outside). */
-  rowMenu(r: any): DropdownMenuBtnItem[] { return this.actions.menu(r, r.id, () => this.listPage?.refresh?.()); }
+  rowMenu(r: any, after: () => void = () => this.listPage?.refresh?.()): DropdownMenuBtnItem[] {
+    return this.actions.menu(r, r.id, after);
+  }
 
   add(): void { void this.router.navigate(['/account/purchase-order', 'new']); }
   auto(): void { void this.router.navigate(['/account/purchase-order/auto-po', 'new']); }

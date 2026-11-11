@@ -1,7 +1,8 @@
+import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
@@ -14,6 +15,7 @@ import { ModalService } from '@shared/modal/modal.service';
 import { ConfirmModalComponent, ConfirmModalData } from '@shared/modal/demo/confirm-modal.component';
 
 import {
+  PayrollCountryDefaults,
   PayrollLine,
   PayrollOverrides,
   PayrollRunDetail,
@@ -51,7 +53,7 @@ interface Col {
 @Component({
   selector: 'app-payroll-run',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, MycurrencyPipe, BreadcrumbsComponent],
+  imports: [CommonModule, FormsModule, RouterLink, TranslateModule, MycurrencyPipe, BreadcrumbsComponent, DatePickerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './payroll-run.component.html',
   styleUrls: ['./payroll-run.component.scss'],
@@ -74,7 +76,17 @@ export class PayrollRunComponent {
 
   // New-run form.
   readonly newMonth = signal(this.defaultMonth());
+  /** The picked month as the 1st of it, for the month picker (`newMonth` stays the `yyyy-MM` the API wants). */
+  readonly newMonthDate = computed(() => {
+    const [y, m] = this.newMonth().split('-').map(Number);
+    return y && m ? new Date(y, m - 1, 1) : null;
+  });
+  onNewMonth(d: Date | null): void {
+    if (d) this.newMonth.set(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+  }
   readonly newDivisor = signal(30);
+  /** The country's payroll defaults (divisor, limits) — and whether they are still unconfirmed. */
+  readonly countryDefaults = signal<PayrollCountryDefaults | null>(null);
 
   readonly isDraft = computed(() => this.run()?.status === 'Draft');
 
@@ -151,6 +163,10 @@ export class PayrollRunComponent {
       } else {
         this.run.set(null);
         this.runs.set(await this.service.list());
+        // The country's divisor (30; Kuwait 26) is the starting value, not a constant.
+        const d = await this.service.defaults().catch(() => null);
+        this.countryDefaults.set(d);
+        if (d) this.newDivisor.set(d.dayDivisor);
       }
     } catch (e: any) {
       this.toast.error('COMMON.SAVE_FAILED', e?.message);
@@ -288,7 +304,11 @@ export class PayrollRunComponent {
     this.run.set({ ...r, lines: r.lines.map(x => x.employeeId === next.employeeId ? next : x) });
   }
 
-  flagLabel(f: string): string { return this.t('FLAG_' + f.toUpperCase()); }
+  flagLabel(f: string, l?: PayrollLine): string {
+    const r = l?.result.retirement;
+    // No date is shown: with the age it would reveal the birth date.
+    return this.t('FLAG_' + f.toUpperCase(), { name: l?.employeeName ?? '', age: r?.age ?? '' });
+  }
 
   /** Why GOSI was not calculated for this person, or '' when it was. */
   gosiNote(l: PayrollLine): string {

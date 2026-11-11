@@ -320,6 +320,8 @@ export class SettingsComponent {
           i18nPrefix: 'SETTINGS.CUSTOM_FIELDS' },
         { label: 'SETTINGS.ITEMS.PREFIX_SETTINGS',    description: 'SETTINGS.ITEMS.PREFIX_SETTINGS_DESC',    link: '/settings/prefix',        privilege: 'prefixSettingsSecurity.actions.view.access',
           i18nPrefix: 'SETTINGS.PREFIX' },
+        { label: 'SETTINGS.ITEMS.COMMISSION_SETTINGS', description: 'SETTINGS.ITEMS.COMMISSION_SETTINGS_DESC', link: '/settings/commission-settings', privilege: 'companySettingsSecurity.actions.businessSettings.access',
+          i18nPrefix: 'COMMISSION_SETTINGS' },
       ],
     },
     {

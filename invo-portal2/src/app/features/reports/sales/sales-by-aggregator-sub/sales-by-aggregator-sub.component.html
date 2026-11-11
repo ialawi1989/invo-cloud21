@@ -1,0 +1,52 @@
+@if (loading() && !data()) {
+  <div class="ls-loading" aria-busy="true"><div class="ls-skel"></div></div>
+} @else if (error()) {
+  <app-report-error [message]="error()" (retry)="load()" />
+} @else if (data(); as d) {
+  @if (isEmpty()) {
+    <app-report-empty />
+  } @else {
+    <div class="ls" [class.stale]="loading()">
+      @if (subject()) {
+        <div class="ls-chip">{{ (kind() === 'service' ? 'REPORTS.SALES_BY_AGGREGATOR_SUB.SERVICE' : 'REPORTS.SALES_BY_AGGREGATOR_SUB.AGGREGATOR') | translate }}: <b>{{ subject() }}</b></div>
+      }
+      <app-bo-table-shell [periods]="[]" hintKey="salesByAggregatorSub_scrollHint">
+        <table class="bo-table">
+          <thead>
+            <tr class="header-row">
+              <th class="sticky-col-1">{{ 'REPORTS.SALES_BY_AGGREGATOR_SUB.COLUMNS.CODE' | translate }}</th>
+              @if (kind() === 'aggregator') { <th class="text-start">{{ 'REPORTS.SALES_BY_AGGREGATOR_SUB.COLUMNS.AGGREGATOR_ID' | translate }}</th> }
+              <th class="text-start">{{ 'REPORTS.SALES_BY_AGGREGATOR_SUB.COLUMNS.TYPE' | translate }}</th>
+              <th class="text-end">{{ 'REPORTS.SALES_BY_AGGREGATOR_SUB.COLUMNS.TOTAL_SALES' | translate }}</th>
+              <th class="text-end">{{ 'REPORTS.SALES_BY_AGGREGATOR_SUB.COLUMNS.TOTAL' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of records(); track trackRow($index, r)) {
+              <tr class="data-row">
+                <td class="sticky-col-1">
+                  @if (link(r); as href) { <a class="account-link" [routerLink]="href" target="_blank" rel="noopener">{{ r.code }}</a> }
+                  @else { {{ r.code }} }
+                </td>
+                @if (kind() === 'aggregator') { <td>{{ r.aggregatorId || '-' }}</td> }
+                <td>{{ r.type }}</td>
+                <td class="text-end" [class.neg]="num(r.totalSales) < 0">{{ num(r.totalSales) | mycurrency }}</td>
+                <td class="text-end" [class.neg]="num(r.total) < 0">{{ num(r.total) | mycurrency }}</td>
+              </tr>
+            }
+            <tr class="total-row">
+              <td class="sticky-col-1"><strong>{{ 'REPORTS.SALES_BY_PRODUCT.TOTAL' | translate }}</strong></td>
+              @if (kind() === 'aggregator') { <td></td> }<td></td>
+              <td class="text-end"><strong>{{ num(d.totalSales) | mycurrency }}</strong></td>
+              <td class="text-end"><strong>{{ num(d.total) | mycurrency }}</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </app-bo-table-shell>
+      <app-pagination
+        [page]="page()" [pageSize]="pageSize()" [count]="d.count" [pageCount]="d.pageCount"
+        [pageSizeOptions]="sizes" [disabled]="loading()"
+        (pageChange)="goTo($event)" (pageSizeChange)="setSize($event)" />
+    </div>
+  }
+}

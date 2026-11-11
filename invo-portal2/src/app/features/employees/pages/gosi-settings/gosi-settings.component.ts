@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
+  ElementRef,
   OnInit,
   computed,
   inject,
@@ -21,12 +22,15 @@ import { hrGrantFor } from '../../hr-privilege';
 import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
+import { FormErrorSummaryComponent } from '@shared/components/form-error-summary/form-error-summary.component';
 import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 import { ToastService } from '@shared/components/toast/toast.service';
+import { ModalService } from '@shared/modal/modal.service';
+import { ConfirmModalComponent, ConfirmModalData } from '@shared/modal/demo/confirm-modal.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 
 import { GosiService } from '../../services/gosi.service';
-import { GosiSettingsRow, GosiTier3PolicyRow, WageBasis } from '../../services/gosi.types';
+import { GosiCountryRule, GosiSettingsRow, GosiSuggestion, GosiTier3PolicyRow, RetirementAges, WageBasis } from '../../services/gosi.types';
 
 /** Wage-basis dropdown option. */
 interface WageBasisOption {
@@ -37,6 +41,7 @@ interface WageBasisOption {
 const WAGE_BASIS_OPTIONS: readonly WageBasisOption[] = [
   { value: 'basic', labelKey: 'EMPLOYEES.GOSI.WAGE_BASIS_BASIC' },
   { value: 'basic_plus_allowances', labelKey: 'EMPLOYEES.GOSI.WAGE_BASIS_BASIC_PLUS_ALLOWANCES' },
+  { value: 'basic_plus_housing', labelKey: 'EMPLOYEES.GOSI.WAGE_BASIS_BASIC_PLUS_HOUSING' },
 ];
 
 /**
@@ -105,6 +110,7 @@ const TIER3_DECISION_OPTIONS: readonly Tier3DecisionOption[] = [
     BreadcrumbsComponent,
     LoadingOverlayComponent,
     FormStickyFooterComponent,
+    FormErrorSummaryComponent,
     SearchDropdownComponent, DateFieldComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -117,14 +123,23 @@ export class GosiSettingsComponent implements OnInit {
   private translate = inject(TranslateService);
   private destroyRef = inject(DestroyRef);
   private router = inject(Router);
+  private el = inject<ElementRef<HTMLElement>>(ElementRef);
+  readonly host: HTMLElement = this.el.nativeElement;
   private toast = inject(ToastService);
+  private modal = inject(ModalService);
   private privileges = inject(PrivilegeService);
   private auth = inject(AuthService);
 
   loading = signal(false);
   savingRate = signal(false);
   savingTier3 = signal(false);
+  savingRetirement = signal(false);
+  retirement = signal<RetirementAges | null>(null);
+  /** True once loading finished and the server did not answer the retirement endpoint. */
+  retirementUnavailable = signal(false);
 
+  /** INVO-maintained rules for the company country (read-only; verified ones apply automatically). */
+  countryRules = signal<GosiCountryRule[]>([]);
   periods = signal<GosiSettingsRow[]>([]);
   tier3History = signal<GosiTier3PolicyRow[]>([]);
   computationAvailable = signal(false);
@@ -132,6 +147,27 @@ export class GosiSettingsComponent implements OnInit {
   /** New-period form is collapsed by default — mirrors the pay-history
    *  "record a pay change" pattern rather than always showing an empty form. */
   addingPeriod = signal(false);
+
+  /** The period being edited (null when adding a new one). */
+  editingPeriod = signal<GosiSettingsRow | null>(null);
+
+  /** Suggested, UNCONFIRMED values for the company's country (null when none). */
+  suggestion = signal<GosiSuggestion | null>(null);
+  /** True once the user has loaded a suggestion into the form this session. */
+  suggestionApplied = signal(false);
+
+  /**
+   * Fill the form from the suggestion. Only fills — nothing is saved, and the
+   * "source" box is left empty on purpose: it is required, so the user has to say
+   * where they checked the figures before the row can be saved.
+   */
+  applySuggestion(): void {
+    const s = this.suggestion();
+    if (!s) return;
+    this.periodForm.patchValue({ ...s.values });
+    this.periodForm.markAsDirty();
+    this.suggestionApplied.set(true);
+  }
 
   private i18nTick = signal(0);
 
@@ -182,6 +218,17 @@ export class GosiSettingsComponent implements OnInit {
     return due < new Date().toISOString().slice(0, 10);
   }
 
+  /** Groups no INVO rule covers (any status) — the company enters these itself. */
+  uncoveredTiers = computed<GosiCountryRule['tier'][]>(() => {
+    const have = new Set(this.countryRules().map((r) => r.tier));
+    return (['Tier1Bahraini', 'Tier2Gcc', 'Tier3NonGccExpatriate'] as const).filter((t) => !have.has(t));
+  });
+
+  tierLabelKey(tier: GosiCountryRule['tier']): string {
+    return tier === 'Tier1Bahraini' ? 'EMPLOYEES.GOSI.RATES.TIER1_LEGEND'
+      : tier === 'Tier2Gcc' ? 'EMPLOYEES.GOSI.RATES.TIER2_LEGEND' : 'EMPLOYEES.GOSI.RATES.TIER3_LEGEND';
+  }
+
   /** The current tier-3 policy is whichever row has the latest `effectiveFrom`. */
   currentTier3 = computed<GosiTier3PolicyRow | null>(() => {
     const rows = this.tier3History();
@@ -211,9 +258,16 @@ export class GosiSettingsComponent implements OnInit {
     tier2EmployerRateAnnualIncrementPercent: [null as number | null],
     tier2EmployerRateEscalationEndYear: [null as number | null],
 
+    tier3EmployeeRatePercent: [null as number | null],
+    tier3EmployerRatePercent: [null as number | null],
+
     wageBasis: [null as WageBasis | null],
     wageFloor: [null as number | null],
+    tier1WageFloor: [null as number | null],
+    tier2WageFloor: [null as number | null],
+    tier3WageFloor: [null as number | null],
     wageCeiling: [null as number | null],
+    reduceForAbsence: [false],
 
     reviewIntervalMonths: [null as number | null],
 
@@ -227,8 +281,31 @@ export class GosiSettingsComponent implements OnInit {
     notes: [''],
   });
 
+  /** Retirement ages: its own card, its own Save and Reset (separate endpoint). */
+  retirementForm: FormGroup = this.fb.group({
+    nationalAge: [null as number | null],
+    expatriateAge: [null as number | null],
+    source: [''],
+  });
+
+  /** Unconfirmed until an explicit save has recorded the company's own figures. */
+  readonly retirementConfirmed = computed(() => this.retirement()?.own != null);
+
+  /** Bumped on every period-form status change so `errorCount` re-evaluates. */
+  private periodStatusTick = signal(0);
+
+  /** Invalid fields in the add-period form (0 while it is closed) — feeds the footer summary. */
+  readonly errorCount = computed<number>(() => {
+    this.periodStatusTick();
+    if (!this.addingPeriod()) return 0;
+    return Object.values(this.periodForm.controls).filter((c) => c.invalid).length;
+  });
+
   constructor() {
     withTranslations('employees');
+    this.periodForm.statusChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.periodStatusTick.update((n) => n + 1));
     this.translate.onTranslationChange
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.i18nTick.update((n) => n + 1));
@@ -253,6 +330,12 @@ export class GosiSettingsComponent implements OnInit {
         this.service.listTier3Policy(),
       ]);
       this.computationAvailable.set(catalog?.computationAvailable === true);
+      this.suggestion.set(await this.service.suggestions().catch(() => null));
+      this.countryRules.set(await this.service.countryRules().catch(() => []));
+      // Older servers do not have this endpoint: the card then just stays empty.
+      this.retirement.set(await this.service.retirementAges().catch(() => null));
+      this.retirementUnavailable.set(this.retirement() === null);
+      this.hydrateRetirementForm();
       this.periods.set(periods);
       this.tier3History.set(tier3);
       this.hydrateTier3Form();
@@ -266,7 +349,86 @@ export class GosiSettingsComponent implements OnInit {
   // ─── Section A — contribution rates ─────────────────────────────────────
   toggleAddPeriod(): void {
     this.addingPeriod.update((v) => !v);
-    if (!this.addingPeriod()) this.periodForm.reset();
+    if (!this.addingPeriod()) this.closePeriodForm();
+    else this.exitEditMode();
+  }
+
+  /** "Edit" a period = start a NEW period pre-filled from it. The original row is never
+   *  changed, so it stays in the history; the new one takes effect from the chosen date. */
+  editPeriod(p: GosiSettingsRow): void {
+    if (!this.canEdit()) return;
+    this.editingPeriod.set(p);
+    this.suggestionApplied.set(false);
+    this.periodForm.reset({
+      effectiveFrom: new Date().toLocaleDateString('en-CA'),
+      tier1EmployeeRatePercent: p.tier1EmployeeRatePercent,
+      tier1EmployerRatePercent: p.tier1EmployerRatePercent,
+      tier1EmployeeRateAnnualIncrementPercent: p.tier1EmployeeRateAnnualIncrementPercent,
+      tier1EmployeeRateEscalationEndYear: p.tier1EmployeeRateEscalationEndYear,
+      tier1EmployerRateAnnualIncrementPercent: p.tier1EmployerRateAnnualIncrementPercent,
+      tier1EmployerRateEscalationEndYear: p.tier1EmployerRateEscalationEndYear,
+      tier2EmployeeRatePercent: p.tier2EmployeeRatePercent,
+      tier2EmployerRatePercent: p.tier2EmployerRatePercent,
+      tier2EmployeeRateAnnualIncrementPercent: p.tier2EmployeeRateAnnualIncrementPercent,
+      tier2EmployeeRateEscalationEndYear: p.tier2EmployeeRateEscalationEndYear,
+      tier2EmployerRateAnnualIncrementPercent: p.tier2EmployerRateAnnualIncrementPercent,
+      tier2EmployerRateEscalationEndYear: p.tier2EmployerRateEscalationEndYear,
+      tier3EmployeeRatePercent: p.tier3EmployeeRatePercent,
+      tier3EmployerRatePercent: p.tier3EmployerRatePercent,
+      wageBasis: p.wageBasis,
+      wageFloor: p.wageFloor,
+      tier1WageFloor: p.tier1WageFloor,
+      tier2WageFloor: p.tier2WageFloor,
+      tier3WageFloor: p.tier3WageFloor,
+      wageCeiling: p.wageCeiling,
+      reduceForAbsence: p.reduceForAbsence === true,
+      reviewIntervalMonths: p.reviewIntervalMonths,
+      source: p.source ?? '',
+      notes: p.notes ?? '',
+    });
+    // The new date already differs from the base period, so this counts as a change.
+    this.periodForm.markAsDirty();
+    this.addingPeriod.set(true);
+    this.periodStatusTick.update((n) => n + 1);
+    setTimeout(() => this.host.querySelector('.gosi-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  }
+
+  async deletePeriod(p: GosiSettingsRow): Promise<void> {
+    if (!this.canEdit() || this.saving()) return;
+    const ref = this.modal.open<ConfirmModalComponent, ConfirmModalData, boolean>(ConfirmModalComponent, {
+      size: 'sm',
+      data: {
+        title: this.translate.instant('EMPLOYEES.GOSI.RATES.DELETE_TITLE'),
+        message: this.translate.instant('EMPLOYEES.GOSI.RATES.DELETE_CONFIRM', { date: p.effectiveFrom }),
+        note: this.translate.instant('EMPLOYEES.GOSI.RATES.DELETE_NOTE'),
+        confirm: this.translate.instant('EMPLOYEES.GOSI.RATES.DELETE'),
+        danger: true,
+      },
+    });
+    if (!(await ref.afterClosed())) return;
+    this.savingRate.set(true);
+    try {
+      await this.service.delete(p.id);
+      this.periods.update((list) => list.filter((r) => r.id !== p.id));
+      // The form was based on the row that just went away — close it.
+      if (this.editingPeriod()?.id === p.id) this.closePeriodForm();
+      this.toast.success('EMPLOYEES.GOSI.RATES.DELETED');
+    } catch (e: any) {
+      this.toast.error('COMMON.SAVE_FAILED', e?.message);
+    } finally {
+      this.savingRate.set(false);
+    }
+  }
+
+  private exitEditMode(): void {
+    this.editingPeriod.set(null);
+    this.periodForm.get('effectiveFrom')?.enable({ emitEvent: false });
+  }
+
+  private closePeriodForm(): void {
+    this.exitEditMode();
+    this.periodForm.reset();
+    this.addingPeriod.set(false);
   }
 
   wageBasisDisplay = (o: WageBasisOption | null) => (o ? this.translate.instant(o.labelKey) : '');
@@ -280,6 +442,7 @@ export class GosiSettingsComponent implements OnInit {
 
   setWageBasis(opt: WageBasisOption | null): void {
     this.periodForm.get('wageBasis')?.setValue(opt?.value ?? null);
+    this.periodForm.markAsDirty();
   }
 
   reviewIntervalDisplay = (o: ReviewIntervalOption | null) => (o ? this.translate.instant(o.labelKey) : '');
@@ -294,13 +457,13 @@ export class GosiSettingsComponent implements OnInit {
 
   setReviewInterval(opt: ReviewIntervalOption | null): void {
     this.periodForm.get('reviewIntervalMonths')?.setValue(opt?.value ?? null);
+    this.periodForm.markAsDirty();
   }
 
-  async saveRatePeriod(): Promise<void> {
-    if (!this.canEdit()) return;
+  private async saveRatePeriod(silent: boolean): Promise<boolean> {
     if (this.periodForm.invalid) {
       this.periodForm.markAllAsTouched();
-      return;
+      return false;
     }
     this.savingRate.set(true);
     try {
@@ -319,19 +482,29 @@ export class GosiSettingsComponent implements OnInit {
         tier2EmployeeRateEscalationEndYear: v.tier2EmployeeRateEscalationEndYear,
         tier2EmployerRateAnnualIncrementPercent: v.tier2EmployerRateAnnualIncrementPercent,
         tier2EmployerRateEscalationEndYear: v.tier2EmployerRateEscalationEndYear,
+        tier3EmployeeRatePercent: v.tier3EmployeeRatePercent,
+        tier3EmployerRatePercent: v.tier3EmployerRatePercent,
         wageBasis: v.wageBasis,
         wageFloor: v.wageFloor,
+        tier1WageFloor: v.tier1WageFloor,
+        tier2WageFloor: v.tier2WageFloor,
+        tier3WageFloor: v.tier3WageFloor,
         wageCeiling: v.wageCeiling,
+        reduceForAbsence: v.reduceForAbsence === true,
         reviewIntervalMonths: v.reviewIntervalMonths,
         source: v.source,
         notes: v.notes || null,
       });
-      this.periods.update((list) => [...list, saved]);
-      this.periodForm.reset();
-      this.addingPeriod.set(false);
-      this.toast.success('EMPLOYEES.GOSI.RATE_SAVED');
+      // A new period is appended; the period it was based on stays in the history.
+      this.periods.update((list) =>
+        list.some((r) => r.id === saved.id) ? list.map((r) => (r.id === saved.id ? saved : r)) : [...list, saved],
+      );
+      this.closePeriodForm();
+      if (!silent) this.toast.success('EMPLOYEES.GOSI.RATE_SAVED');
+      return true;
     } catch (e: any) {
       this.toast.error('COMMON.SAVE_FAILED', e?.message);
+      return false;
     } finally {
       this.savingRate.set(false);
     }
@@ -367,6 +540,7 @@ export class GosiSettingsComponent implements OnInit {
       { emitEvent: false },
     );
     this.syncTier3FieldState(decision);
+    this.tier3Form.markAsPristine();
   }
 
   tier3DecisionDisplay = (o: Tier3DecisionOption | null) => (o ? this.translate.instant(o.labelKey) : '');
@@ -381,20 +555,16 @@ export class GosiSettingsComponent implements OnInit {
 
   setTier3Decision(opt: Tier3DecisionOption | null): void {
     this.tier3Form.get('decision')?.setValue(opt?.value ?? 'undecided');
+    this.tier3Form.markAsDirty();
   }
 
-  async saveTier3Policy(): Promise<void> {
-    if (!this.canEdit()) return;
+  private async saveTier3Policy(silent: boolean): Promise<boolean> {
     const decision: Tier3Decision = this.tier3Form.get('decision')?.value ?? 'undecided';
-    if (decision === 'undecided') {
-      this.toast.error('EMPLOYEES.GOSI.TIER3.DECISION_REQUIRED');
-      return;
-    }
     const v = this.tier3Form.getRawValue();
     if (!v.effectiveFrom) {
       this.tier3Form.get('effectiveFrom')?.markAsTouched();
       this.toast.error('EMPLOYEES.GOSI.TIER3.EFFECTIVE_FROM_REQUIRED');
-      return;
+      return false;
     }
     this.savingTier3.set(true);
     try {
@@ -406,11 +576,111 @@ export class GosiSettingsComponent implements OnInit {
       });
       this.tier3History.update((list) => [...list, saved]);
       this.hydrateTier3Form();
-      this.toast.success('EMPLOYEES.GOSI.TIER3.SAVED');
+      if (!silent) this.toast.success('EMPLOYEES.GOSI.TIER3.SAVED');
+      return true;
+    } catch (e: any) {
+      this.toast.error('COMMON.SAVE_FAILED', e?.message);
+      return false;
+    } finally {
+      this.savingTier3.set(false);
+    }
+  }
+
+  // ─── Section C — retirement ages ───────────────────────────────────────
+  private hydrateRetirementForm(): void {
+    const r = this.retirement();
+    this.retirementForm.reset({
+      nationalAge: r?.own?.nationalAge ?? null,
+      expatriateAge: r?.own?.expatriateAge ?? null,
+      source: r?.source ?? '',
+    });
+  }
+
+  private async saveRetirement(silent: boolean): Promise<boolean> {
+    const v = this.retirementForm.getRawValue();
+    const national = v.nationalAge === null || v.nationalAge === '' ? null : Number(v.nationalAge);
+    const expat = v.expatriateAge === null || v.expatriateAge === '' ? null : Number(v.expatriateAge);
+    const bad = (n: number | null) => n !== null && (!Number.isInteger(n) || n < 40 || n > 80);
+    if (bad(national) || bad(expat)) {
+      this.toast.error('EMPLOYEES.GOSI.RETIREMENT.AGE_RANGE');
+      return false;
+    }
+    const source = String(v.source ?? '').trim();
+    if ((national !== null || expat !== null) && !source) {
+      this.retirementForm.get('source')?.markAsTouched();
+      this.toast.error('EMPLOYEES.GOSI.RETIREMENT.SOURCE_REQUIRED');
+      return false;
+    }
+    this.savingRetirement.set(true);
+    try {
+      await this.service.saveRetirementAges({ nationalAge: national, expatriateAge: expat, source });
+      this.retirement.set(await this.service.retirementAges().catch(() => null));
+      this.hydrateRetirementForm();
+      if (!silent) this.toast.success('EMPLOYEES.GOSI.RETIREMENT.SAVED');
+      return true;
+    } catch (e: any) {
+      this.toast.error('COMMON.SAVE_FAILED', e?.message);
+      return false;
+    } finally {
+      this.savingRetirement.set(false);
+    }
+  }
+
+  async resetRetirement(): Promise<void> {
+    if (!this.canEdit()) return;
+    this.savingRetirement.set(true);
+    try {
+      await this.service.resetRetirementAges();
+      this.retirement.set(await this.service.retirementAges().catch(() => null));
+      this.hydrateRetirementForm();
+      this.toast.success('EMPLOYEES.GOSI.RETIREMENT.RESET_DONE');
     } catch (e: any) {
       this.toast.error('COMMON.SAVE_FAILED', e?.message);
     } finally {
-      this.savingTier3.set(false);
+      this.savingRetirement.set(false);
+    }
+  }
+
+  // ─── Single Save — only the sections the user actually changed ─────────
+  private ratesPending(): boolean { return this.addingPeriod() && this.periodForm.dirty; }
+  private tier3Pending(): boolean {
+    return this.tier3Form.dirty && (this.tier3Form.get('decision')?.value ?? 'undecided') !== 'undecided';
+  }
+  private retirementPending(): boolean { return !this.retirementUnavailable() && this.retirementForm.dirty; }
+
+  /** Drives the footer Save button — enabled only when something is waiting to be saved. */
+  hasChanges(): boolean {
+    return this.canEdit() && (this.ratesPending() || this.tier3Pending() || this.retirementPending());
+  }
+
+  saving(): boolean { return this.savingRate() || this.savingTier3() || this.savingRetirement(); }
+
+  async save(): Promise<void> {
+    if (!this.canEdit() || this.saving() || !this.hasChanges()) return;
+    const base = this.editingPeriod();
+    if (base && this.ratesPending() && this.periodForm.getRawValue().effectiveFrom === base.effectiveFrom) {
+      this.toast.error(this.translate.instant('EMPLOYEES.GOSI.RATES.EDIT_NEW_DATE', { date: base.effectiveFrom }));
+      return;
+    }
+    // Validate everything first so a bad section never leaves the others half-saved.
+    if (this.ratesPending() && this.periodForm.invalid) {
+      this.periodForm.markAllAsTouched();
+      // Errors are listed in the footer summary; just bring the first one into view.
+      // The invalid field is often below the fold — bring it into view.
+      setTimeout(() => {
+        const el = this.host.querySelector<HTMLElement>('input.ng-invalid, textarea.ng-invalid, app-date-field.ng-invalid');
+        el?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        el?.focus?.();
+      });
+      return;
+    }
+    let ok = true;
+    if (this.ratesPending()) ok = (await this.saveRatePeriod(true)) && ok;
+    if (this.tier3Pending()) ok = (await this.saveTier3Policy(true)) && ok;
+    if (this.retirementPending()) ok = (await this.saveRetirement(true)) && ok;
+    if (ok) {
+      this.toast.success('COMMON.SAVED_OK');
+      this.router.navigate(['/employees']);
     }
   }
 

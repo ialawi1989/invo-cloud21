@@ -62,7 +62,16 @@ export interface PayrollOverrides {
   notes?: string | null;
 }
 
-export type PayrollFlag = 'noAttendance' | 'negativeNet' | 'noSalary' | 'gosiIncomplete';
+export type PayrollFlag =
+  'noAttendance' | 'negativeNet' | 'noSalary' | 'gosiIncomplete' | 'loanOverCap' | 'deductionsOverCap'
+  | 'retirementReached' | 'retirementApproaching' | 'retirementNoBirthDate';
+
+/** Advisory retirement-age check for the period (never changes an amount). */
+export interface PayrollRetirement {
+  status: string;
+  age: number | null;
+  inPeriod: boolean;
+}
 
 /** The effective figures: override ?? computed. */
 export interface PayrollLineResult {
@@ -99,6 +108,7 @@ export interface PayrollLineResult {
   net: number;
   overridden: string[];
   flags: PayrollFlag[];
+  retirement?: PayrollRetirement | null;
 }
 
 export interface PayrollLine {
@@ -110,9 +120,33 @@ export interface PayrollLine {
   result: PayrollLineResult;
 }
 
+/** What to remit to the social-insurance authority after its rounding rule (Bahrain only; null elsewhere). */
+export interface GosiRemittance {
+  country: string;
+  currency: string;
+  exactTotal: number;
+  roundedTotal: number;
+  adjustment: number;
+  /** The rounding rule has not been checked against the authority's own text. */
+  estimate: boolean;
+}
+
 export interface PayrollRunDetail extends Omit<PayrollRunSummary, 'employees' | 'totalNet'> {
   notes: string | null;
   lines: PayrollLine[];
+  gosiRemittance?: GosiRemittance | null;
+}
+
+/** The company's country payroll defaults. `verify`: not yet confirmed against the law. */
+export interface PayrollCountryDefaults {
+  country: string;
+  dayDivisor: number;
+  dayBasis: 'calendar' | 'working';
+  overtimeBase: 'basic' | 'total';
+  caps: { totalDeductionsPercent: number | null; advanceRepaymentPercent: number | null };
+  verify: boolean;
+  /** Whether the company's social-insurance (GOSI) settings are usable. */
+  gosi?: { configured: boolean; complete: boolean };
 }
 
 @Injectable({ providedIn: 'root' })
@@ -123,6 +157,10 @@ export class PayrollRunService {
     const res = await this.api.request<any>(req);
     if (res?.success === false) throw new Error(res?.msg || fallback);
     return res?.data as T;
+  }
+
+  defaults(): Promise<PayrollCountryDefaults> {
+    return this.call<PayrollCountryDefaults>(this.api.get('employee/payrollDefaults'), 'Could not load payroll defaults');
   }
 
   async list(): Promise<PayrollRunSummary[]> {

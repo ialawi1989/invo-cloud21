@@ -1,0 +1,39 @@
+<div class="re" role="alert">
+  <svg class="re-art" viewBox="0 0 220 150" fill="none" aria-hidden="true">
+    <ellipse cx="110" cy="132" rx="70" ry="9" class="re-shadow"/>
+    @if (offline()) {
+      <!-- a cloud with a broken link -->
+      <path class="re-cloud" d="M62 104h92a26 26 0 0 0 3-51.8A38 38 0 0 0 85 44a30 30 0 0 0-23 60z"/>
+      <path class="re-line" d="M92 78l-9 9a9 9 0 0 0 13 13l5-5M128 94l9-9a9 9 0 0 0-13-13l-5 5" stroke-linecap="round" stroke-width="5"/>
+      <path class="re-accent" d="M104 92l12-12" stroke-linecap="round" stroke-width="5" stroke-dasharray="2 9"/>
+    } @else {
+      <!-- a report sheet with a warning -->
+      <rect class="re-sheet" x="66" y="18" width="88" height="106" rx="12"/>
+      <rect class="re-bar" x="80" y="34" width="38" height="7" rx="3.5"/>
+      <rect class="re-bar" x="80" y="50" width="60" height="6" rx="3"/>
+      <rect class="re-bar" x="80" y="64" width="52" height="6" rx="3"/>
+      <circle class="re-badge" cx="140" cy="108" r="26"/>
+      <path class="re-mark" d="M140 95v15" stroke-linecap="round" stroke-width="5"/>
+      <circle class="re-mark-dot" cx="140" cy="121" r="3.2"/>
+    }
+  </svg>
+
+  <h3 class="re-title">{{ (offline() ? 'REPORTS.ERROR.OFFLINE_TITLE' : 'REPORTS.ERROR.TITLE') | translate }}</h3>
+  <p class="re-hint">{{ (offline() ? 'REPORTS.ERROR.OFFLINE_HINT' : 'REPORTS.ERROR.HINT') | translate }}</p>
+
+  <div class="re-actions">
+    <button type="button" class="re-retry" (click)="retry.emit()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><path d="M20.5 15a9 9 0 1 1-2.1-9.4L23 10"/></svg>
+      {{ 'REPORTS.VIEW.RETRY' | translate }}
+    </button>
+    @if (message()) {
+      <button type="button" class="re-more" (click)="open.set(!open())" [attr.aria-expanded]="open()">
+        {{ (open() ? 'REPORTS.ERROR.HIDE_DETAILS' : 'REPORTS.ERROR.SHOW_DETAILS') | translate }}
+      </button>
+    }
+  </div>
+
+  @if (open() && message()) {
+    <pre class="re-details">{{ message() }}</pre>
+  }
+</div>

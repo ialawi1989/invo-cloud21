@@ -1,0 +1,100 @@
+<!-- Header -->
+<div class="px-6 py-5 border-b border-slate-100 shrink-0">
+  <h2 class="text-lg font-semibold text-slate-900">{{ 'COMMON.FILTERS' | translate }}</h2>
+  <p class="text-sm text-slate-500 mt-0.5">{{ 'REPORTS.BO.FILTERS.SUBTITLE' | translate }}</p>
+</div>
+
+<!-- Body -->
+<div class="px-6 py-5 space-y-7 flex-1 min-h-0 overflow-y-auto">
+
+  @if (data.branches.length) {
+    <section>
+      <div class="flex items-center justify-between mb-2.5">
+        <h3 class="text-sm font-semibold text-slate-800">
+          {{ 'REPORTS.BO.FILTERS.BRANCHES' | translate }}
+          @if (selectedCount() > 0) {
+            <span class="ms-1.5 px-2 py-0.5 rounded-full bg-brand-50 text-brand-700 text-xs font-semibold">{{ selectedCount() }}</span>
+          }
+        </h3>
+        <button type="button" class="text-xs font-medium text-brand-600 hover:text-brand-700" (click)="toggleAllVisible()">
+          {{ (allVisibleSelected() ? 'REPORTS.BO.FILTERS.SELECT_NONE' : 'REPORTS.BO.FILTERS.SELECT_ALL') | translate }}
+        </button>
+      </div>
+
+      @if (data.branches.length > 6) {
+        <div class="relative mb-2.5">
+          <svg class="absolute start-3 top-1/2 -translate-y-1/2 text-slate-400" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" class="w-full ps-9 pe-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-brand-500"
+                 [value]="search()" (input)="search.set($any($event.target).value)"
+                 [placeholder]="'REPORTS.BO.SEARCH_BRANCH' | translate" />
+        </div>
+      }
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-56 overflow-y-auto pe-1">
+        @for (b of visibleBranches(); track b.value) {
+          <label class="flex items-center gap-2.5 px-3 py-2 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors"
+                 [class.bg-brand-50]="isSelected(b.value)" [class.border-brand-500]="isSelected(b.value)">
+            <input type="checkbox" class="rounded border-slate-300" [checked]="isSelected(b.value)" (change)="toggleBranch(b.value)" />
+            <span class="text-sm text-slate-800 truncate">{{ b.label }}</span>
+          </label>
+        } @empty {
+          <p class="col-span-full text-sm text-slate-400 py-3 text-center">{{ 'REPORTS.BO.FILTERS.NO_BRANCH_MATCH' | translate }}</p>
+        }
+      </div>
+      <p class="text-xs text-slate-400 mt-2">{{ 'REPORTS.BO.FILTERS.BRANCH_HELP' | translate }}</p>
+    </section>
+  }
+
+  @if (data.comparison) {
+    <section>
+      <h3 class="text-sm font-semibold text-slate-800 mb-2.5">{{ 'REPORTS.BO.COMPARE.LABEL' | translate }}</h3>
+
+      <div class="grid gap-2" role="radiogroup">
+        <div role="radio" tabindex="0" class="opt text-start p-3 rounded-xl border border-slate-200 cursor-pointer"
+                [attr.aria-checked]="draft().compareType === 'none'" (click)="setCompare('none')" (keydown.enter)="setCompare('none')" (keydown.space)="$event.preventDefault(); setCompare('none')">
+          <span class="block text-sm font-medium text-slate-900">{{ 'REPORTS.BO.COMPARE.NONE' | translate }}</span>
+          <span class="block text-xs text-slate-500 mt-0.5">{{ 'REPORTS.BO.COMPARE.NONE_DESC' | translate }}</span>
+        </div>
+
+        <div role="radio" tabindex="0" class="opt text-start p-3 rounded-xl border border-slate-200 cursor-pointer"
+                [attr.aria-checked]="draft().compareType === 'period'" (click)="setCompare('period')" (keydown.enter)="setCompare('period')" (keydown.space)="$event.preventDefault(); setCompare('period')">
+          <span class="block text-sm font-medium text-slate-900">{{ 'REPORTS.BO.COMPARE.PERIOD' | translate }}</span>
+          <span class="block text-xs text-slate-500 mt-0.5">{{ 'REPORTS.BO.COMPARE.PERIOD_DESC' | translate }}</span>
+          @if (draft().compareType === 'period') {
+            <span class="flex items-center gap-2 mt-3" (click)="$event.stopPropagation()">
+              <app-search-dropdown class="w-20" [items]="qtyOptions" [clearable]="false" [searchable]="false" [value]="draft().compareQty" (valueChange)="setQty(+$any($event))" triggerClass="px-2.5 py-1.5 text-sm border border-slate-300 rounded-lg bg-white" />
+              <span class="inline-flex rounded-lg border border-slate-300 overflow-hidden text-sm">
+                <button type="button" class="px-3 py-1.5" [class.bg-brand-500]="draft().comparePeriod === 'Year'" [class.text-white]="draft().comparePeriod === 'Year'" (click)="setPeriod('Year')">{{ 'REPORTS.BO.COMPARE.YEARS' | translate }}</button>
+                <button type="button" class="px-3 py-1.5 border-s border-slate-300" [class.bg-brand-500]="draft().comparePeriod === 'Month'" [class.text-white]="draft().comparePeriod === 'Month'" (click)="setPeriod('Month')">{{ 'REPORTS.BO.COMPARE.MONTHS' | translate }}</button>
+              </span>
+            </span>
+          }
+        </div>
+
+        <div role="radio" tabindex="0" class="opt text-start p-3 rounded-xl border border-slate-200 cursor-pointer"
+                [attr.aria-checked]="draft().compareType === 'branch'" [attr.aria-disabled]="!canCompareBranches()"
+                (click)="setCompare('branch')" (keydown.enter)="setCompare('branch')" (keydown.space)="$event.preventDefault(); setCompare('branch')">
+          <span class="block text-sm font-medium text-slate-900">{{ 'REPORTS.BO.COMPARE.BRANCH' | translate }}</span>
+          <span class="block text-xs text-slate-500 mt-0.5">
+            {{ (canCompareBranches() ? 'REPORTS.BO.COMPARE.BRANCH_DESC' : 'REPORTS.BO.COMPARE.BRANCH_NEEDS_TWO') | translate }}
+          </span>
+        </div>
+      </div>
+    </section>
+  }
+</div>
+
+<!-- Footer -->
+<div class="flex items-center justify-between px-6 py-4 border-t border-slate-100 bg-slate-50/50 shrink-0">
+  <button type="button" (click)="clearAll()" class="text-sm text-slate-500 hover:text-slate-700 font-medium transition-colors">
+    {{ 'COMMON.CLEAR_ALL' | translate }}
+  </button>
+  <div class="flex items-center gap-2.5">
+    <button type="button" (click)="cancel()" class="px-4 py-2 text-sm font-medium text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors">
+      {{ 'COMMON.CANCEL' | translate }}
+    </button>
+    <button type="button" (click)="apply()" class="px-5 py-2 text-sm font-medium text-white bg-gradient-to-r from-brand-500 to-brand-700 rounded-lg shadow-sm hover:shadow-md transition-all">
+      {{ 'COMMON.APPLY' | translate }}
+    </button>
+  </div>
+</div>
