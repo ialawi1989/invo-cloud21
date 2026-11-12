@@ -12,10 +12,11 @@ import {
 } from '../../shared/models/custom-report.model';
 import { ChartPreviewComponent } from '../chart-preview/chart-preview.component';
 
+import { TranslateModule } from '@ngx-translate/core';
 @Component({
   selector: 'app-dashboard-canvas',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgSelectModule, ChartPreviewComponent],
+  imports: [TranslateModule, CommonModule, FormsModule, NgSelectModule, ChartPreviewComponent],
   templateUrl: './dashboard-canvas.component.html',
   styleUrls: ['./dashboard-canvas.component.scss'],
 })
@@ -36,7 +37,7 @@ export class DashboardCanvasComponent {
     { label: '⅓', value: 4 },
     { label: '½', value: 6 },
     { label: '⅔', value: 8 },
-    { label: 'Full', value: 12 },
+    { label: 'CUSTOM_REPORTS.DASHBOARD.FULL', value: 12 },
   ];
 
   getSheetConfig(sheetId: string): SheetConfig | undefined {

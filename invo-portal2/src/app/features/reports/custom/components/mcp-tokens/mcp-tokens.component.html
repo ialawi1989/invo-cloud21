@@ -1,0 +1,389 @@
+<div class="mcp">
+  <!-- ═══ TOP BAR ═══ -->
+  <div class="topbar">
+    <button
+      class="btn-back"
+      type="button"
+      (click)="goBackToReports()"
+      [title]="'CUSTOM_REPORTS.BUILDER.BACK_TO_REPORTS' | translate"
+    >
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+      <span>{{ 'CUSTOM_REPORTS.BUILDER.BACK' | translate }}</span>
+    </button>
+    <nav class="crumbs" [attr.aria-label]="'CUSTOM_REPORTS.BUILDER.BREADCRUMB' | translate">
+      <a
+        class="crumb crumb--muted crumb--link"
+        (click)="goBackToReports()"
+        role="button"
+        tabindex="0"
+        >{{ 'CUSTOM_REPORTS.BUILDER.REPORTS' | translate }}</a
+      >
+      <span class="crumb-sep">/</span>
+      <span class="crumb crumb--name">{{ 'CUSTOM_REPORTS.MCP_TOKENS.TITLE' | translate }}</span>
+    </nav>
+  </div>
+
+  <div class="mcp-body">
+    <header class="mcp-intro">
+      <h1>{{ 'CUSTOM_REPORTS.MCP_TOKENS.TITLE' | translate }}</h1>
+      <p>{{ 'CUSTOM_REPORTS.MCP_TOKENS.INTRO' | translate }}</p>
+    </header>
+
+    <!-- ═══ HOW TO CONNECT ═══ -->
+    <section class="card">
+      <div class="card-head">
+        <h2>{{ 'CUSTOM_REPORTS.MCP_TOKENS.CONNECT_TITLE' | translate }}</h2>
+      </div>
+      @if (infoError) {
+        <div class="state state--error">
+          <span>{{ 'CUSTOM_REPORTS.MCP_TOKENS.LOAD_FAILED' | translate }} {{ infoError }}</span>
+          <button type="button" class="btn btn-light btn-sm" (click)="loadConnectInfo()">
+            {{ 'CUSTOM_REPORTS.MCP_TOKENS.RETRY' | translate }}
+          </button>
+        </div>
+      }
+      @if (connectInfo) {
+        <div class="secret-row">
+          @if (serverUrl) {
+            <code class="secret" dir="ltr">{{ serverUrl }}</code>
+          } @else {
+            <span class="muted">{{
+              'CUSTOM_REPORTS.MCP_TOKENS.SERVER_URL_UNAVAILABLE' | translate
+            }}</span>
+          }
+          @if (serverUrl) {
+            <button type="button" class="btn btn-primary btn-sm" (click)="copy(serverUrl)">
+              {{ 'CUSTOM_REPORTS.MCP_TOKENS.COPY_URL' | translate }}
+            </button>
+          }
+        </div>
+        <ol class="steps">
+          @for (step of connectInfo.steps; track step) {
+            <li>{{ step }}</li>
+          }
+        </ol>
+      }
+    </section>
+
+    <!-- ═══ CONNECTED APPS ═══ -->
+    @if (connectInfo?.oauthEnabled) {
+      <section class="card">
+        <div class="card-head">
+          <h2>{{ 'CUSTOM_REPORTS.MCP_TOKENS.CONNECTIONS_TITLE' | translate }}</h2>
+        </div>
+        @if (connectionsLoading) {
+          <div class="state">
+            <div class="spinner"></div>
+            <span>{{ 'CUSTOM_REPORTS.COMMON.LOADING_DATA' | translate }}</span>
+          </div>
+        }
+        @if (!connectionsLoading && connectionsError) {
+          <div class="state state--error">
+            <span
+              >{{ 'CUSTOM_REPORTS.MCP_TOKENS.LOAD_FAILED' | translate }}
+              {{ connectionsError }}</span
+            >
+            <button type="button" class="btn btn-light btn-sm" (click)="loadConnections()">
+              {{ 'CUSTOM_REPORTS.MCP_TOKENS.RETRY' | translate }}
+            </button>
+          </div>
+        }
+        @if (!connectionsLoading && !connectionsError && connections.length === 0) {
+          <div class="state">
+            {{ 'CUSTOM_REPORTS.MCP_TOKENS.CONNECTIONS_EMPTY' | translate }}
+          </div>
+        }
+        @if (!connectionsLoading && !connectionsError && connections.length > 0) {
+          <div class="table-wrap">
+            <table class="tokens">
+              <thead>
+                <tr>
+                  <th>{{ 'CUSTOM_REPORTS.MCP_TOKENS.APP' | translate }}</th>
+                  <th>{{ 'CUSTOM_REPORTS.MCP_TOKENS.ACCESS' | translate }}</th>
+                  <th>{{ 'CUSTOM_REPORTS.MCP_TOKENS.CONNECTED' | translate }}</th>
+                  <th>{{ 'CUSTOM_REPORTS.MCP_TOKENS.LAST_USED' | translate }}</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (c of connections; track trackById($index, c)) {
+                  <tr>
+                    <td class="name">{{ c.clientName }}</td>
+                    <td>
+                      {{
+                        (canSaveScopes(c.scopes)
+                          ? 'CUSTOM_REPORTS.MCP_TOKENS.ACCESS_WRITE_SHORT'
+                          : 'CUSTOM_REPORTS.MCP_TOKENS.ACCESS_READ_SHORT'
+                        ) | translate
+                      }}
+                    </td>
+                    <td>{{ c.connectedAt | date: 'medium' }}</td>
+                    <td>
+                      {{
+                        c.lastUsedAt
+                          ? (c.lastUsedAt | date: 'medium')
+                          : ('CUSTOM_REPORTS.MCP_TOKENS.NEVER_USED' | translate)
+                      }}
+                    </td>
+                    <td class="actions">
+                      <button
+                        type="button"
+                        class="btn btn-outline-danger btn-sm"
+                        [disabled]="disconnectingId === c.id"
+                        (click)="disconnectApp(c)"
+                      >
+                        {{
+                          (disconnectingId === c.id
+                            ? 'CUSTOM_REPORTS.MCP_TOKENS.DISCONNECTING'
+                            : 'CUSTOM_REPORTS.MCP_TOKENS.DISCONNECT'
+                          ) | translate
+                        }}
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+    }
+
+    <!-- ═══ NEW TOKEN (shown once) ═══ -->
+    @if (created) {
+      <section class="card card--reveal">
+        <div class="card-head">
+          <h2>
+            {{ 'CUSTOM_REPORTS.MCP_TOKENS.CREATED_TITLE' | translate: { name: created.name } }}
+          </h2>
+        </div>
+        <p class="warning">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+            />
+            <line x1="12" y1="9" x2="12" y2="13" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
+          </svg>
+          {{ 'CUSTOM_REPORTS.MCP_TOKENS.SHOWN_ONCE' | translate }}
+        </p>
+        <div class="secret-row">
+          <code class="secret">{{ created.token }}</code>
+          <button type="button" class="btn btn-primary btn-sm" (click)="copy(created.token)">
+            {{ 'CUSTOM_REPORTS.MCP_TOKENS.COPY_TOKEN' | translate }}
+          </button>
+        </div>
+        <h3>{{ 'CUSTOM_REPORTS.MCP_TOKENS.CONNECTION_TITLE' | translate }}</h3>
+        <p class="muted">{{ 'CUSTOM_REPORTS.MCP_TOKENS.CONNECTION_HELP' | translate }}</p>
+        <div class="config-block">
+          <pre dir="ltr">{{ connectionConfig }}</pre>
+          <button
+            type="button"
+            class="btn btn-light btn-sm copy-config"
+            (click)="copy(connectionConfig)"
+          >
+            {{ 'CUSTOM_REPORTS.MCP_TOKENS.COPY_CONFIG' | translate }}
+          </button>
+        </div>
+        <div class="card-actions">
+          <button type="button" class="btn btn-primary" (click)="dismissCreated()">
+            {{ 'CUSTOM_REPORTS.MCP_TOKENS.SAVED_IT' | translate }}
+          </button>
+        </div>
+      </section>
+    }
+
+    <!-- ═══ CREATE ═══ -->
+    <section class="card">
+      <div class="card-head">
+        <h2>{{ 'CUSTOM_REPORTS.MCP_TOKENS.CREATE_TITLE' | translate }}</h2>
+      </div>
+      <form class="create-form" (ngSubmit)="createToken()">
+        <label class="field">
+          <span>{{ 'CUSTOM_REPORTS.MCP_TOKENS.NAME' | translate }}</span>
+          <input
+            class="form-control"
+            name="name"
+            [(ngModel)]="name"
+            maxlength="100"
+            required
+            [placeholder]="'CUSTOM_REPORTS.MCP_TOKENS.NAME_PLACEHOLDER' | translate"
+          />
+        </label>
+
+        <label class="field">
+          <span>{{ 'CUSTOM_REPORTS.MCP_TOKENS.EXPIRES' | translate }}</span>
+          <app-search-dropdown
+            [items]="expiryOptions"
+            [value]="selectedExpiry"
+            (valueChange)="setExpiry($any($event))"
+            [displayWith]="expiryLabel"
+            [compareWith]="sameExpiry"
+            [searchable]="false"
+            [clearable]="false" />
+        </label>
+
+        <fieldset class="field field--access">
+          <span>{{ 'CUSTOM_REPORTS.MCP_TOKENS.ACCESS' | translate }}</span>
+          <label class="radio">
+            <input type="radio" name="access" [value]="false" [(ngModel)]="allowWrite" />
+            {{ 'CUSTOM_REPORTS.MCP_TOKENS.ACCESS_READ' | translate }}
+          </label>
+          <label
+            class="radio"
+            [class.radio--disabled]="!canWrite"
+            [title]="canWrite ? '' : ('CUSTOM_REPORTS.MCP_TOKENS.ACCESS_WRITE_DENIED' | translate)"
+          >
+            <input
+              type="radio"
+              name="access"
+              [value]="true"
+              [(ngModel)]="allowWrite"
+              [disabled]="!canWrite"
+            />
+            {{ 'CUSTOM_REPORTS.MCP_TOKENS.ACCESS_WRITE' | translate }}
+          </label>
+        </fieldset>
+
+        <div class="create-actions">
+          <button type="submit" class="btn btn-primary" [disabled]="!name.trim() || creating">
+            {{
+              (creating ? 'CUSTOM_REPORTS.MCP_TOKENS.CREATING' : 'CUSTOM_REPORTS.MCP_TOKENS.CREATE')
+                | translate
+            }}
+          </button>
+          @if (createError) {
+            <span class="error">{{ createError }}</span>
+          }
+        </div>
+      </form>
+      <p class="muted small">{{ 'CUSTOM_REPORTS.MCP_TOKENS.SAME_ACCESS' | translate }}</p>
+    </section>
+
+    <!-- ═══ LIST ═══ -->
+    <section class="card">
+      <div class="card-head">
+        <h2>{{ 'CUSTOM_REPORTS.MCP_TOKENS.LIST_TITLE' | translate }}</h2>
+      </div>
+
+      @if (loading) {
+        <div class="state">
+          <div class="spinner"></div>
+          <span>{{ 'CUSTOM_REPORTS.COMMON.LOADING_DATA' | translate }}</span>
+        </div>
+      }
+
+      @if (!loading && loadError) {
+        <div class="state state--error">
+          <span>{{ 'CUSTOM_REPORTS.MCP_TOKENS.LOAD_FAILED' | translate }} {{ loadError }}</span>
+          <button type="button" class="btn btn-light btn-sm" (click)="loadTokens()">
+            {{ 'CUSTOM_REPORTS.MCP_TOKENS.RETRY' | translate }}
+          </button>
+        </div>
+      }
+
+      @if (!loading && !loadError && tokens.length === 0) {
+        <div class="state">
+          {{ 'CUSTOM_REPORTS.MCP_TOKENS.EMPTY' | translate }}
+        </div>
+      }
+
+      @if (!loading && !loadError && tokens.length > 0) {
+        <div class="table-wrap">
+          <table class="tokens">
+            <thead>
+              <tr>
+                <th>{{ 'CUSTOM_REPORTS.MCP_TOKENS.NAME' | translate }}</th>
+                <th>{{ 'CUSTOM_REPORTS.MCP_TOKENS.TOKEN' | translate }}</th>
+                <th>{{ 'CUSTOM_REPORTS.MCP_TOKENS.ACCESS' | translate }}</th>
+                <th>{{ 'CUSTOM_REPORTS.MCP_TOKENS.CREATED' | translate }}</th>
+                <th>{{ 'CUSTOM_REPORTS.MCP_TOKENS.LAST_USED' | translate }}</th>
+                <th>{{ 'CUSTOM_REPORTS.MCP_TOKENS.EXPIRES' | translate }}</th>
+                <th>{{ 'CUSTOM_REPORTS.MCP_TOKENS.STATUS' | translate }}</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (token of tokens; track trackById($index, token)) {
+                <tr [class.row--inactive]="statusOf(token) !== 'active'">
+                  <td class="name">{{ token.name }}</td>
+                  <td>
+                    <code dir="ltr">{{ token.tokenPrefix }}…</code>
+                  </td>
+                  <td>
+                    {{
+                      (canSave(token)
+                        ? 'CUSTOM_REPORTS.MCP_TOKENS.ACCESS_WRITE_SHORT'
+                        : 'CUSTOM_REPORTS.MCP_TOKENS.ACCESS_READ_SHORT'
+                      ) | translate
+                    }}
+                  </td>
+                  <td>{{ token.createdAt | date: 'mediumDate' }}</td>
+                  <td>
+                    {{
+                      token.lastUsedAt
+                        ? (token.lastUsedAt | date: 'medium')
+                        : ('CUSTOM_REPORTS.MCP_TOKENS.NEVER_USED' | translate)
+                    }}
+                  </td>
+                  <td>
+                    {{
+                      token.expiresAt
+                        ? (token.expiresAt | date: 'mediumDate')
+                        : ('CUSTOM_REPORTS.MCP_TOKENS.NO_EXPIRY' | translate)
+                    }}
+                  </td>
+                  <td>
+                    <span class="pill" [ngClass]="'pill--' + statusOf(token)">
+                      {{
+                        'CUSTOM_REPORTS.MCP_TOKENS.STATUS_' + (statusOf(token) | uppercase)
+                          | translate
+                      }}
+                    </span>
+                  </td>
+                  <td class="actions">
+                    @if (statusOf(token) === 'active') {
+                      <button
+                        type="button"
+                        class="btn btn-outline-danger btn-sm"
+                        [disabled]="revokingId === token.id"
+                        (click)="revokeToken(token)"
+                      >
+                        {{
+                          (revokingId === token.id
+                            ? 'CUSTOM_REPORTS.MCP_TOKENS.REVOKING'
+                            : 'CUSTOM_REPORTS.MCP_TOKENS.REVOKE'
+                          ) | translate
+                        }}
+                      </button>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+  </div>
+</div>

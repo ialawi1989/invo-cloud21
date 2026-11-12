@@ -79,6 +79,12 @@
           <i class="rc-dot"></i>{{ g.titleKey | translate }}
         </button>
       }
+      @if (canViewCustom) {
+        <!-- The user's own saved reports (the report builder) — a page of its own. -->
+        <a class="rc-tab" role="tab" routerLink="/reports/custom">
+          <i class="rc-dot"></i>{{ 'CUSTOM_REPORTS.LIST.TAB' | translate }}
+        </a>
+      }
     </nav>
   </div>
 

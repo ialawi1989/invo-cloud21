@@ -62,8 +62,7 @@ import {
   customReportWidget, customReportId, canAccessWidget,
 } from '../models/widget-registry';
 import { CustomReportWidgetComponent } from '../widgets/custom-report-widget/custom-report-widget.component';
-import { CustomReportsService } from '../../reports/custom/services/custom-reports.service';
-import type { SavedModule } from '../../reports/custom/shared/models/custom-report.model';
+import { SavedReportsService, SavedReportSummary } from '../../reports/custom/services/saved-reports.service';
 
 interface BranchOption { id: string; name: string; }
 
@@ -149,7 +148,7 @@ export class DashboardComponent implements OnInit {
   private toast = inject(ToastService);
   private translate = inject(TranslateService);
   private destroyRef = inject(DestroyRef);
-  private customReports = inject(CustomReportsService);
+  private savedReports = inject(SavedReportsService);
 
   private i18nTick = signal(0);
 
@@ -290,8 +289,8 @@ export class DashboardComponent implements OnInit {
   readonly rows = signal<PlacedRow[]>([]);
 
   /**
-   * Saved custom reports (the report builder's modules), offered as dashboard
-   * widgets. Loaded once from `getModules` in ngOnInit; the title is the user's
+   * Saved custom reports (the report builder's v2 reports and old modules), offered as
+   * dashboard widgets. Loaded once from `SavedReportsService.list` in ngOnInit; the title is the user's
    * report name (a plain string, not an i18n key).
    */
   readonly customWidgets = signal<WidgetDef[]>([]);
@@ -641,12 +640,13 @@ export class DashboardComponent implements OnInit {
     return views;
   }
 
-  /** Saved report modules → custom widgets available in the Customize picker. */
+  /** Saved custom reports → custom widgets available in the Customize picker. */
   private loadCustomReports(): void {
-    from(this.customReports.getModules())
+    // v2 specs and reports from the previous builder, as the legacy picker lists them.
+    from(this.savedReports.list())
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (modules: SavedModule[]) => {
+        next: (modules: SavedReportSummary[]) => {
           this.customWidgets.set(
             (modules ?? [])
               .filter((m) => m?.id)

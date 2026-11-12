@@ -641,7 +641,7 @@ export const FLAT_REPORTS: Record<string, FlatReportConfig> = {
   'payment-method-sub': {
     route: 'paymentTransactions', paged: true,
     columns: [
-      { key: 'paymentDate', type: 'date' }, { key: 'type', doc: { typeKey: 'type', idKey: 'referenceId' } }, { key: 'accountName' },
+      { key: 'paymentDate', type: 'date' }, { key: 'type', doc: { typeKey: 'type', idKey: 'referenceId' } }, { key: 'cashierName' }, { key: 'cashierNumber' }, { key: 'accountName' },
       { key: 'paymentTotal', type: 'currency', end: true, total: true }, { key: 'paymentEquivalent', type: 'currency', end: true, total: true },
     ],
   },

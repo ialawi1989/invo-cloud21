@@ -2,6 +2,8 @@ import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, Chang
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { TranslateModule } from '@ngx-translate/core';
+import { humanize } from '../../shared/v2/catalog-fields';
 import {
   CalculatedField,
   CalcOperator,
@@ -32,7 +34,7 @@ const mathOperatorOptions: { value: CalcOperator; label: string }[] = [
 @Component({
   selector: 'app-calculated-fields',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgSelectModule],
+  imports: [TranslateModule, CommonModule, FormsModule, NgSelectModule],
   templateUrl: './calculated-fields.component.html',
   styleUrls: ['./calculated-fields.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -84,7 +86,10 @@ export class CalculatedFieldsComponent implements OnChanges {
     for (const f of this.allFields) {
       if (!seen.has(f.fullId)) {
         seen.add(f.fullId);
-        result.push({ value: f.fullId, label: f.label + ' (' + f.table + ')' });
+        // `table` is a v2 node id ("invoiceLines.product"): name the relation
+        // path, or nothing for the report's own entity.
+        const rel = f.table.split('.').slice(1).map(humanize).join(' › ');
+        result.push({ value: f.fullId, label: rel ? `${f.label} (${rel})` : f.label });
       }
     }
     this.cachedAvailableFields = result;

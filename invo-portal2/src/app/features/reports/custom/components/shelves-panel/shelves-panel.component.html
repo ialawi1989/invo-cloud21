@@ -1,12 +1,23 @@
 <div class="shelves-panel">
-
   <!-- ═══ FILTERS SHELF ═══ -->
   <div class="shelf-row shelf-row--filters">
     <div class="shelf-label">
-      <span class="shelf-label-text">Filters</span>
+      <span class="shelf-label-text">{{ 'CUSTOM_REPORTS.SHELVES.FILTERS' | translate }}</span>
       <div class="glue-toggle">
-        <button class="glue-btn" [class.is-active]="sheet.filterGlue === ' AND '" (click)="sheet.filterGlue = ' AND '; emitFilterGlue()">and</button>
-        <button class="glue-btn" [class.is-active]="sheet.filterGlue === ' OR '" (click)="sheet.filterGlue = ' OR '; emitFilterGlue()">or</button>
+        <button
+          class="glue-btn"
+          [class.is-active]="sheet.filterGlue === ' AND '"
+          (click)="sheet.filterGlue = ' AND '; emitFilterGlue()"
+        >
+          {{ 'CUSTOM_REPORTS.SHELVES.AND_LOWER' | translate }}
+        </button>
+        <button
+          class="glue-btn"
+          [class.is-active]="sheet.filterGlue === ' OR '"
+          (click)="sheet.filterGlue = ' OR '; emitFilterGlue()"
+        >
+          {{ 'CUSTOM_REPORTS.SHELVES.OR_LOWER' | translate }}
+        </button>
       </div>
     </div>
     <div
@@ -16,48 +27,90 @@
       (dragleave)="onDragLeave('filters')"
       (drop)="onDropFilter($event)"
     >
-      <span *ngIf="sheet.filterRules.length === 0" class="shelf-empty">Drop fields here to filter</span>
-      <div *ngFor="let r of sheet.filterRules; let i = index"
-           class="filter-pill"
-           [class.pill-formula]="r.isFormula"
-           [ngClass]="'pill-type-' + (r.type || 'text')">
-        <span class="pill-type-icon">{{ r.isFormula ? 'ƒ' : typeIcon(r.type) }}</span>
-        <span class="filter-field">{{ getFieldLabel(r.field) }}</span>
-        <ng-select appendTo="body" panelClass="cr-ng-select-dropdown" class="filter-op" [ngModel]="r.condition.type" (ngModelChange)="updateFilterOp(i, $event)" [clearable]="false">
-          <ng-option *ngFor="let op of operatorsForRule(r)" [value]="op.value">{{ op.label }}</ng-option>
-        </ng-select>
-        <ng-container *ngIf="!isNoValueOp(r)">
-          <ng-container *ngIf="isBetween(r); else singleInput">
-            <input type="date" class="filter-val" [ngModel]="getBetweenStart(r)" (ngModelChange)="updateBetweenStart(i, $event)" />
-            <span class="between-sep">–</span>
-            <input type="date" class="filter-val" [ngModel]="getBetweenEnd(r)" (ngModelChange)="updateBetweenEnd(i, $event)" />
-          </ng-container>
-          <ng-template #singleInput>
-            <ng-container *ngIf="fieldOptions[r.field] && fieldOptions[r.field].length > 0; else plainInput">
-              <ng-select appendTo="body" panelClass="cr-ng-select-dropdown" class="filter-val" [ngModel]="getFilterStringValue(r)" (ngModelChange)="updateFilterValue(i, $event)" [clearable]="false" placeholder="Select…">
-                <ng-option *ngFor="let opt of fieldOptions[r.field]" [value]="opt.id">{{ opt.value || opt.name || opt.id }}</ng-option>
-              </ng-select>
-            </ng-container>
-            <ng-template #plainInput>
+      @if (sheet.filterRules.length === 0) {
+        <span class="shelf-empty">{{ 'CUSTOM_REPORTS.SHELVES.DROP_TO_FILTER' | translate }}</span>
+      }
+      @for (r of sheet.filterRules; track $index; let i = $index) {
+        <div
+          class="filter-pill"
+          [class.pill-formula]="r.isFormula"
+          [ngClass]="'pill-type-' + (r.type || 'text')"
+        >
+          <span class="pill-type-icon">{{ r.isFormula ? 'ƒ' : typeIcon(r.type) }}</span>
+          <span class="filter-field">{{ getFieldLabel(r.field) }}</span>
+          <ng-select
+            appendTo="body"
+            panelClass="cr-ng-select-dropdown"
+            class="filter-op"
+            [ngModel]="r.condition.type"
+            (ngModelChange)="updateFilterOp(i, $event)"
+            [clearable]="false"
+          >
+            @for (op of operatorsForRule(r); track op) {
+              <ng-option [value]="op.value">{{ op.label | translate }}</ng-option>
+            }
+          </ng-select>
+          @if (!isNoValueOp(r)) {
+            @if (isBetween(r)) {
               <input
+                [type]="r.type === 'date' ? 'date' : 'number'"
                 class="filter-val"
-                [type]="r.type === 'date' ? 'date' : r.type === 'number' ? 'number' : 'text'"
-                [ngModel]="r.type === 'date' ? getDateDisplayValue(getFilterStringValue(r)) : getFilterStringValue(r)"
-                (ngModelChange)="updateFilterValue(i, $event)"
-                placeholder="Value…"
+                [ngModel]="getBetweenStart(r)"
+                (ngModelChange)="updateBetweenStart(i, $event)"
               />
-            </ng-template>
-          </ng-template>
-        </ng-container>
-        <button class="pill-x" (click)="removeFilter(i)" aria-label="Remove">×</button>
-      </div>
+              <span class="between-sep">–</span>
+              <input
+                [type]="r.type === 'date' ? 'date' : 'number'"
+                class="filter-val"
+                [ngModel]="getBetweenEnd(r)"
+                (ngModelChange)="updateBetweenEnd(i, $event)"
+              />
+            } @else {
+              @if (fieldOptions[r.field] && fieldOptions[r.field].length > 0) {
+                <ng-select
+                  appendTo="body"
+                  panelClass="cr-ng-select-dropdown"
+                  class="filter-val"
+                  [ngModel]="getFilterStringValue(r)"
+                  (ngModelChange)="updateFilterValue(i, $event)"
+                  [clearable]="false"
+                  [placeholder]="'CUSTOM_REPORTS.SHELVES.SELECT_PLACEHOLDER' | translate"
+                >
+                  @for (opt of fieldOptions[r.field]; track opt) {
+                    <ng-option [value]="opt.id">{{ opt.value || opt.name || opt.id }}</ng-option>
+                  }
+                </ng-select>
+              } @else {
+                <input
+                  class="filter-val"
+                  [type]="r.type === 'date' ? 'date' : r.type === 'number' ? 'number' : 'text'"
+                  [ngModel]="
+                    r.type === 'date'
+                      ? getDateDisplayValue(getFilterStringValue(r))
+                      : getFilterStringValue(r)
+                  "
+                  (ngModelChange)="updateFilterValue(i, $event)"
+                  [placeholder]="'CUSTOM_REPORTS.COMMON.VALUE_PLACEHOLDER' | translate"
+                />
+              }
+            }
+          }
+          <button
+            class="pill-x"
+            (click)="removeFilter(i)"
+            [attr.aria-label]="'CUSTOM_REPORTS.COMMON.REMOVE' | translate"
+          >
+            ×
+          </button>
+        </div>
+      }
     </div>
   </div>
 
   <!-- ═══ COLUMNS SHELF (X-Axis) ═══ -->
   <div class="shelf-row">
     <div class="shelf-label">
-      <span class="shelf-label-text">Columns</span>
+      <span class="shelf-label-text">{{ 'CUSTOM_REPORTS.SHELVES.COLUMNS' | translate }}</span>
     </div>
     <div
       class="shelf-area"
@@ -66,27 +119,53 @@
       (dragleave)="onDragLeave('columns')"
       (drop)="onDropShelf($event, 'columns')"
     >
-      <span *ngIf="sheet.columnsShelf.length === 0" class="shelf-empty">Drop fields to define columns</span>
-      <div
-        *ngFor="let c of sheet.columnsShelf"
-        class="shelf-pill"
-        [ngClass]="'pill-type-' + getFieldType(c.col)"
-        [class.is-active]="editingPill === c.key"
-      >
-        <span class="pill-type-icon">{{ typeIcon(getFieldType(c.col)) }}</span>
-        <span class="pill-label" (click)="togglePillEdit($event, c.key)">{{ getColumnDisplay(c) }}</span>
-        <button class="pill-x" (click)="removePill('columns', c.key)" aria-label="Remove">×</button>
-      </div>
+      @if (sheet.columnsShelf.length === 0) {
+        <span class="shelf-empty">{{ 'CUSTOM_REPORTS.SHELVES.DROP_COLUMNS' | translate }}</span>
+      }
+      @for (c of sheet.columnsShelf; track c) {
+        <div
+          class="shelf-pill"
+          [ngClass]="'pill-type-' + getFieldType(c.col)"
+          [class.is-active]="editingPill === c.key"
+        >
+          <span class="pill-type-icon">{{ typeIcon(getFieldType(c.col)) }}</span>
+          <span class="pill-label" (click)="togglePillEdit($event, c.key)">{{
+            getColumnDisplay(c)
+          }}</span>
+          <button
+            class="pill-x"
+            (click)="removePill('columns', c.key)"
+            [attr.aria-label]="'CUSTOM_REPORTS.COMMON.REMOVE' | translate"
+          >
+            ×
+          </button>
+        </div>
+      }
     </div>
-    <button class="swap-btn" (click)="swapShelves()" title="Swap rows & columns">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
+    <button
+      class="swap-btn"
+      (click)="swapShelves()"
+      [title]="'CUSTOM_REPORTS.SHELVES.SWAP' | translate"
+    >
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4" />
+      </svg>
     </button>
   </div>
 
   <!-- ═══ ROWS SHELF (Y-Axis) ═══ -->
   <div class="shelf-row">
     <div class="shelf-label">
-      <span class="shelf-label-text">Rows</span>
+      <span class="shelf-label-text">{{ 'CUSTOM_REPORTS.SHELVES.ROWS' | translate }}</span>
     </div>
     <div
       class="shelf-area"
@@ -95,17 +174,28 @@
       (dragleave)="onDragLeave('rows')"
       (drop)="onDropShelf($event, 'rows')"
     >
-      <span *ngIf="sheet.rowsShelf.length === 0" class="shelf-empty">Drop fields to define rows</span>
-      <div
-        *ngFor="let c of sheet.rowsShelf"
-        class="shelf-pill"
-        [ngClass]="'pill-type-' + getFieldType(c.col)"
-        [class.is-active]="editingPill === c.key"
-      >
-        <span class="pill-type-icon">{{ typeIcon(getFieldType(c.col)) }}</span>
-        <span class="pill-label" (click)="togglePillEdit($event, c.key)">{{ getColumnDisplay(c) }}</span>
-        <button class="pill-x" (click)="removePill('rows', c.key)" aria-label="Remove">×</button>
-      </div>
+      @if (sheet.rowsShelf.length === 0) {
+        <span class="shelf-empty">{{ 'CUSTOM_REPORTS.SHELVES.DROP_ROWS' | translate }}</span>
+      }
+      @for (c of sheet.rowsShelf; track c) {
+        <div
+          class="shelf-pill"
+          [ngClass]="'pill-type-' + getFieldType(c.col)"
+          [class.is-active]="editingPill === c.key"
+        >
+          <span class="pill-type-icon">{{ typeIcon(getFieldType(c.col)) }}</span>
+          <span class="pill-label" (click)="togglePillEdit($event, c.key)">{{
+            getColumnDisplay(c)
+          }}</span>
+          <button
+            class="pill-x"
+            (click)="removePill('rows', c.key)"
+            [attr.aria-label]="'CUSTOM_REPORTS.COMMON.REMOVE' | translate"
+          >
+            ×
+          </button>
+        </div>
+      }
     </div>
   </div>
 
@@ -113,11 +203,25 @@
   <div class="shelf-row shelf-row--groupby">
     <div class="shelf-label">
       <span class="shelf-label-text">
-        <svg class="groupby-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
-          <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+        <svg
+          class="groupby-icon"
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <line x1="8" y1="6" x2="21" y2="6" />
+          <line x1="8" y1="12" x2="21" y2="12" />
+          <line x1="8" y1="18" x2="21" y2="18" />
+          <line x1="3" y1="6" x2="3.01" y2="6" />
+          <line x1="3" y1="12" x2="3.01" y2="12" />
+          <line x1="3" y1="18" x2="3.01" y2="18" />
         </svg>
-        Group by
+        {{ 'CUSTOM_REPORTS.SHELVES.GROUP_BY' | translate }}
       </span>
     </div>
     <div
@@ -128,107 +232,164 @@
       (dragleave)="onDragLeave('group')"
       (drop)="onDropGroup($event)"
     >
-      <span *ngIf="!sheet.groupBy" class="shelf-empty">Drop one field</span>
-      <div *ngIf="sheet.groupBy" class="shelf-pill group-pill" [ngClass]="'pill-type-' + getFieldType(sheet.groupBy)">
-        <span class="pill-type-icon">{{ typeIcon(getFieldType(sheet.groupBy)) }}</span>
-        <span class="pill-label">{{ getFieldLabel(sheet.groupBy) }}</span>
-        <button class="pill-x" (click)="clearGroupBy()" aria-label="Remove">×</button>
-      </div>
+      @if (!sheet.groupBy) {
+        <span class="shelf-empty">{{ 'CUSTOM_REPORTS.SHELVES.DROP_ONE_FIELD' | translate }}</span>
+      }
+      @if (sheet.groupBy) {
+        <div class="shelf-pill group-pill" [ngClass]="'pill-type-' + getFieldType(sheet.groupBy)">
+          <span class="pill-type-icon">{{ typeIcon(getFieldType(sheet.groupBy)) }}</span>
+          <span class="pill-label">{{ getFieldLabel(sheet.groupBy) }}</span>
+          <button
+            class="pill-x"
+            (click)="clearGroupBy()"
+            [attr.aria-label]="'CUSTOM_REPORTS.COMMON.REMOVE' | translate"
+          >
+            ×
+          </button>
+        </div>
+      }
     </div>
   </div>
 </div>
 
 <!-- ═══ FIXED POPOVER ═══ -->
-<div
-  *ngIf="editingPill && getEditingColumn() as col"
-  class="pill-popover"
-  [ngStyle]="popoverStyle"
-  (click)="$event.stopPropagation()"
->
-  <div class="popover-section">
-    <label class="popover-label">Display name</label>
-    <input
-      class="popover-input"
-      [ngModel]="col.alias || ''"
-      (ngModelChange)="updateAliasLocal(getEditingShelf(), col.key, $event)"
-      (blur)="commitAlias()"
-      placeholder="{{ getFieldLabel(col.col) }}"
-    />
-  </div>
-  <div *ngIf="getFieldType(col.col) === 'number'" class="popover-section">
-    <label class="popover-label">Aggregation</label>
-    <ng-select appendTo="body" panelClass="cr-ng-select-dropdown" [ngModel]="col.agg" (ngModelChange)="updateAgg(getEditingShelf(), col.key, $event)" class="popover-select" [clearable]="false">
-      <ng-option [value]="''">None</ng-option>
-      <ng-option [value]="'sum'">Sum</ng-option>
-      <ng-option *ngIf="!isFormulaCol(col.col)" [value]="'count'">Count</ng-option>
-      <ng-option [value]="'avg'">Avg</ng-option>
-      <ng-option [value]="'max'">Max</ng-option>
-      <ng-option [value]="'min'">Min</ng-option>
-    </ng-select>
-  </div>
-  <div *ngIf="getFieldType(col.col) === 'date'" class="popover-section">
-    <label class="popover-label">Date part</label>
-    <ng-select appendTo="body" panelClass="cr-ng-select-dropdown" [ngModel]="col.datePart" (ngModelChange)="updateDatePart(getEditingShelf(), col.key, $event)" class="popover-select" [clearable]="false">
-      <ng-option [value]="''">Raw</ng-option>
-      <ng-option [value]="'day'">Day</ng-option>
-      <ng-option [value]="'month'">Month</ng-option>
-      <ng-option [value]="'year'">Year</ng-option>
-      <ng-option [value]="'yearmonth'">Year-month</ng-option>
-      <ng-option [value]="'yearmonthday'">Year-month-day</ng-option>
-    </ng-select>
-  </div>
-  <div *ngIf="getFieldType(col.col) === 'text'" class="popover-section">
-    <ng-select appendTo="body" panelClass="cr-ng-select-dropdown" [ngModel]="col.agg" (ngModelChange)="updateAgg(getEditingShelf(), col.key, $event)" class="popover-select" [clearable]="false">
-      <ng-option [value]="''">Dimension</ng-option>
-      <ng-option *ngIf="!isFormulaCol(col.col)" [value]="'count'">Count</ng-option>
-    </ng-select>
-  </div>
-
-  <div class="popover-divider"></div>
-  <div class="popover-section">
-    <label class="popover-label">Format</label>
-    <ng-select appendTo="body" panelClass="cr-ng-select-dropdown"
-      class="popover-select"
-      [ngModel]="col.format?.type || 'none'"
-      (ngModelChange)="updateFormat(getEditingShelf(), col.key, { type: $event })"
-      [clearable]="false"
-    >
-      <ng-option *ngFor="let ft of editingFormatTypes" [value]="ft.value">{{ ft.label }}</ng-option>
-    </ng-select>
-  </div>
-
-  <div *ngIf="col.format?.type === 'date'" class="popover-section">
-    <label class="popover-label">Date format</label>
-    <ng-select appendTo="body" panelClass="cr-ng-select-dropdown"
-      class="popover-select"
-      [ngModel]="col.format?.dateFormat || 'yyyy-MM-dd'"
-      (ngModelChange)="updateFormat(getEditingShelf(), col.key, { dateFormat: $event })"
-      [clearable]="false"
-    >
-      <ng-option *ngFor="let df of dateFormats" [value]="df">{{ df }}</ng-option>
-    </ng-select>
-  </div>
-
-  <div *ngIf="col.format?.type === 'custom' || col.format?.type === 'number'" class="popover-section popover-row">
-    <div class="popover-half">
-      <label class="popover-label">Prefix</label>
+@if (editingPill && getEditingColumn(); as col) {
+  <div class="pill-popover" [ngStyle]="popoverStyle" (click)="$event.stopPropagation()">
+    <div class="popover-section">
+      <label class="popover-label">{{ 'CUSTOM_REPORTS.SHELVES.DATA_PATH' | translate }}</label>
+      <code class="popover-path" dir="ltr">{{ col.col }}</code>
+    </div>
+    <div class="popover-section">
+      <label class="popover-label">{{ 'CUSTOM_REPORTS.SHELVES.DISPLAY_NAME' | translate }}</label>
       <input
         class="popover-input"
-        [ngModel]="col.format?.prefix || ''"
-        (ngModelChange)="updateFormat(getEditingShelf(), col.key, { prefix: $event })"
-        placeholder="e.g. $"
+        [ngModel]="col.alias || ''"
+        (ngModelChange)="updateAliasLocal(getEditingShelf(), col.key, $event)"
+        (blur)="commitAlias()"
+        placeholder="{{ getFieldLabel(col.col) }}"
       />
     </div>
-    <div class="popover-half">
-      <label class="popover-label">Suffix</label>
-      <input
-        class="popover-input"
-        [ngModel]="col.format?.suffix || ''"
-        (ngModelChange)="updateFormat(getEditingShelf(), col.key, { suffix: $event })"
-        placeholder="e.g. kg"
-      />
+    @if (getFieldType(col.col) === 'number') {
+      <div class="popover-section">
+        <label class="popover-label">{{ 'CUSTOM_REPORTS.SHELVES.AGGREGATION' | translate }}</label>
+        <ng-select
+          appendTo="body"
+          panelClass="cr-ng-select-dropdown"
+          [ngModel]="col.agg"
+          (ngModelChange)="updateAgg(getEditingShelf(), col.key, $event)"
+          class="popover-select"
+          [clearable]="false"
+        >
+          <ng-option [value]="''">{{ 'CUSTOM_REPORTS.AGG.NONE' | translate }}</ng-option>
+          <ng-option [value]="'sum'">{{ 'CUSTOM_REPORTS.AGG.SUM' | translate }}</ng-option>
+          @if (!isFormulaCol(col.col)) {
+            <ng-option [value]="'count'">{{ 'CUSTOM_REPORTS.AGG.COUNT' | translate }}</ng-option>
+          }
+          <ng-option [value]="'avg'">{{ 'CUSTOM_REPORTS.AGG.AVG' | translate }}</ng-option>
+          <ng-option [value]="'max'">{{ 'CUSTOM_REPORTS.AGG.MAX' | translate }}</ng-option>
+          <ng-option [value]="'min'">{{ 'CUSTOM_REPORTS.AGG.MIN' | translate }}</ng-option>
+        </ng-select>
+      </div>
+    }
+    @if (getFieldType(col.col) === 'date') {
+      <div class="popover-section">
+        <label class="popover-label">{{ 'CUSTOM_REPORTS.SHELVES.DATE_PART' | translate }}</label>
+        <ng-select
+          appendTo="body"
+          panelClass="cr-ng-select-dropdown"
+          [ngModel]="col.datePart"
+          (ngModelChange)="updateDatePart(getEditingShelf(), col.key, $event)"
+          class="popover-select"
+          [clearable]="false"
+        >
+          <ng-option [value]="''">{{ 'CUSTOM_REPORTS.PICKER.RAW' | translate }}</ng-option>
+          <ng-option [value]="'day'">{{ 'CUSTOM_REPORTS.PICKER.DAY' | translate }}</ng-option>
+          <ng-option [value]="'month'">{{ 'CUSTOM_REPORTS.PICKER.MONTH' | translate }}</ng-option>
+          <ng-option [value]="'year'">{{ 'CUSTOM_REPORTS.PICKER.YEAR' | translate }}</ng-option>
+          <ng-option [value]="'yearmonth'">{{
+            'CUSTOM_REPORTS.PICKER.YEAR_MONTH' | translate
+          }}</ng-option>
+          <ng-option [value]="'yearmonthday'">{{
+            'CUSTOM_REPORTS.PICKER.YEAR_MONTH_DAY' | translate
+          }}</ng-option>
+        </ng-select>
+      </div>
+    }
+    @if (getFieldType(col.col) === 'text') {
+      <div class="popover-section">
+        <ng-select
+          appendTo="body"
+          panelClass="cr-ng-select-dropdown"
+          [ngModel]="col.agg"
+          (ngModelChange)="updateAgg(getEditingShelf(), col.key, $event)"
+          class="popover-select"
+          [clearable]="false"
+        >
+          <ng-option [value]="''">{{ 'CUSTOM_REPORTS.AGG.DIMENSION' | translate }}</ng-option>
+          @if (!isFormulaCol(col.col)) {
+            <ng-option [value]="'count'">{{ 'CUSTOM_REPORTS.AGG.COUNT' | translate }}</ng-option>
+          }
+        </ng-select>
+      </div>
+    }
+    <div class="popover-divider"></div>
+    <div class="popover-section">
+      <label class="popover-label">{{ 'CUSTOM_REPORTS.SHELVES.FORMAT' | translate }}</label>
+      <ng-select
+        appendTo="body"
+        panelClass="cr-ng-select-dropdown"
+        class="popover-select"
+        [ngModel]="col.format?.type || 'none'"
+        (ngModelChange)="updateFormat(getEditingShelf(), col.key, { type: $event })"
+        [clearable]="false"
+      >
+        @for (ft of editingFormatTypes; track ft) {
+          <ng-option [value]="ft.value">{{ ft.label | translate }}</ng-option>
+        }
+      </ng-select>
     </div>
+    @if (col.format?.type === 'date') {
+      <div class="popover-section">
+        <label class="popover-label">{{ 'CUSTOM_REPORTS.SHELVES.DATE_FORMAT' | translate }}</label>
+        <ng-select
+          appendTo="body"
+          panelClass="cr-ng-select-dropdown"
+          class="popover-select"
+          [ngModel]="col.format?.dateFormat || 'yyyy-MM-dd'"
+          (ngModelChange)="updateFormat(getEditingShelf(), col.key, { dateFormat: $event })"
+          [clearable]="false"
+        >
+          @for (df of dateFormats; track df) {
+            <ng-option [value]="df">{{ df }}</ng-option>
+          }
+        </ng-select>
+      </div>
+    }
+    @if (col.format?.type === 'custom' || col.format?.type === 'number') {
+      <div class="popover-section popover-row">
+        <div class="popover-half">
+          <label class="popover-label">{{ 'CUSTOM_REPORTS.SHELVES.PREFIX' | translate }}</label>
+          <input
+            class="popover-input"
+            [ngModel]="col.format?.prefix || ''"
+            (ngModelChange)="updateFormat(getEditingShelf(), col.key, { prefix: $event })"
+            [placeholder]="'CUSTOM_REPORTS.SHELVES.PREFIX_PLACEHOLDER' | translate"
+          />
+        </div>
+        <div class="popover-half">
+          <label class="popover-label">{{ 'CUSTOM_REPORTS.SHELVES.SUFFIX' | translate }}</label>
+          <input
+            class="popover-input"
+            [ngModel]="col.format?.suffix || ''"
+            (ngModelChange)="updateFormat(getEditingShelf(), col.key, { suffix: $event })"
+            [placeholder]="'CUSTOM_REPORTS.SHELVES.SUFFIX_PLACEHOLDER' | translate"
+          />
+        </div>
+      </div>
+    }
   </div>
-</div>
+}
 
-<div *ngIf="editingPill" class="popover-backdrop" (click)="editingPill = null"></div>
+@if (editingPill) {
+  <div class="popover-backdrop" (click)="editingPill = null"></div>
+}

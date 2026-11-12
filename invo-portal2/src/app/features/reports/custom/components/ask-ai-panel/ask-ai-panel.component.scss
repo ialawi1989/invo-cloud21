@@ -1,0 +1,143 @@
+// Same design tokens as the report builder.
+$teal:       #00aab3;
+$teal-dark:  #008f97;
+$ink:        #1a1a18;
+$ink-2:      #444441;
+$ink-3:      #6b6b67;
+$ink-4:      #a3a39e;
+$bg-surface: #eeeeed;
+$bg-canvas:  #f5f5f4;
+$border-rule: 0.5px solid rgba(0,0,0,0.09);
+$rad-input:  6px;
+
+// Docked on the right, below the builder's 56px top bar.
+:host {
+  position: fixed;
+  top: 56px; bottom: 0;
+  inset-inline-end: 0;
+  width: 380px;
+  max-width: 100vw;
+  z-index: 40;
+  display: block;
+}
+:host([hidden]) { display: none; }
+
+.ai-panel {
+  height: 100%;
+  display: flex; flex-direction: column;
+  background: #fff; border-inline-start: $border-rule;
+  box-shadow: -8px 0 24px rgba(0,0,0,0.08);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 13.5px; color: $ink;
+}
+
+.ai-head {
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 14px; border-bottom: $border-rule;
+  color: $teal-dark;
+  h2 { flex: 1; margin: 0; font-size: 15px; font-weight: 600; color: $ink; }
+}
+.head-btn {
+  border: 0; background: transparent; color: $ink-3; cursor: pointer;
+  font-size: 18px; line-height: 1; padding: 4px 6px; border-radius: 6px;
+  &:hover:not(:disabled) { background: $bg-surface; color: $ink; }
+  &:disabled { opacity: .4; cursor: default; }
+}
+
+.ai-thread {
+  flex: 1; overflow-y: auto; padding: 14px;
+  display: flex; flex-direction: column; gap: 10px;
+  background: $bg-canvas;
+}
+
+.ai-empty {
+  color: $ink-2; line-height: 1.5;
+  p { margin: 0 0 10px; }
+}
+.examples { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.example {
+  text-align: start; border: $border-rule; background: #fff; color: $ink-2;
+  border-radius: 8px; padding: 8px 10px; cursor: pointer; font: inherit;
+  &:hover { border-color: rgba($teal, .5); color: $ink; }
+}
+
+.msg {
+  max-width: 92%; padding: 9px 12px; border-radius: 10px; line-height: 1.45;
+  white-space: pre-wrap; word-break: break-word;
+}
+.msg--user {
+  align-self: flex-end; background: $teal; color: #fff;
+  border-end-end-radius: 3px;
+}
+.msg--ai {
+  align-self: flex-start; background: #fff; border: $border-rule;
+  border-end-start-radius: 3px; width: 92%;
+  .explanation { margin: 0; }
+}
+.msg--nospec { background: #fffaf0; }
+.msg--error { align-self: flex-start; background: #fdecea; color: #a1281b; }
+.msg--pending { color: $ink-3; display: flex; align-items: center; gap: 8px; width: auto; }
+
+.dots {
+  display: inline-flex; gap: 3px;
+  i { width: 5px; height: 5px; border-radius: 50%; background: $teal; animation: blink 1.2s infinite ease-in-out; }
+  i:nth-child(2) { animation-delay: .2s; }
+  i:nth-child(3) { animation-delay: .4s; }
+}
+@keyframes blink { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
+
+.preview {
+  margin-top: 8px; overflow-x: auto; border: $border-rule; border-radius: $rad-input;
+  white-space: normal;
+  table { border-collapse: collapse; width: 100%; font-size: 12px; }
+  th, td { padding: 5px 8px; border-bottom: $border-rule; text-align: start; white-space: nowrap; }
+  th { background: $bg-canvas; color: $ink-3; font-weight: 600; }
+  tr:last-child td { border-bottom: 0; }
+}
+
+.msg-actions { display: flex; justify-content: flex-end; margin-top: 6px; }
+.applied { font-size: 12px; color: $teal-dark; font-weight: 600; }
+.link-btn {
+  border: 0; background: transparent; color: $teal-dark; cursor: pointer;
+  font: inherit; font-size: 12px; font-weight: 600; padding: 0;
+  &:hover { text-decoration: underline; }
+}
+
+.fine { font-size: 11.5px; color: $ink-3; margin: 6px 0 0; white-space: normal; }
+
+.usage { margin-top: 8px; }
+.usage-bar {
+  height: 4px; border-radius: 2px; background: $bg-surface; overflow: hidden;
+  span { display: block; height: 100%; background: $teal; transition: width .3s; }
+}
+.usage--full {
+  .usage-bar span { background: #c0392b; }
+  .fine { color: #c0392b; }
+}
+
+.ai-compose {
+  border-top: $border-rule; padding: 10px 12px 12px; background: #fff;
+}
+.refine {
+  display: flex; align-items: center; gap: 6px; margin: 0 0 8px;
+  font-size: 12.5px; color: $ink-2; cursor: pointer;
+  input { accent-color: $teal; }
+}
+.compose-row { display: flex; gap: 8px; align-items: flex-end; }
+textarea {
+  flex: 1; resize: none; border: 1px solid rgba(0,0,0,0.14); border-radius: 8px;
+  padding: 8px 10px; font: inherit; color: $ink; min-height: 40px; max-height: 140px;
+  &:focus { outline: none; border-color: $teal; box-shadow: 0 0 0 3px rgba($teal, .12); }
+  &:disabled { background: $bg-canvas; }
+}
+.send-btn {
+  width: 40px; height: 40px; border-radius: 8px; border: 0; cursor: pointer;
+  background: $teal; color: #fff; display: inline-flex; align-items: center; justify-content: center;
+  &:hover:not(:disabled) { background: $teal-dark; }
+  &:disabled { background: $ink-4; cursor: default; }
+  [dir='rtl'] & svg { transform: scaleX(-1); }
+}
+
+@media (max-width: 640px) {
+  :host { width: 100vw; }
+}

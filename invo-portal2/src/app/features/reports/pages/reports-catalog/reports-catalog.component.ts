@@ -7,6 +7,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService } from '@core/i18n/language.service';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { CompanyService } from '@core/auth/company.service';
+import { customReportsEditPrivilegeFullKey, customReportsViewPrivilegeFullKey } from '../../custom/custom-reports.privileges';
 import { isEmployeeEarningsEnabled } from '@core/auth/employee-earnings';
 import { REPORT_CATALOG, ALL_REPORTS } from '../../models/report-catalog';
 import { ReportGroup, ReportMeta } from '../../models/report.model';
@@ -44,6 +45,11 @@ export class ReportsCatalogComponent implements OnInit {
   private recent = inject(ReportsRecentService);
 
   readonly groups = REPORT_CATALOG;
+
+  /** The saved custom reports list; Edit implies View. */
+  get canViewCustom(): boolean {
+    return (this.privileges.check(customReportsViewPrivilegeFullKey) || this.privileges.check(customReportsEditPrivilegeFullKey));
+  }
 
   search = signal('');
   activeTab = signal<MetaTab | string>('all'); // string = a group key

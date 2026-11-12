@@ -1,151 +1,281 @@
 <!-- Empty: fields ARE on shelves but the server returned 0 rows. -->
-<div *ngIf="!hasData && hasShelfFields" class="empty-chart">
-  <div class="empty-icon">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+@if (!hasData && hasShelfFields && !pendingOnly) {
+  <div class="empty-chart">
+    <div class="empty-icon">
+      <svg
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="#fff"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 8v4M12 16h.01" />
+      </svg>
+    </div>
+    <div class="empty-title">{{ 'CUSTOM_REPORTS.PREVIEW.NO_ROWS' | translate }}</div>
+    <div class="empty-sub">{{ 'CUSTOM_REPORTS.PREVIEW.NO_ROWS_SUB' | translate }}</div>
   </div>
-  <div class="empty-title">No rows returned</div>
-  <div class="empty-sub">The current selection didn't match any data. Check your field choices and filters, then click Run again.</div>
-</div>
+}
 
 <!-- Empty: nothing on the shelves yet. -->
-<div *ngIf="!hasData && !hasShelfFields" class="empty-chart">
-  <div class="empty-icon">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M18 17V9M13 17V5M8 17v-3"/></svg>
+@if (!hasData && !hasShelfFields && !pendingOnly) {
+  <div class="empty-chart">
+    <div class="empty-icon">
+      <svg
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="#fff"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M3 3v18h18M18 17V9M13 17V5M8 17v-3" />
+      </svg>
+    </div>
+    <div class="empty-title">{{ 'CUSTOM_REPORTS.PREVIEW.BUILD_FIRST' | translate }}</div>
+    <div class="empty-sub">{{ 'CUSTOM_REPORTS.PREVIEW.BUILD_FIRST_SUB' | translate }}</div>
   </div>
-  <div class="empty-title">Build your first view</div>
-  <div class="empty-sub">Drag fields onto the columns and rows shelves to compose your report.</div>
-</div>
+}
 
 <!-- ═══ Chart can't render with current selection ═══ -->
-<div *ngIf="chartUnsupported" class="chart-unsupported">
-  <div class="chart-unsupported-icon">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>
-    </svg>
+@if (chartUnsupported) {
+  <div class="chart-unsupported">
+    <div class="chart-unsupported-icon">
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.7"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 8v4M12 16h.01" />
+      </svg>
+    </div>
+    <div class="chart-unsupported-title">
+      {{ 'CUSTOM_REPORTS.PREVIEW.CHART_UNSUPPORTED' | translate }}
+    </div>
+    <div class="chart-unsupported-sub">{{ chartUnsupportedReason | translate }}</div>
+    <div class="chart-unsupported-hint">
+      {{ 'CUSTOM_REPORTS.PREVIEW.CHART_UNSUPPORTED_HINT_PRE' | translate }}
+      <strong>{{ 'CUSTOM_REPORTS.CHART_TYPES.TABLE.LABEL' | translate }}</strong>
+      {{ 'CUSTOM_REPORTS.PREVIEW.CHART_UNSUPPORTED_HINT_POST' | translate }}
+    </div>
   </div>
-  <div class="chart-unsupported-title">Can't draw this chart yet</div>
-  <div class="chart-unsupported-sub">{{ chartUnsupportedReason }}</div>
-  <div class="chart-unsupported-hint">Tip: switch to <strong>Table</strong> to see the raw rows.</div>
-</div>
+}
 
 <!-- ═══ CHART (bar / line / area / donut / pie via ApexCharts) ═══ -->
-<div *ngIf="isApexChart && apexOptions" class="apex-wrap">
-  <apx-chart
-    class="apex-chart"
-    [series]="apexOptions.series"
-    [chart]="apexOptions.chart"
-    [xaxis]="apexOptions.xaxis"
-    [yaxis]="apexOptions.yaxis"
-    [colors]="apexOptions.colors"
-    [stroke]="apexOptions.stroke"
-    [fill]="apexOptions.fill"
-    [markers]="apexOptions.markers"
-    [plotOptions]="apexOptions.plotOptions"
-    [dataLabels]="apexOptions.dataLabels"
-    [labels]="apexOptions.labels"
-    [legend]="apexOptions.legend"
-    [tooltip]="apexOptions.tooltip"
-    [grid]="apexOptions.grid"
-    [responsive]="apexOptions.responsive">
-  </apx-chart>
-</div>
+@if (isApexChart && apexOptions) {
+  <div class="apex-wrap">
+    <apx-chart
+      class="apex-chart"
+      [series]="apexOptions.series"
+      [chart]="apexOptions.chart"
+      [xaxis]="apexOptions.xaxis"
+      [yaxis]="apexOptions.yaxis"
+      [colors]="apexOptions.colors"
+      [stroke]="apexOptions.stroke"
+      [fill]="apexOptions.fill"
+      [markers]="apexOptions.markers"
+      [plotOptions]="apexOptions.plotOptions"
+      [dataLabels]="apexOptions.dataLabels"
+      [labels]="apexOptions.labels"
+      [legend]="apexOptions.legend"
+      [tooltip]="apexOptions.tooltip"
+      [grid]="apexOptions.grid"
+      [responsive]="apexOptions.responsive"
+    >
+    </apx-chart>
+  </div>
+}
 
 <!-- ═══ KPI ═══ -->
-<div *ngIf="hasChartData && chartType === 'kpi'" class="kpi-wrap">
-  <div class="kpi-value">{{ fmtTotal }}</div>
-  <div class="kpi-label">{{ kpiLabel }}</div>
-</div>
+@if (hasChartData && chartType === 'kpi') {
+  <div class="kpi-wrap">
+    <div class="kpi-value">{{ fmtTotal }}</div>
+    <div class="kpi-label">{{ kpiLabel }}</div>
+  </div>
+}
 
 <!-- ═══ TABLE ═══ -->
-<div *ngIf="hasData && chartType === 'table' && !hasGroupedTable" class="table-section">
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th
-            *ngFor="let h of tableHeaders; let i = index"
-            [class.num]="h.isNum"
-            [class.sorted]="h.sortDir"
-            [class.drag-over-col]="dragOverColIndex === i"
-            draggable="true"
-            (dragstart)="onColDragStart($event, i)"
-            (dragover)="onColDragOver($event, i)"
-            (dragleave)="onColDragLeave()"
-            (drop)="onColDrop($event, i)"
-            (dragend)="onColDragEnd()"
-            (click)="onSortColumn(h.key)"
-          >
-            {{ h.label }}
-            <span *ngIf="h.sortDir" class="sort-icon">{{ h.sortDir === 'asc' ? '▲' : '▼' }}</span>
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let row of tableRows" [style.border-left]="row.colorBorder">
-          <td *ngFor="let cell of row.cells" [class.num]="cell.isNum">{{ cell.value }}</td>
-        </tr>
-      </tbody>
-    </table>
+@if (hasData && chartType === 'table' && !hasGroupedTable) {
+  <div class="table-section">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            @for (h of tableHeaders; track h; let i = $index) {
+              <th
+                [class.num]="h.isNum"
+                [class.sorted]="h.sortDir"
+                [class.drag-over-col]="dragOverColIndex === i"
+                draggable="true"
+                (dragstart)="onColDragStart($event, i)"
+                (dragover)="onColDragOver($event, i)"
+                (dragleave)="onColDragLeave()"
+                (drop)="onColDrop($event, i)"
+                (dragend)="onColDragEnd()"
+                (click)="onSortColumn(h.key)"
+              >
+                {{ h.label }}
+                @if (h.sortDir) {
+                  <span class="sort-icon">{{ h.sortDir === 'asc' ? '▲' : '▼' }}</span>
+                }
+              </th>
+            }
+            @for (p of pendingColumns; track p) {
+              <th class="pending-col">
+                {{ p.label }}
+                <span class="pending-note">{{
+                  'CUSTOM_REPORTS.PREVIEW.RUN_TO_UPDATE' | translate
+                }}</span>
+              </th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of tableRows; track row) {
+            <tr [style.border-left]="row.colorBorder">
+              @for (cell of row.cells; track cell) {
+                <td [class.num]="cell.isNum">{{ cell.value }}</td>
+              }
+              @for (p of pendingColumns; track p) {
+                <td class="pending-cell">…</td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
   </div>
-</div>
+}
+
+<!-- ═══ TABLE: fields added, nothing run for them yet ═══ -->
+@if (pendingOnly) {
+  <div class="table-section">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            @for (p of pendingColumns; track p) {
+              <th class="pending-col">
+                {{ p.label }}
+                <span class="pending-note">{{
+                  'CUSTOM_REPORTS.PREVIEW.RUN_TO_UPDATE' | translate
+                }}</span>
+              </th>
+            }
+          </tr>
+        </thead>
+      </table>
+    </div>
+    <p class="pending-hint">{{ 'CUSTOM_REPORTS.PREVIEW.RUN_TO_LOAD' | translate }}</p>
+  </div>
+}
 
 <!-- ═══ GROUPED TABLE (Group by shelf) ═══ -->
-<div *ngIf="hasData && chartType === 'table' && hasGroupedTable" class="table-section">
+@if (hasData && chartType === 'table' && hasGroupedTable) {
+  <div class="table-section">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            @for (h of tableHeaders; track h) {
+              <th [class.num]="h.isNum">{{ h.label }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (block of groupedBlocks; track block) {
+            @for (row of block.rows; track row; let ri = $index) {
+              <tr class="group-row">
+                @for (cell of row.cells; track cell; let ci = $index) {
+                  <!-- group name: one merged cell, vertically centred over the group -->
+                  @if (ci === block.groupColIdx && ri === 0) {
+                    <td [attr.rowspan]="block.rows.length" class="group-name-cell">
+                      {{ block.value }}
+                    </td>
+                  }
+                  @if (ci !== block.groupColIdx) {
+                    <td [class.num]="cell.isNum">{{ cell.value }}</td>
+                  }
+                }
+              </tr>
+            }
+            @if (block.hasTotals) {
+              <tr class="subtotal-row">
+                @for (cell of block.totalCells; track cell) {
+                  <td [class.num]="cell.isNum" [class.subtotal-label]="cell.isLabel">
+                    {{ cell.value }}
+                  </td>
+                }
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}
+
+<!-- ═══ PIVOT ═══ -->
+@if (hasData && chartType === 'pivot') {
   <div class="table-wrap">
     <table>
       <thead>
         <tr>
-          <th *ngFor="let h of tableHeaders" [class.num]="h.isNum">{{ h.label }}</th>
+          <th>{{ pivotDimLabel }}</th>
+          @for (h of pivotMeasHeaders; track h) {
+            <th class="num">{{ h.label }}</th>
+          }
+          <th class="num total-col">{{ 'CUSTOM_REPORTS.PREVIEW.TOTAL' | translate }}</th>
         </tr>
       </thead>
       <tbody>
-        <ng-container *ngFor="let block of groupedBlocks">
-          <tr *ngFor="let row of block.rows; let ri = index" class="group-row">
-            <ng-container *ngFor="let cell of row.cells; let ci = index">
-              <!-- group name: one merged cell, vertically centred over the group -->
-              <td *ngIf="ci === block.groupColIdx && ri === 0" [attr.rowspan]="block.rows.length" class="group-name-cell">{{ block.value }}</td>
-              <td *ngIf="ci !== block.groupColIdx" [class.num]="cell.isNum">{{ cell.value }}</td>
-            </ng-container>
+        @for (row of pivotRows; track row) {
+          <tr>
+            <td class="dim-cell">{{ row.dimLabel }}</td>
+            @for (v of row.values; track v) {
+              <td class="num">{{ v }}</td>
+            }
+            <td class="num total-col">{{ row.total }}</td>
           </tr>
-          <tr class="subtotal-row">
-            <td *ngFor="let cell of block.totalCells" [class.num]="cell.isNum" [class.subtotal-label]="cell.isLabel">{{ cell.value }}</td>
-          </tr>
-        </ng-container>
+        }
+        <tr class="total-row">
+          <td>
+            <strong>{{ 'CUSTOM_REPORTS.PREVIEW.TOTAL' | translate }}</strong>
+          </td>
+          @for (v of pivotColTotals; track v) {
+            <td class="num">
+              <strong>{{ v }}</strong>
+            </td>
+          }
+          <td class="num total-col">
+            <strong class="accent">{{ pivotGrandTotal }}</strong>
+          </td>
+        </tr>
       </tbody>
     </table>
   </div>
-</div>
-
-
-<!-- ═══ PIVOT ═══ -->
-<div *ngIf="hasData && chartType === 'pivot'" class="table-wrap">
-  <table>
-    <thead>
-      <tr>
-        <th>{{ pivotDimLabel }}</th>
-        <th *ngFor="let h of pivotMeasHeaders" class="num">{{ h.label }}</th>
-        <th class="num total-col">Total</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let row of pivotRows">
-        <td class="dim-cell">{{ row.dimLabel }}</td>
-        <td *ngFor="let v of row.values" class="num">{{ v }}</td>
-        <td class="num total-col">{{ row.total }}</td>
-      </tr>
-      <tr class="total-row">
-        <td><strong>Total</strong></td>
-        <td *ngFor="let v of pivotColTotals" class="num"><strong>{{ v }}</strong></td>
-        <td class="num total-col"><strong class="accent">{{ pivotGrandTotal }}</strong></td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+}
 
 <!-- Legend (only for non-Apex chart types — apex renders its own) -->
-<div *ngIf="legendItems.length > 0 && !isApexChart" class="legend">
-  <span *ngFor="let item of legendItems" class="legend-item-inline">
-    <span class="legend-dot" [style.background]="item.color"></span>
-    {{ item.label }}
-  </span>
-</div>
+@if (legendItems.length > 0 && !isApexChart) {
+  <div class="legend">
+    @for (item of legendItems; track item) {
+      <span class="legend-item-inline">
+        <span class="legend-dot" [style.background]="item.color"></span>
+        {{ item.label }}
+      </span>
+    }
+  </div>
+}

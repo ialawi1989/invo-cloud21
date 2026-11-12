@@ -1,25 +1,27 @@
 import { Component, Input, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ChartPreviewComponent } from '../../../reports/custom/components/chart-preview/chart-preview.component';
 import { PaginationComponent } from '../../../reports/custom/components/pagination/pagination.component';
-import { CustomReportsService } from '../../../reports/custom/services/custom-reports.service';
+import { ReportV2Service } from '../../../reports/custom/services/report-v2.service';
+import { SavedReportsService } from '../../../reports/custom/services/saved-reports.service';
 import {
   SheetConfig,
   SortRule,
   FilterRule,
   FlatField,
-  DataSourceTable,
   ColumnFormat,
-  CustomReportRequest,
-  shelvesToApiParams,
   buildValidFilterRules,
   buildColumnMeta,
-  flattenSheetFields,
-  legacySheetFromConfig,
   coerceNumericMeasures,
   coerceNumericRows,
   applyCalculatedFields,
 } from '../../../reports/custom/shared/models/custom-report.model';
+import {
+  CatalogIndex,
+  nodeFields,
+  sheetNodeIds,
+} from '../../../reports/custom/shared/v2/catalog-fields';
+import { coerceByRunColumns, sheetToSpec } from '../../../reports/custom/shared/v2/spec-adapter';
 
 /**
  * Renders a saved custom report (by module id) as a dashboard widget, using the
@@ -32,7 +34,7 @@ import {
 @Component({
   selector: 'app-custom-report-widget',
   standalone: true,
-  imports: [CommonModule, ChartPreviewComponent, PaginationComponent],
+  imports: [ChartPreviewComponent, PaginationComponent],
   templateUrl: './custom-report-widget.component.html',
   styleUrls: ['./custom-report-widget.component.scss'],
 })
@@ -51,7 +53,8 @@ export class CustomReportWidgetComponent implements OnChanges {
   error: string | null = null;
 
   // Pagination + sort state (server-side — each change re-runs the query).
-  totalRows = 0;
+  /** hasNext cursor pagination: true when more records follow this page. */
+  hasNext = false;
   currentPage = 1;
   /** Effective page size used by the last query (drives the pager). */
   pageSizeUsed = 15;
@@ -74,22 +77,21 @@ export class CustomReportWidgetComponent implements OnChanges {
   columnTypes: { [key: string]: string } = {};
   columnNumberFormats: { [key: string]: string } = {};
   orderedColumns: string[] = [];
-  groupedData: { value: any; count: number; len: number; subtotals: { [key: string]: number } }[] | null = null;
+  groupedData:
+    | { value: any; count: number; len: number; subtotals: { [key: string]: number } }[]
+    | null = null;
   groupFieldLabel = '';
   groupByKey: string | null = null;
 
   private allSheets: SheetConfig[] = [];
   private sheet: SheetConfig | null = null;
   private allFields: FlatField[] = [];
-  private dataSources: DataSourceTable[] = [];
-
-  // Data sources (full schema) are stable per session — fetch once, share
-  // across every custom-report widget on the dashboard.
-  private static cachedSources: DataSourceTable[] | null = null;
-  private static sourcesInflight: Promise<DataSourceTable[]> | null = null;
+  /** v2 catalog (cached per session by ReportV2Service). */
+  private catalogIndex: CatalogIndex = new Map();
 
   constructor(
-    private customReports: CustomReportsService,
+    private savedReports: SavedReportsService,
+    private reportsV2: ReportV2Service,
     private cdr: ChangeDetectorRef,
   ) {}
 
@@ -105,9 +107,11 @@ export class CustomReportWidgetComponent implements OnChanges {
       return;
     }
     // Sort / page-size chosen in the Customize modal changed — re-init and refetch.
-    if ((changes['sort'] || changes['pageSize']) &&
-        !(changes['sort']?.firstChange || changes['pageSize']?.firstChange) &&
-        this.sheet) {
+    if (
+      (changes['sort'] || changes['pageSize']) &&
+      !(changes['sort']?.firstChange || changes['pageSize']?.firstChange) &&
+      this.sheet
+    ) {
       this.currentSort = this.initialSort();
       this.currentPage = 1;
       this.runQuery();
@@ -124,29 +128,16 @@ export class CustomReportWidgetComponent implements OnChanges {
     this.sheet = null;
     this.allSheets = [];
     try {
-      const mod = await this.customReports.getModule(this.moduleId);
-      if (!mod) {
+      // A v2 spec, or a report from the previous builder converted to v2.
+      const report = await this.savedReports.open(this.moduleId);
+      if (!report) {
         this.error = 'Report not found';
         return;
       }
-      this.reportName = mod.name || '';
-
-      const cfg = typeof mod.text === 'string' ? JSON.parse(mod.text) : mod.text;
-      if (!cfg) {
-        this.error = 'This report cannot be shown here';
-        return;
-      }
-
-      this.dataSources = await this.loadDataSources();
-
-      if (cfg.version === 2 && Array.isArray(cfg.sheets) && cfg.sheets.length > 0) {
-        this.allSheets = cfg.sheets;
-        this.applySheet(cfg.activeSheetId);
-      } else {
-        // Legacy (v1) module — convert to a sheet so it renders like the rest.
-        this.allSheets = [legacySheetFromConfig(cfg, this.dataSources[0]?.id || '')];
-        this.applySheet();
-      }
+      this.reportName = report.name || '';
+      this.catalogIndex = report.catalogIndex;
+      this.allSheets = report.sheets;
+      this.applySheet(report.activeSheetId);
 
       await this.runQuery();
     } catch (e) {
@@ -164,11 +155,14 @@ export class CustomReportWidgetComponent implements OnChanges {
   /** Resolve the sheet + derive its column metadata (labels/formats/types). */
   private applySheet(activeSheetId?: string): void {
     const wanted = this.sheetId || activeSheetId;
-    this.sheet = this.allSheets.find(s => s.id === wanted) || this.allSheets[0] || null;
+    this.sheet = this.allSheets.find((s) => s.id === wanted) || this.allSheets[0] || null;
     this.chartType = this.sheet?.chartType || 'table';
     if (!this.sheet) return;
 
-    this.allFields = flattenSheetFields(this.dataSources, this.sheet);
+    const sheet = this.sheet;
+    this.allFields = [sheet.primaryTable, ...sheetNodeIds(sheet)]
+      .filter((n, i, all) => all.indexOf(n) === i)
+      .flatMap((n) => nodeFields(this.catalogIndex, n));
     const meta = buildColumnMeta(this.sheet, this.allFields);
     this.columnLabels = meta.columnLabels;
     this.columnFormats = meta.columnFormats;
@@ -176,7 +170,7 @@ export class CustomReportWidgetComponent implements OnChanges {
     this.columnNumberFormats = meta.columnNumberFormats;
     this.orderedColumns = meta.orderedColumns;
 
-    const colorMark = this.sheet.marks.find(m => m.channel === 'color');
+    const colorMark = this.sheet.marks.find((m) => m.channel === 'color');
     this.colorField = colorMark ? colorMark.field.col : null;
     this.groupByKey = this.sheet.groupBy || null;
 
@@ -188,7 +182,7 @@ export class CustomReportWidgetComponent implements OnChanges {
 
   /** Sort from the Customize modal if set, else the sheet's saved sort. */
   private initialSort(): { key: string; dir: 'ASC' | 'DESC' } | null {
-    const base = (this.sort && this.sort.length) ? this.sort : (this.sheet?.sortBy || []);
+    const base = this.sort && this.sort.length ? this.sort : this.sheet?.sortBy || [];
     return base.length ? { key: base[0].id, dir: base[0].mod } : null;
   }
 
@@ -199,7 +193,6 @@ export class CustomReportWidgetComponent implements OnChanges {
     this.loading = true;
     this.error = null;
     try {
-      const { columns, groupBy } = shelvesToApiParams(sheet);
       // Records: the pager's runtime override, else the value chosen in the
       // Customize modal, else the dashboard default of 15. (Kept compact for the
       // dashboard rather than inheriting the report's larger saved page size.)
@@ -210,30 +203,16 @@ export class CustomReportWidgetComponent implements OnChanges {
       const sort: SortRule[] = this.currentSort
         ? [{ id: this.currentSort.key, mod: this.currentSort.dir }]
         : sheet.sortBy;
-      const request: CustomReportRequest = {
-        tableName: sheet.primaryTable,
-        columns,
-        joins: sheet.joins,
-        sort,
-        group: groupBy,
-        limit: pageSize,
-        offset: (this.currentPage - 1) * pageSize,
-      };
-      if (sheet.groupBy) request.groupBy = sheet.groupBy;
+      // The widget's chosen filters replace the sheet's own (see buildMergedFilters).
+      const spec = sheetToSpec(
+        { ...sheet, filterRules: this.buildMergedFilters(sheet) },
+        { index: this.catalogIndex, sort, limit: pageSize, page: this.currentPage },
+      );
+      const result = await this.reportsV2.run(spec);
 
-      const rules = this.buildMergedFilters(sheet);
-      if (rules.length > 0) {
-        request.query = { glue: sheet.filterGlue, rules };
-      }
-
-      const result = await this.customReports.getCustomizedReport(request);
-
-      // totalCount drives the pager; -1 means the backend didn't send it, so we
-      // fall back to the current page's row count (single page → pager hides).
-      const total = (result as any)?.totalCount;
-      this.totalRows = typeof total === 'number' && total >= 0
-        ? total
-        : (this.currentPage - 1) * this.pageSizeUsed + (result?.rows?.length || 0);
+      // hasNext cursor pagination: the backend reports whether more records
+      // follow this page. Drives the pager's "Next" control (no total count).
+      this.hasNext = result?.hasNext === true;
 
       // Grouped response → flatten rows + keep per-group subtotal metadata.
       let rows = result?.rows || [];
@@ -242,10 +221,16 @@ export class CustomReportWidgetComponent implements OnChanges {
         rows = (result as any).groups.flatMap((g: any) => g.rows || []);
         grouped = (result as any).groups.map((g: any) => {
           const len = (g.rows || []).length;
-          return { value: g.value, count: typeof g.count === 'number' ? g.count : len, len, subtotals: g.subtotals || {} };
+          return {
+            value: g.value,
+            count: typeof g.count === 'number' ? g.count : len,
+            len,
+            subtotals: g.subtotals || {},
+          };
         });
       }
 
+      coerceByRunColumns(rows, result.columns);
       coerceNumericMeasures(rows);
       coerceNumericRows(rows, sheet, this.fieldMeta());
       if (sheet.calculatedFields?.length) {
@@ -253,9 +238,12 @@ export class CustomReportWidgetComponent implements OnChanges {
       }
 
       this.groupedData = grouped;
-      this.groupFieldLabel = grouped && sheet.groupBy
-        ? (this.allFields.find(f => f.fullId === sheet.groupBy)?.label || sheet.groupBy.split('.').pop() || '')
-        : '';
+      this.groupFieldLabel =
+        grouped && sheet.groupBy
+          ? this.allFields.find((f) => f.fullId === sheet.groupBy)?.label ||
+            sheet.groupBy.split('.').pop() ||
+            ''
+          : '';
       this.data = rows;
       this.dimKey = this.getDimKey(rows);
       this.measKeys = this.getMeasKeys(rows);
@@ -289,24 +277,6 @@ export class CustomReportWidgetComponent implements OnChanges {
     this.runQuery();
   }
 
-  private loadDataSources(): Promise<DataSourceTable[]> {
-    if (CustomReportWidgetComponent.cachedSources) {
-      return Promise.resolve(CustomReportWidgetComponent.cachedSources);
-    }
-    if (!CustomReportWidgetComponent.sourcesInflight) {
-      CustomReportWidgetComponent.sourcesInflight = this.customReports.getDataSource()
-        .then(s => {
-          CustomReportWidgetComponent.cachedSources = s || [];
-          return CustomReportWidgetComponent.cachedSources;
-        })
-        .catch(() => {
-          CustomReportWidgetComponent.sourcesInflight = null;
-          return [];
-        });
-    }
-    return CustomReportWidgetComponent.sourcesInflight;
-  }
-
   private fieldMeta(): { [fullId: string]: { id?: string; type?: string; numberFormat?: string } } {
     const out: { [fullId: string]: { id?: string; type?: string; numberFormat?: string } } = {};
     for (const f of this.allFields) {
@@ -321,19 +291,24 @@ export class CustomReportWidgetComponent implements OnChanges {
    * builder/view. No dashboard-level overrides, so the data stays identical.
    */
   private buildMergedFilters(sheet: SheetConfig): FilterRule[] {
-    const base = (this.filters && this.filters.length) ? this.filters : sheet.filterRules;
+    // Values picked before a report moved to v2 name the old views; field
+    // paths are relative to the entity, so only same-entity rules apply.
+    const own = (this.filters || []).filter(
+      (r: FilterRule) => (r?.field || '').split('.')[0] === sheet.primaryTable,
+    );
+    const base = own.length ? own : sheet.filterRules;
     return buildValidFilterRules(base);
   }
 
   private getDimKey(data: any[]): string | null {
     if (!data || data.length === 0) return null;
     const keys = Object.keys(data[0]);
-    return keys.find(k => !/^(sum|count|avg|max|min)\./.test(k) && k !== 'value') || keys[0];
+    return keys.find((k) => !/^(sum|count|avg|max|min)\./.test(k) && k !== 'value') || keys[0];
   }
 
   private getMeasKeys(data: any[]): string[] {
     if (!data || data.length === 0) return [];
     const dimKey = this.getDimKey(data);
-    return Object.keys(data[0]).filter(k => k !== dimKey);
+    return Object.keys(data[0]).filter((k) => k !== dimKey);
   }
 }

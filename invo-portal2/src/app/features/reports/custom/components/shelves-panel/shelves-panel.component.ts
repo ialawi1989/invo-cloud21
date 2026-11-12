@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { TranslateModule } from '@ngx-translate/core';
 import {
   SheetConfig,
   FlatField,
@@ -15,7 +16,7 @@ import {
 @Component({
   selector: 'app-shelves-panel',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgSelectModule],
+  imports: [TranslateModule, CommonModule, FormsModule, NgSelectModule],
   templateUrl: './shelves-panel.component.html',
   styleUrls: ['./shelves-panel.component.scss'],
 })
@@ -40,20 +41,20 @@ export class ShelvesPanelComponent {
 
   formatsByType: { [key: string]: { value: string; label: string }[] } = {
     number: [
-      { value: 'none', label: 'None' },
-      { value: 'number', label: 'Number' },
-      { value: 'currency', label: 'Currency' },
-      { value: 'percent', label: 'Percent' },
-      { value: 'custom', label: 'Custom' },
+      { value: 'none', label: 'CUSTOM_REPORTS.FORMAT.NONE' },
+      { value: 'number', label: 'CUSTOM_REPORTS.FORMAT.NUMBER' },
+      { value: 'currency', label: 'CUSTOM_REPORTS.FORMAT.CURRENCY' },
+      { value: 'percent', label: 'CUSTOM_REPORTS.FORMAT.PERCENT' },
+      { value: 'custom', label: 'CUSTOM_REPORTS.FORMAT.CUSTOM' },
     ],
     date: [
-      { value: 'none', label: 'None' },
-      { value: 'date', label: 'Date' },
-      { value: 'custom', label: 'Custom' },
+      { value: 'none', label: 'CUSTOM_REPORTS.FORMAT.NONE' },
+      { value: 'date', label: 'CUSTOM_REPORTS.FORMAT.DATE' },
+      { value: 'custom', label: 'CUSTOM_REPORTS.FORMAT.CUSTOM' },
     ],
     text: [
-      { value: 'none', label: 'None' },
-      { value: 'custom', label: 'Custom' },
+      { value: 'none', label: 'CUSTOM_REPORTS.FORMAT.NONE' },
+      { value: 'custom', label: 'CUSTOM_REPORTS.FORMAT.CUSTOM' },
     ],
   };
 
@@ -249,6 +250,12 @@ export class ShelvesPanelComponent {
     this.emitChange();
   }
 
+  // Rules are replaced with new objects on every edit; tracking by identity
+  // would rebuild the pill and close an open date picker mid-selection.
+  trackByIndex(index: number): number {
+    return index;
+  }
+
   isNoValueOp(rule: FilterRule): boolean {
     return rule.condition.type === 'isEmpty' || rule.condition.type === 'isNotEmpty';
   }
@@ -269,7 +276,7 @@ export class ShelvesPanelComponent {
     const rule = this.sheet.filterRules[index];
     if (!rule) return;
     let iso = val;
-    if (val && !val.includes('T')) {
+    if (rule.type === 'date' && val && !val.includes('T')) {
       try { iso = new Date(val + 'T00:00:00.000Z').toISOString(); } catch {}
     }
     const current = rule.condition.filter;
@@ -284,7 +291,7 @@ export class ShelvesPanelComponent {
     const rule = this.sheet.filterRules[index];
     if (!rule) return;
     let iso = val;
-    if (val && !val.includes('T')) {
+    if (rule.type === 'date' && val && !val.includes('T')) {
       try { iso = new Date(val + 'T23:59:59.999Z').toISOString(); } catch {}
     }
     const current = rule.condition.filter;
@@ -346,14 +353,18 @@ export class ShelvesPanelComponent {
 
   getBetweenStart(rule: FilterRule): string {
     const f = rule.condition.filter;
-    if (typeof f === 'object' && f && (f as any).start) return this.getDateDisplayValue((f as any).start);
+    if (typeof f === 'object' && f && (f as any).start) return this.betweenDisplay(rule, (f as any).start);
     return '';
   }
 
   getBetweenEnd(rule: FilterRule): string {
     const f = rule.condition.filter;
-    if (typeof f === 'object' && f && (f as any).end) return this.getDateDisplayValue((f as any).end);
+    if (typeof f === 'object' && f && (f as any).end) return this.betweenDisplay(rule, (f as any).end);
     return '';
+  }
+
+  private betweenDisplay(rule: FilterRule, val: string): string {
+    return rule.type === 'date' ? this.getDateDisplayValue(val) : val;
   }
 
   emitFilterGlue(): void {

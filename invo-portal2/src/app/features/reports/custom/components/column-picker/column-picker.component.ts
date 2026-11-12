@@ -1,18 +1,22 @@
 import { Component, Input, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { MODAL_DATA, MODAL_REF } from '@shared/modal/modal.tokens';
 import type { ModalRef } from '@shared/modal/modal.service';
 import { FlatField, ReportColumn } from '../../shared/models/custom-report.model';
 
+import { TranslateModule } from '@ngx-translate/core';
 /** Data passed to the column picker when opened via ModalService. */
-export interface ColumnPickerData { allFields: FlatField[]; columns: ReportColumn[]; }
+export interface ColumnPickerData {
+  allFields: FlatField[];
+  columns: ReportColumn[];
+}
 
 @Component({
   selector: 'app-column-picker',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgSelectModule],
+  imports: [TranslateModule, FormsModule, NgSelectModule],
   templateUrl: './column-picker.component.html',
   styleUrls: ['./column-picker.component.scss'],
 })
@@ -22,12 +26,12 @@ export class ColumnPickerComponent implements OnInit {
 
   // Internal working copy — changes only apply on "Done"
   workingColumns: ReportColumn[] = [];
-  fieldSearch = '';            // search on the left (available) panel
-  selectedSearch = '';         // search on the right (selected) panel
+  fieldSearch = ''; // search on the left (available) panel
+  selectedSearch = ''; // search on the right (selected) panel
 
   // Multi-select: click toggles membership in each panel's selection set.
-  selectedLeft = new Set<string>();   // by FlatField.fullId
-  selectedRight = new Set<string>();  // by ReportColumn.key
+  selectedLeft = new Set<string>(); // by FlatField.fullId
+  selectedRight = new Set<string>(); // by ReportColumn.key
 
   // invo-portal2 modal wiring (converted from ng-bootstrap's NgbActiveModal):
   // inputs arrive via MODAL_DATA and the result is returned through MODAL_REF.
@@ -56,38 +60,40 @@ export class ColumnPickerComponent implements OnInit {
 
   /** Select / clear every currently visible row on the left panel. */
   toggleSelectAllVisible(): void {
-    const visibleIds = this.availableFields.map(f => f.fullId);
-    const allSelected = visibleIds.length > 0 && visibleIds.every(id => this.selectedLeft.has(id));
-    if (allSelected) visibleIds.forEach(id => this.selectedLeft.delete(id));
-    else visibleIds.forEach(id => this.selectedLeft.add(id));
+    const visibleIds = this.availableFields.map((f) => f.fullId);
+    const allSelected =
+      visibleIds.length > 0 && visibleIds.every((id) => this.selectedLeft.has(id));
+    if (allSelected) visibleIds.forEach((id) => this.selectedLeft.delete(id));
+    else visibleIds.forEach((id) => this.selectedLeft.add(id));
   }
 
   get allVisibleSelected(): boolean {
     const v = this.availableFields;
-    return v.length > 0 && v.every(f => this.selectedLeft.has(f.fullId));
+    return v.length > 0 && v.every((f) => this.selectedLeft.has(f.fullId));
   }
 
   /** Right-panel columns filtered by the selected-search box. */
   get filteredSelected(): ReportColumn[] {
     const q = this.selectedSearch.trim().toLowerCase();
     if (!q) return this.workingColumns;
-    return this.workingColumns.filter(c =>
-      this.getFieldLabel(c.col).toLowerCase().includes(q) ||
-      this.getFieldTable(c.col).toLowerCase().includes(q)
+    return this.workingColumns.filter(
+      (c) =>
+        this.getFieldLabel(c.col).toLowerCase().includes(q) ||
+        this.getFieldTable(c.col).toLowerCase().includes(q),
     );
   }
 
   /** Select / clear every currently visible row on the right panel. */
   toggleSelectAllVisibleRight(): void {
-    const keys = this.filteredSelected.map(c => c.key);
-    const allSelected = keys.length > 0 && keys.every(k => this.selectedRight.has(k));
-    if (allSelected) keys.forEach(k => this.selectedRight.delete(k));
-    else keys.forEach(k => this.selectedRight.add(k));
+    const keys = this.filteredSelected.map((c) => c.key);
+    const allSelected = keys.length > 0 && keys.every((k) => this.selectedRight.has(k));
+    if (allSelected) keys.forEach((k) => this.selectedRight.delete(k));
+    else keys.forEach((k) => this.selectedRight.add(k));
   }
 
   get allVisibleSelectedRight(): boolean {
     const v = this.filteredSelected;
-    return v.length > 0 && v.every(c => this.selectedRight.has(c.key));
+    return v.length > 0 && v.every((c) => this.selectedRight.has(c.key));
   }
 
   get selectedIds(): string[] {
@@ -98,7 +104,7 @@ export class ColumnPickerComponent implements OnInit {
     return this.allFields.filter(
       (f) =>
         !this.selectedIds.includes(f.fullId) &&
-        (!this.fieldSearch || f.label.toLowerCase().includes(this.fieldSearch.toLowerCase()))
+        (!this.fieldSearch || f.label.toLowerCase().includes(this.fieldSearch.toLowerCase())),
     );
   }
 
@@ -134,7 +140,7 @@ export class ColumnPickerComponent implements OnInit {
   addHighlighted(): void {
     const ids = [...this.selectedLeft];
     if (ids.length === 0) return;
-    ids.forEach(id => this.addField(id));
+    ids.forEach((id) => this.addField(id));
     this.selectedLeft.clear();
   }
 
@@ -142,7 +148,7 @@ export class ColumnPickerComponent implements OnInit {
   removeHighlighted(): void {
     const keys = [...this.selectedRight];
     if (keys.length === 0) return;
-    keys.forEach(k => this.removeField(k));
+    keys.forEach((k) => this.removeField(k));
     this.selectedRight.clear();
   }
 
@@ -174,14 +180,10 @@ export class ColumnPickerComponent implements OnInit {
   }
 
   setAgg(key: string, agg: string): void {
-    this.workingColumns = this.workingColumns.map((c) =>
-      c.key === key ? { ...c, agg } : c
-    );
+    this.workingColumns = this.workingColumns.map((c) => (c.key === key ? { ...c, agg } : c));
   }
 
   setDatePart(key: string, datePart: string): void {
-    this.workingColumns = this.workingColumns.map((c) =>
-      c.key === key ? { ...c, datePart } : c
-    );
+    this.workingColumns = this.workingColumns.map((c) => (c.key === key ? { ...c, datePart } : c));
   }
 }

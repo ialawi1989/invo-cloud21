@@ -55,6 +55,10 @@ export interface FlatField extends DataSourceField {
    *  than a real column. Formula fields can only be used in filters; their
    *  SQL expression lives on the backend and is never sent to/from the client. */
   isFormula?: boolean;
+  /** v2 catalog: false when the backend refuses filters on this field. */
+  filterable?: boolean;
+  /** v2 catalog: false for ids/keys hidden by default in pickers. */
+  show?: boolean;
 }
 
 /**
@@ -141,14 +145,18 @@ export function formatValue(val: any, fmt: ColumnFormat | undefined, companySett
       const pattern = fmt.dateFormat || 'yyyy-MM-dd';
       const pad = (n: number) => String(n).padStart(2, '0');
       const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-      return pattern
-        .replace('yyyy', String(d.getFullYear()))
-        .replace('MM', pad(d.getMonth() + 1))
-        .replace('MMM', months[d.getMonth()])
-        .replace('dd', pad(d.getDate()))
-        .replace('HH', pad(d.getHours()))
-        .replace('mm', pad(d.getMinutes()))
-        .replace('ss', pad(d.getSeconds()));
+      // One pass over the tokens, longest first: chained replaces turned
+      // "MMM" into "<month number>M" because 'MM' matched inside it.
+      const tokens: Record<string, string> = {
+        yyyy: String(d.getFullYear()),
+        MMM: months[d.getMonth()],
+        MM: pad(d.getMonth() + 1),
+        dd: pad(d.getDate()),
+        HH: pad(d.getHours()),
+        mm: pad(d.getMinutes()),
+        ss: pad(d.getSeconds()),
+      };
+      return pattern.replace(/yyyy|MMM|MM|dd|HH|mm|ss/g, t => tokens[t]);
     } catch { return String(val); }
   }
 
@@ -168,6 +176,8 @@ export interface ReportColumn {
   hidden?: boolean;  // column visibility toggle
   alias?: string;    // custom display name for column header
   format?: ColumnFormat; // display formatter
+  /** With agg 'count': count distinct values of `col` (v2 countDistinct) instead of rows. */
+  distinct?: boolean;
 }
 
 /**
@@ -188,10 +198,10 @@ export interface ReportJoin {
 }
 
 export const JOIN_TYPES = [
-  { value: 'LEFT', label: 'Left Join' },
-  { value: 'RIGHT', label: 'Right Join' },
-  { value: 'INNER', label: 'Inner Join' },
-  { value: 'FULL', label: 'Full Join' },
+  { value: 'LEFT', label: 'CUSTOM_REPORTS.JOIN_TYPES.LEFT' },
+  { value: 'RIGHT', label: 'CUSTOM_REPORTS.JOIN_TYPES.RIGHT' },
+  { value: 'INNER', label: 'CUSTOM_REPORTS.JOIN_TYPES.INNER' },
+  { value: 'FULL', label: 'CUSTOM_REPORTS.JOIN_TYPES.FULL' },
 ];
 
 /** Filter rule matching backend query format */
@@ -269,7 +279,12 @@ export interface CustomReportRequest {
    * keeps the existing default (30) behaviour.
    */
   limit?: number | null;
-  offset?: number;
+  /**
+   * 1-based page number. The backend paginates with a `hasNext` cursor: it
+   * fetches `limit + 1` rows and reports whether more remain, rather than a
+   * total count. `offset` on the wire is derived from `page` server-side.
+   */
+  page?: number;
 }
 
 /** Snapshot for undo/redo (legacy) */
@@ -774,63 +789,63 @@ export interface ChartTypeDef {
 export const CHART_TYPES: ChartTypeDef[] = [
   {
     id: 'table',
-    label: 'Table',
+    label: 'CUSTOM_REPORTS.CHART_TYPES.TABLE.LABEL',
     paths: ['M3 5h18v14H3zM3 9h18M3 13h18M3 17h18M9 5v14M15 5v14'],
-    tooltip: 'Raw rows — every record shown as-is.',
-    note: 'Shows raw rows — every record exactly as it\'s stored, no grouping or aggregation. Best for inspecting source data.',
+    tooltip: 'CUSTOM_REPORTS.CHART_TYPES.TABLE.TOOLTIP',
+    note: 'CUSTOM_REPORTS.CHART_TYPES.TABLE.NOTE',
     isCommon: true,
   },
   {
     id: 'vertical-bar',
-    label: 'Bar',
+    label: 'CUSTOM_REPORTS.CHART_TYPES.VERTICAL_BAR.LABEL',
     paths: ['M4 20h4V10H4zM10 20h4V4h-4zM16 20h4v-8h-4z'],
-    tooltip: 'Compare measures across a dimension.',
-    note: 'Compares one or more measures across a single dimension. Put the category on the <strong>columns</strong> shelf and an aggregated measure (sum, count, avg…) on the <strong>rows</strong> shelf.',
+    tooltip: 'CUSTOM_REPORTS.CHART_TYPES.VERTICAL_BAR.TOOLTIP',
+    note: 'CUSTOM_REPORTS.CHART_TYPES.VERTICAL_BAR.NOTE',
     isCommon: true,
   },
   {
     id: 'horizontal-bar',
-    label: 'H-Bar',
+    label: 'CUSTOM_REPORTS.CHART_TYPES.HORIZONTAL_BAR.LABEL',
     paths: ['M4 4v4h10V4zM4 10v4h16V10zM4 16v4h8V16z'],
-    tooltip: 'Bars laid out horizontally — better for long category names.',
-    note: 'Horizontal bars — same data as <strong>Bar</strong>, but easier to read when category labels are long.',
+    tooltip: 'CUSTOM_REPORTS.CHART_TYPES.HORIZONTAL_BAR.TOOLTIP',
+    note: 'CUSTOM_REPORTS.CHART_TYPES.HORIZONTAL_BAR.NOTE',
   },
   {
     id: 'line',
-    label: 'Line',
+    label: 'CUSTOM_REPORTS.CHART_TYPES.LINE.LABEL',
     paths: ['M3 19L8 14L12 17L21 7'],
-    tooltip: 'Trends over an ordered dimension.',
-    note: 'Shows how a measure trends across an ordered dimension — usually a date. Put the time field on the <strong>columns</strong> shelf and the measure on the <strong>rows</strong> shelf. Add a field to <strong>Marks → Color</strong> for multiple lines.',
+    tooltip: 'CUSTOM_REPORTS.CHART_TYPES.LINE.TOOLTIP',
+    note: 'CUSTOM_REPORTS.CHART_TYPES.LINE.NOTE',
     isCommon: true,
   },
   {
     id: 'area',
-    label: 'Area',
+    label: 'CUSTOM_REPORTS.CHART_TYPES.AREA.LABEL',
     paths: ['M3 19L8 14L12 17L21 7V19H3Z'],
-    tooltip: 'Line chart with the area below filled in.',
-    note: 'Same shape as <strong>Line</strong>, with the area under the curve filled in to emphasise volume over time.',
+    tooltip: 'CUSTOM_REPORTS.CHART_TYPES.AREA.TOOLTIP',
+    note: 'CUSTOM_REPORTS.CHART_TYPES.AREA.NOTE',
   },
   {
     id: 'donut',
-    label: 'Donut',
+    label: 'CUSTOM_REPORTS.CHART_TYPES.DONUT.LABEL',
     paths: ['M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 15a5 5 0 1 1 5-5 5 5 0 0 1-5 5z'],
-    tooltip: 'Share of a total with a hollow center.',
-    note: 'A pie with a hole — same use as <strong>Pie</strong>. The center can show the grand total.',
+    tooltip: 'CUSTOM_REPORTS.CHART_TYPES.DONUT.TOOLTIP',
+    note: 'CUSTOM_REPORTS.CHART_TYPES.DONUT.NOTE',
   },
   {
     id: 'pie',
-    label: 'Pie',
+    label: 'CUSTOM_REPORTS.CHART_TYPES.PIE.LABEL',
     paths: ['M12 2a10 10 0 1 0 10 10h-10z', 'M12 2v10h10A10 10 0 0 0 12 2z'],
-    tooltip: 'Share of a total across a dimension.',
-    note: 'Shows each category\'s share of a total. Best with a small number of categories (5–7). For many categories, a <strong>Bar</strong> chart is easier to read.',
+    tooltip: 'CUSTOM_REPORTS.CHART_TYPES.PIE.TOOLTIP',
+    note: 'CUSTOM_REPORTS.CHART_TYPES.PIE.NOTE',
     isCommon: true,
   },
   {
     id: 'kpi',
-    label: 'KPI',
+    label: 'CUSTOM_REPORTS.CHART_TYPES.KPI.LABEL',
     paths: ['M3 3h18v18H3zM9 13h6M12 10v6'],
-    tooltip: 'A single aggregated number.',
-    note: 'A single aggregated number — sum / count / avg / max / min of one measure. No dimension needed. Use it on the dashboard for headline metrics.',
+    tooltip: 'CUSTOM_REPORTS.CHART_TYPES.KPI.TOOLTIP',
+    note: 'CUSTOM_REPORTS.CHART_TYPES.KPI.NOTE',
     isCommon: true,
   },
 ];
@@ -852,19 +867,19 @@ export const NAV_ITEMS: NavItem[] = [
 ];
 
 export const FILTER_OPERATORS = [
-  { value: 'equal', label: 'Equal' },
-  { value: 'notEqual', label: 'Not Equal' },
-  { value: 'contains', label: 'Contains' },
+  { value: 'equal', label: 'CUSTOM_REPORTS.OPERATORS.EQUAL' },
+  { value: 'notEqual', label: 'CUSTOM_REPORTS.OPERATORS.NOT_EQUAL' },
+  { value: 'contains', label: 'CUSTOM_REPORTS.OPERATORS.CONTAINS' },
   // 'beginsWith' is the backend's operator key for "starts with" (LIKE 'val%').
-  { value: 'beginsWith', label: 'Starts With' },
-  { value: 'endsWith', label: 'Ends With' },
-  { value: 'greater', label: 'Greater' },
-  { value: 'less', label: 'Less' },
+  { value: 'beginsWith', label: 'CUSTOM_REPORTS.OPERATORS.BEGINS_WITH' },
+  { value: 'endsWith', label: 'CUSTOM_REPORTS.OPERATORS.ENDS_WITH' },
+  { value: 'greater', label: 'CUSTOM_REPORTS.OPERATORS.GREATER' },
+  { value: 'less', label: 'CUSTOM_REPORTS.OPERATORS.LESS' },
   { value: 'greaterOrEqual', label: '≥' },
   { value: 'lessOrEqual', label: '≤' },
-  { value: 'between', label: 'Between' },
-  { value: 'isEmpty', label: 'Is Empty' },
-  { value: 'isNotEmpty', label: 'Is Not Empty' },
+  { value: 'between', label: 'CUSTOM_REPORTS.OPERATORS.BETWEEN' },
+  { value: 'isEmpty', label: 'CUSTOM_REPORTS.OPERATORS.IS_EMPTY' },
+  { value: 'isNotEmpty', label: 'CUSTOM_REPORTS.OPERATORS.IS_NOT_EMPTY' },
 ];
 
 /**

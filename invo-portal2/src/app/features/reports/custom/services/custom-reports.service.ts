@@ -214,20 +214,38 @@ export class CustomReportsService {
    * the backend's `formulas` array (authoritative) and falls back to the
    * developer registry. Only `key`, `name` and `type` are ever surfaced — the
    * SQL expression stays backend-side (see custom-reports-backend-api.md).
+   *
+   * Company custom fields (`entry.customFields`, e.g. Products' own
+   * admin-defined fields) are addressed and resolved by the backend through
+   * this exact same `Table.@key` formula mechanism — see
+   * CustomizeReportRepo.buildCustomFieldFormulas — so they're appended here
+   * rather than modeled as a separate field kind the builder would need to
+   * special-case.
    */
   private extractFormulas(entry: any, tableId: string): ReportFormula[] {
     const raw = Array.isArray(entry?.formulas) ? entry.formulas : null;
-    if (raw && raw.length > 0) {
-      return raw
-        .map((f: any) => ({
-          key: f.key || f.id || '',
-          name: f.name || f.label || f.key || '',
-          type: this.inferFieldType(f.type || f.dataType || 'number'),
-          ...(f.numberFormat ? { numberFormat: f.numberFormat } : {}),
-        }))
-        .filter((f: ReportFormula) => !!f.key);
-    }
-    return REPORT_FORMULAS[tableId] || [];
+    const predefined: ReportFormula[] = raw && raw.length > 0
+      ? raw
+          .map((f: any) => ({
+            key: f.key || f.id || '',
+            name: f.name || f.label || f.key || '',
+            type: this.inferFieldType(f.type || f.dataType || 'number'),
+            ...(f.numberFormat ? { numberFormat: f.numberFormat } : {}),
+          }))
+          .filter((f: ReportFormula) => !!f.key)
+      : (REPORT_FORMULAS[tableId] || []);
+
+    const customFields: ReportFormula[] = Array.isArray(entry?.customFields)
+      ? entry.customFields
+          .map((f: any) => ({
+            key: f.key || f.id || '',
+            name: f.name || f.label || f.key || '',
+            type: this.inferFieldType(f.type || f.dataType || 'text'),
+          }))
+          .filter((f: ReportFormula) => !!f.key)
+      : [];
+
+    return [...predefined, ...customFields];
   }
 
   // ─── Modules (saved report configs) ───────────────────────
@@ -497,7 +515,7 @@ export class CustomReportsService {
 
   // ─── Report Execution ─────────────────────────────────────
 
-  async getCustomizedReport(request: CustomReportRequest): Promise<{ rows: any[]; totalCount: number; groups?: any[] }> {
+  async getCustomizedReport(request: CustomReportRequest): Promise<{ rows: any[]; hasNext: boolean; groups?: any[] }> {
     const baseUrl = await this.ensureConfig();
 
     // Exact wire format required (from URL-encoded expected payload):
@@ -531,7 +549,9 @@ export class CustomReportsService {
       limit:   request.limit === null
                  ? ''
                  : String(request.limit || 30),
-      offset:  String(request.offset || 0),
+      // 1-based page number. The backend derives OFFSET = limit * (page - 1)
+      // and returns a `hasNext` flag instead of a total count.
+      page:    String(request.page || 1),
     };
 
     // Build form data
@@ -542,7 +562,7 @@ export class CustomReportsService {
 
     console.warn('[CustomReports] getCustomizedReport params:', params);
 
-    return new Promise<{ rows: any[]; totalCount: number; groups?: any[] }>((resolve) => {
+    return new Promise<{ rows: any[]; hasNext: boolean; groups?: any[] }>((resolve) => {
       this.http
         .post(`${baseUrl}accounts/reports/getCustomizedReport`, formData.toString(), {
           headers: this.getHeaders().set('Content-Type', 'application/x-www-form-urlencoded'),
@@ -557,7 +577,7 @@ export class CustomReportsService {
               }
               if (this.isFailureResponse(parsed)) {
                 console.error(`[CustomReports] getCustomizedReport failed: ${this.failureMessage(parsed, 'getCustomizedReport')}`);
-                resolve({ rows: [], totalCount: 0 });
+                resolve({ rows: [], hasNext: false });
                 return;
               }
               // Per the contract, the response body is a flat JSON array of rows
@@ -566,24 +586,27 @@ export class CustomReportsService {
               // fallback in case the backend ever changes shape.
               const container = parsed?.data;
               const rows = container?.dataSources || container || parsed || [];
-              const totalCount = container?.totalCount ?? -1; // -1 means server didn't send it
+              // hasNext cursor pagination: the backend fetches `limit + 1` rows
+              // and sets `hasNext` true when the extra row came back, i.e. more
+              // records follow this page. Missing/non-boolean → treat as no more.
+              const hasNext = container?.hasNext === true;
               // Group by shelf: backend returns groups[] with per-group rows +
               // subtotals + count. Surfaced only when present (normal mode unchanged).
               const groups = Array.isArray(container?.groups) ? container.groups : undefined;
               resolve({
                 rows: Array.isArray(rows) ? rows : [],
-                totalCount: typeof totalCount === 'number' ? totalCount : -1,
+                hasNext,
                 groups,
               });
             } catch (e) {
               console.error('[CustomReports] Response parse error:', e);
-              resolve({ rows: [], totalCount: 0 });
+              resolve({ rows: [], hasNext: false });
             }
           },
           error: (error) => {
             console.error('[CustomReports] getCustomizedReport error:', error?.error || error);
             this.handleAuthError(error);
-            resolve({ rows: [], totalCount: 0 });
+            resolve({ rows: [], hasNext: false });
           },
         });
     });

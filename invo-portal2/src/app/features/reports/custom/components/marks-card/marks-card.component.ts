@@ -1,7 +1,8 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { TranslateModule } from '@ngx-translate/core';
 import {
   MarkEncoding,
   MarkChannel,
@@ -21,13 +22,18 @@ interface MarkSlot {
  * for table and meaningless for KPI, so we hide the toggle there.
  */
 const LABEL_CAPABLE_CHART_TYPES = new Set<string>([
-  'vertical-bar', 'horizontal-bar', 'line', 'area', 'donut', 'pie',
+  'vertical-bar',
+  'horizontal-bar',
+  'line',
+  'area',
+  'donut',
+  'pie',
 ]);
 
 @Component({
   selector: 'app-marks-card',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgSelectModule],
+  imports: [TranslateModule, FormsModule, NgSelectModule],
   templateUrl: './marks-card.component.html',
   styleUrls: ['./marks-card.component.scss'],
 })
@@ -57,6 +63,9 @@ export class MarksCardComponent {
     this.showLabelsChange.emit(next);
   }
 
+  /** Collapses the card body to just its header (view-only state). */
+  collapsed = false;
+
   dragOverChannel: MarkChannel | null = null;
 
   // Only the Color channel is exposed — it's the one channel that's actually
@@ -65,26 +74,30 @@ export class MarksCardComponent {
   // rows). Size / Label / Tooltip / Shape were UI-only and removed; add them
   // back here if you wire them through to ApexCharts.
   slots: MarkSlot[] = [
-    { channel: 'color', label: 'Color', icon: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z' },
+    {
+      channel: 'color',
+      label: 'CUSTOM_REPORTS.MARKS.COLOR',
+      icon: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z',
+    },
   ];
 
   // Mark-type (local visual state — no data/service impact)
   markType = 'automatic';
   markTypes: { value: string; label: string }[] = [
-    { value: 'automatic', label: 'Automatic' },
-    { value: 'bar',       label: 'Bar' },
-    { value: 'line',      label: 'Line' },
-    { value: 'circle',    label: 'Circle' },
-    { value: 'square',    label: 'Square' },
-    { value: 'text',      label: 'Text' },
+    { value: 'automatic', label: 'CUSTOM_REPORTS.MARKS.AUTOMATIC' },
+    { value: 'bar', label: 'CUSTOM_REPORTS.MARKS.BAR' },
+    { value: 'line', label: 'CUSTOM_REPORTS.MARKS.LINE' },
+    { value: 'circle', label: 'CUSTOM_REPORTS.MARKS.CIRCLE' },
+    { value: 'square', label: 'CUSTOM_REPORTS.MARKS.SQUARE' },
+    { value: 'text', label: 'CUSTOM_REPORTS.MARKS.TEXT' },
   ];
 
   getMarkForChannel(channel: MarkChannel): MarkEncoding | undefined {
-    return this.marks.find(m => m.channel === channel);
+    return this.marks.find((m) => m.channel === channel);
   }
 
   getFieldLabel(col: string): string {
-    const f = this.allFields.find(x => x.fullId === col);
+    const f = this.allFields.find((x) => x.fullId === col);
     return f ? f.label : col;
   }
 
@@ -117,13 +130,13 @@ export class MarksCardComponent {
       key: Date.now() + '-mark-' + channel,
     };
 
-    const filtered = this.marks.filter(m => m.channel !== channel);
+    const filtered = this.marks.filter((m) => m.channel !== channel);
     this.marks = [...filtered, { channel, field: newCol }];
     this.marksChange.emit([...this.marks]);
   }
 
   removeMark(channel: MarkChannel): void {
-    this.marks = this.marks.filter(m => m.channel !== channel);
+    this.marks = this.marks.filter((m) => m.channel !== channel);
     this.marksChange.emit([...this.marks]);
   }
 }

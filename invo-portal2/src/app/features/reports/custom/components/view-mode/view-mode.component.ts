@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, DoCheck } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -13,14 +13,15 @@ import {
 import { ChartPreviewComponent } from '../chart-preview/chart-preview.component';
 import { PaginationComponent } from '../pagination/pagination.component';
 
+import { TranslateModule } from '@ngx-translate/core';
 @Component({
   selector: 'app-view-mode',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgSelectModule, ChartPreviewComponent, PaginationComponent],
+  imports: [TranslateModule, CommonModule, FormsModule, NgSelectModule, ChartPreviewComponent, PaginationComponent],
   templateUrl: './view-mode.component.html',
   styleUrls: ['./view-mode.component.scss'],
 })
-export class ViewModeComponent implements OnInit {
+export class ViewModeComponent implements OnInit, DoCheck {
   @Input() sheet!: SheetConfig;
   @Input() data: any[] = [];
   @Input() loading = false;
@@ -41,7 +42,10 @@ export class ViewModeComponent implements OnInit {
   @Input() groupedData: { value: any; count: number; len: number; subtotals: { [key: string]: number } }[] | null = null;
   @Input() groupFieldLabel = '';
   @Input() groupByKey: string | null = null;
-  @Input() totalRows = 0;
+  /** hasNext cursor pagination — forwarded to the pagination control. */
+  @Input() hasNext = false;
+  /** Rows on the current page, for the pagination range label. */
+  @Input() rowCount = 0;
   @Output() run = new EventEmitter<{ filters: FilterRule[]; glue: string; page: number; pageSize: number }>();
   @Output() pageChange = new EventEmitter<number>();
   @Output() pageSizeChange = new EventEmitter<number>();
@@ -60,8 +64,44 @@ export class ViewModeComponent implements OnInit {
   pendingGlue = ' AND ';
   hasPendingChanges = false;
 
+  /** Period shortcuts offered next to a date `between` filter. `custom` is not
+   *  a range of its own — it is what the dropdown shows once the two dates stop
+   *  matching any shortcut, so picking it leaves the dates untouched. */
+  readonly datePresets: { value: string; label: string }[] = [
+    { value: 'today',       label: 'CUSTOM_REPORTS.VIEW.PERIOD.TODAY' },
+    { value: 'yesterday',   label: 'CUSTOM_REPORTS.VIEW.PERIOD.YESTERDAY' },
+    { value: 'thisWeek',    label: 'CUSTOM_REPORTS.VIEW.PERIOD.THIS_WEEK' },
+    { value: 'lastWeek',    label: 'CUSTOM_REPORTS.VIEW.PERIOD.LAST_WEEK' },
+    { value: 'thisMonth',   label: 'CUSTOM_REPORTS.VIEW.PERIOD.THIS_MONTH' },
+    { value: 'lastMonth',   label: 'CUSTOM_REPORTS.VIEW.PERIOD.LAST_MONTH' },
+    { value: 'thisQuarter', label: 'CUSTOM_REPORTS.VIEW.PERIOD.THIS_QUARTER' },
+    { value: 'thisYear',    label: 'CUSTOM_REPORTS.VIEW.PERIOD.THIS_YEAR' },
+    { value: 'lastYear',    label: 'CUSTOM_REPORTS.VIEW.PERIOD.LAST_YEAR' },
+    { value: 'custom',      label: 'CUSTOM_REPORTS.VIEW.PERIOD.CUSTOM' },
+  ];
+
+  private syncedRules: FilterRule[] | null = null;
+  private syncedGlue: string | null = null;
+
   ngOnInit(): void {
-    this.pendingFilters = this.sheet.filterRules.map(r => ({ ...r, condition: { ...r.condition } }));
+    this.syncPendingFromSheet();
+  }
+
+  // The saved sheet can arrive (or be replaced after a save) once this view
+  // already exists, so a one-off copy in ngOnInit would leave the filters empty.
+  // Re-copy whenever the sheet's filters change, unless the user has unapplied edits.
+  ngDoCheck(): void {
+    if (this.hasPendingChanges) return;
+    if (this.sheet?.filterRules !== this.syncedRules || this.sheet?.filterGlue !== this.syncedGlue) {
+      this.syncPendingFromSheet();
+    }
+  }
+
+  private syncPendingFromSheet(): void {
+    if (!this.sheet) return;
+    this.syncedRules = this.sheet.filterRules;
+    this.syncedGlue = this.sheet.filterGlue;
+    this.pendingFilters = (this.sheet.filterRules || []).map(r => ({ ...r, condition: { ...r.condition } }));
     this.pendingGlue = this.sheet.filterGlue;
   }
 
@@ -119,7 +159,7 @@ export class ViewModeComponent implements OnInit {
     const rule = this.pendingFilters[index];
     if (!rule) return;
     let iso = val;
-    if (val && !val.includes('T')) {
+    if (rule.type === 'date' && val && !val.includes('T')) {
       try { iso = new Date(val + 'T00:00:00.000Z').toISOString(); } catch {}
     }
     const current = rule.condition.filter;
@@ -134,7 +174,7 @@ export class ViewModeComponent implements OnInit {
     const rule = this.pendingFilters[index];
     if (!rule) return;
     let iso = val;
-    if (val && !val.includes('T')) {
+    if (rule.type === 'date' && val && !val.includes('T')) {
       try { iso = new Date(val + 'T23:59:59.999Z').toISOString(); } catch {}
     }
     const current = rule.condition.filter;
@@ -191,6 +231,11 @@ export class ViewModeComponent implements OnInit {
     return rule.condition.type === 'between';
   }
 
+  // Keeps the row (and an open date picker) alive while its rule object is replaced.
+  trackByIndex(index: number): number {
+    return index;
+  }
+
   isNoValueOp(rule: FilterRule): boolean {
     return rule.condition.type === 'isEmpty' || rule.condition.type === 'isNotEmpty';
   }
@@ -208,13 +253,99 @@ export class ViewModeComponent implements OnInit {
 
   getBetweenStart(rule: FilterRule): string {
     const f = rule.condition.filter;
-    if (typeof f === 'object' && f && (f as any).start) return this.getDateDisplayValue((f as any).start);
+    if (typeof f === 'object' && f && (f as any).start) return rule.type === 'date' ? this.getDateDisplayValue((f as any).start) : (f as any).start;
     return '';
   }
 
   getBetweenEnd(rule: FilterRule): string {
     const f = rule.condition.filter;
-    if (typeof f === 'object' && f && (f as any).end) return this.getDateDisplayValue((f as any).end);
+    if (typeof f === 'object' && f && (f as any).end) return rule.type === 'date' ? this.getDateDisplayValue((f as any).end) : (f as any).end;
     return '';
+  }
+
+  // ─── Period (date range) ──────────────────────────────
+  //
+  // The reporting period is the one thing a report consumer routinely needs to
+  // change without editing the report: same columns, different month. Date
+  // values are therefore editable here while every other filter value stays a
+  // static chip — the field being filtered is still locked either way.
+
+  isDateRule(rule: FilterRule): boolean {
+    return rule?.type === 'date';
+  }
+
+  /** Which shortcut the rule's current start/end correspond to, or `custom`. */
+  presetForRule(rule: FilterRule): string {
+    const start = this.getBetweenStart(rule);
+    const end = this.getBetweenEnd(rule);
+    if (!start || !end) return 'custom';
+    const match = this.datePresets.find(p => {
+      const range = this.rangeForPreset(p.value);
+      return !!range && range.start === start && range.end === end;
+    });
+    return match ? match.value : 'custom';
+  }
+
+  applyDatePreset(index: number, preset: string): void {
+    const range = this.rangeForPreset(preset);
+    // `custom` means "whatever is in the two inputs" — nothing to compute.
+    if (!range) return;
+    this.updateBetweenStart(index, range.start);
+    this.updateBetweenEnd(index, range.end);
+  }
+
+  /** `YYYY-MM-DD` in the user's own timezone. Building the key from the local
+   *  parts rather than toISOString() keeps a date from sliding a day backwards
+   *  for anyone east of UTC. */
+  private toDateKey(d: Date): string {
+    const month = `${d.getMonth() + 1}`.padStart(2, '0');
+    const day = `${d.getDate()}`.padStart(2, '0');
+    return `${d.getFullYear()}-${month}-${day}`;
+  }
+
+  /** Weeks start Sunday, matching the fixed reports' date-picker presets. */
+  private rangeForPreset(preset: string): { start: string; end: string } | null {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const y = today.getFullYear();
+    const m = today.getMonth();
+
+    const shiftDays = (from: Date, days: number) => {
+      const d = new Date(from);
+      d.setDate(d.getDate() + days);
+      return d;
+    };
+    const range = (start: Date, end: Date) => ({ start: this.toDateKey(start), end: this.toDateKey(end) });
+    const startOfWeek = shiftDays(today, -today.getDay());
+
+    switch (preset) {
+      case 'today':
+        return range(today, today);
+      case 'yesterday': {
+        const d = shiftDays(today, -1);
+        return range(d, d);
+      }
+      case 'thisWeek':
+        return range(startOfWeek, shiftDays(startOfWeek, 6));
+      case 'lastWeek': {
+        const start = shiftDays(startOfWeek, -7);
+        return range(start, shiftDays(start, 6));
+      }
+      case 'thisMonth':
+        // Day 0 of the next month is the last day of this one, leap years included.
+        return range(new Date(y, m, 1), new Date(y, m + 1, 0));
+      case 'lastMonth':
+        return range(new Date(y, m - 1, 1), new Date(y, m, 0));
+      case 'thisQuarter': {
+        const qStart = Math.floor(m / 3) * 3;
+        return range(new Date(y, qStart, 1), new Date(y, qStart + 3, 0));
+      }
+      case 'thisYear':
+        return range(new Date(y, 0, 1), new Date(y, 11, 31));
+      case 'lastYear':
+        return range(new Date(y - 1, 0, 1), new Date(y - 1, 11, 31));
+      default:
+        return null;
+    }
   }
 }

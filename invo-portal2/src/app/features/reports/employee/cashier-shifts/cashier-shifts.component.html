@@ -34,6 +34,7 @@
       } @else if (report(); as r) {
         <header class="cs-head">
           <div><span class="cs-k">{{ 'REPORTS.CASHIER_SHIFTS.CASHIER' | translate }}</span><strong>{{ r.employeeName }}</strong></div>
+          @if (r.cashierNumber) { <div><span class="cs-k">{{ 'REPORTS.FLAT.COLUMNS.cashierNumber' | translate }}</span><strong>{{ r.cashierNumber }}</strong></div> }
           <div><span class="cs-k">{{ 'REPORTS.CASHIER_SHIFTS.BRANCH' | translate }}</span><strong>{{ r.branchName }}</strong></div>
         </header>
 

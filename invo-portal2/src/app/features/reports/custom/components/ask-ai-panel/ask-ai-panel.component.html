@@ -1,0 +1,190 @@
+<aside class="ai-panel" [attr.aria-label]="'CUSTOM_REPORTS.AI.TITLE' | translate">
+  <header class="ai-head">
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.8"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z" />
+      <path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z" />
+    </svg>
+    <h2>{{ 'CUSTOM_REPORTS.AI.TITLE' | translate }}</h2>
+    @if (turns.length) {
+      <button
+        type="button"
+        class="head-btn"
+        (click)="clear()"
+        [disabled]="pending"
+        [title]="'CUSTOM_REPORTS.AI.CLEAR' | translate"
+      >
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
+        </svg>
+      </button>
+    }
+    <button
+      type="button"
+      class="head-btn"
+      (click)="close.emit()"
+      [title]="'CUSTOM_REPORTS.COMMON.CLOSE' | translate"
+    >
+      ×
+    </button>
+  </header>
+
+  <div class="ai-thread" #thread>
+    <!-- Empty state -->
+    @if (!turns.length) {
+      <div class="ai-empty">
+        <p>{{ 'CUSTOM_REPORTS.AI.INTRO' | translate }}</p>
+        <div class="examples">
+          @for (ex of examples; track ex) {
+            <button type="button" class="example" (click)="useExample(ex)">
+              {{ ex | translate }}
+            </button>
+          }
+        </div>
+        <p class="fine">{{ 'CUSTOM_REPORTS.AI.PRIVACY' | translate }}</p>
+      </div>
+    }
+
+    @for (turn of turns; track $index; let i = $index) {
+      @if (turn.role === 'user') {
+        <div class="msg msg--user">{{ turn.text }}</div>
+      }
+      @if (turn.role === 'error') {
+        <div class="msg msg--error" role="alert">
+          {{ turn.text || ('CUSTOM_REPORTS.AI.FAILED' | translate) }}
+        </div>
+      }
+      @if (turn.role === 'assistant') {
+        <div class="msg msg--ai" [class.msg--nospec]="!turn.spec">
+          <p class="explanation">{{ turn.text }}</p>
+          @if (turn.spec) {
+            @if (previewColumns(turn).length) {
+              <div class="preview">
+                <table>
+                  <thead>
+                    <tr>
+                      @for (c of previewColumns(turn); track c) {
+                        <th>{{ c }}</th>
+                      }
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (row of previewRowsOf(turn); track row) {
+                      <tr>
+                        @for (c of previewColumns(turn); track c) {
+                          <td>{{ row[c] }}</td>
+                        }
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+            @if (previewHasMore(turn)) {
+              <p class="fine">{{ 'CUSTOM_REPORTS.AI.PREVIEW_MORE' | translate }}</p>
+            }
+            @if (turn.preview?.note) {
+              <p class="fine">{{ turn.preview?.note }}</p>
+            }
+            <div class="msg-actions">
+              @if (i === turns.length - 1) {
+                <span class="applied">{{ 'CUSTOM_REPORTS.AI.LOADED' | translate }}</span>
+              }
+              @if (i !== turns.length - 1) {
+                <button type="button" class="link-btn" (click)="reapply(turn)">
+                  {{ 'CUSTOM_REPORTS.AI.USE_THIS' | translate }}
+                </button>
+              }
+            </div>
+          }
+        </div>
+      }
+    }
+
+    @if (pending) {
+      <div class="msg msg--ai msg--pending" aria-live="polite">
+        <span class="dots"><i></i><i></i><i></i></span>
+        {{ 'CUSTOM_REPORTS.AI.WORKING' | translate }}
+      </div>
+    }
+  </div>
+
+  <form class="ai-compose" (ngSubmit)="send()">
+    @if (hasOpenReport) {
+      <label class="refine">
+        <input type="checkbox" name="refine" [(ngModel)]="refineCurrent" [disabled]="pending" />
+        {{ 'CUSTOM_REPORTS.AI.REFINE_CURRENT' | translate }}
+      </label>
+    }
+    <div class="compose-row">
+      <textarea
+        name="message"
+        rows="2"
+        [(ngModel)]="message"
+        (keydown)="onKeydown($event)"
+        [disabled]="pending"
+        [maxlength]="maxMessage"
+        [placeholder]="'CUSTOM_REPORTS.AI.PLACEHOLDER' | translate"
+      ></textarea>
+      <button
+        type="submit"
+        class="send-btn"
+        [disabled]="!canSend"
+        [title]="'CUSTOM_REPORTS.AI.SEND' | translate"
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M22 2L11 13M22 2l-7 20-4-9-9-4z" />
+        </svg>
+      </button>
+    </div>
+    @if (usage) {
+      <div class="usage" [class.usage--full]="allowanceUsedUp">
+        <div
+          class="usage-bar"
+          role="progressbar"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          [attr.aria-valuenow]="usagePercent"
+          [attr.aria-label]="'CUSTOM_REPORTS.AI.USAGE' | translate"
+        >
+          <span [style.width.%]="usagePercent"></span>
+        </div>
+        <p class="fine">
+          {{
+            (allowanceUsedUp
+              ? 'CUSTOM_REPORTS.AI.ALLOWANCE_USED_UP'
+              : 'CUSTOM_REPORTS.AI.USAGE_LABEL'
+            ) | translate: { percent: usagePercent }
+          }}
+        </p>
+      </div>
+    }
+    <p class="fine">{{ 'CUSTOM_REPORTS.AI.NEVER_SAVES' | translate }}</p>
+  </form>
+</aside>

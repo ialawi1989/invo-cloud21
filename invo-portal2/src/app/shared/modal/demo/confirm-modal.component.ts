@@ -11,6 +11,7 @@ export interface ConfirmModalData {
   /** Optional callout rendered below the message (e.g. a warning about side-effects). */
   note?:    string;
   confirm?: string;  // button label, default 'Confirm'
+  cancel?:  string;  // cancel button label, default 'Cancel'
   danger?:  boolean; // red confirm button
 }
 
@@ -44,7 +45,7 @@ export interface ConfirmModalData {
     </div>
 
     <app-modal-footer>
-      <button class="btn-cancel" (click)="ref.dismiss()">Cancel</button>
+      <button class="btn-cancel" (click)="ref.dismiss()">{{ data.cancel ?? 'Cancel' }}</button>
       <button
         class="btn-confirm"
         [class.btn-confirm--danger]="data.danger"

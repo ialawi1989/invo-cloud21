@@ -1,12 +1,13 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { SheetConfig } from '../../shared/models/custom-report.model';
 
+import { TranslateModule } from '@ngx-translate/core';
 @Component({
   selector: 'app-sheet-tabs',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [TranslateModule, FormsModule],
   templateUrl: './sheet-tabs.component.html',
   styleUrls: ['./sheet-tabs.component.scss'],
 })

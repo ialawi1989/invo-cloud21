@@ -1,0 +1,99 @@
+<div class="crl">
+  <!-- ── Breadcrumb ─────────────────────────────────────────────── -->
+  <nav class="crl-crumbs" aria-label="breadcrumb">
+    <a routerLink="/reports">{{ 'CUSTOM_REPORTS.LIST.CRUMB_REPORTS' | translate }}</a>
+    <svg class="flip-rtl" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+    <span>{{ 'CUSTOM_REPORTS.LIST.TITLE' | translate }}</span>
+  </nav>
+
+  <header class="crl-hero">
+    <div class="crl-heading">
+      <h1>{{ 'CUSTOM_REPORTS.LIST.TITLE' | translate }}</h1>
+      <p>{{ 'CUSTOM_REPORTS.LIST.SUBTITLE' | translate }}</p>
+    </div>
+  </header>
+
+  <!-- ── Toolbar: select all · delete selected · AI tokens · Add Report ── -->
+  <div class="crl-toolbar">
+    @if (canEdit && reports().length > 0) {
+      <label class="crl-selectall">
+        <input type="checkbox" [checked]="allSelected()" (change)="toggleSelectAll($event)" />
+        <span>{{ 'CUSTOM_REPORTS.LIST.SELECT_ALL' | translate }}</span>
+      </label>
+    }
+    @if (canEdit && selected().size > 0) {
+      <button type="button" class="crl-btn crl-btn--danger" [disabled]="bulkDeleting()" (click)="bulkDelete()">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        {{ 'CUSTOM_REPORTS.LIST.DELETE_SELECTED' | translate }} ({{ selected().size }})
+      </button>
+    }
+    <span class="crl-spacer"></span>
+    <!-- Any custom-reports viewer can manage their own AI access tokens -->
+    <button type="button" class="crl-btn" (click)="openMcpTokens($event)">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7.5" cy="15.5" r="4.5"/><path d="M10.7 12.3L21 2M16 7l3 3M14 9l2 2"/></svg>
+      {{ 'CUSTOM_REPORTS.LIST.AI_TOKENS' | translate }}
+    </button>
+    @if (canEdit && reports().length > 0) {
+      <button type="button" class="crl-btn crl-btn--primary" (click)="addReport($event)">
+        {{ 'CUSTOM_REPORTS.LIST.ADD_REPORT' | translate }}
+      </button>
+    }
+  </div>
+
+  <!-- ── Body ───────────────────────────────────────────────────── -->
+  @if (!loaded()) {
+    <app-report-skeleton [columns]="3" [rows]="5" />
+  } @else if (loadError()) {
+    <app-report-error [message]="loadError()" (retry)="load()" />
+  } @else if (reports().length === 0) {
+    <div class="crl-empty">
+      <app-report-empty titleKey="CUSTOM_REPORTS.LIST.EMPTY_TITLE" hintKey="CUSTOM_REPORTS.LIST.EMPTY_TEXT" />
+      @if (canEdit) {
+        <button type="button" class="crl-btn crl-btn--primary" (click)="addReport($event)">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          {{ 'CUSTOM_REPORTS.LIST.ADD_REPORT' | translate }}
+        </button>
+      }
+    </div>
+  } @else {
+    <ul class="crl-list">
+      @for (report of reports(); track report.slug) {
+        <li class="crl-row" tabindex="0" (click)="view(report)" (keydown.enter)="view(report)">
+          @if (canEdit) {
+            <input type="checkbox" class="crl-check" [checked]="isSelected(report)" (click)="toggleSelection(report, $event)" />
+          }
+          <span class="crl-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          </span>
+          <div class="crl-main">
+            <p class="crl-name" [class.crl-name--empty]="!report.name">{{ report.name || ('CUSTOM_REPORTS.LIST.NO_TITLE' | translate) }}</p>
+            <p class="crl-meta">{{ 'CUSTOM_REPORTS.LIST.UPDATED_ON' | translate }}: {{ report.updated }}</p>
+            @if (report.legacy) {
+              <!-- Saved by the previous builder; moved to v2 when next saved. -->
+              <span class="crl-tag" [title]="'CUSTOM_REPORTS.LIST.PREVIOUS_BUILDER_TIP' | translate">
+                {{ 'CUSTOM_REPORTS.LIST.PREVIOUS_BUILDER' | translate }}
+              </span>
+            }
+          </div>
+          <div class="crl-actions">
+            <button type="button" class="crl-icon-btn crl-star" [class.on]="isStarred(report)"
+                    [title]="'CUSTOM_REPORTS.LIST.FAVOURITES' | translate" [attr.aria-label]="'CUSTOM_REPORTS.LIST.FAVOURITES' | translate"
+                    [attr.aria-pressed]="isStarred(report)" (click)="toggleStar(report, $event)">
+              <svg viewBox="0 0 24 24" width="20" height="20" [attr.fill]="isStarred(report) ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </button>
+            @if (canEdit) {
+              <button type="button" class="crl-icon-btn" [title]="'CUSTOM_REPORTS.LIST.EDIT_REPORT' | translate"
+                      [attr.aria-label]="'CUSTOM_REPORTS.LIST.EDIT_REPORT' | translate" (click)="edit(report, $event)">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+              </button>
+              <button type="button" class="crl-icon-btn crl-del" [title]="'CUSTOM_REPORTS.LIST.DELETE_REPORT' | translate"
+                      [attr.aria-label]="'CUSTOM_REPORTS.LIST.DELETE_REPORT' | translate" (click)="deleteReport(report, $event)">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            }
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</div>

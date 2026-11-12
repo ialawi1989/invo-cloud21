@@ -1,7 +1,12 @@
 <!-- NgbModal provides the backdrop and centering -->
 <div class="modal-header">
-  <h4 class="modal-title">Show / Hide Columns</h4>
-  <button type="button" class="btn-close" aria-label="Close" (click)="cancel()"></button>
+  <h4 class="modal-title">{{ 'CUSTOM_REPORTS.PICKER.TITLE' | translate }}</h4>
+  <button
+    type="button"
+    class="btn-close"
+    [attr.aria-label]="'CUSTOM_REPORTS.COMMON.CLOSE' | translate"
+    (click)="cancel()"
+  ></button>
 </div>
 
 <div class="modal-body">
@@ -9,51 +14,99 @@
     <!-- LEFT: Available Columns -->
     <div class="panel panel-left">
       <div class="panel-title">
-        <span>Available Columns</span>
-        <span class="panel-count" *ngIf="selectedLeft.size > 0">{{ selectedLeft.size }} selected</span>
+        <span>{{ 'CUSTOM_REPORTS.PICKER.AVAILABLE' | translate }}</span>
+        @if (selectedLeft.size > 0) {
+          <span class="panel-count">{{
+            'CUSTOM_REPORTS.BUILDER.SELECTED_COUNT' | translate: { n: selectedLeft.size }
+          }}</span>
+        }
       </div>
       <div class="panel-search">
         <div class="search-box">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 21l-4.3-4.3M11 19a8 8 0 100-16 8 8 0 000 16z"/>
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M21 21l-4.3-4.3M11 19a8 8 0 100-16 8 8 0 000 16z" />
           </svg>
           <input
-            placeholder="Search"
+            [placeholder]="'CUSTOM_REPORTS.COMMON.SEARCH' | translate"
             [(ngModel)]="fieldSearch"
           />
         </div>
-        <button type="button" class="select-all-link" (click)="toggleSelectAllVisible()" *ngIf="availableFields.length > 0">
-          {{ allVisibleSelected ? 'Clear selection' : 'Select all' }}
-        </button>
+        @if (availableFields.length > 0) {
+          <button type="button" class="select-all-link" (click)="toggleSelectAllVisible()">
+            {{
+              (allVisibleSelected
+                ? 'CUSTOM_REPORTS.COMMON.CLEAR_SELECTION'
+                : 'CUSTOM_REPORTS.COMMON.SELECT_ALL'
+              ) | translate
+            }}
+          </button>
+        }
       </div>
       <div class="panel-list">
-        <ng-container *ngFor="let grp of groupedKeys">
+        @for (grp of groupedKeys; track grp) {
           <div class="group-label">{{ grp }}</div>
-          <div
-            *ngFor="let f of groupedAvailable[grp]"
-            class="list-item"
-            [class.highlighted]="selectedLeft.has(f.fullId)"
-            (click)="toggleLeft(f.fullId, $event)"
-            (dblclick)="addField(f.fullId)"
-          >
-            <input type="checkbox" class="row-check" [checked]="selectedLeft.has(f.fullId)" (click)="$event.stopPropagation(); toggleLeft(f.fullId)"/>
-            <span class="item-name">{{ f.label }}</span>
-          </div>
-        </ng-container>
-        <div *ngIf="availableFields.length === 0" class="empty-state">All columns selected</div>
+          @for (f of groupedAvailable[grp]; track f) {
+            <div
+              class="list-item"
+              [class.highlighted]="selectedLeft.has(f.fullId)"
+              (click)="toggleLeft(f.fullId, $event)"
+              (dblclick)="addField(f.fullId)"
+            >
+              <input
+                type="checkbox"
+                class="row-check"
+                [checked]="selectedLeft.has(f.fullId)"
+                (click)="$event.stopPropagation(); toggleLeft(f.fullId)"
+              />
+              <span class="item-name">{{ f.label }}</span>
+            </div>
+          }
+        }
+        @if (availableFields.length === 0) {
+          <div class="empty-state">{{ 'CUSTOM_REPORTS.PICKER.ALL_SELECTED' | translate }}</div>
+        }
       </div>
     </div>
 
     <!-- CENTER: Arrow buttons -->
     <div class="arrows">
-      <button class="arrow-btn" (click)="addHighlighted()" title="Add column →">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M9 18l6-6-6-6"/>
+      <button
+        class="arrow-btn"
+        (click)="addHighlighted()"
+        [title]="'CUSTOM_REPORTS.PICKER.ADD_COLUMN' | translate"
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M9 18l6-6-6-6" />
         </svg>
       </button>
-      <button class="arrow-btn" (click)="removeHighlighted()" title="← Remove column">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M15 18l-6-6 6-6"/>
+      <button
+        class="arrow-btn"
+        (click)="removeHighlighted()"
+        [title]="'CUSTOM_REPORTS.PICKER.REMOVE_COLUMN' | translate"
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M15 18l-6-6 6-6" />
         </svg>
       </button>
     </div>
@@ -61,72 +114,114 @@
     <!-- RIGHT: Selected Columns -->
     <div class="panel panel-right">
       <div class="panel-title">
-        <span>Selected Columns</span>
-        <span class="panel-count" *ngIf="selectedRight.size > 0">{{ selectedRight.size }} selected</span>
+        <span>{{ 'CUSTOM_REPORTS.PICKER.SELECTED' | translate }}</span>
+        @if (selectedRight.size > 0) {
+          <span class="panel-count">{{
+            'CUSTOM_REPORTS.BUILDER.SELECTED_COUNT' | translate: { n: selectedRight.size }
+          }}</span>
+        }
       </div>
       <div class="panel-search">
         <div class="search-box">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 21l-4.3-4.3M11 19a8 8 0 100-16 8 8 0 000 16z"/>
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M21 21l-4.3-4.3M11 19a8 8 0 100-16 8 8 0 000 16z" />
           </svg>
           <input
-            placeholder="Search"
+            [placeholder]="'CUSTOM_REPORTS.COMMON.SEARCH' | translate"
             [(ngModel)]="selectedSearch"
           />
         </div>
-        <button type="button" class="select-all-link" (click)="toggleSelectAllVisibleRight()" *ngIf="filteredSelected.length > 0">
-          {{ allVisibleSelectedRight ? 'Clear selection' : 'Select all' }}
-        </button>
+        @if (filteredSelected.length > 0) {
+          <button type="button" class="select-all-link" (click)="toggleSelectAllVisibleRight()">
+            {{
+              (allVisibleSelectedRight
+                ? 'CUSTOM_REPORTS.COMMON.CLEAR_SELECTION'
+                : 'CUSTOM_REPORTS.COMMON.SELECT_ALL'
+              ) | translate
+            }}
+          </button>
+        }
       </div>
       <div class="panel-list">
-        <div
-          *ngFor="let c of filteredSelected"
-          class="list-item"
-          [class.highlighted]="selectedRight.has(c.key)"
-          (click)="toggleRight(c.key)"
-        >
-          <input type="checkbox" class="row-check" [checked]="selectedRight.has(c.key)" (click)="$event.stopPropagation(); toggleRight(c.key)"/>
-          <div class="item-info">
-            <span class="item-name">{{ getFieldLabel(c.col) }}</span>
-            <span class="item-table">({{ getFieldTable(c.col) }})</span>
+        @for (c of filteredSelected; track c) {
+          <div
+            class="list-item"
+            [class.highlighted]="selectedRight.has(c.key)"
+            (click)="toggleRight(c.key)"
+          >
+            <input
+              type="checkbox"
+              class="row-check"
+              [checked]="selectedRight.has(c.key)"
+              (click)="$event.stopPropagation(); toggleRight(c.key)"
+            />
+            <div class="item-info">
+              <span class="item-name">{{ getFieldLabel(c.col) }}</span>
+              <span class="item-table">({{ getFieldTable(c.col) }})</span>
+            </div>
+            @if (isNumericField(c.col)) {
+              <ng-select
+                appendTo="body"
+                panelClass="cr-ng-select-dropdown"
+                class="agg-select"
+                [ngModel]="c.agg"
+                (ngModelChange)="setAgg(c.key, $event)"
+                (click)="$event.stopPropagation()"
+                [clearable]="false"
+              >
+                <ng-option [value]="''">{{ 'CUSTOM_REPORTS.PICKER.NO_AGG' | translate }}</ng-option>
+                <ng-option [value]="'sum'">SUM</ng-option>
+                <ng-option [value]="'count'">COUNT</ng-option>
+                <ng-option [value]="'avg'">AVG</ng-option>
+                <ng-option [value]="'max'">MAX</ng-option>
+                <ng-option [value]="'min'">MIN</ng-option>
+              </ng-select>
+            }
+            @if (isDateField(c.col)) {
+              <ng-select
+                appendTo="body"
+                panelClass="cr-ng-select-dropdown"
+                class="agg-select"
+                [ngModel]="c.datePart"
+                (ngModelChange)="setDatePart(c.key, $event)"
+                (click)="$event.stopPropagation()"
+                [clearable]="false"
+              >
+                <ng-option [value]="''">{{ 'CUSTOM_REPORTS.PICKER.RAW' | translate }}</ng-option>
+                <ng-option [value]="'day'">{{ 'CUSTOM_REPORTS.PICKER.DAY' | translate }}</ng-option>
+                <ng-option [value]="'month'">{{
+                  'CUSTOM_REPORTS.PICKER.MONTH' | translate
+                }}</ng-option>
+                <ng-option [value]="'year'">{{
+                  'CUSTOM_REPORTS.PICKER.YEAR' | translate
+                }}</ng-option>
+                <ng-option [value]="'yearmonth'">{{
+                  'CUSTOM_REPORTS.PICKER.YEAR_MONTH' | translate
+                }}</ng-option>
+              </ng-select>
+            }
           </div>
-          <ng-select appendTo="body" panelClass="cr-ng-select-dropdown"
-            *ngIf="isNumericField(c.col)"
-            class="agg-select"
-            [ngModel]="c.agg"
-            (ngModelChange)="setAgg(c.key, $event)"
-            (click)="$event.stopPropagation()"
-            [clearable]="false"
-          >
-            <ng-option [value]="''">No Agg</ng-option>
-            <ng-option [value]="'sum'">SUM</ng-option>
-            <ng-option [value]="'count'">COUNT</ng-option>
-            <ng-option [value]="'avg'">AVG</ng-option>
-            <ng-option [value]="'max'">MAX</ng-option>
-            <ng-option [value]="'min'">MIN</ng-option>
-          </ng-select>
-          <ng-select appendTo="body" panelClass="cr-ng-select-dropdown"
-            *ngIf="isDateField(c.col)"
-            class="agg-select"
-            [ngModel]="c.datePart"
-            (ngModelChange)="setDatePart(c.key, $event)"
-            (click)="$event.stopPropagation()"
-            [clearable]="false"
-          >
-            <ng-option [value]="''">Raw</ng-option>
-            <ng-option [value]="'day'">Day</ng-option>
-            <ng-option [value]="'month'">Month</ng-option>
-            <ng-option [value]="'year'">Year</ng-option>
-            <ng-option [value]="'yearmonth'">Year-Month</ng-option>
-          </ng-select>
-        </div>
-        <div *ngIf="workingColumns.length === 0" class="empty-state">Click → to add columns</div>
+        }
+        @if (workingColumns.length === 0) {
+          <div class="empty-state">{{ 'CUSTOM_REPORTS.PICKER.CLICK_TO_ADD' | translate }}</div>
+        }
       </div>
     </div>
   </div>
 </div>
 
 <div class="modal-footer">
-  <button type="button" class="btn btn-outline-secondary" (click)="cancel()">Cancel</button>
-  <button type="button" class="btn btn-primary" (click)="done()">Done</button>
+  <button type="button" class="btn btn-outline-secondary" (click)="cancel()">
+    {{ 'CUSTOM_REPORTS.COMMON.CANCEL' | translate }}
+  </button>
+  <button type="button" class="btn btn-primary" (click)="done()">
+    {{ 'CUSTOM_REPORTS.COMMON.DONE' | translate }}
+  </button>
 </div>

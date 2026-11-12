@@ -264,6 +264,12 @@ $rad-input:  6px;
     .ng-clear-wrapper { display: none; }
   }
 }
+// A native date input needs ~130px to show a full date; the flexible
+// .filter-val (min 70px) clipped it and hid the picker icon.
+.filter-val[type='date'] {
+  flex: 0 0 auto; width: 132px; min-width: 132px;
+  height: 28px; padding: 3px 8px; box-sizing: border-box;
+}
 .between-sep {
   font-size: 12px; color: $ink-3; flex-shrink: 0;
 }
@@ -288,6 +294,13 @@ $rad-input:  6px;
   font-size: 10px; font-weight: 500;
   color: $ink-4;
   text-transform: uppercase; letter-spacing: 0.5px;
+}
+.popover-path {
+  display: block; margin-top: 3px; padding: 5px 8px;
+  font-family: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+  font-size: 12px; color: $ink;
+  background: #f5f5f4; border: $border-rule; border-radius: $rad-input;
+  user-select: all; word-break: break-all;
 }
 .popover-input,
 .popover-select {

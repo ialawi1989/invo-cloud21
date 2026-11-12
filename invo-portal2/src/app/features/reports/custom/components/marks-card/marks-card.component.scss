@@ -49,8 +49,21 @@ $rad-card:   10px;
 }
 
 .marks-head {
-  display: flex; align-items: center;
+  display: flex; align-items: center; gap: 6px;
+  width: 100%;
   padding: 4px 6px;
+  background: none; border: 0; cursor: pointer; text-align: start;
+  &:hover .marks-head-label { color: $ink; }
+}
+.marks-chevron {
+  flex-shrink: 0; color: $ink-3; transition: transform .15s;
+  &.is-collapsed { transform: rotate(-90deg); }
+}
+.marks-head-summary {
+  margin-inline-start: auto;
+  min-width: 0; max-width: 90px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: 11px; color: $teal-dark;
 }
 .marks-head-label {
   font-size: 11px; font-weight: 700;
@@ -120,6 +133,11 @@ $rad-card:   10px;
 }
 .channel-empty {
   font-size: 11px; color: $ink-3; font-weight: 500;
+}
+
+.channel-hint {
+  margin-top: 4px;
+  font-size: 11px; line-height: 1.4; color: $ink-3;
 }
 
 .channel-pill {

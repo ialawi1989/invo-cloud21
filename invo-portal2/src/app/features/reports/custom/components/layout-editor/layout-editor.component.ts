@@ -1,10 +1,19 @@
 import { Component, EventEmitter, Inject, Input, OnDestroy, OnInit, Output } from '@angular/core';
-import { CommonModule, DOCUMENT } from '@angular/common';
+import { DOCUMENT } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { CdkDragDrop, DragDropModule, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
+import {
+  CdkDragDrop,
+  DragDropModule,
+  moveItemInArray,
+  transferArrayItem,
+} from '@angular/cdk/drag-drop';
 import { DashboardRow, DashboardWidgets } from '../../models/dashboard-layout.model';
 
-export interface ColSpanOption { value: number; label: string; desc?: string; }
+export interface ColSpanOption {
+  value: number;
+  label: string;
+  desc?: string;
+}
 
 const DEFAULT_COLSPAN_OPTIONS: ColSpanOption[] = [
   { value: 3, label: '1/4', desc: '25%' },
@@ -27,7 +36,7 @@ const DEFAULT_COLSPAN_OPTIONS: ColSpanOption[] = [
 @Component({
   selector: 'app-layout-editor',
   standalone: true,
-  imports: [CommonModule, TranslateModule, DragDropModule],
+  imports: [TranslateModule, DragDropModule],
   templateUrl: './layout-editor.component.html',
   styleUrls: ['./layout-editor.component.scss'],
 })
@@ -68,7 +77,7 @@ export class LayoutEditorComponent implements OnInit, OnDestroy {
 
   removeRow(index: number): void {
     const row = this.rows[index];
-    row.widgets.forEach(w => this.widgetRemoved.emit(w));
+    row.widgets.forEach((w) => this.widgetRemoved.emit(w));
     this.rows.splice(index, 1);
     if (this.rows.length === 0) this.rows.push(new DashboardRow());
     this.rowsChange.emit(this.rows);
@@ -92,7 +101,7 @@ export class LayoutEditorComponent implements OnInit, OnDestroy {
 
   // ─── Drag & drop ─────────────────────────────────────
   getConnectedRowIds(currentRowId: string): string[] {
-    return this.rows.filter(r => r.id !== currentRowId).map(r => r.id);
+    return this.rows.filter((r) => r.id !== currentRowId).map((r) => r.id);
   }
 
   dropRow(event: CdkDragDrop<DashboardRow[]>): void {
@@ -105,9 +114,19 @@ export class LayoutEditorComponent implements OnInit, OnDestroy {
     if (event.previousContainer === event.container) {
       moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
     } else {
-      transferArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex);
+      transferArrayItem(
+        event.previousContainer.data,
+        event.container.data,
+        event.previousIndex,
+        event.currentIndex,
+      );
     }
-    this.rows.forEach(row => row.widgets.forEach((w, i) => { w.order = i; w.rowId = row.id; }));
+    this.rows.forEach((row) =>
+      row.widgets.forEach((w, i) => {
+        w.order = i;
+        w.rowId = row.id;
+      }),
+    );
     this.rowsChange.emit(this.rows);
   }
 

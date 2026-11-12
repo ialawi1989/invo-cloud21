@@ -1,54 +1,44 @@
-import { Component, Input, Output, EventEmitter, OnChanges } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
+
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 
+import { TranslateModule } from '@ngx-translate/core';
 @Component({
   selector: 'app-report-pagination',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgSelectModule],
+  imports: [TranslateModule, FormsModule, NgSelectModule],
   templateUrl: './pagination.component.html',
   styleUrls: ['./pagination.component.scss'],
 })
-export class PaginationComponent implements OnChanges {
-  @Input() totalRows = 0;
+export class PaginationComponent {
+  /** Rows on the CURRENT page — drives the range label (no total count). */
+  @Input() rowCount = 0;
+  /** True when the backend signalled more records follow this page. */
+  @Input() hasNext = false;
   @Input() pageSize = 25;
   @Input() currentPage = 1;
   @Output() pageChange = new EventEmitter<number>();
   @Output() pageSizeChange = new EventEmitter<number>();
 
   pageSizes = [10, 25, 50, 100, 200];
-  totalPages = 1;
-
-  ngOnChanges(): void {
-    this.totalPages = Math.max(1, Math.ceil(this.totalRows / this.pageSize));
-    if (this.currentPage > this.totalPages) {
-      this.currentPage = this.totalPages;
-    }
-  }
 
   get startRow(): number {
-    return this.totalRows === 0 ? 0 : (this.currentPage - 1) * this.pageSize + 1;
+    return this.rowCount === 0 ? 0 : (this.currentPage - 1) * this.pageSize + 1;
   }
 
   get endRow(): number {
-    return Math.min(this.currentPage * this.pageSize, this.totalRows);
+    return (this.currentPage - 1) * this.pageSize + this.rowCount;
   }
 
   goToPage(page: number): void {
-    if (page < 1 || page > this.totalPages || page === this.currentPage) return;
+    if (page < 1 || page === this.currentPage) return;
+    // No total is known — forward moves are gated on hasNext.
+    if (page > this.currentPage && !this.hasNext) return;
     this.pageChange.emit(page);
   }
 
   onPageSizeChange(size: number): void {
     this.pageSizeChange.emit(size);
-  }
-
-  get visiblePages(): number[] {
-    const pages: number[] = [];
-    const start = Math.max(1, this.currentPage - 2);
-    const end = Math.min(this.totalPages, start + 4);
-    for (let i = start; i <= end; i++) pages.push(i);
-    return pages;
   }
 }

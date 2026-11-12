@@ -3,6 +3,7 @@ import { CanActivateFn, Routes, UrlMatcher } from '@angular/router';
 import { findBoReport } from './business-overview/config/business-overview.config';
 import { LanguageService } from '@core/i18n/language.service';
 import { privilegeGuard } from '@core/guards/privilege.guard';
+import { customReportsViewGuard } from './custom/custom-reports.routes';
 
 // ── URL pattern ──────────────────────────────────────────────────────────────
 // /reports                 → the reports catalog (cards + tabs + search)
@@ -58,10 +59,11 @@ export const REPORTS_ROUTES: Routes = [
     data: { permissionPath: 'reportsSecurity.actions.view.access' },
   },
   {
-    // The custom-report builder (migrated from the legacy reports-system).
-    // Full-screen, no app chrome — the builder owns the whole viewport.
-    path: 'builder',
-    loadChildren: () =>
-      import('./custom/custom-reports.routes').then(m => m.CUSTOM_REPORTS_ROUTES),
+    // The saved custom reports list (the legacy "Custom Report" tab): select,
+    // favourite, edit, delete, add, AI access tokens. Edit implies View.
+    path: 'custom',
+    canActivate: [translationsLoaded, customReportsViewGuard],
+    loadComponent: () =>
+      import('./custom/pages/custom-reports-list/custom-reports-list.component').then(m => m.CustomReportsListComponent),
   },
 ];

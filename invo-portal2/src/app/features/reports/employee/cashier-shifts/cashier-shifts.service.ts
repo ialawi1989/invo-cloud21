@@ -14,7 +14,7 @@ export interface TenderRow { paymentMethodName: string; total: N; refund?: N; eq
 export interface ShortOverRow { paymentMethodName: string; expected: N; countAmount: N; shortOver: N; }
 /** One shift's report. */
 export interface CashierShiftReport {
-  employeeName: string; branchName: string; cashierIn: string | null; cashierOut: string | null;
+  employeeName: string; cashierNumber?: string | null; branchName: string; cashierIn: string | null; cashierOut: string | null;
   totalOrders: N; openingBalance: N; totalPayments: N; totalRefunds: N; totalPayout: N; closingBalance: N;
   paymentByTender: TenderRow[]; shortOver: ShortOverRow[];
 }

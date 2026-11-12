@@ -1,5 +1,13 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnChanges,
+  SimpleChanges,
+  inject,
+} from '@angular/core';
+
 import { NgApexchartsModule } from 'ng-apexcharts';
 import { CHART_COLORS, ColumnFormat, formatValue } from '../../shared/models/custom-report.model';
 import {
@@ -11,6 +19,7 @@ import {
 } from '../../shared/marks/field-patterns';
 import { CompanyService } from '@core/auth/company.service';
 
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 // ─── Pre-computed view models (used directly in template, no function calls) ──
 
 interface BarItem {
@@ -73,12 +82,14 @@ interface LegendItem {
 @Component({
   selector: 'app-chart-preview',
   standalone: true,
-  imports: [CommonModule, NgApexchartsModule],
+  imports: [TranslateModule, NgApexchartsModule],
   templateUrl: './chart-preview.component.html',
   styleUrls: ['./chart-preview.component.scss'],
 })
 export class ChartPreviewComponent implements OnChanges {
   private company = inject(CompanyService);
+
+  constructor(private translate: TranslateService) {}
 
   @Input() data: any[] = [];
   @Input() chartType = 'vertical-bar';
@@ -120,12 +131,24 @@ export class ChartPreviewComponent implements OnChanges {
    */
   @Input() hasShelfFields = false;
   /**
+   * Shelf fields the shown results don't include yet (added since the last
+   * run). The Table lists them as empty columns marked "Run to update".
+   */
+  @Input() pendingColumns: { key: string; label: string }[] = [];
+
+  /** Nothing has been run for these fields yet: show just their headers. */
+  get pendingOnly(): boolean {
+    return !this.hasData && this.chartType === 'table' && this.pendingColumns.length > 0;
+  }
+  /**
    * Group by shelf result. When set (Table only) the table renders grouped:
    * a group-header row, the group's detail rows, then a subtotal row — driven
    * by the backend. `len` = rows for this group in the current page slice (used
    * to slice `tableRows`); `count` = the full group size (shown in the badge).
    */
-  @Input() groupedData: { value: any; count: number; len: number; subtotals: { [key: string]: number } }[] | null = null;
+  @Input() groupedData:
+    | { value: any; count: number; len: number; subtotals: { [key: string]: number } }[]
+    | null = null;
   @Input() groupFieldLabel = '';
   /** Data key of the group-by column. When it's also a displayed column its
    *  value is shown only in the group header and blanked in the detail rows
@@ -148,7 +171,7 @@ export class ChartPreviewComponent implements OnChanges {
   maxVal = 1;
   total = 0;
   fmtTotal = '0';
-  yTicks: string[] = [];  // pre-formatted
+  yTicks: string[] = []; // pre-formatted
   yTickCount = 0;
 
   // Bar charts
@@ -169,7 +192,8 @@ export class ChartPreviewComponent implements OnChanges {
 
   // Table
   cachedTableKeys: string[] = [];
-  tableHeaders: { key: string; label: string; isNum: boolean; sortDir: 'asc' | 'desc' | null }[] = [];
+  tableHeaders: { key: string; label: string; isNum: boolean; sortDir: 'asc' | 'desc' | null }[] =
+    [];
   tableRows: TableRow[] = [];
 
   // Grouped table (Group by shelf)
@@ -179,6 +203,8 @@ export class ChartPreviewComponent implements OnChanges {
     groupColIdx: number;
     rows: TableRow[];
     totalCells: { value: string; isNum: boolean; isLabel: boolean }[];
+    /** False when no displayed column is numeric, so there is nothing to total. */
+    hasTotals: boolean;
   }[] = [];
 
   // Pivot
@@ -205,7 +231,6 @@ export class ChartPreviewComponent implements OnChanges {
   // True when the current chartType should render via apex (vs. KPI/table/pivot)
   isApexChart = false;
 
-
   // ─── Rebuild everything on input change ────────────
 
   ngOnChanges(_changes: SimpleChanges): void {
@@ -230,18 +255,19 @@ export class ChartPreviewComponent implements OnChanges {
       if (!tabularTypes.includes(this.chartType)) {
         if (!this.measKeys?.length) {
           this.chartUnsupported = true;
-          this.chartUnsupportedReason =
-            'This chart needs at least one numeric measure on the rows shelf. Add a field with an aggregation (sum, count, avg…) to plot.';
+          this.chartUnsupportedReason = 'CUSTOM_REPORTS.PREVIEW.NEEDS_MEASURE';
         } else if (needsDimAndMeas.includes(this.chartType) && !this.dimKey) {
           this.chartUnsupported = true;
-          this.chartUnsupportedReason =
-            'This chart needs a dimension on the columns shelf in addition to a measure.';
+          this.chartUnsupportedReason = 'CUSTOM_REPORTS.PREVIEW.NEEDS_DIMENSION';
         }
       }
     }
 
     if (this.hasChartData) {
-      this.maxVal = Math.max(...this.data.flatMap(d => this.measKeys.map(k => this.toNum(d[k]))), 1);
+      this.maxVal = Math.max(
+        ...this.data.flatMap((d) => this.measKeys.map((k) => this.toNum(d[k]))),
+        1,
+      );
       const vk = this.measKeys[0] || 'value';
       this.total = this.data.reduce((s, d) => s + this.toNum(d[vk]), 0);
       this.fmtTotal = this.fmt(this.total);
@@ -272,7 +298,10 @@ export class ChartPreviewComponent implements OnChanges {
   private buildApexOptions(): void {
     const apexTypes = ['vertical-bar', 'horizontal-bar', 'line', 'area', 'donut', 'pie'];
     this.isApexChart = this.hasChartData && apexTypes.includes(this.chartType);
-    if (!this.isApexChart) { this.apexOptions = null; return; }
+    if (!this.isApexChart) {
+      this.apexOptions = null;
+      return;
+    }
 
     const dk = this.dimKey || '';
     const fmt = (v: any) => this.fmt(this.toNum(v));
@@ -287,17 +316,40 @@ export class ChartPreviewComponent implements OnChanges {
     if (this.chartType === 'donut' || this.chartType === 'pie') {
       const vk = this.measKeys[0] || 'value';
       this.apexOptions = {
-        chart: { type: this.chartType, height: '100%', toolbar: { show: false }, fontFamily: 'Inter, system-ui, sans-serif' },
-        series: this.data.map(d => this.toNum(d[vk])),
-        labels: this.data.map(d => String(d[dk] ?? '')),
+        chart: {
+          type: this.chartType,
+          height: '100%',
+          toolbar: { show: false },
+          fontFamily: 'Inter, system-ui, sans-serif',
+        },
+        series: this.data.map((d) => this.toNum(d[vk])),
+        labels: this.data.map((d) => String(d[dk] ?? '')),
         colors: this.colors,
         legend: { position: 'bottom', fontSize: '12px', fontWeight: 500 },
-        dataLabels: { enabled: labelsEnabledFor(true), style: { fontSize: '11px', fontWeight: 600 } },
+        dataLabels: {
+          enabled: labelsEnabledFor(true),
+          style: { fontSize: '11px', fontWeight: 600 },
+        },
         stroke: { width: 2, colors: ['#fff'] },
         tooltip: { y: { formatter: (val: number) => fmt(val) } },
-        plotOptions: this.chartType === 'donut' ? {
-          pie: { donut: { size: '65%', labels: { show: true, total: { show: true, label: 'Total', formatter: () => this.fmtTotal } } } }
-        } : {},
+        plotOptions:
+          this.chartType === 'donut'
+            ? {
+                pie: {
+                  donut: {
+                    size: '65%',
+                    labels: {
+                      show: true,
+                      total: {
+                        show: true,
+                        label: this.translate.instant('CUSTOM_REPORTS.PREVIEW.TOTAL'),
+                        formatter: () => this.fmtTotal,
+                      },
+                    },
+                  },
+                },
+              }
+            : {},
         responsive: [{ breakpoint: 600, options: { legend: { position: 'bottom' } } }],
       };
       return;
@@ -306,16 +358,15 @@ export class ChartPreviewComponent implements OnChanges {
     // ── Bar / Line / Area share categorical xaxis + named series ────────
     const isHorizontal = this.chartType === 'horizontal-bar';
     const apexType: 'bar' | 'line' | 'area' =
-      this.chartType === 'line' ? 'line' :
-      this.chartType === 'area' ? 'area' : 'bar';
+      this.chartType === 'line' ? 'line' : this.chartType === 'area' ? 'area' : 'bar';
 
-    const categories = this.data.map(d => String(d[dk] ?? ''));
+    const categories = this.data.map((d) => String(d[dk] ?? ''));
     let series: { name: string; data: number[] }[];
 
     if (this.colorField && this.hasColorSeries) {
       // One series per distinct colorField value (matches the old multi-line behavior).
       const groups = new Map<string, any[]>();
-      this.data.forEach(row => {
+      this.data.forEach((row) => {
         const key = String(row[this.colorField!] ?? 'Other');
         if (!groups.has(key)) groups.set(key, []);
         groups.get(key)!.push(row);
@@ -323,16 +374,16 @@ export class ChartPreviewComponent implements OnChanges {
       const vk = this.measKeys[0] || 'value';
       series = [...groups.entries()].map(([name, rows]) => ({
         name,
-        data: categories.map(cat => {
-          const match = rows.find(r => String(r[dk] ?? '') === cat);
+        data: categories.map((cat) => {
+          const match = rows.find((r) => String(r[dk] ?? '') === cat);
           return match ? this.toNum(match[vk]) : 0;
         }),
       }));
     } else {
       // One series per measure (sum/avg/etc.).
-      series = this.measKeys.map(k => ({
+      series = this.measKeys.map((k) => ({
         name: this.labelFor(k),
-        data: this.data.map(d => this.toNum(d[k])),
+        data: this.data.map((d) => this.toNum(d[k])),
       }));
     }
 
@@ -351,10 +402,19 @@ export class ChartPreviewComponent implements OnChanges {
         curve: 'smooth',
         width: apexType === 'line' ? 3 : apexType === 'area' ? 2 : 0,
       },
-      fill: apexType === 'area'
-        ? { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05, stops: [0, 100] } }
-        : { opacity: 1 },
-      markers: { size: (apexType === 'line' || apexType === 'area') ? 4 : 0, strokeWidth: 2, strokeColors: '#fff', hover: { size: 6 } },
+      fill:
+        apexType === 'area'
+          ? {
+              type: 'gradient',
+              gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05, stops: [0, 100] },
+            }
+          : { opacity: 1 },
+      markers: {
+        size: apexType === 'line' || apexType === 'area' ? 4 : 0,
+        strokeWidth: 2,
+        strokeColors: '#fff',
+        hover: { size: 6 },
+      },
       plotOptions: {
         bar: {
           horizontal: isHorizontal,
@@ -372,6 +432,10 @@ export class ChartPreviewComponent implements OnChanges {
         background: { enabled: true, foreColor: '#1f2328', borderRadius: 3, padding: 3 },
         formatter: (val: number) => fmt(val),
       },
+      // Horizontal bars swap the axes in ApexCharts: categories render on the
+      // y-axis and the numeric scale on the x-axis. The numeric formatter must
+      // follow the values, otherwise category text like "2026-05" is run
+      // through fmt(toNum()) and collapses to "2026".
       xaxis: {
         categories,
         labels: {
@@ -379,21 +443,26 @@ export class ChartPreviewComponent implements OnChanges {
           // ApexCharts handles overflow gracefully — rotation + auto-hide
           // — so the dense overlapping labels in the old SVG renderer go away.
           hideOverlappingLabels: true,
-          trim: true,
+          trim: !isHorizontal,
           maxHeight: 80,
-          rotate: -35,
+          rotate: isHorizontal ? 0 : -35,
           rotateAlways: false,
+          ...(isHorizontal ? { formatter: (val: string) => fmt(val) } : {}),
         },
         axisBorder: { color: '#e5e7eb' },
         axisTicks: { color: '#e5e7eb' },
       },
       yaxis: {
         labels: {
-          formatter: (val: number) => fmt(val),
+          ...(isHorizontal ? {} : { formatter: (val: number) => fmt(val) }),
           style: { fontSize: '11px', colors: '#6b7280' },
         },
       },
-      grid: { borderColor: '#f0f0f0', strokeDashArray: 3, padding: { top: 0, right: 12, bottom: 0, left: 8 } },
+      grid: {
+        borderColor: '#f0f0f0',
+        strokeDashArray: 3,
+        padding: { top: 0, right: 12, bottom: 0, left: 8 },
+      },
       legend: {
         show: series.length > 1,
         position: 'bottom',
@@ -412,7 +481,11 @@ export class ChartPreviewComponent implements OnChanges {
 
   private buildYTicks(): void {
     const raw = this.maxVal;
-    if (raw <= 0) { this.yTicks = ['0']; this.yTickCount = 1; return; }
+    if (raw <= 0) {
+      this.yTicks = ['0'];
+      this.yTickCount = 1;
+      return;
+    }
 
     const targetTicks = 5;
     const roughStep = raw / (targetTicks - 1);
@@ -444,7 +517,7 @@ export class ChartPreviewComponent implements OnChanges {
       return;
     }
     const groups = new Map<string, any[]>();
-    this.data.forEach(row => {
+    this.data.forEach((row) => {
       const key = String(row[this.colorField!] ?? 'Other');
       if (!groups.has(key)) groups.set(key, []);
       groups.get(key)!.push(row);
@@ -477,9 +550,11 @@ export class ChartPreviewComponent implements OnChanges {
     const dataKeys = Object.keys(this.data[0]);
     if (this.orderedColumns.length > 0) {
       const dataKeySet = new Set(dataKeys);
-      const ordered = this.orderedColumns.filter(k => dataKeySet.has(k));
+      const ordered = this.orderedColumns.filter((k) => dataKeySet.has(k));
       const orderedSet = new Set(ordered);
-      dataKeys.forEach(k => { if (!orderedSet.has(k)) ordered.push(k); });
+      dataKeys.forEach((k) => {
+        if (!orderedSet.has(k)) ordered.push(k);
+      });
       this.cachedTableKeys = ordered;
     } else {
       this.cachedTableKeys = dataKeys;
@@ -505,7 +580,9 @@ export class ChartPreviewComponent implements OnChanges {
         const isBoolean = typeof v === 'boolean';
         const field = fieldNameOf(key);
         if (
-          v !== null && v !== undefined && v !== '' &&
+          v !== null &&
+          v !== undefined &&
+          v !== '' &&
           !isBoolean &&
           !isNaN(Number(v)) &&
           !isIdentifierFieldName(field) &&
@@ -517,20 +594,22 @@ export class ChartPreviewComponent implements OnChanges {
     }
 
     // Pre-build headers
-    this.tableHeaders = this.cachedTableKeys.map(k => ({
+    this.tableHeaders = this.cachedTableKeys.map((k) => ({
       key: k,
       label: this.labelFor(k),
       isNum: this.numColumns.has(k),
-      sortDir: this.sortKey === k ? this.sortDir : null as ('asc' | 'desc' | null),
+      sortDir: this.sortKey === k ? this.sortDir : (null as 'asc' | 'desc' | null),
     }));
 
     // Pre-build rows (apply column formats using same logic as MynumberPipe/MycurrencyPipe)
     const cs = this.company.settings();
-    this.tableRows = this.data.map(row => {
+    this.tableRows = this.data.map((row) => {
       const colorVal = this.colorField ? row[this.colorField] : null;
-      const colorIdx = colorVal ? [...new Set(this.data.map(r => r[this.colorField!]))].indexOf(colorVal) : -1;
+      const colorIdx = colorVal
+        ? [...new Set(this.data.map((r) => r[this.colorField!]))].indexOf(colorVal)
+        : -1;
       return {
-        cells: this.cachedTableKeys.map(k => {
+        cells: this.cachedTableKeys.map((k) => {
           const colFmt = this.columnFormats[k];
           let value: string;
           const declared = this.columnTypes[k];
@@ -558,7 +637,9 @@ export class ChartPreviewComponent implements OnChanges {
           }
           return { value, isNum: this.numColumns.has(k) };
         }),
-        colorBorder: colorVal ? '3px solid ' + (this.colors[colorIdx % this.colors.length] || '#ddd') : 'none',
+        colorBorder: colorVal
+          ? '3px solid ' + (this.colors[colorIdx % this.colors.length] || '#ddd')
+          : 'none',
       };
     });
 
@@ -582,6 +663,9 @@ export class ChartPreviewComponent implements OnChanges {
     // the group-by field isn't a displayed column.
     const gIdx = this.groupByKey ? this.cachedTableKeys.indexOf(this.groupByKey) : -1;
     const groupColIdx = gIdx >= 0 ? gIdx : 0;
+    const hasTotals = this.cachedTableKeys.some(
+      (k, i) => i !== groupColIdx && this.numColumns.has(k),
+    );
     let idx = 0;
     for (const g of this.groupedData!) {
       const len = g.len || 0;
@@ -603,7 +687,13 @@ export class ChartPreviewComponent implements OnChanges {
         }
         return { value: '', isNum: false, isLabel: false };
       });
-      this.groupedBlocks.push({ value: String(g.value ?? ''), groupColIdx, rows, totalCells });
+      this.groupedBlocks.push({
+        value: String(g.value ?? ''),
+        groupColIdx,
+        rows,
+        totalCells,
+        hasTotals,
+      });
     }
   }
 
@@ -613,12 +703,26 @@ export class ChartPreviewComponent implements OnChanges {
    * prefix ("sum.Table.qty") — so try the full key first, then the prefix-
    * stripped form. Returns undefined when there's no subtotal for the column.
    */
-  private subtotalFor(subtotals: { [key: string]: number } | undefined, key: string): number | undefined {
+  private subtotalFor(
+    subtotals: { [key: string]: number } | undefined,
+    key: string,
+  ): number | undefined {
     if (!subtotals) return undefined;
     const direct = subtotals[key];
     if (direct !== undefined && direct !== null) return direct;
     const parts = key.split('.');
-    const prefixes = ['sum', 'count', 'avg', 'max', 'min', 'year', 'month', 'day', 'yearmonth', 'yearmonthday'];
+    const prefixes = [
+      'sum',
+      'count',
+      'avg',
+      'max',
+      'min',
+      'year',
+      'month',
+      'day',
+      'yearmonth',
+      'yearmonthday',
+    ];
     if (parts.length >= 3 && prefixes.includes(parts[0])) {
       const raw = parts.slice(1).join('.');
       const v = subtotals[raw];
@@ -651,19 +755,19 @@ export class ChartPreviewComponent implements OnChanges {
 
     const dk = this.dimKey || '';
     this.pivotDimLabel = this.labelFor(dk);
-    this.pivotMeasHeaders = this.measKeys.map(k => ({ key: k, label: this.labelFor(k) }));
+    this.pivotMeasHeaders = this.measKeys.map((k) => ({ key: k, label: this.labelFor(k) }));
 
-    this.pivotRows = this.data.map(row => ({
+    this.pivotRows = this.data.map((row) => ({
       dimLabel: String(row[dk] ?? ''),
-      values: this.measKeys.map(k => this.fmt(this.toNum(row[k]))),
+      values: this.measKeys.map((k) => this.fmt(this.toNum(row[k]))),
       total: this.fmt(this.measKeys.reduce((s, k) => s + this.toNum(row[k]), 0)),
     }));
 
-    this.pivotColTotals = this.measKeys.map(k =>
-      this.fmt(this.data.reduce((s, r) => s + this.toNum(r[k]), 0))
+    this.pivotColTotals = this.measKeys.map((k) =>
+      this.fmt(this.data.reduce((s, r) => s + this.toNum(r[k]), 0)),
     );
     this.pivotGrandTotal = this.fmt(
-      this.data.reduce((s, r) => s + this.measKeys.reduce((ss, k) => ss + this.toNum(r[k]), 0), 0)
+      this.data.reduce((s, r) => s + this.measKeys.reduce((ss, k) => ss + this.toNum(r[k]), 0), 0),
     );
   }
 
@@ -677,7 +781,7 @@ export class ChartPreviewComponent implements OnChanges {
 
     // Color series legend (from Marks → Color)
     if (this.hasColorSeries && this.colorField) {
-      const vals = [...new Set(this.data.map(r => String(r[this.colorField!] ?? 'Other')))];
+      const vals = [...new Set(this.data.map((r) => String(r[this.colorField!] ?? 'Other')))];
       this.legendItems = vals.map((name, i) => ({
         color: this.colors[i % this.colors.length],
         label: name,
@@ -704,12 +808,10 @@ export class ChartPreviewComponent implements OnChanges {
     event.preventDefault();
     event.dataTransfer!.dropEffect = 'move';
     this.dragOverColIndex = index;
-
   }
 
   onColDragLeave(): void {
     this.dragOverColIndex = null;
-
   }
 
   onColDrop(event: DragEvent, toIndex: number): void {
@@ -725,13 +827,11 @@ export class ChartPreviewComponent implements OnChanges {
     this.cachedTableKeys = keys;
     this.buildTableData();
     this.columnsReordered.emit(keys);
-
   }
 
   onColDragEnd(): void {
     this.dragColIndex = null;
     this.dragOverColIndex = null;
-
   }
 
   // ─── Sort on column click ─────────────────────────
@@ -783,9 +883,8 @@ export class ChartPreviewComponent implements OnChanges {
   private isIntegerColumn(key: string): boolean {
     if (!key) return false;
     const parts = key.split('.');
-    const agg = parts.length >= 3 && ['sum', 'count', 'avg', 'max', 'min'].includes(parts[0])
-      ? parts[0]
-      : '';
+    const agg =
+      parts.length >= 3 && ['sum', 'count', 'avg', 'max', 'min'].includes(parts[0]) ? parts[0] : '';
     if (agg === 'count') return true;
     return INTEGER_FIELD_PATTERN.test(fieldNameOf(key));
   }
@@ -812,7 +911,8 @@ export class ChartPreviewComponent implements OnChanges {
     const date = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
     // Include time only when it isn't midnight UTC (avoid noisy " 00:00" on
     // pure date columns).
-    const h = d.getHours(), m = d.getMinutes();
+    const h = d.getHours(),
+      m = d.getMinutes();
     return h === 0 && m === 0 ? date : `${date} ${pad(h)}:${pad(m)}`;
   }
 
@@ -836,15 +936,16 @@ export class ChartPreviewComponent implements OnChanges {
    *  numberFormat = 'integer' and COUNT aggregations. */
   private fmtInteger(num: number): string {
     if (isNaN(num)) return '0';
-    return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return Math.round(num)
+      .toString()
+      .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   }
 
   /** Format number using same logic as MynumberPipe (company afterDecimal + thousand sep) */
   private fmtNumber(num: number, cs: any, key?: string): string {
     if (isNaN(num)) return '0';
-    const decimals: number = key && this.isIntegerColumn(key)
-      ? 0
-      : (cs?.settings?.afterDecimal ?? 3);
+    const decimals: number =
+      key && this.isIntegerColumn(key) ? 0 : (cs?.settings?.afterDecimal ?? 3);
     const fixed = num.toFixed(decimals);
     const [intPart, fracPart] = fixed.split('.');
     const formatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -860,7 +961,10 @@ export class ChartPreviewComponent implements OnChanges {
     if (parts.length >= 3 && ['sum', 'count', 'avg', 'max', 'min'].includes(parts[0])) {
       return parts[0].toUpperCase() + '(' + leaf(parts[parts.length - 1]) + ')';
     }
-    if (parts.length >= 3 && ['year', 'month', 'day', 'yearmonth', 'yearmonthday'].includes(parts[0])) {
+    if (
+      parts.length >= 3 &&
+      ['year', 'month', 'day', 'yearmonth', 'yearmonthday'].includes(parts[0])
+    ) {
       return parts[0] + '(' + leaf(parts[parts.length - 1]) + ')';
     }
     if (parts.length >= 2) return leaf(parts[parts.length - 1]);
@@ -868,14 +972,19 @@ export class ChartPreviewComponent implements OnChanges {
   }
 
   private makeArc(sa: number, ea: number, oR: number, iR: number): string {
-    const cx = 100, cy = 100;
+    const cx = 100,
+      cy = 100;
     const toRad = (a: number) => ((a - 90) * Math.PI) / 180;
-    const x1 = cx + oR * Math.cos(toRad(sa)), y1 = cy + oR * Math.sin(toRad(sa));
-    const x2 = cx + oR * Math.cos(toRad(ea)), y2 = cy + oR * Math.sin(toRad(ea));
+    const x1 = cx + oR * Math.cos(toRad(sa)),
+      y1 = cy + oR * Math.sin(toRad(sa));
+    const x2 = cx + oR * Math.cos(toRad(ea)),
+      y2 = cy + oR * Math.sin(toRad(ea));
     const lg = ea - sa > 180 ? 1 : 0;
     if (iR === 0) return `M${cx},${cy} L${x1},${y1} A${oR},${oR} 0 ${lg} 1 ${x2},${y2} Z`;
-    const x3 = cx + iR * Math.cos(toRad(ea)), y3 = cy + iR * Math.sin(toRad(ea));
-    const x4 = cx + iR * Math.cos(toRad(sa)), y4 = cy + iR * Math.sin(toRad(sa));
+    const x3 = cx + iR * Math.cos(toRad(ea)),
+      y3 = cy + iR * Math.sin(toRad(ea));
+    const x4 = cx + iR * Math.cos(toRad(sa)),
+      y4 = cy + iR * Math.sin(toRad(sa));
     return `M${x1},${y1} A${oR},${oR} 0 ${lg} 1 ${x2},${y2} L${x3},${y3} A${iR},${iR} 0 ${lg} 0 ${x4},${y4} Z`;
   }
 }

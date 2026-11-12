@@ -3,6 +3,7 @@ import { authGuard } from './core/guards/auth.guard';
 import { guestGuard } from './core/guards/guest.guard';
 import { unsavedChangesGuard } from './core/guards/unsaved-changes.guard';
 import { privilegeGuard } from './core/guards/privilege.guard';
+import { customReportsTranslationsLoaded } from './features/reports/custom/custom-reports.guards';
 
 export const routes: Routes = [
   // ── Public (blocked for authenticated users) ─────────────────────────────
@@ -123,6 +124,16 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadChildren: () =>
       import('./features/settings/translations/translations.routes').then(m => m.TRANSLATIONS_ROUTES),
+  },
+
+  {
+    // Custom report builder — full-page takeover (own top bar, no admin
+    // sidebar/topbar), like the builders above. The saved-reports list stays at
+    // /reports/custom inside the main layout.
+    path: 'reports/builder',
+    canActivate: [authGuard, customReportsTranslationsLoaded],
+    loadChildren: () =>
+      import('./features/reports/custom/custom-reports.routes').then(m => m.CUSTOM_REPORTS_ROUTES),
   },
 
   // ── Protected (requires login) ───────────────────────────────────────────
