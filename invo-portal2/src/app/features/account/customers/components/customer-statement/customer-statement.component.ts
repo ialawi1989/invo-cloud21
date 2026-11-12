@@ -78,6 +78,7 @@ const num = (v: unknown): number => {
                 @for (inv of invoicesOf(row); track $index) {
                   <a [routerLink]="['/account/invoices/view', inv.id]" [queryParams]="{ pageNum: 1 }">{{ inv.number }}</a>@if (!$last) {<span>, </span>}
                 }
+                @if (row.details?.note) { <small class="cs-note"><br>{{ row.details.note }}</small> }
               </td>
               <td class="end" [class.cs-neg]="num(row.amount) < 0" [class.cs-pos]="num(row.amount) >= 0">{{ row.amount | mycurrency }}</td>
               <td class="end" [class.cs-neg]="num(row.payment) < 0" [class.cs-pos]="num(row.payment) >= 0">{{ -num(row.payment) | mycurrency }}</td>

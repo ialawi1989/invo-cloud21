@@ -7,6 +7,20 @@ import { billingPaymentsSecurity } from './billingPaymentsSecurity';
 import { billingSecurity } from './billingSecurity';
 import { billOfEntrySecurity } from './billOfEntrySecurity';
 import { blogSecurity } from './blogSecurity';
+import {
+  storefrontAnalyticsSecurity,
+  storefrontPagesSecurity,
+  storefrontBlogsSecurity,
+  storefrontMenusSecurity,
+  storefrontMessagesSecurity,
+  storefrontReviewsSecurity,
+  storefrontThemesSecurity,
+  storefrontMarketingSecurity,
+  storefrontPreferencesSecurity,
+  storefrontCheckoutSecurity,
+  storefrontDomainsSecurity,
+  storefrontSitesSecurity,
+} from './storefrontSecurity';
 import { branchesConnectionSecurity } from './branchesConnectionSecurity';
 import { branchPaymentsSecurity } from './branchPaymentsSecurity';
 import { branchSettingsSecurity } from './branchSettingsSecurity';
@@ -227,6 +241,18 @@ export const SECURITY_DEFINITIONS = {
   pageBuilderSecurity,
   websiteSettingsSecurity,
   blogSecurity,
+  storefrontAnalyticsSecurity,
+  storefrontPagesSecurity,
+  storefrontBlogsSecurity,
+  storefrontMenusSecurity,
+  storefrontMessagesSecurity,
+  storefrontReviewsSecurity,
+  storefrontThemesSecurity,
+  storefrontMarketingSecurity,
+  storefrontPreferencesSecurity,
+  storefrontCheckoutSecurity,
+  storefrontDomainsSecurity,
+  storefrontSitesSecurity,
   reportsSecurity,
   customReportsSecurity,
   mapTrackingSecurity,
