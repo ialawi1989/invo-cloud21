@@ -15,6 +15,7 @@ import { ReportEmptyComponent } from '../../components/report-empty/report-empty
 import { ReportErrorComponent } from '../../components/report-error/report-error.component';
 import { ReportApiFilter } from '../../models/report.model';
 import { AgingDetailData, AgingEntity, AgingInvoice, AgingSummaryData, CustomerAgingService } from './customer-aging.service';
+import { ReportSkeletonComponent } from '../../components/report-skeleton/report-skeleton.component';
 
 const toNum = (v: unknown): number => { const n = typeof v === 'number' ? v : parseFloat(String(v ?? '')); return Number.isFinite(n) ? n : 0; };
 type Unit = 'days' | 'weeks' | 'months';
@@ -34,7 +35,7 @@ const AGING_PARAMS = {
 @Component({
   selector: 'app-customer-aging',
   standalone: true,
-  imports: [
+  imports: [ReportSkeletonComponent, 
     ReportErrorComponent, ReportEmptyComponent, TranslateModule, DatePipe, RouterLink, MycurrencyPipe, PaginationComponent,
     SegmentedToggleComponent, StatusBadgeComponent, BoTableShellComponent,
   ],

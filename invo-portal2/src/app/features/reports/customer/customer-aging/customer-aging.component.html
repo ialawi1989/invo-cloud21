@@ -9,7 +9,7 @@
 </div>
 
 @if (loading() && !detail() && !summary()) {
-  <div class="ls-loading" aria-busy="true"><div class="ls-skel"></div></div>
+  <app-report-skeleton [columns]="8" [rows]="8" />
 } @else if (error()) {
   <app-report-error [message]="error()" (retry)="load()" />
 } @else if (isEmpty()) {
@@ -39,7 +39,7 @@
             @for (r of b.agingGroups; track r.id + '|' + $index) {
               <tr class="data-row">
                 <td class="sticky-col-1">{{ r.Date | date: 'dd/MM/yyyy' }}</td>
-                <td>@if (invoiceLink(r); as href) { <a class="account-link" [routerLink]="href" target="_blank" rel="noopener">{{ r.InvoiceNumber }}</a> } @else { {{ r.InvoiceNumber }} }</td>
+                <td>@if (invoiceLink(r); as href) { <a class="account-link" [routerLink]="href">{{ r.InvoiceNumber }}</a> } @else { {{ r.InvoiceNumber }} }</td>
                 <td><app-status-badge [status]="r.Status" /></td>
                 <td>{{ r.CustomerName }}</td>
                 <td class="text-end">
@@ -75,7 +75,7 @@
             <tr class="data-row">
               <td class="sticky-col-1">
                 @if (c.customerId && c.customerId !== 'null') {
-                  <a class="account-link" [routerLink]="['/reports/view', isSupplier() ? 'supplier-aging' : 'customer-aging']" [queryParams]="customerParams(c)" target="_blank" rel="noopener">{{ c.customerName }}</a>
+                  <a class="account-link" [routerLink]="['/reports/view', isSupplier() ? 'supplier-aging' : 'customer-aging']" [queryParams]="customerParams(c)">{{ c.customerName }}</a>
                 } @else { {{ c.customerName }} }
               </td>
               @for (l of ranges(); track l) { <td class="text-end">{{ cell(c, l) | mycurrency }}</td> }

@@ -15,7 +15,7 @@
         <small>@if (d.employee?.type) { {{ d.employee?.type }} · } {{ d.employee?.branchName }}</small>
         <small class="ed-period">{{ 'REPORTS.ATTENDANCE.PERIOD' | translate }}: {{ d.period.fromDate | date: 'dd/MM/yyyy' }} – {{ d.period.toDate | date: 'dd/MM/yyyy' }}</small>
       </div>
-      <a class="ed-sales" [routerLink]="['/reports/view', 'sales-by-employee']" [queryParams]="salesQuery()" target="_blank" rel="noopener">
+      <a class="ed-sales" [routerLink]="['/reports/view', 'sales-by-employee']" [queryParams]="salesQuery()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
         {{ 'REPORTS.ATTENDANCE.VIEW_SALES' | translate }}
       </a>
@@ -117,5 +117,5 @@
     }
   </div>
 } @else {
-  <div class="ed-skel"></div>
+  <app-report-skeleton [kpis]="5" [columns]="7" [rows]="8" />
 }

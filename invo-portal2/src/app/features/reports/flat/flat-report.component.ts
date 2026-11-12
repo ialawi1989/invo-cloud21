@@ -1,4 +1,5 @@
-import { DatePipe, DecimalPipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
+import { MynumberPipe } from '@core/pipes/mynumber.pipe';
 import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -15,6 +16,7 @@ import { ReportKpiRowComponent } from '../components/report-kpi-row/report-kpi-r
 import { FLAT_REPORTS, FlatColumn } from './flat-reports';
 import { FlatData, FlatRecord, FlatReportService } from './flat-report.service';
 import { ReportEmptyComponent } from '../components/report-empty/report-empty.component';
+import { ReportSkeletonComponent } from '../components/report-skeleton/report-skeleton.component';
 
 const toNum = (v: unknown): number => { const n = typeof v === 'number' ? v : parseFloat(String(v ?? '')); return Number.isFinite(n) ? n : 0; };
 
@@ -27,7 +29,7 @@ interface Row { kind: 'data' | 'subtotal'; rec: FlatRecord; first: boolean; grou
 @Component({
   selector: 'app-flat-report',
   standalone: true,
-  imports: [RouterLink, ReportEmptyComponent, ReportErrorComponent, TranslateModule, DatePipe, DecimalPipe, MycurrencyPipe, PaginationComponent, BoTableShellComponent, ReportKpiRowComponent],
+  imports: [ReportSkeletonComponent, RouterLink, ReportEmptyComponent, ReportErrorComponent, TranslateModule, DatePipe, MynumberPipe, MycurrencyPipe, PaginationComponent, BoTableShellComponent, ReportKpiRowComponent],
   templateUrl: './flat-report.component.html',
   styleUrl: './flat-report.component.scss',
 })
@@ -51,6 +53,8 @@ export class FlatReportComponent {
 
   config = computed(() => FLAT_REPORTS[this.slug()]);
   /** A report with coloured columns also gets dark headers on its plain columns. */
+  /** Column count of the loading placeholder (the config's own columns; the payment-method spread isn't known yet). */
+  skeletonCols = computed(() => this.config().columns.length);
   hasTones = computed(() => this.columns().some(c => c.tone));
   /** The config's columns; a `spread` column is replaced by one currency column per key found in the rows (the payment methods). */
   columns = computed<FlatColumn[]>(() => {
@@ -184,7 +188,8 @@ export class FlatReportComponent {
     const out: Record<string, number> = {};
     for (const c of this.columns()) {
       if (!c.total) continue;
-      out[c.key] = t && t[c.key] !== undefined ? toNum(t[c.key]) : (subs.length ? subs : data).reduce((s, r) => s + toNum(r.rec[c.key]), 0);
+      const tk = c.totalKey ?? c.key;
+      out[c.key] = t && t[tk] !== undefined ? toNum(t[tk]) : (subs.length ? subs : data).reduce((s, r) => s + toNum(r.rec[c.key]), 0);
     }
     return out;
   });
@@ -248,7 +253,8 @@ export class FlatReportComponent {
     const f = this.filter();
     return {
       preset: 'custom', fromDate: f.fromDate ?? null, toDate: f.toDate ?? null,
-      branches: f.branches?.length ? f.branches.join(',') : null, [c.drill!.param ?? 'customers']: rec[c.drill!.idKey] ?? c.drill!.fallback ?? null,
+      branches: f.branches?.length ? f.branches.join(',') : null, openingHour: f.applyOpeningHour ? '1' : null,
+      [c.drill!.param ?? 'customers']: rec[c.drill!.idKey] ?? c.drill!.fallback ?? null,
       ...Object.fromEntries(Object.entries(c.drill!.extra ?? {}).map(([k, f]) => [k, rec[f] === null || rec[f] === undefined ? null : String(rec[f])])),
     };
   }
@@ -276,12 +282,12 @@ export class FlatReportComponent {
     const h = (Number(v.days) || 0) * 24 + (Number(v.hours) || 0);
     return `${h}h ${Number(v.minutes) || 0}m ${Math.floor(Number(v.seconds) || 0)}s`;
   }
-  /** A duration in seconds as "Xh Ym" (or "Ym Zs" under an hour). */
+  /** A duration in seconds as "Xm Ys" (minutes are not rolled up into hours, as in the legacy report). */
   seconds(v: any): string {
     const n = Number(v);
     if (v == null || v === '' || !Number.isFinite(n)) return '-';
-    const h = Math.floor(n / 3600), m = Math.floor((n % 3600) / 60), sec = Math.floor(n % 60);
-    return h ? `${h}h ${m}m` : `${m}m ${sec}s`;
+    const t = Math.round(n);
+    return `${Math.floor(t / 60)}m ${t % 60}s`;
   }
   /** The photo being previewed (hover / focus on a photo icon). */
   photo = signal<{ url: string; label: string; x: number; y: number; below: boolean } | null>(null);

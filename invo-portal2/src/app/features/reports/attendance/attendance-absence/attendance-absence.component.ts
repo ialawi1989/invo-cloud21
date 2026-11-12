@@ -1,6 +1,5 @@
 import { DatePipe } from '@angular/common';
 import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService } from '@core/i18n/language.service';
 import { PaginationComponent } from '@shared/components/pagination/pagination.component';
@@ -9,6 +8,7 @@ import { ReportEmptyComponent } from '../../components/report-empty/report-empty
 import { ReportErrorComponent } from '../../components/report-error/report-error.component';
 import { ReportApiFilter } from '../../models/report.model';
 import { AbsenceData, AbsenceRow, AttendanceService } from '../attendance.service';
+import { ReportSkeletonComponent } from '../../components/report-skeleton/report-skeleton.component';
 
 /**
  * Absence: unauthorized absences (nobody approved the day off — the ones that need attention) in a red section, authorized absences
@@ -17,7 +17,7 @@ import { AbsenceData, AbsenceRow, AttendanceService } from '../attendance.servic
 @Component({
   selector: 'app-attendance-absence',
   standalone: true,
-  imports: [TranslateModule, DatePipe, RouterLink, PaginationComponent, ReportEmptyComponent, ReportErrorComponent, ReportNoteComponent],
+  imports: [ReportSkeletonComponent, TranslateModule, DatePipe, PaginationComponent, ReportEmptyComponent, ReportErrorComponent, ReportNoteComponent],
   templateUrl: './attendance-absence.component.html',
   styleUrl: './attendance-absence.component.scss',
 })
@@ -69,10 +69,4 @@ export class AttendanceAbsenceComponent {
 
   goTo(p: number): void { this.page.set(p); void this.load(); }
   setPageSize(n: number): void { this.pageSize.set(n); this.page.set(1); void this.load(); }
-
-  /** Where a name opens: that employee's Attendance Detail for the same period and branches. */
-  detailQuery(r: AbsenceRow): Record<string, string | null> {
-    const f = this.filter();
-    return { preset: 'custom', fromDate: f.fromDate ?? null, toDate: f.toDate ?? null, branches: f.branches?.length ? f.branches.join(',') : null, employee: r.employeeId };
-  }
 }

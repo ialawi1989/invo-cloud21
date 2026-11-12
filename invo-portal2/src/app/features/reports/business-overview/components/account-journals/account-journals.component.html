@@ -1,4 +1,4 @@
-<app-bo-state [loading]="loading() && !data()" [error]="error()" [empty]="isEmpty()" (retry)="load()" />
+<app-bo-state [kpis]="0" [columns]="5" [loading]="loading() && !data()" [error]="error()" [empty]="isEmpty()" (retry)="load()" />
 
 @if (data(); as d) {
   @if (lines().length) {

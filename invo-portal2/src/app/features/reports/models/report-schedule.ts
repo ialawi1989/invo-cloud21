@@ -70,6 +70,8 @@ const SCHEDULER_SLUG: Record<string, string> = {
   'vat-audit': 'vat-audit-report',
   'payment-method': 'payment-method-report',
   'general-ledger': 'general-ledger-report',
+  'transaction-discount': 'transactiondiscountreport',
+  'sales-by-discount': 'sales-by-discount-report',
 };
 
 /** Every report type the scheduler can run (the cases of that `switch`). */
@@ -94,7 +96,7 @@ const SCHEDULABLE = new Set([
   'table-usage-report', 'table-usage-summary-report', 'customer-table-by-employee', 'payment-method-report',
   'product-prepared-time-summary', 'prepared-time-summary', 'discount-report', 'sales-by-discount-report',
   'monthly-bld-breakdown-report', 'void-transactions', 'daily-payment-report', 'payout-report', 'accountjournal',
-  'account-journals', 'sales-by-hours-by-product', 'voided-sales-report',
+  'account-journals', 'sales-by-hours-by-product', 'voided-sales-report', 'transactiondiscountreport',
 ]);
 
 /** Legacy `canBeScheduled: false` — one business day of one branch, not a recurring report (Daily Closing). */

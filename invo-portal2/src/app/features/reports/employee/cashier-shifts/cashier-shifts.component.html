@@ -7,7 +7,7 @@
     <!-- The shifts of the period -->
     <aside class="cs-list" [class.stale]="listLoading()" aria-label="{{ 'REPORTS.CASHIER_SHIFTS.SHIFTS' | translate }}">
       @if (listLoading() && !list()) {
-        @for (i of [1, 2, 3, 4]; track i) { <div class="cs-skel"></div> }
+        <app-report-skeleton [columns]="1" [rows]="4" />
       }
       @for (s of list()?.records ?? []; track s.id) {
         <button type="button" class="cs-shift" [class.active]="s.id === selected()" (click)="select(s.id)" [attr.aria-pressed]="s.id === selected()">
@@ -65,10 +65,10 @@
         <div class="cs-card cs-table">
           @if (r.paymentByTender.length) {
             <table>
-              <thead><tr><th>{{ 'REPORTS.CASHIER_SHIFTS.PAYMENT_METHOD' | translate }}</th><th class="end">{{ 'REPORTS.CASHIER_SHIFTS.TOTAL' | translate }}</th><th class="end">{{ 'REPORTS.CASHIER_SHIFTS.EQUIVALENT' | translate }}</th></tr></thead>
+              <thead><tr><th>{{ 'REPORTS.CASHIER_SHIFTS.PAYMENT_METHOD' | translate }}</th><th class="end">{{ 'REPORTS.CASHIER_SHIFTS.TOTAL' | translate }}</th><th class="end">{{ 'REPORTS.CASHIER_SHIFTS.REFUNDED' | translate }}</th><th class="end">{{ 'REPORTS.CASHIER_SHIFTS.EQUIVALENT' | translate }}</th></tr></thead>
               <tbody>
                 @for (t of r.paymentByTender; track $index) {
-                  <tr><td>{{ t.paymentMethodName }}</td><td class="end">{{ num(t.total) | mycurrency }}</td><td class="end">{{ num(t.equivalant) | mycurrency }}</td></tr>
+                  <tr><td>{{ t.paymentMethodName }}</td><td class="end">{{ num(t.total) | mycurrency }}</td><td class="end">{{ num(t.refund) | mycurrency }}</td><td class="end">{{ num(t.equivalant) | mycurrency }}</td></tr>
                 }
               </tbody>
             </table>
@@ -92,7 +92,7 @@
           } @else { <p class="cs-none">{{ 'REPORTS.CASHIER_SHIFTS.NONE' | translate }}</p> }
         </div>
       } @else if (detailLoading()) {
-        <div class="cs-skel tall"></div>
+        <app-report-skeleton [kpis]="4" [columns]="6" [rows]="6" />
       }
     </section>
   </div>

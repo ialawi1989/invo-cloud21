@@ -1,5 +1,5 @@
 @if (loading() && !data()) {
-  <div class="ls-loading" aria-busy="true"><div class="ls-skel"></div></div>
+  <app-report-skeleton [columns]="7" />
 } @else if (error()) {
   <app-report-error [message]="error()" (retry)="load()" />
 } @else if (data(); as d) {
@@ -25,19 +25,19 @@
             @for (r of records(); track trackRow($index, r)) {
               <tr class="data-row">
                 <td class="sticky-col-1">
-                  @if (link(r); as href) { <a class="account-link" [routerLink]="href" target="_blank" rel="noopener">{{ r.type }}</a> }
+                  @if (link(r); as href) { <a class="account-link" [routerLink]="href">{{ r.type }}</a> }
                   @else { {{ r.type }} }
                   @if (r.productCode) { <span class="pm-code">{{ r.productCode }}</span> }
                 </td>
                 <td>{{ r.createdAt | date: 'dd/MM/yyyy' }}</td>
                 <td>{{ r.branchName || '—' }}</td>
-                <td class="text-end" [class.neg]="num(r.qtyUsage) < 0">{{ num(r.qtyUsage) | number }}</td>
-                <td class="text-end"><strong>{{ num(r.qtyBalance) | number }}</strong></td>
+                <td class="text-end" [class.neg]="num(r.qtyUsage) < 0">{{ num(r.qtyUsage) | mynumber }}</td>
+                <td class="text-end"><strong>{{ num(r.qtyBalance) | mynumber }}</strong></td>
                 <td class="text-end" [class.neg]="num(r.cost) < 0">
-                  {{ num(r.cost) | mycurrency }}
-                  <span class="pm-unit" [attr.title]="'REPORTS.PRODUCT_MOVEMENT.UNIT_COST' | translate">{{ unitCost(r) | mycurrency }}</span>
+                  {{ num(r.cost) | mynumber }}
+                  <span class="pm-unit" [attr.title]="'REPORTS.PRODUCT_MOVEMENT.UNIT_COST' | translate">{{ unitCost(r) | mynumber }}</span>
                 </td>
-                <td class="text-end"><strong>{{ num(r.costBalance) | mycurrency }}</strong></td>
+                <td class="text-end"><strong>{{ num(r.costBalance) | mynumber }}</strong></td>
               </tr>
             }
           </tbody>

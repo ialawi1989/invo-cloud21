@@ -10,6 +10,7 @@ import { ReportApiFilter } from '../../models/report.model';
 import { ProductVsServiceData, ProductVsServiceRecord, SalesByProductVsServiceService } from './sales-by-product-vs-service.service';
 import { ReportErrorComponent } from '../../components/report-error/report-error.component';
 import { ReportEmptyComponent } from '../../components/report-empty/report-empty.component';
+import { ReportSkeletonComponent } from '../../components/report-skeleton/report-skeleton.component';
 
 const toNum = (v: unknown): number => { const n = typeof v === 'number' ? v : parseFloat(String(v ?? '')); return Number.isFinite(n) ? n : 0; };
 
@@ -29,7 +30,7 @@ interface Group { serviceId: string; serviceName: string; first: ProductVsServic
 @Component({
   selector: 'app-sales-by-product-vs-service',
   standalone: true,
-  imports: [ReportEmptyComponent, ReportErrorComponent, TranslateModule, MycurrencyPipe, PaginationComponent, BoTableShellComponent],
+  imports: [ReportSkeletonComponent, ReportEmptyComponent, ReportErrorComponent, TranslateModule, MycurrencyPipe, PaginationComponent, BoTableShellComponent],
   templateUrl: './sales-by-product-vs-service.component.html',
   styleUrl: './sales-by-product-vs-service.component.scss',
 })

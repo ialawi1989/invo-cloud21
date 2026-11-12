@@ -9,6 +9,7 @@ import { ReportEmptyComponent } from '../../components/report-empty/report-empty
 import { ReportErrorComponent } from '../../components/report-error/report-error.component';
 import { ReportApiFilter } from '../../models/report.model';
 import { CashierShift, CashierShiftPage, CashierShiftReport, CashierShiftsService } from './cashier-shifts.service';
+import { ReportSkeletonComponent } from '../../components/report-skeleton/report-skeleton.component';
 
 const toNum = (v: unknown): number => { const n = typeof v === 'number' ? v : parseFloat(String(v ?? '')); return Number.isFinite(n) ? n : 0; };
 
@@ -22,7 +23,7 @@ const SHIFT_PARAM = { cashierId: { key: 'cashierId', codec: StringCodec } as Par
 @Component({
   selector: 'app-cashier-shifts',
   standalone: true,
-  imports: [TranslateModule, DatePipe, MycurrencyPipe, PaginationComponent, ReportEmptyComponent, ReportErrorComponent],
+  imports: [ReportSkeletonComponent, TranslateModule, DatePipe, MycurrencyPipe, PaginationComponent, ReportEmptyComponent, ReportErrorComponent],
   templateUrl: './cashier-shifts.component.html',
   styleUrl: './cashier-shifts.component.scss',
 })

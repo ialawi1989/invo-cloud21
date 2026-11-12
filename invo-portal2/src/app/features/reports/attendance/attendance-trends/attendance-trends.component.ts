@@ -1,11 +1,11 @@
 import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService } from '@core/i18n/language.service';
 import { ReportEmptyComponent } from '../../components/report-empty/report-empty.component';
 import { ReportErrorComponent } from '../../components/report-error/report-error.component';
 import { ReportApiFilter } from '../../models/report.model';
 import { AttendanceService, TrendsData } from '../attendance.service';
+import { ReportSkeletonComponent } from '../../components/report-skeleton/report-skeleton.component';
 
 /** Day statuses in legend order. */
 const STATUSES = ['present', 'late', 'adjusted', 'absent', 'leave', 'off', 'not_employed'] as const;
@@ -17,7 +17,7 @@ const STATUSES = ['present', 'late', 'adjusted', 'absent', 'leave', 'off', 'not_
 @Component({
   selector: 'app-attendance-trends',
   standalone: true,
-  imports: [TranslateModule, RouterLink, ReportEmptyComponent, ReportErrorComponent],
+  imports: [ReportSkeletonComponent, TranslateModule, ReportEmptyComponent, ReportErrorComponent],
   templateUrl: './attendance-trends.component.html',
   styleUrl: './attendance-trends.component.scss',
 })
@@ -66,11 +66,6 @@ export class AttendanceTrendsComponent {
     }
   }
 
-  /** Where a name opens: that employee's Attendance Detail for the same period and branches. */
-  detailQuery(id: string): Record<string, string | null> {
-    const f = this.filter();
-    return { preset: 'custom', fromDate: f.fromDate ?? null, toDate: f.toDate ?? null, branches: f.branches?.length ? f.branches.join(',') : null, employee: id };
-  }
   /** The letter inside a cell (the legacy heatmap's): Present, Late, Absent, Vacation/leave, Edited, – for a day off. */
   letter(status: string): string {
     return ({ present: 'P', late: 'L', absent: 'A', leave: 'V', adjusted: 'E', off: '–' } as Record<string, string>)[status] ?? '';

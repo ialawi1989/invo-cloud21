@@ -1,6 +1,6 @@
 import { Component, computed, effect, inject, input, output, signal, untracked } from '@angular/core';
-import { DecimalPipe } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { MynumberPipe } from '@core/pipes/mynumber.pipe';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService } from '@core/i18n/language.service';
 import { BoTableShellComponent, periodSlot } from '../business-overview/components/bo-table-shell/bo-table-shell.component';
@@ -10,10 +10,12 @@ import { ReportChartComponent } from '../components/report-chart/report-chart.co
 import { ReportColumnsButtonComponent } from '../columns/report-columns-button.component';
 import { columnLabel, getDefaultColumnKeys } from '../columns/report-columns';
 import { ReportApiFilter, ReportChartConfig } from '../models/report.model';
+import { resolvePreset } from '../utils/report-period.util';
 import { COMPARISON_REPORTS } from './comparison-reports';
 import { ComparisonRecord, ComparisonReportData, ComparisonReportService } from './comparison-report.service';
 import { ReportErrorComponent } from '../components/report-error/report-error.component';
 import { ReportEmptyComponent } from '../components/report-empty/report-empty.component';
+import { ReportSkeletonComponent } from '../components/report-skeleton/report-skeleton.component';
 
 /**
  * Comparison report — one row per department / category / menu …, one column per period (a single column without a
@@ -24,13 +26,14 @@ import { ReportEmptyComponent } from '../components/report-empty/report-empty.co
 @Component({
   selector: 'app-comparison-report',
   standalone: true,
-  imports: [DecimalPipe, ReportEmptyComponent,ReportErrorComponent, TranslateModule, RouterLink, BoTableShellComponent, BoAmountPipe, BoColumnPipe, ReportChartComponent, ReportColumnsButtonComponent],
+  imports: [ReportSkeletonComponent, MynumberPipe, ReportEmptyComponent,ReportErrorComponent, TranslateModule, RouterLink, BoTableShellComponent, BoAmountPipe, BoColumnPipe, ReportChartComponent, ReportColumnsButtonComponent],
   templateUrl: './comparison-report.component.html',
   styleUrl: './comparison-report.component.scss',
 })
 export class ComparisonReportComponent {
   private svc = inject(ComparisonReportService);
   private lang = inject(LanguageService);
+  private route = inject(ActivatedRoute);
 
   /** The report's catalog slug — its data call comes from `COMPARISON_REPORTS`, its columns from the shared registry. */
   slug = input.required<string>();
@@ -105,13 +108,23 @@ export class ComparisonReportComponent {
     if (!v) return '0m 0.00s';
     return `${Math.floor(v / 60)}m ${(v % 60).toFixed(2)}s`;
   }
-  groupTotal(rows: ComparisonRecord[], column: string, sub?: string): number { return rows.reduce((t, r) => t + this.value(r, column, sub), 0); }
+  groupTotal(rows: ComparisonRecord[], column: string, sub?: string): number {
+    const ratio = sub ? this.config().ratioSubs?.[sub] : undefined;
+    if (ratio) { const q = this.groupTotal(rows, column, ratio.qty); return this.groupTotal(rows, column, ratio.amount) / Math.max(q, 1); }
+    return rows.reduce((t, r) => t + this.value(r, column, sub), 0);
+  }
 
   /** URL params that carry the period / branches / comparison of this report, plus the row's product, to the drill-through. */
   drillParams(r: ComparisonRecord, d = this.config().drill!): Record<string, string | null> {
     const f = this.filter();
+    // While comparing, the API filter's `fromDate` is moved to the start of the last month / year (the backend steps back from it);
+    // the link carries the period the user chose, as the legacy drill-throughs did.
+    const q = this.route.snapshot.queryParams;
+    const range = f['allowComparison']
+      ? resolvePreset(q['preset'] ?? 'thisMonth', { from: q['fromDate'], to: q['toDate'] })
+      : { from: f.fromDate ?? null, to: f.toDate ?? null };
     return {
-      preset: 'custom', fromDate: f.fromDate ?? null, toDate: f.toDate ?? null,
+      preset: 'custom', fromDate: range.from, toDate: range.to,
       branches: f.branches?.length ? f.branches.join(',') : null,
       openingHour: f.applyOpeningHour ? '1' : null,
       // the product drill-through shows the same comparison; the aggregator list is not a comparison
@@ -131,6 +144,11 @@ export class ComparisonReportComponent {
   periods = computed(() => this.columns().filter(c => c !== 'Total'));
   /** A comparison is on: the columns are periods, not the single `Total`. */
   comparing = computed(() => this.periods().length > 0);
+  /** Legacy's per-row Total column: when comparing periods without sub-columns, on the amount reports that had it. */
+  showRowTotal = computed(() => !!this.config().rowTotal && this.subs().length === 0 && this.columns().length > 1);
+  /** A row's periods added up (plain amounts only, never averages). */
+  rowTotal(r: ComparisonRecord): number { return this.columns().reduce((t, c) => t + this.value(r, c), 0); }
+  groupRowTotal(rows: ComparisonRecord[]): number { return rows.reduce((t, r) => t + this.rowTotal(r), 0); }
   isEmpty = computed(() => !!this.data() && this.rows().length === 0);
 
   /** What the user picked (the report's defaults — all of them — until they change it). */
@@ -147,7 +165,7 @@ export class ComparisonReportComponent {
     if (typeof e === 'object') return +(sub ? e[sub] : 0) || 0;
     return +e || 0;
   }
-  columnTotal(column: string, sub?: string): number { return this.rows().reduce((t, r) => t + this.value(r, column, sub), 0); }
+  columnTotal(column: string, sub?: string): number { return this.groupTotal(this.rows(), column, sub); }
 
   /** Sales distribution by row — like the legacy: the `total` of every column added up (every sub-value when `total` is not shown). */
   chartRows = computed(() => this.rows()

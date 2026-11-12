@@ -52,7 +52,3 @@
 .cs-table td.pos { color: #15803d; }
 .cs-none { margin: 0; padding: 18px; text-align: center; color: #6b7280; font-size: 13px; }
 
-@keyframes cs-shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
-.cs-skel { height: 110px; border-radius: 12px; background: linear-gradient(90deg, #eef2f6 0%, #f6f8fa 50%, #eef2f6 100%); background-size: 200% 100%; animation: cs-shimmer 1.4s ease-in-out infinite; }
-.cs-skel.tall { height: 420px; }
-@media (prefers-reduced-motion: reduce) { .cs-skel { animation: none; } }

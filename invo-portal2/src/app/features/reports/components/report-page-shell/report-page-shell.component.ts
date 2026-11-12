@@ -1,4 +1,5 @@
 import { Component, ElementRef, input, output, viewChild } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 
 /**
@@ -11,10 +12,13 @@ import { TranslateModule } from '@ngx-translate/core';
  *  - `[shellTitleExtra]`  right side of the title line (e.g. the applied-filter chips)
  *  - default              the content (filter bar, KPIs, table …)
  */
+/** One step of the breadcrumb above the title: the last one is the current page and has no link. */
+export interface ReportCrumb { label: string; url?: string; }
+
 @Component({
   selector: 'app-report-page-shell',
   standalone: true,
-  imports: [TranslateModule],
+  imports: [RouterLink, TranslateModule],
   templateUrl: './report-page-shell.component.html',
   styleUrl: './report-page-shell.component.scss',
 })
@@ -23,6 +27,8 @@ export class ReportPageShellComponent {
   /** A small pill after the title (e.g. the account of a drill-down). */
   titleChip = input<string>('');
   subtitle = input<string>('');
+  /** Breadcrumb above the title (Reports › group › parent report › this report). Empty = none. */
+  crumbs = input<ReportCrumb[]>([]);
   /** Show the favourite star. */
   showFavorite = input(true);
   favorite = input(false);

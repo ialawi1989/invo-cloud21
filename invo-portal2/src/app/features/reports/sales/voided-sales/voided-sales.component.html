@@ -1,5 +1,5 @@
 @if (loading() && !data()) {
-  <div class="ls-loading" aria-busy="true"><div class="ls-skel"></div></div>
+  <app-report-skeleton [columns]="7" />
 } @else if (error()) {
   <app-report-error [message]="error()" (retry)="load()" />
 } @else if (data(); as d) {
@@ -141,11 +141,11 @@
                         </h4>
                         @if (detail(r); as dt) {
                           @if (dt.loading) {
-                            <p class="ls-muted">{{ 'REPORTS.VOIDED_SALES.DETAILS.LOADING' | translate }}</p>
+                            <p class="ls-muted">{{ 'REPORTS.INLINE.LOADING' | translate }}</p>
                           } @else if (dt.error) {
-                            <p class="neg">{{ dt.error }} <button type="button" class="ls-link" (click)="loadDetails(r)">{{ 'REPORTS.VIEW.RETRY' | translate }}</button></p>
+                            <p class="neg">{{ 'REPORTS.INLINE.LOAD_FAILED' | translate }} <button type="button" class="ls-link" (click)="loadDetails(r)">{{ 'REPORTS.VIEW.RETRY' | translate }}</button></p>
                           } @else if (!dt.rows.length) {
-                            <p class="ls-muted">{{ 'REPORTS.SALES_BY_PRODUCT.NO_DATA' | translate }}</p>
+                            <p class="ls-muted">{{ 'REPORTS.INLINE.NO_ITEMS' | translate }}</p>
                           } @else {
                             <div class="ls-items-scroll">
                               <table class="ls-items-table">

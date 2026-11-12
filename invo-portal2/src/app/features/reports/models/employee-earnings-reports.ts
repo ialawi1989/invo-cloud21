@@ -1,4 +1,4 @@
-import type { RawReportResponse, ReportColumn, ReportMeta, ReportResult } from './report.model';
+import type { RawReportResponse, ReportColumn, ReportMeta, ReportNormalizeContext, ReportResult } from './report.model';
 
 /**
  * Employee commission & tips reports. Opt-in per company (`earningsFeature`): hidden from the catalog and refused by
@@ -29,22 +29,39 @@ const toEmployeeReport = (slug: string): ReportColumn['link'] => (row, ctx) =>
 const toInvoice: ReportColumn['link'] = row => row['invoiceId'] ? { path: [journalLink('Invoice', row['invoiceId'])] } : null;
 const toProductMovement: ReportColumn['link'] = (row, ctx) =>
   row['productId'] ? { path: ['/reports/view', 'product-movement'], query: { ...period(ctx), products: String(row['productId']) } } : null;
+/** A date as the legacy tables show it: dd/MM/yyyy (read from the text, so no timezone shifts the day). */
+const dmy = (v: unknown): string => {
+  if (v == null || v === '') return '';
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(v));
+  if (m) return `${m[3]}/${m[2]}/${m[1]}`;
+  const d = new Date(String(v));
+  return Number.isNaN(d.getTime()) ? String(v) : `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+};
+/** A quantity with up to three decimals (no trailing zeros), as the legacy `number:'1.0-3'`. */
+const qty = (v: unknown): string => String(Number(Number(v ?? 0).toFixed(3)));
+const text = (key: string, labelKey: string, end = false, i18n?: string): ReportColumn => ({ ...col(key, labelKey), align: end ? 'end' : 'start', ...(i18n ? { i18n } : {}) });
+/** The closing-balance column of the summary reports: legacy heads it "Balance at {end date}" (dd/MM/yyyy). */
+const balanceAt = (key: string, ctx?: ReportNormalizeContext): ReportColumn =>
+  ({ ...money(key, 'BALANCE_AT'), labelParams: { date: dmy(ctx?.filter.toDate) } });
 const linked = (c: ReportColumn, link: ReportColumn['link']): ReportColumn => ({ ...c, link });
 
 const rowsOf = (raw: RawReportResponse): Record<string, any>[] =>
   Array.isArray(raw.records) ? raw.records : [];
 
 const commissionDetail = (raw: RawReportResponse): ReportResult => {
-  const rows = rowsOf(raw);
+  const rows = rowsOf(raw).map(r => ({
+    ...r, invoiceDate: dmy(r['invoiceDate']), eligibleDate: dmy(r['eligibleDate']), soldQty: qty(r['soldQty']), returnedQty: qty(r['returnedQty']),
+    commissionRate: qty(r['commissionRate']) + (r['commissionType'] === 'percentage' ? '%' : ''),
+  }));
   return {
     table: {
       columns: [
-        linked(col('employeeName', 'EMPLOYEE_NAME'), toEmployeeReport('employee-commission-summary')), linked(col('invoiceNumber', 'INVOICE_NUMBER'), toInvoice), col('invoiceDate', 'INVOICE_DATE', 'date'),
-        linked(col('productName', 'PRODUCT'), toProductMovement), col('soldQty', 'SOLD_QTY', 'number'), col('returnedQty', 'RETURNED_QTY', 'number'),
-        money('netSale', 'NET_SALE'), col('commissionType', 'COMMISSION_TYPE'), col('commissionRate', 'COMMISSION_RATE', 'number'),
+        linked(col('employeeName', 'EMPLOYEE_NAME'), toEmployeeReport('employee-commission-summary')), linked(col('invoiceNumber', 'INVOICE_NUMBER'), toInvoice), text('invoiceDate', 'INVOICE_DATE'),
+        linked(col('productName', 'PRODUCT'), toProductMovement), text('soldQty', 'SOLD_QTY', true), text('returnedQty', 'RETURNED_QTY', true),
+        money('netSale', 'NET_SALE'), text('commissionType', 'COMMISSION_TYPE', false, 'REPORTS.COMMISSION_TYPES.'), text('commissionRate', 'COMMISSION_RATE', true),
         money('grossCommission', 'GROSS_COMMISSION'), money('returnedCommission', 'RETURNED_COMMISSION'),
         money('netCommission', 'NET_COMMISSION'), money('earnedAmount', 'EARNED'), money('paidAmount', 'PAID'),
-        money('outstandingAmount', 'OUTSTANDING'), col('eligibleDate', 'ELIGIBLE_DATE', 'date'), col('status', 'STATUS'),
+        money('outstandingAmount', 'OUTSTANDING'), text('eligibleDate', 'ELIGIBLE_DATE'), text('status', 'STATUS', false, 'REPORTS.EARNINGS_STATUS.'),
         col('paymentReferences', 'PAYMENT_REFERENCES'),
       ],
       rows,
@@ -53,13 +70,13 @@ const commissionDetail = (raw: RawReportResponse): ReportResult => {
   };
 };
 
-const commissionSummary = (raw: RawReportResponse): ReportResult => {
+const commissionSummary = (raw: RawReportResponse, ctx?: ReportNormalizeContext): ReportResult => {
   const rows = rowsOf(raw);
   return {
     table: {
       columns: [
         linked(col('employeeName', 'EMPLOYEE_NAME'), toEmployeeReport('employee-commission-detail')), money('salesAmount', 'SALES_AMOUNT'), money('pending', 'PENDING'),
-        money('earned', 'EARNED'), money('reversals', 'REVERSALS'), money('paid', 'PAID'), money('outstanding', 'OUTSTANDING'),
+        money('earned', 'EARNED'), money('reversals', 'REVERSALS'), money('paid', 'PAID'), balanceAt('outstanding', ctx),
       ],
       rows,
     },
@@ -68,17 +85,17 @@ const commissionSummary = (raw: RawReportResponse): ReportResult => {
 };
 
 const tipsDetail = (raw: RawReportResponse): ReportResult => {
-  const rows = rowsOf(raw);
+  const rows = rowsOf(raw).map((r): Record<string, unknown> => ({ ...r, tipDate: dmy(r['tipDate']), distributionDate: dmy(r['distributionDate']) }));
   // Card fees are 0 unless the company deducts them, so those columns only appear when some tip had one.
   const hasCardFees = rows.some(r => Number(r['feeAmount'] ?? 0) !== 0);
   return {
     table: {
       columns: [
-        col('tipDate', 'TIP_DATE', 'date'), col('branchName', 'BRANCH_NAME'), linked(col('invoiceNumber', 'INVOICE_NUMBER'), toInvoice), col('kind', 'KIND'),
+        text('tipDate', 'TIP_DATE'), col('branchName', 'BRANCH_NAME'), linked(col('invoiceNumber', 'INVOICE_NUMBER'), toInvoice), text('kind', 'KIND', false, 'REPORTS.TIP_KINDS.'),
         linked(col('employeeName', 'EMPLOYEE_NAME'), toEmployeeReport('tips-summary')),
         ...(hasCardFees ? [money('grossAmount', 'TIP_GROSS'), money('feeAmount', 'CARD_FEE')] : []),
         money('amount', hasCardFees ? 'NET_TIP' : 'AMOUNT'), money('paidAmount', 'PAID'), money('outstandingAmount', 'OUTSTANDING'),
-        col('status', 'STATUS'), col('distributionDate', 'DISTRIBUTION_DATE', 'date'),
+        text('status', 'STATUS', false, 'REPORTS.EARNINGS_STATUS.'), text('distributionDate', 'DISTRIBUTION_DATE'),
       ],
       rows,
     },
@@ -86,12 +103,12 @@ const tipsDetail = (raw: RawReportResponse): ReportResult => {
   };
 };
 
-const tipsSummary = (raw: RawReportResponse): ReportResult => {
+const tipsSummary = (raw: RawReportResponse, ctx?: ReportNormalizeContext): ReportResult => {
   const people = rowsOf(raw);
   const hasCardFees = people.some(r => Number(r['cardFees'] ?? 0) !== 0);
   // Undistributed pool tips per branch (as of the end date) belong to no one: listed after the employees.
   const pool = (Array.isArray(raw['pool']) ? raw['pool'] : []).map((p: any) => ({
-    employeeName: `Pool · ${p.branchName ?? ''}`.trim(), outstanding: p.undistributed,
+    employeeName: `${ctx?.t('REPORTS.TIP_KINDS.pool') ?? 'Pool'} · ${p.branchName ?? ''}`.trim(), outstanding: p.undistributed,
   }));
   const rows = [...people, ...pool];
   return {
@@ -99,7 +116,7 @@ const tipsSummary = (raw: RawReportResponse): ReportResult => {
       columns: [
         linked(col('employeeName', 'EMPLOYEE_NAME'), toEmployeeReport('tips-detail')), money('directTips', 'DIRECT_TIPS'), money('poolShares', 'POOL_SHARES'),
         ...(hasCardFees ? [money('cardFees', 'CARD_FEES')] : []),
-        money('paid', 'PAID'), money('outstanding', 'OUTSTANDING'),
+        money('paid', 'PAID'), balanceAt('outstanding', ctx),
       ],
       rows,
     },

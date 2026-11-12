@@ -7,6 +7,7 @@ import { ReportEmptyComponent } from '../../components/report-empty/report-empty
 import { ReportErrorComponent } from '../../components/report-error/report-error.component';
 import { ReportApiFilter } from '../../models/report.model';
 import { AttendanceService, AuditActor, AuditData, AuditRow } from '../attendance.service';
+import { ReportSkeletonComponent } from '../../components/report-skeleton/report-skeleton.component';
 
 /**
  * Adjustments Audit: every clock-in / clock-out that was changed — the original time struck through beside the new one — with who changed
@@ -15,7 +16,7 @@ import { AttendanceService, AuditActor, AuditData, AuditRow } from '../attendanc
 @Component({
   selector: 'app-attendance-audit',
   standalone: true,
-  imports: [TranslateModule, DatePipe, PaginationComponent, ReportEmptyComponent, ReportErrorComponent],
+  imports: [ReportSkeletonComponent, TranslateModule, DatePipe, PaginationComponent, ReportEmptyComponent, ReportErrorComponent],
   templateUrl: './attendance-audit.component.html',
   styleUrl: './attendance-audit.component.scss',
 })

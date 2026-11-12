@@ -21,7 +21,7 @@
               <tbody>
                 @for (r of unauthorized(); track $index) {
                   <tr>
-                    <td><a class="ab-link" [routerLink]="['/reports/view', 'attendance-detail']" [queryParams]="detailQuery(r)" target="_blank" rel="noopener">{{ r.employeeName }}</a></td>
+                    <td>{{ r.employeeName }}</td>
                     <td>{{ r.branchName }}</td>
                     <td class="nowrap">@if (r.days > 1) { {{ r.startDate | date: 'dd/MM/yyyy' }} – {{ r.endDate | date: 'dd/MM/yyyy' }} } @else { {{ r.startDate | date: 'dd/MM/yyyy' }} }</td>
                     <td class="end"><span class="ab-days bad">{{ r.days }}</span></td>
@@ -46,7 +46,7 @@
               <tbody>
                 @for (r of authorized(); track $index) {
                   <tr>
-                    <td><a class="ab-link" [routerLink]="['/reports/view', 'attendance-detail']" [queryParams]="detailQuery(r)" target="_blank" rel="noopener">{{ r.employeeName }}</a></td>
+                    <td>{{ r.employeeName }}</td>
                     <td>{{ r.branchName }}</td>
                     <td class="nowrap">@if (r.days > 1) { {{ r.startDate | date: 'dd/MM/yyyy' }} – {{ r.endDate | date: 'dd/MM/yyyy' }} } @else { {{ r.startDate | date: 'dd/MM/yyyy' }} }</td>
                     <td class="end"><span class="ab-days info">{{ r.days }}</span></td>
@@ -65,5 +65,5 @@
     </div>
   }
 } @else {
-  <div class="ab-skel"></div>
+  <app-report-skeleton [kpis]="0" [columns]="7" [rows]="8" />
 }

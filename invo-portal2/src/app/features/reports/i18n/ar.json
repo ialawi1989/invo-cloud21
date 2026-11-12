@@ -1,6 +1,6 @@
 {
   "REPORTS": {
-    "EARNINGS_COLS": {"EMPLOYEE_NAME": "اسم الموظف", "INVOICE_NUMBER": "رقم الفاتورة", "INVOICE_DATE": "تاريخ الفاتورة", "PRODUCT": "المنتج", "SOLD_QTY": "الكمية المباعة", "RETURNED_QTY": "الكمية المرتجعة", "NET_SALE": "صافي البيع (بدون ضريبة)", "COMMISSION_TYPE": "النوع", "COMMISSION_RATE": "المعدل", "GROSS_COMMISSION": "إجمالي العمولة", "RETURNED_COMMISSION": "المرتجع", "NET_COMMISSION": "صافي العمولة", "EARNED": "المستحق", "PAID": "المدفوع", "OUTSTANDING": "المتبقي", "ELIGIBLE_DATE": "تاريخ الاستحقاق", "STATUS": "الحالة", "PAYMENT_REFERENCES": "مراجع الدفعات", "SALES_AMOUNT": "المبيعات", "PENDING": "قيد الانتظار", "REVERSALS": "العكوسات", "TIP_DATE": "تاريخ الإكرامية", "BRANCH_NAME": "اسم الفرع", "KIND": "النوع", "TIP_GROSS": "الإكرامية", "CARD_FEE": "رسوم البطاقة", "NET_TIP": "الصافي", "AMOUNT": "المبلغ", "DISTRIBUTION_DATE": "تاريخ التوزيع", "DIRECT_TIPS": "الإكراميات المباشرة", "POOL_SHARES": "حصص الصندوق", "CARD_FEES": "رسوم البطاقات"},
+    "EARNINGS_COLS": {"EMPLOYEE_NAME": "اسم الموظف", "INVOICE_NUMBER": "رقم الفاتورة", "INVOICE_DATE": "تاريخ الفاتورة", "PRODUCT": "المنتج", "SOLD_QTY": "الكمية المباعة", "RETURNED_QTY": "الكمية المرتجعة", "NET_SALE": "صافي البيع (بدون ضريبة)", "COMMISSION_TYPE": "النوع", "COMMISSION_RATE": "المعدل", "GROSS_COMMISSION": "إجمالي العمولة", "RETURNED_COMMISSION": "المرتجع", "NET_COMMISSION": "صافي العمولة", "EARNED": "المستحق", "PAID": "المدفوع", "OUTSTANDING": "المتبقي", "ELIGIBLE_DATE": "تاريخ الاستحقاق", "STATUS": "الحالة", "PAYMENT_REFERENCES": "مراجع الدفعات", "SALES_AMOUNT": "المبيعات", "PENDING": "قيد الانتظار", "REVERSALS": "العكوسات", "TIP_DATE": "تاريخ الإكرامية", "BRANCH_NAME": "اسم الفرع", "KIND": "النوع", "TIP_GROSS": "الإكرامية", "CARD_FEE": "رسوم البطاقة", "NET_TIP": "الصافي", "AMOUNT": "المبلغ", "DISTRIBUTION_DATE": "تاريخ التوزيع", "DIRECT_TIPS": "الإكراميات المباشرة", "POOL_SHARES": "حصص الصندوق", "CARD_FEES": "رسوم البطاقات", "BALANCE_AT": "الرصيد في {{date}}"},
     "CATALOG": {
       "SORT": "الترتيب", "SORT_DEFAULT": "الافتراضي", "SORT_AZ": "أ–ي", "SORT_ZA": "ي–أ",
       "TITLE": "التقارير",
@@ -86,6 +86,7 @@
       "SALES_BY_HOURS_BY_PRODUCT": "المبيعات حسب الساعة والمنتج",
       "DEPARTMENT_SALES_PAYMENTS": "تقرير نظرة عامة على مبيعات الأقسام والمدفوعات",
       "PURCHASE_BY_ITEM_SUB": "مشتريات الصنف",
+      "PURCHASE_BY_SUPPLIER_SUB": "مشتريات المورد",
       "SALES_BY_SERVICE_DETAILS": "تفاصيل الخدمة",
       "SALES_BY_AGGREGATOR_SUB": "تفاصيل المجمّع",
       "DAILY_CLOSING": "تقرير الإغلاق اليومي",
@@ -137,6 +138,7 @@
       "PURCHASE_BY_SUPPLIER": "المشتريات حسب المورد",
       "PURCHASE_BY_ITEM": "المشتريات حسب الصنف",
       "VAT_REPORT": "تقرير ضريبة القيمة المضافة",
+      "PRODUCT_WISE_VAT_SUB": "تفاصيل ضريبة المنتج",
       "VAT_DETAILS_SALES": "تفاصيل الضريبة (المبيعات)",
       "VAT_DETAILS_PURCHASES": "تفاصيل الضريبة (المشتريات)",
       "VAT_AUDIT": "تقرير تدقيق ضريبة القيمة المضافة",
@@ -206,6 +208,7 @@
       "SALES_BY_HOURS_BY_PRODUCT": "مبيعات كل منتج حسب ساعات اليوم ونسبتها من مبيعات اليوم.",
       "DEPARTMENT_SALES_PAYMENTS": "المبيعات حسب العلامة التجارية أو التصنيف أو القسم مع المبلغ المدفوع لكل طريقة دفع.",
       "PURCHASE_BY_ITEM_SUB": "الموردون الذين اشتُري منهم المنتج.",
+      "PURCHASE_BY_SUPPLIER_SUB": "فواتير شراء مورد واحد.",
       "SALES_BY_SERVICE_DETAILS": "فواتير وإشعارات دائنة خدمة واحدة.",
       "SALES_BY_AGGREGATOR_SUB": "فواتير وإشعارات دائنة مجمّع توصيل واحد.",
       "DAILY_CLOSING": "يوم العمل لفرع: المبيعات والمرتجعات وطرق الدفع والتصنيفات والمدفوعات.",
@@ -257,6 +260,7 @@
       "PURCHASE_BY_SUPPLIER": "المشتريات مجمعة حسب المورد.",
       "PURCHASE_BY_ITEM": "المشتريات مجمعة حسب الصنف.",
       "VAT_REPORT": "ضريبة المخرجات والمدخلات للفترة.",
+      "PRODUCT_WISE_VAT_SUB": "سطور الضريبة لمنتج واحد.",
       "VAT_DETAILS_SALES": "معاملات المبيعات خلف صف ضريبي واحد.",
       "VAT_DETAILS_PURCHASES": "معاملات المشتريات خلف صف ضريبي واحد.",
       "VAT_AUDIT": "مسار تدقيق ضريبة القيمة المضافة.",
@@ -745,6 +749,7 @@
         "discountName": "الخصم",
         "discountTotal": "إجمالي الخصم",
         "itemDescription": "وصف الصنف",
+        "netDiscounts": "الخصومات الصافية",
         "reason": "السبب",
         "transferNumber": "رقم التحويل",
         "type": "النوع",
@@ -832,14 +837,23 @@
       "CREDIT_FORWARD": "رصيد ضريبة القيمة المضافة المرحّل من الفترة (الفترات) السابقة",
       "NET_DUE_OR_RECLAIMED": "صافي الضريبة المستحقة (أو المستردة)"
     },
+        "INLINE": {
+      "NO_ROWS": "لا توجد بيانات لهذه الفترة",
+      "NO_ROWS_HINT": "جرّب فترة أو فرعاً آخر من الفلاتر.",
+      "NO_ITEMS": "لا توجد عناصر للعرض",
+      "LOADING": "جارٍ التحميل...",
+      "LOAD_FAILED": "تعذّر التحميل. تحقق من الاتصال وحاول مرة أخرى."
+    },
     "PROMPT": {
+      "RECORD_TITLE": "افتح هذا التقرير من تقرير آخر",
+      "RECORD_HINT": "يعرض هذا التقرير تفاصيل صف واحد. افتح التقرير التابع له ثم اضغط على الصف (اسم أو عدد) لعرضه هنا.",
       "BRANCH_TITLE": "اختر فرعاً",
       "BRANCH_HINT": "يعمل هذا التقرير لفرع واحد في كل مرة. افتح عوامل التصفية واختر فرعاً لعرضه.",
       "PRODUCT_TITLE": "اختر منتجاً",
       "PRODUCT_HINT": "يعرض هذا التقرير منتجاً واحداً في كل مرة. افتح عوامل التصفية واختر منتجاً لعرض تفاصيله.",
       "DISCOUNT_TITLE": "اختر خصماً",
       "DISCOUNT_HINT": "يعرض هذا التقرير خصماً واحداً في كل مرة. افتح الفلاتر واختر خصماً لعرض الفواتير والإشعارات الدائنة التي استخدمته.","EMPLOYEE_TITLE": "اختر موظفاً", "EMPLOYEE_HINT": "يعرض هذا التقرير موظفاً واحداً في كل مرة. افتح الفلاتر واختر موظفاً لعرض أيامه ورديّاته وتعديلاته."},
-    "CASHIER_SHIFTS": {"SHIFTS": "ورديات الكاشير", "BRANCH": "الفرع", "START": "بداية الكاشير", "END": "نهاية الكاشير", "START_AMOUNT": "البداية", "END_AMOUNT": "النهاية", "CASHIER": "الكاشير", "STARTING": "البداية", "CLOSING": "الإغلاق", "DATE": "التاريخ", "TIME": "الوقت", "STILL_OPEN": "الوردية ما زالت مفتوحة", "TOTAL_ORDERS": "إجمالي الطلبات", "OPENING": "الرصيد الافتتاحي", "PAYMENTS": "إجمالي المدفوعات", "REFUNDS": "إجمالي المستردات", "PAYOUT": "إجمالي المصروفات النقدية", "CLOSING_BALANCE": "الرصيد الختامي", "BY_TENDER": "المدفوعات حسب وسيلة الدفع", "PAYMENT_METHOD": "وسيلة الدفع", "TOTAL": "الإجمالي", "EQUIVALENT": "المعادل", "SHORT_OVER": "العجز / الزيادة", "TENDER": "وسيلة الدفع", "EXPECTED": "المتوقع", "COUNT": "المعدود", "SHORT_OVER_COL": "العجز / الزيادة", "NONE": "لا توجد سجلات."},
+    "CASHIER_SHIFTS": {"SHIFTS": "ورديات الكاشير", "BRANCH": "الفرع", "START": "بداية الكاشير", "END": "نهاية الكاشير", "START_AMOUNT": "البداية", "END_AMOUNT": "النهاية", "CASHIER": "الكاشير", "STARTING": "البداية", "CLOSING": "الإغلاق", "DATE": "التاريخ", "TIME": "الوقت", "STILL_OPEN": "الوردية ما زالت مفتوحة", "TOTAL_ORDERS": "إجمالي الطلبات", "OPENING": "الرصيد الافتتاحي", "PAYMENTS": "إجمالي المدفوعات", "REFUNDS": "إجمالي المستردات", "PAYOUT": "إجمالي المصروفات النقدية", "CLOSING_BALANCE": "الرصيد الختامي", "BY_TENDER": "المدفوعات حسب وسيلة الدفع", "PAYMENT_METHOD": "وسيلة الدفع", "TOTAL": "الإجمالي", "REFUNDED": "المسترد", "EQUIVALENT": "المعادل", "SHORT_OVER": "العجز / الزيادة", "TENDER": "وسيلة الدفع", "EXPECTED": "المتوقع", "COUNT": "المعدود", "SHORT_OVER_COL": "العجز / الزيادة", "NONE": "لا توجد سجلات."},
     "CUSTOMER_AGING": {"INTERVALS": "فترات التقادم", "COUNT": "عدد الفترات", "EVERY": "كل", "DAYS": "أيام", "WEEKS": "أسابيع", "MONTHS": "أشهر", "DAYS_SHORT": "يوم", "DUE": "الاستحقاق", "COLUMNS": {"supplier": "اسم المورد", "bill": "رقم الفاتورة", "billDate": "تاريخ الفاتورة", "date": "تاريخ الفاتورة", "invoice": "رقم الفاتورة", "status": "الحالة", "customer": "اسم العميل", "age": "العمر", "amount": "المبلغ", "balanceDue": "الرصيد المستحق"}},
     "SALES_BY_TERMINAL": {
       "COLUMNS": {
@@ -1020,7 +1034,8 @@
       "AS_OF": "حتى تاريخ"
     },
     "TIP_KINDS": {"direct": "مباشرة", "pool": "صندوق مشترك", "share": "حصة من الصندوق"},
-    "EARNINGS_STATUS": {"Pending": "قيد الانتظار", "Earned": "مستحقة", "PartiallyPaid": "مدفوعة جزئيًا", "Paid": "مدفوعة", "Overpaid": "مدفوعة بالزيادة", "Cancelled": "ملغاة"},
+    "EARNINGS_STATUS": {"Pending": "قيد الانتظار", "Earned": "مستحقة", "PartiallyPaid": "مدفوعة جزئيًا", "Paid": "مدفوعة", "Overpaid": "مدفوعة بالزيادة", "Cancelled": "ملغاة", "Unpaid": "غير مدفوعة", "Undistributed": "غير موزعة", "Distributed": "موزعة"},
+    "COMMISSION_TYPES": {"percentage": "نسبة مئوية", "amount": "مبلغ ثابت للوحدة"},
     "FILTER": {
       "APPLY": "تطبيق",
       "COMPARE": "مقارنة بالفترة السابقة",
@@ -1180,6 +1195,7 @@
       "ERROR": "فشل التصدير. يرجى المحاولة مرة أخرى."
     },
     "VIEW": {
+      "BREADCRUMB": "مسار التنقل",
       "BACK": "رجوع",
       "BACK_TO_REPORTS": "العودة إلى التقارير",
       "FAVORITE": "تبديل المفضلة",

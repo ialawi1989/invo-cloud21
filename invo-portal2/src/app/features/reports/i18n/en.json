@@ -1,6 +1,6 @@
 {
   "REPORTS": {
-    "EARNINGS_COLS": {"EMPLOYEE_NAME": "Employee Name", "INVOICE_NUMBER": "Invoice Number", "INVOICE_DATE": "Invoice Date", "PRODUCT": "Product", "SOLD_QTY": "Sold Qty", "RETURNED_QTY": "Returned Qty", "NET_SALE": "Net Sale (excl. VAT)", "COMMISSION_TYPE": "Type", "COMMISSION_RATE": "Rate", "GROSS_COMMISSION": "Gross Commission", "RETURNED_COMMISSION": "Returned", "NET_COMMISSION": "Net Commission", "EARNED": "Earned", "PAID": "Paid", "OUTSTANDING": "Outstanding", "ELIGIBLE_DATE": "Eligible Date", "STATUS": "Status", "PAYMENT_REFERENCES": "Payout References", "SALES_AMOUNT": "Sales", "PENDING": "Pending", "REVERSALS": "Reversals", "TIP_DATE": "Tip Date", "BRANCH_NAME": "Branch Name", "KIND": "Kind", "TIP_GROSS": "Tip", "CARD_FEE": "Card fee", "NET_TIP": "Net", "AMOUNT": "Amount", "DISTRIBUTION_DATE": "Distributed On", "DIRECT_TIPS": "Direct Tips", "POOL_SHARES": "Pool Shares", "CARD_FEES": "Card fees"},
+    "EARNINGS_COLS": {"EMPLOYEE_NAME": "Employee Name", "INVOICE_NUMBER": "Invoice Number", "INVOICE_DATE": "Invoice Date", "PRODUCT": "Product", "SOLD_QTY": "Sold Qty", "RETURNED_QTY": "Returned Qty", "NET_SALE": "Net Sale (excl. VAT)", "COMMISSION_TYPE": "Type", "COMMISSION_RATE": "Rate", "GROSS_COMMISSION": "Gross Commission", "RETURNED_COMMISSION": "Returned", "NET_COMMISSION": "Net Commission", "EARNED": "Earned", "PAID": "Paid", "OUTSTANDING": "Outstanding", "ELIGIBLE_DATE": "Eligible Date", "STATUS": "Status", "PAYMENT_REFERENCES": "Payout References", "SALES_AMOUNT": "Sales", "PENDING": "Pending", "REVERSALS": "Reversals", "TIP_DATE": "Tip Date", "BRANCH_NAME": "Branch Name", "KIND": "Kind", "TIP_GROSS": "Tip", "CARD_FEE": "Card fee", "NET_TIP": "Net", "AMOUNT": "Amount", "DISTRIBUTION_DATE": "Distributed On", "DIRECT_TIPS": "Direct Tips", "POOL_SHARES": "Pool Shares", "CARD_FEES": "Card fees", "BALANCE_AT": "Balance at {{date}}"},
     "CATALOG": {
       "SORT": "Order", "SORT_DEFAULT": "Default", "SORT_AZ": "A–Z", "SORT_ZA": "Z–A",
       "TITLE": "Reports",
@@ -86,6 +86,7 @@
       "SALES_BY_HOURS_BY_PRODUCT": "Sales by Hours by Product",
       "DEPARTMENT_SALES_PAYMENTS": "Department Sales And Payments Overview Report",
       "PURCHASE_BY_ITEM_SUB": "Item Purchases",
+      "PURCHASE_BY_SUPPLIER_SUB": "Supplier Purchases",
       "SALES_BY_SERVICE_DETAILS": "Service Details",
       "SALES_BY_AGGREGATOR_SUB": "Aggregator Details",
       "DAILY_CLOSING": "Daily Closing Report",
@@ -137,6 +138,7 @@
       "PURCHASE_BY_SUPPLIER": "Purchase by Supplier",
       "PURCHASE_BY_ITEM": "Purchase by Item",
       "VAT_REPORT": "VAT Report",
+      "PRODUCT_WISE_VAT_SUB": "Product-wise VAT Detail",
       "VAT_DETAILS_SALES": "VAT Details (Sales)",
       "VAT_DETAILS_PURCHASES": "VAT Details (Purchases)",
       "VAT_AUDIT": "VAT Audit Report",
@@ -206,6 +208,7 @@
       "SALES_BY_HOURS_BY_PRODUCT": "Each product’s sales by hour of the day, and its share of that day’s sales.",
       "DEPARTMENT_SALES_PAYMENTS": "Sales by brand, category or department with the amount paid per payment method.",
       "PURCHASE_BY_ITEM_SUB": "The suppliers a product was bought from.",
+      "PURCHASE_BY_SUPPLIER_SUB": "The bills of one supplier.",
       "SALES_BY_SERVICE_DETAILS": "The invoices and credit notes of one service.",
       "SALES_BY_AGGREGATOR_SUB": "The invoices and credit notes of one aggregator.",
       "DAILY_CLOSING": "A branch’s business day: sales, returns, tenders, categories and payments.",
@@ -257,6 +260,7 @@
       "PURCHASE_BY_SUPPLIER": "Purchases grouped by supplier.",
       "PURCHASE_BY_ITEM": "Purchases grouped by item.",
       "VAT_REPORT": "Output and input VAT for the period.",
+      "PRODUCT_WISE_VAT_SUB": "The tax lines of one product.",
       "VAT_DETAILS_SALES": "The sales transactions behind one VAT row.",
       "VAT_DETAILS_PURCHASES": "The purchase transactions behind one VAT row.",
       "VAT_AUDIT": "Detailed VAT audit trail.",
@@ -745,6 +749,7 @@
         "discountName": "Discount",
         "discountTotal": "Discount Total",
         "itemDescription": "Item Description",
+        "netDiscounts": "Net Discounts",
         "reason": "Reason",
         "transferNumber": "Transfer Number",
         "type": "Type",
@@ -832,14 +837,23 @@
       "CREDIT_FORWARD": "VAT credit carried forward from previous period(s)",
       "NET_DUE_OR_RECLAIMED": "Net VAT due (or reclaimed)"
     },
+        "INLINE": {
+      "NO_ROWS": "No data for this period",
+      "NO_ROWS_HINT": "Try another period or branch in Filters.",
+      "NO_ITEMS": "No items to show",
+      "LOADING": "Loading...",
+      "LOAD_FAILED": "Could not load this. Check your connection and try again."
+    },
     "PROMPT": {
+      "RECORD_TITLE": "Open this report from another report",
+      "RECORD_HINT": "This report shows the details behind one row. Open the report it belongs to and click the row (a name or a count) to see it here.",
       "BRANCH_TITLE": "Choose a branch",
       "BRANCH_HINT": "This report runs for one branch at a time. Open Filters and pick a branch to load it.",
       "PRODUCT_TITLE": "Choose a product",
       "PRODUCT_HINT": "This report shows one product at a time. Open Filters and pick a product to see its details.",
       "DISCOUNT_TITLE": "Choose a discount",
       "DISCOUNT_HINT": "This report shows one discount at a time. Open Filters and pick a discount to see the invoices and credit notes that used it.","EMPLOYEE_TITLE": "Choose an employee", "EMPLOYEE_HINT": "This report shows one employee at a time. Open Filters and pick an employee to see their days, shifts and adjustments."},
-    "CASHIER_SHIFTS": {"SHIFTS": "Cashier shifts", "BRANCH": "Branch", "START": "Cashier start", "END": "Cashier end", "START_AMOUNT": "Start", "END_AMOUNT": "End", "CASHIER": "Cashier", "STARTING": "Starting", "CLOSING": "Closing", "DATE": "Date", "TIME": "Time", "STILL_OPEN": "Shift still open", "TOTAL_ORDERS": "Total orders", "OPENING": "Opening balance", "PAYMENTS": "Total payments", "REFUNDS": "Total refunds", "PAYOUT": "Total payout", "CLOSING_BALANCE": "Closing balance", "BY_TENDER": "Payment by tender", "PAYMENT_METHOD": "Payment method", "TOTAL": "Total", "EQUIVALENT": "Equivalent", "SHORT_OVER": "Short / Over", "TENDER": "Tender", "EXPECTED": "Expected", "COUNT": "Count", "SHORT_OVER_COL": "Short / Over", "NONE": "No records found."},
+    "CASHIER_SHIFTS": {"SHIFTS": "Cashier shifts", "BRANCH": "Branch", "START": "Cashier start", "END": "Cashier end", "START_AMOUNT": "Start", "END_AMOUNT": "End", "CASHIER": "Cashier", "STARTING": "Starting", "CLOSING": "Closing", "DATE": "Date", "TIME": "Time", "STILL_OPEN": "Shift still open", "TOTAL_ORDERS": "Total orders", "OPENING": "Opening balance", "PAYMENTS": "Total payments", "REFUNDS": "Total refunds", "PAYOUT": "Total payout", "CLOSING_BALANCE": "Closing balance", "BY_TENDER": "Payment by tender", "PAYMENT_METHOD": "Payment method", "TOTAL": "Total", "REFUNDED": "Refunded", "EQUIVALENT": "Equivalent", "SHORT_OVER": "Short / Over", "TENDER": "Tender", "EXPECTED": "Expected", "COUNT": "Count", "SHORT_OVER_COL": "Short / Over", "NONE": "No records found."},
     "CUSTOMER_AGING": {"INTERVALS": "Aging intervals", "COUNT": "Intervals", "EVERY": "Every", "DAYS": "Days", "WEEKS": "Weeks", "MONTHS": "Months", "DAYS_SHORT": "days", "DUE": "Due", "COLUMNS": {"supplier": "Supplier Name", "bill": "Bill Number", "billDate": "Bill Date", "date": "Invoice Date", "invoice": "Invoice Number", "status": "Status", "customer": "Customer Name", "age": "Age", "amount": "Amount", "balanceDue": "Balance Due"}},
     "SALES_BY_TERMINAL": {
       "COLUMNS": {
@@ -1020,7 +1034,8 @@
       "AS_OF": "As of"
     },
     "TIP_KINDS": {"direct": "Direct", "pool": "Pool", "share": "Pool share"},
-    "EARNINGS_STATUS": {"Pending": "Pending", "Earned": "Earned", "PartiallyPaid": "Partially paid", "Paid": "Paid", "Overpaid": "Overpaid", "Cancelled": "Cancelled"},
+    "EARNINGS_STATUS": {"Pending": "Pending", "Earned": "Earned", "PartiallyPaid": "Partially paid", "Paid": "Paid", "Overpaid": "Overpaid", "Cancelled": "Cancelled", "Unpaid": "Unpaid", "Undistributed": "Undistributed", "Distributed": "Distributed"},
+    "COMMISSION_TYPES": {"percentage": "Percentage", "amount": "Fixed per unit"},
     "FILTER": {
       "APPLY": "Apply",
       "COMPARE": "Compare to previous period",
@@ -1180,6 +1195,7 @@
       "ERROR": "Export failed. Please try again."
     },
     "VIEW": {
+      "BREADCRUMB": "Breadcrumb",
       "BACK": "Back",
       "BACK_TO_REPORTS": "Back to Reports",
       "FAVORITE": "Toggle favorite",

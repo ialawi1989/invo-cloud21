@@ -26,8 +26,5 @@ thead .at-name { z-index: 4; }
 .st-off { background: #e5e7eb; }
 .st-not_employed { background: repeating-linear-gradient(45deg, #f3f4f6, #f3f4f6 4px, #e5e7eb 4px, #e5e7eb 8px); }
 
-@keyframes at-shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
-.at-skel { height: 320px; border-radius: 12px; background: linear-gradient(90deg, #eef2f6 0%, #f6f8fa 50%, #eef2f6 100%); background-size: 200% 100%; animation: at-shimmer 1.4s ease-in-out infinite; }
-@media (prefers-reduced-motion: reduce) { .at-skel { animation: none; } }
 
 .at-link { color: #1e8c9f; font-weight: 500; text-decoration: none; &:hover { text-decoration: underline; } &:focus-visible { outline: 2px solid #1e8c9f; outline-offset: 2px; border-radius: 3px; } }

@@ -5,6 +5,9 @@ import { TranslateModule } from '@ngx-translate/core';
  * "Choose something first" state of a report that needs an employee (or similar) before it can run: an illustration, a title and a hint
  * pointing at the Filters button. The sibling of `app-report-empty`, so both read as one family.
  */
+/** What a report can be waiting for: a filter choice (employee / branch / product / discount) or the row of another report it is opened from (`record`). */
+export type ReportPromptKind = 'employee' | 'branch' | 'product' | 'discount' | 'record';
+
 @Component({
   selector: 'app-report-select-prompt',
   standalone: true,
@@ -31,6 +34,10 @@ import { TranslateModule } from '@ngx-translate/core';
               <path d="M121 78v13h18V78M127 91v-6h6v6" class="sp-person-line"/>
             }
             @case ('product') {
+              <path d="M130 72l9 4.5v9L130 90l-9-4.5v-9z" class="sp-person-line"/>
+              <path d="M121 76.5l9 4.5 9-4.5M130 81v9" class="sp-person-line"/>
+            }
+            @case ('record') {
               <path d="M130 72l9 4.5v9L130 90l-9-4.5v-9z" class="sp-person-line"/>
               <path d="M121 76.5l9 4.5 9-4.5M130 81v9" class="sp-person-line"/>
             }
@@ -86,5 +93,5 @@ import { TranslateModule } from '@ngx-translate/core';
 })
 export class ReportSelectPromptComponent {
   /** What the report needs chosen first; picks the pictogram and the `REPORTS.PROMPT.<KIND>_TITLE / _HINT` texts. */
-  kind = input<'employee' | 'branch' | 'product' | 'discount'>('employee');
+  kind = input<ReportPromptKind>('employee');
 }

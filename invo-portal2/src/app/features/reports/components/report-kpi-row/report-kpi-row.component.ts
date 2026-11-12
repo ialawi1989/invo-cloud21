@@ -2,6 +2,7 @@ import { Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
+import { MynumberPipe } from '@core/pipes/mynumber.pipe';
 import { ReportKpi } from '../../models/report.model';
 
 /**
@@ -12,7 +13,7 @@ import { ReportKpi } from '../../models/report.model';
 @Component({
   selector: 'app-report-kpi-row',
   standalone: true,
-  imports: [CommonModule, TranslateModule, MycurrencyPipe],
+  imports: [CommonModule, TranslateModule, MycurrencyPipe, MynumberPipe],
   template: `
     <div class="kpi-row" [class.kpi-row--cols]="!!columns()" [style.--kpi-cols]="columns()">
       @for (kpi of kpis(); track kpi.label) {
@@ -29,8 +30,8 @@ import { ReportKpi } from '../../models/report.model';
           <span class="kpi-value" [class.neg]="kpi.value < 0">
             @switch (kpi.type) {
               @case ('currency') { {{ kpi.value | mycurrency }} }
-              @case ('percent') { {{ kpi.value | number: '1.0-1' }}% }
-              @default { {{ kpi.value | number: '1.0-0' }} }
+              @case ('percent') { {{ kpi.value | mynumber:1 }}% }
+              @default { {{ kpi.value | mynumber:0 }} }
             }
             @if (kpi.suffix) { <small class="kpi-suffix">{{ kpi.suffix }}</small> }
           </span>
@@ -45,7 +46,7 @@ import { ReportKpi } from '../../models/report.model';
                 @if (kpi.delta >= 0) { <polyline points="18 15 12 9 6 15"/> }
                 @else { <polyline points="6 9 12 15 18 9"/> }
               </svg>
-              {{ kpi.delta >= 0 ? '+' : '−' }}{{ abs(kpi.delta) | number: '1.0-1' }}%
+              {{ kpi.delta >= 0 ? '+' : '−' }}{{ abs(kpi.delta) | mynumber:1 }}%
               <span class="kpi-delta-note">{{ 'REPORTS.KPI.VS_PREVIOUS' | translate }}</span>
             </span>
           }

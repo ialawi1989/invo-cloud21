@@ -1,5 +1,5 @@
 @if (loading() && !data()) {
-  <div class="ls-loading" aria-busy="true"><div class="ls-skel"></div></div>
+  <app-report-skeleton [columns]="8" />
 } @else if (error()) {
   <app-report-error [message]="error()" (retry)="load()" />
 } @else if (data(); as d) {
@@ -24,13 +24,13 @@
                 <td class="sticky-col-1">
                   @if (r.productId) {
                     <a class="account-link" [routerLink]="['/reports/view', 'product-movement']" [queryParams]="movementParams(r)"
-                       [attr.title]="'REPORTS.GENERAL_INVENTORY.VIEW_MOVEMENT' | translate" target="_blank" rel="noopener">{{ r.productName }}</a>
+                       [attr.title]="'REPORTS.GENERAL_INVENTORY.VIEW_MOVEMENT' | translate">{{ r.productName }}</a>
                   } @else { {{ r.productName }} }
                   @if (r.barcode) { <span class="gi-barcode">{{ r.barcode }}</span> }
                 </td>
                 <td>{{ r.categoryName || '—' }}</td>
                 @for (c of cols; track c.key) {
-                  <td [class]="'text-end gi-cell gi-' + c.sec" [class.neg]="num(r[c.key]) < 0">{{ c.money ? (num(r[c.key]) | mycurrency) : (num(r[c.key]) | number) }}</td>
+                  <td [class]="'text-end gi-cell gi-' + c.sec" [class.neg]="num(r[c.key]) < 0">{{ c.money ? (num(r[c.key]) | mycurrency) : (num(r[c.key]) | mynumber) }}</td>
                 }
               </tr>
             }
@@ -39,7 +39,7 @@
                 <td class="sticky-col-1"><strong>{{ 'REPORTS.SALES_BY_PRODUCT.TOTAL' | translate }}</strong></td>
                 <td></td>
                 @for (c of cols; track c.key) {
-                  <td [class]="'text-end gi-cell gi-' + c.sec"><strong>{{ c.money ? (num(t[c.key]) | mycurrency) : (num(t[c.key]) | number) }}</strong></td>
+                  <td [class]="'text-end gi-cell gi-' + c.sec"><strong>{{ c.money ? (num(t[c.key]) | mycurrency) : (num(t[c.key]) | mynumber) }}</strong></td>
                 }
               </tr>
             }

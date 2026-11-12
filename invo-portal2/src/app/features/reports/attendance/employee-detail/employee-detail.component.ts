@@ -9,6 +9,7 @@ import { ReportErrorComponent } from '../../components/report-error/report-error
 import { ReportApiFilter, ReportKpi } from '../../models/report.model';
 import { ReportKpiRowComponent } from '../../components/report-kpi-row/report-kpi-row.component';
 import { AttendanceService, EmployeeDetailData } from '../attendance.service';
+import { ReportSkeletonComponent } from '../../components/report-skeleton/report-skeleton.component';
 
 /**
  * Employee Attendance Detail: one employee over a period — their totals, each day with its shifts, and every adjustment made to
@@ -17,7 +18,7 @@ import { AttendanceService, EmployeeDetailData } from '../attendance.service';
 @Component({
   selector: 'app-employee-attendance-detail',
   standalone: true,
-  imports: [TranslateModule, RouterLink, DatePipe, ReportEmptyComponent, ReportErrorComponent, ReportSelectPromptComponent, ReportKpiRowComponent],
+  imports: [ReportSkeletonComponent, TranslateModule, RouterLink, DatePipe, ReportEmptyComponent, ReportErrorComponent, ReportSelectPromptComponent, ReportKpiRowComponent],
   templateUrl: './employee-detail.component.html',
   styleUrl: './employee-detail.component.scss',
 })

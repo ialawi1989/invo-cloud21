@@ -1,0 +1,22 @@
+<div class="rs" aria-busy="true">
+  @if (kpis() > 0) {
+    <div class="rs-kpis" [style.--rs-cols]="tileCols()">
+      @for (t of tiles(); track t) {
+        <div class="rs-card rs-tile"><span class="rs-line rs-sm"></span><span class="rs-line rs-lg"></span><span class="rs-line rs-pill"></span></div>
+      }
+    </div>
+  }
+  @if (chart()) { <div class="rs-card rs-chart"><span class="rs-line rs-block"></span></div> }
+  @if (columns() > 0) {
+    <div class="rs-card rs-table">
+      <div class="rs-row rs-head" [style.--rs-n]="cols().length">
+        @for (c of cols(); track c) { <span class="rs-line" [style.width.%]="c === 0 ? 50 : 60"></span> }
+      </div>
+      @for (r of body(); track r) {
+        <div class="rs-row" [style.--rs-n]="cols().length">
+          @for (c of cols(); track c) { <span class="rs-line" [style.width.%]="w(r, c)"></span> }
+        </div>
+      }
+    </div>
+  }
+</div>

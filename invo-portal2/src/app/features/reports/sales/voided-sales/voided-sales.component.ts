@@ -12,6 +12,7 @@ import { PAGING_PARAMS, pickPageSize, pickSort } from '../../business-overview/s
 import { ReportApiFilter } from '../../models/report.model';
 import { ReportErrorComponent } from '../../components/report-error/report-error.component';
 import { ReportEmptyComponent } from '../../components/report-empty/report-empty.component';
+import { ReportSkeletonComponent } from '../../components/report-skeleton/report-skeleton.component';
 import {
   ListSort, VoidedItemRecord, VoidedSalesData, VoidedSalesRecord, VoidedSalesService, VoidedSalesTotal,
 } from './voided-sales.service';
@@ -35,7 +36,7 @@ interface RowDetails { loading: boolean; error: string | null; rows: ItemRow[]; 
 @Component({
   selector: 'app-voided-sales',
   standalone: true,
-  imports: [ReportEmptyComponent, ReportErrorComponent, TranslateModule, DatePipe, RouterLink, MycurrencyPipe, PaginationComponent, BoTableShellComponent],
+  imports: [ReportSkeletonComponent, ReportEmptyComponent, ReportErrorComponent, TranslateModule, DatePipe, RouterLink, MycurrencyPipe, PaginationComponent, BoTableShellComponent],
   templateUrl: './voided-sales.component.html',
   styleUrl: './voided-sales.component.scss',
 })

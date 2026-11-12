@@ -1,9 +1,5 @@
 @if (loading() && !data()) {
-  <div class="ss-loading" aria-busy="true">
-    <div class="ss-skel-kpis">@for (i of [1,2,3,4]; track i) { <div class="ss-skel"></div> }</div>
-    <div class="ss-skel ss-skel-card"></div>
-    <div class="ss-skel ss-skel-card"></div>
-  </div>
+  <app-report-skeleton [kpis]="4" [chart]="true" [columns]="5" [rows]="4" />
 } @else if (error()) {
   <app-report-error [message]="error()" (retry)="load()" />
 } @else if (data(); as d) {
@@ -23,7 +19,7 @@
             @for (r of d.sales.records; track $index) {
               <tr>
                 <td>{{ r.boxNo }}</td>
-                <td>@if (hasDetails(r)) { <a class="vat-link" [routerLink]="['/reports/view', 'vat-details-sales']" [queryParams]="detailsParams(r)" target="_blank" rel="noopener">{{ r.description }}</a> } @else { {{ r.description }} }</td>
+                <td>@if (hasDetails(r)) { <a class="vat-link" [routerLink]="['/reports/view', 'vat-details-sales']" [queryParams]="detailsParams(r)">{{ r.description }}</a> } @else { {{ r.description }} }</td>
                 <td class="num">{{ r.amount | mycurrency }}</td><td class="num">{{ r.adjustment | mycurrency }}</td><td class="num">{{ r.vatAmount | mycurrency }}</td>
               </tr>
             }
@@ -50,8 +46,8 @@
               <tr>
                 <td>{{ r.boxNo }}</td>
                 <td>
-                  @if (hasDetails(r)) { <a class="vat-link" [routerLink]="['/reports/view', 'vat-details-purchases']" [queryParams]="detailsParams(r)" target="_blank" rel="noopener">{{ r.description }}</a> }
-                  @else if (r.isBillOfEntry) { <a class="vat-link" [routerLink]="['/reports/view', 'bill-of-entry-details-vat']" [queryParams]="entryParams()" target="_blank" rel="noopener">{{ r.description }}</a> }
+                  @if (hasDetails(r)) { <a class="vat-link" [routerLink]="['/reports/view', 'vat-details-purchases']" [queryParams]="detailsParams(r)">{{ r.description }}</a> }
+                  @else if (r.isBillOfEntry) { <a class="vat-link" [routerLink]="['/reports/view', 'bill-of-entry-details-vat']" [queryParams]="entryParams()">{{ r.description }}</a> }
                   @else { {{ r.description }} }
                 </td>
                 <td class="num">{{ r.amount | mycurrency }}</td><td class="num">{{ r.adjustment | mycurrency }}</td><td class="num">{{ r.vatAmount | mycurrency }}</td>

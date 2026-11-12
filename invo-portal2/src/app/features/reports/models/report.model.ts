@@ -155,6 +155,8 @@ export interface ReportExportConfig {
 export interface ReportMeta {
   /** URL slug (kebab-case) — the `:slug` route param. */
   slug: string;
+  /** Drill-through sub-reports: slug of the report they are opened from (shown in the breadcrumb). */
+  parent?: string;
   /** Backend route name for `accounts/reports/{route}` (camelCase). */
   route: string;
   titleKey: string;
@@ -187,7 +189,7 @@ export interface ReportMeta {
    * Optional custom normalizer converting the raw API payload into a
    * `ReportResult`. When omitted, `defaultNormalize` is used (flat-list shape).
    */
-  normalize?: (raw: RawReportResponse) => ReportResult;
+  normalize?: (raw: RawReportResponse, ctx?: ReportNormalizeContext) => ReportResult;
 }
 
 /** A category grouping in the catalog. */
@@ -304,11 +306,21 @@ export interface ReportLinkContext { fromDate?: string; toDate?: string; branche
 /** Where a cell links to: a route and its query params. */
 export interface ReportCellLink { path: any[]; query?: Record<string, string | null>; }
 
+/** What a custom normalizer may need besides the payload: the request's filter (its period) and the translator. */
+export interface ReportNormalizeContext {
+  filter: ReportApiFilter;
+  t: (key: string, params?: Record<string, unknown>) => string;
+}
+
 export interface ReportColumn {
   key: string;
   label: string;
+  /** Values for the placeholders of the label's translation ("Balance at {{date}}"). */
+  labelParams?: Record<string, unknown>;
   align?: 'start' | 'end' | 'center';
   type?: 'text' | 'currency' | 'number' | 'percent' | 'date';
+  /** A text cell that is a code (a status): shown through the translation `<i18n><value>`, the raw value when there is none. */
+  i18n?: string;
   /** Makes the cell a link; return `null` for rows with nothing to open. */
   link?: (row: Record<string, any>, ctx: ReportLinkContext) => ReportCellLink | null;
 }

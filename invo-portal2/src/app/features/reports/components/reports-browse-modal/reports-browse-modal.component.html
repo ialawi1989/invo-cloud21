@@ -10,13 +10,19 @@
            [value]="search()" (input)="search.set($any($event.target).value)" [placeholder]="'REPORTS.CATALOG.SEARCH' | translate" />
   </div>
 
-  <button type="button" class="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border transition-colors"
+  <div class="mt-2.5 flex items-center justify-between gap-3 flex-wrap">
+  <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border transition-colors"
           [class.bg-brand-50]="onlyFavorites()" [class.border-brand-500]="onlyFavorites()" [class.text-brand-700]="onlyFavorites()"
           [class.border-slate-300]="!onlyFavorites()" [class.text-slate-600]="!onlyFavorites()"
           [attr.aria-pressed]="onlyFavorites()" (click)="onlyFavorites.set(!onlyFavorites())">
     <svg width="13" height="13" viewBox="0 0 24 24" [attr.fill]="onlyFavorites() ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
     {{ 'REPORTS.BROWSE.FAVORITES_ONLY' | translate }}
   </button>
+    <div class="flex items-center gap-2">
+      <span class="text-xs text-slate-500">{{ 'REPORTS.CATALOG.SORT' | translate }}</span>
+      <app-segmented-toggle size="sm" [options]="sortOptions" [value]="sort()" (valueChange)="setSort($event)" />
+    </div>
+  </div>
 </div>
 
 <div #listBox class="px-3 pb-3 flex-1 min-h-0 overflow-y-auto">

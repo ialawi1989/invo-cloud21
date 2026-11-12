@@ -13,6 +13,7 @@ import { ReportApiFilter } from '../../models/report.model';
 import { InvoiceSalesData, InvoiceSalesRecord, ListSort, SalesByInvoiceService } from './sales-by-invoice.service';
 import { ReportErrorComponent } from '../../components/report-error/report-error.component';
 import { ReportEmptyComponent } from '../../components/report-empty/report-empty.component';
+import { ReportSkeletonComponent } from '../../components/report-skeleton/report-skeleton.component';
 
 type Num = 'sales' | 'discount' | 'tax' | 'totalSales';
 const NUM_COLS: { key: Num; label: string }[] = [
@@ -25,7 +26,7 @@ const toNum = (v: unknown): number => { const n = typeof v === 'number' ? v : pa
 @Component({
   selector: 'app-sales-by-invoice',
   standalone: true,
-  imports: [ReportEmptyComponent, ReportErrorComponent, TranslateModule, DatePipe, RouterLink, MycurrencyPipe, PaginationComponent, BoTableShellComponent],
+  imports: [ReportSkeletonComponent, ReportEmptyComponent, ReportErrorComponent, TranslateModule, DatePipe, RouterLink, MycurrencyPipe, PaginationComponent, BoTableShellComponent],
   templateUrl: './sales-by-invoice.component.html',
   styleUrl: './sales-by-invoice.component.scss',
 })

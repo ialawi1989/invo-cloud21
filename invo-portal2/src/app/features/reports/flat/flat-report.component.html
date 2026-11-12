@@ -1,5 +1,5 @@
 @if (loading() && !data()) {
-  <div class="ls-loading" aria-busy="true"><div class="ls-skel"></div></div>
+  <app-report-skeleton [kpis]="config().kpis?.length ?? 0" [columns]="skeletonCols()" />
 } @else if (error()) {
   <app-report-error [message]="error()" (retry)="load()" />
 } @else if (data(); as d) {
@@ -40,29 +40,31 @@
                         [class.fl-group-cell]="c.key === groupColumn()" [class.fl-sub-cell]="c.key === secondColumn()" [attr.rowspan]="c.key === groupColumn() ? row.span : (c.key === secondColumn() ? row.span2 : null)">
                       @switch (c.type) {
                         @case ('number') {
-                          @if (c.drill && row.rec[c.drill.idKey] && num(row.rec[c.key]) > 0) {
-                            <a class="account-link" [routerLink]="['/reports/view', c.drill.slug]" [queryParams]="drillParams(row.rec, c)" target="_blank" rel="noopener">{{ num(row.rec[c.key]) | number }}</a>
-                          } @else if (isTextVal(row.rec[c.key])) { {{ row.rec[c.key] }} } @else if (c.dashZero && !num(row.rec[c.key])) { - } @else { {{ num(row.rec[c.key]) | number }} }
+                          @if (c.drill && (row.rec[c.drill.idKey] || c.drill.fallback) && num(row.rec[c.key]) > 0) {
+                            <a class="account-link" [routerLink]="['/reports/view', c.drill.slug]" [queryParams]="drillParams(row.rec, c)">{{ num(row.rec[c.key]) | mynumber: c.decimals }}</a>
+                          } @else if (isTextVal(row.rec[c.key])) { {{ row.rec[c.key] }} } @else if (c.dashZero && !num(row.rec[c.key])) { - } @else { {{ num(row.rec[c.key]) | mynumber: c.decimals }} }
                         }
-                        @case ('currency') { {{ c.pctKey && (row.rec[c.pctKey] === true || row.rec[c.pctKey] === 'true' || row.rec[c.pctKey] === 'percentage') ? ((num(row.rec[c.key]) | number: '1.0-2') + '%') : (num(row.rec[c.key]) | mycurrency) }} }
+                        @case ('currency') { {{ c.pctKey && (row.rec[c.pctKey] === true || row.rec[c.pctKey] === 'true' || row.rec[c.pctKey] === 'percentage') ? ((num(row.rec[c.key]) | mynumber:2) + '%') : (num(row.rec[c.key]) | mycurrency) }} }
                         @case ('daydate') {
                           @if (isEmptyVal(row.rec[c.key])) { - } @else if (!isDateVal(row.rec[c.key])) { {{ row.rec[c.key] }} } @else { <strong class="fl-dayname">{{ row.rec[c.key] | date: 'EEEE' }}</strong><small class="fl-days">{{ row.rec[c.key] | date: 'yyyy-MM-dd' }}</small> }
                         }
                         @case ('ymd') { {{ isEmptyVal(row.rec[c.key]) ? '-' : isDateVal(row.rec[c.key]) ? (row.rec[c.key] | date: 'yyyy/MM/dd') : row.rec[c.key] }} }
+                        @case ('dateLong') { {{ isEmptyVal(row.rec[c.key]) ? '-' : isDateVal(row.rec[c.key]) ? (row.rec[c.key] | date: 'dd MMM yyyy') : row.rec[c.key] }} }
                         @case ('date') { {{ isEmptyVal(row.rec[c.key]) ? '-' : isDateVal(row.rec[c.key]) ? (row.rec[c.key] | date: 'dd/MM/yyyy') : row.rec[c.key] }} }
+                        @case ('datetime12') { {{ isEmptyVal(row.rec[c.key]) ? '-' : isDateVal(row.rec[c.key]) ? (row.rec[c.key] | date: 'dd/MM/yyyy hh:mm a') : row.rec[c.key] }} }
                         @case ('datetime') { {{ isEmptyVal(row.rec[c.key]) ? '-' : isDateVal(row.rec[c.key]) ? (row.rec[c.key] | date: 'dd/MM/yyyy HH:mm') : row.rec[c.key] }} }
                         @case ('profit') { <span [class.neg]="num(row.rec[c.key]) < 0" [class.pos]="num(row.rec[c.key]) > 0">{{ num(row.rec[c.key]) | mycurrency }}</span> }
-                        @case ('profitPct') { <span class="fl-badge" [class]="'fl-badge ' + profitPctClass(row.rec[c.key])">{{ num(row.rec[c.key]) | number: '1.2-2' }}%</span> }
+                        @case ('profitPct') { <span class="fl-badge" [class]="'fl-badge ' + profitPctClass(row.rec[c.key])">{{ num(row.rec[c.key]) | mynumber: (c.decimals ?? 2) }}%</span> }
                         @case ('direction') {
                           @if (isEmptyVal(row.rec[c.key])) { - } @else { <span [class]="'fl-badge ' + directionClass(row.rec[c.key])">{{ row.rec[c.key] }}</span> }
                         }
-                        @case ('stock') { <span [class]="stockClass(row.rec, c.key)">{{ num(row.rec[c.key]) | number }}</span> }
-                        @case ('orderQty') { <span class="fl-badge fl-warn">{{ num(row.rec[c.key]) | number }}</span> }
+                        @case ('stock') { <span [class]="stockClass(row.rec, c.key)">{{ num(row.rec[c.key]) | mynumber }}</span> }
+                        @case ('orderQty') { <span class="fl-badge fl-warn">{{ num(row.rec[c.key]) | mynumber }}</span> }
                         @case ('stockout') {
                           @if (isEmptyVal(row.rec[c.key])) { - } @else { <span [class]="'fl-badge ' + stockoutClass(row.rec[c.key])">{{ row.rec[c.key] | date: 'dd/MM/yyyy' }}</span> }
                         }
-                        @case ('pct') { {{ num(row.rec[c.key]) | number: '1.1-1' }}% }
-                        @case ('score') { <strong>{{ num(row.rec[c.key]) | number: '1.1-1' }}</strong> }
+                        @case ('pct') { {{ isEmptyVal(row.rec[c.key]) ? '—' : ((num(row.rec[c.key]) | mynumber: (c.decimals ?? 1)) + '%') }} }
+                        @case ('score') { <strong>{{ num(row.rec[c.key]) | mynumber:1 }}</strong> }
                         @case ('shots') {
                           @if (shiftsOf(row.rec).length === 0) { - } @else {
                             @for (sh of shiftsOf(row.rec); track $index; let si = $index) {
@@ -110,12 +112,14 @@
                         }
                         @default {
                           @if (c.doc && row.rec[c.doc.idKey] && docLink(row.rec, c) && (c.doc.typeKey || !isEmptyVal(row.rec[c.key]))) {
-                            <a class="account-link" [routerLink]="docLink(row.rec, c)" target="_blank" rel="noopener">{{ isEmptyVal(row.rec[c.key]) ? '-' : row.rec[c.key] }}</a>
+                            <a class="account-link" [routerLink]="docLink(row.rec, c)" [attr.target]="c.doc.newTab ? '_blank' : null" [attr.rel]="c.doc.newTab ? 'noopener' : null">{{ isEmptyVal(row.rec[c.key]) ? '-' : row.rec[c.key] }}</a>
                           } @else if (c.link === 'product' && row.rec['productId'] && !isEmptyVal(row.rec[c.key])) {
                             <a class="account-link" [routerLink]="['/reports/view', 'product-movement']" [queryParams]="movementParams(row.rec)"
-                               [attr.title]="'REPORTS.GENERAL_INVENTORY.VIEW_MOVEMENT' | translate" target="_blank" rel="noopener">{{ row.rec[c.key] }}</a>
-                          } @else if (c.drill && row.rec[c.drill.idKey] && !isEmptyVal(row.rec[c.key])) {
-                            <a class="account-link" [routerLink]="['/reports/view', c.drill.slug]" [queryParams]="drillParams(row.rec, c)" target="_blank" rel="noopener">{{ row.rec[c.key] }}</a>
+                               [attr.title]="'REPORTS.GENERAL_INVENTORY.VIEW_MOVEMENT' | translate">{{ row.rec[c.key] }}</a>
+                          } @else if (c.link === 'supplier' && row.rec['id'] && row.rec['id'] !== 'null' && !isEmptyVal(row.rec[c.key])) {
+                            <a class="account-link" [routerLink]="['/account/suppliers/view', row.rec['id']]">{{ row.rec[c.key] }}</a>
+                          } @else if (c.drill && (row.rec[c.drill.idKey] || c.drill.fallback) && !isEmptyVal(row.rec[c.key])) {
+                            <a class="account-link" [routerLink]="['/reports/view', c.drill.slug]" [queryParams]="drillParams(row.rec, c)">{{ row.rec[c.key] }}</a>
                           } @else if (!isEmptyVal(row.rec[c.key]) && (!groupColumn() || c.key !== groupColumn() || row.first)) { {{ row.rec[c.key] }} }
                           @else if (!groupColumn() || c.key !== groupColumn()) { - }
                         }
@@ -131,7 +135,7 @@
                     @if (c.key !== groupColumn()) {
                     <td [class.sticky-col-1]="first" [class.text-end]="c.end" [class.tn]="!!c.tone" [attr.data-tone]="c.tone">
                       @if (c.key === labelColumn()) { <strong>{{ 'REPORTS.FLAT.SUBTOTAL' | translate }}</strong> }
-                      @else if (c.total) { <strong>{{ c.type === 'currency' ? (num(row.rec[c.key]) | mycurrency) : (num(row.rec[c.key]) | number) }}</strong> }
+                      @else if (c.total) { <strong>{{ c.type === 'currency' ? (num(row.rec[c.key]) | mycurrency) : (num(row.rec[c.key]) | mynumber: c.decimals) }}</strong> }
                     </td>
                     }
                   }
@@ -148,8 +152,8 @@
                         @switch (c.type) {
                           @case ('currency') { {{ totals()[c.key] | mycurrency }} }
                           @case ('profit') { {{ totals()[c.key] | mycurrency }} }
-                          @case ('profitPct') { {{ totals()[c.key] | number: '1.2-2' }}% }
-                          @default { {{ totals()[c.key] | number }} }
+                          @case ('profitPct') { {{ totals()[c.key] | mynumber: (c.decimals ?? 2) }}% }
+                          @default { {{ totals()[c.key] | mynumber: c.decimals }} }
                         }
                       </strong>
                     }

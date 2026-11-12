@@ -1,7 +1,7 @@
 @if (!hasProduct) {
-  <div class="ls-error"><p>{{ 'REPORTS.ITEM_TRANSACTIONS.NO_PRODUCT' | translate }}</p></div>
+  <app-report-select-prompt kind="record" />
 } @else if (loading() && !data()) {
-  <div class="ls-loading" aria-busy="true"><div class="ls-skel"></div></div>
+  <app-report-skeleton [columns]="7" />
 } @else if (error()) {
   <app-report-error [message]="error()" (retry)="load()" />
 } @else if (data(); as d) {

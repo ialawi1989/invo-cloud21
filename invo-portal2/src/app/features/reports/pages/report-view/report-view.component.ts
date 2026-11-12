@@ -1,4 +1,5 @@
-import { Component, OnDestroy, OnInit, computed, effect, inject, input, signal, untracked } from '@angular/core';
+import { ReportPromptKind } from '../../components/report-select-prompt/report-select-prompt.component';
+import { Component, DestroyRef, OnDestroy, OnInit, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -28,10 +29,11 @@ import {
 import {
   ExportFormat, ReportExportButtonComponent,
 } from '../../components/report-export-button/report-export-button.component';
-import { ReportPageShellComponent } from '../../components/report-page-shell/report-page-shell.component';
+import { ReportCrumb, ReportPageShellComponent } from '../../components/report-page-shell/report-page-shell.component';
 import { ReportsRecentService } from '../../services/reports-recent.service';
 import { ReportsFavoritesService } from '../../services/reports-favorites.service';
 import { resolvePreset } from '../../utils/report-period.util';
+import { isDrillTarget, ReportBackTrail } from '../../utils/report-back-trail';
 
 import { ReportFilterBarComponent, BranchOption } from '../../components/report-filter-bar/report-filter-bar.component';
 import { ReportKpiRowComponent } from '../../components/report-kpi-row/report-kpi-row.component';
@@ -77,6 +79,21 @@ import { ReportErrorComponent } from '../../components/report-error/report-error
  */
 /** An id from a URL list — drops blanks and the "[object Object]" an earlier picker bug left in saved links. */
 const isId = (v: string): boolean => !!v && !v.includes('[object');
+
+/** Drill-through reports and the URL parameter(s) that carry their source row (any one of them is enough). */
+const DRILL_SOURCE_PARAMS: Record<string, string[]> = {
+  'sales-by-service-details': ['serviceId'],
+  'sales-by-aggregator-sub': ['aggregatorName'],
+  'purchase-by-supplier-sub': ['supplierId'],
+  'purchase-by-item-sub': ['itemProductId', 'itemProductName'],
+  'sales-by-item-transactions': ['itemProductId', 'itemProductName'],
+  'payment-method-sub': ['paymentId'],
+  'surcharge-sub': ['surchageId'],
+  'delivery-charge-by-city': ['city'],
+  'product-wise-vat-sub': ['productId'],
+  'vat-details-sales': ['taxId', 'taxes'],
+  'vat-details-purchases': ['taxId', 'taxes'],
+};
 
 @Component({
   selector: 'app-report-view',
@@ -133,6 +150,8 @@ export class ReportViewComponent implements OnInit, OnDestroy {
   private layout = inject(LayoutService);
   private api = inject(ApiService);
   private modal = inject(ModalService);
+  /** The page this report was opened from (a drill-through's source report, with its filters in the URL). */
+  private trail = new ReportBackTrail(this.router, inject(DestroyRef));
 
   /** Route param, bound via `withComponentInputBinding()`. */
   slug = input<string>('');
@@ -158,6 +177,18 @@ export class ReportViewComponent implements OnInit, OnDestroy {
   });
 
   /**
+   * A drill-through report (opened from a row of another report) was opened without that row in the URL
+   * (e.g. a bookmark or a typed address): there is nothing to show, so the "open it from another report" prompt replaces it.
+   */
+  sourceRowMissing = computed(() => {
+    const slug = this.meta()?.slug;
+    const need = slug ? DRILL_SOURCE_PARAMS[slug] : undefined;
+    if (!need) return false;
+    const q = this.route.snapshot.queryParams;
+    return !need.some(k => q[k] !== undefined && q[k] !== null && q[k] !== '');
+  });
+
+  /**
    * True when this report requires a single branch selection (`requireBranch`)
    * and the filter state doesn't have exactly one chosen yet. Mirrors
    * InvoCloudFront2's required-entity-filter gate (`required-filters.util.ts`):
@@ -166,6 +197,7 @@ export class ReportViewComponent implements OnInit, OnDestroy {
    */
   requiredFiltersMissing = computed(() => {
     const m = this.meta();
+    if (this.sourceRowMissing()) return true;
     if (m?.filters?.requireProduct && !(this.filterState().productIds?.length)) return true;
     if (m?.filters?.requireEmployee && !(this.filterState().employeeIds?.length)) return true;
     if (m?.filters?.requireDiscount && !(this.filterState().discountIds?.length)) return true;
@@ -174,7 +206,8 @@ export class ReportViewComponent implements OnInit, OnDestroy {
   });
 
   /** Which mandatory choice is still missing (picks the prompt shown instead of the report). */
-  missingKind = computed<'employee' | 'branch' | 'product' | 'discount'>(() => {
+  missingKind = computed<ReportPromptKind>(() => {
+    if (this.sourceRowMissing()) return 'record';
     const f = this.meta()?.filters; const s = this.filterState();
     if (f?.requireProduct && !s.productIds?.length) return 'product';
     if (f?.requireEmployee && !s.employeeIds?.length) return 'employee';
@@ -387,8 +420,12 @@ export class ReportViewComponent implements OnInit, OnDestroy {
       filter['chargeAmount'] = Number(q['chargeAmount'] ?? 0);
       filter['chargePercentage'] = q['chargePercentage'] === 'true';
     }
+    // Purchase by Supplier drill-through: the chosen supplier
+    if (this.meta()?.slug === 'purchase-by-supplier-sub') filter['supplierId'] = this.route.snapshot.queryParams['supplierId'];
     // Delivery Charge drill-through: the chosen city
     if (this.meta()?.slug === 'delivery-charge-by-city') filter['city'] = this.route.snapshot.queryParams['city'];
+    // Product-wise VAT drill-through: the chosen product (the export dispatches on `productId` too)
+    if (this.meta()?.slug === 'product-wise-vat-sub') filter['productId'] = this.route.snapshot.queryParams['productId'];
     // VAT drill-through: the tax (or taxes) of the row that was opened
     if (this.meta()?.slug === 'vat-details-sales' || this.meta()?.slug === 'vat-details-purchases') {
       const q = this.route.snapshot.queryParams;
@@ -518,6 +555,7 @@ export class ReportViewComponent implements OnInit, OnDestroy {
     });
     const slug = await ref.afterClosed();
     if (!slug || slug === this.slug()) return;
+    this.trail.reset();
     void this.router.navigate(['/reports/view', slug], { queryParams: this.carryQuery(slug) });
   }
 
@@ -559,7 +597,30 @@ export class ReportViewComponent implements OnInit, OnDestroy {
     window.print();
   }
 
+  /**
+   * Breadcrumb above the title: Reports › group › (the report this one was opened from) › this report. The parent link goes back
+   * to the page the user came from when that is the parent (so its filters are kept), else to the parent with the period and branches carried.
+   */
+  crumbs = computed<ReportCrumb[]>(() => {
+    const m = this.meta(); const g = this.group();
+    if (!m || !g) return [];
+    const t = (k: string) => this.lang.instant(k);
+    const out: ReportCrumb[] = [{ label: t('REPORTS.CATALOG.TITLE'), url: '/reports' }, { label: t(g.titleKey), url: '/reports' }];
+    const parent = m.parent ? findReport(m.parent)?.meta : undefined;
+    if (parent) {
+      const from = this.trail.source(this.router.url);
+      const own = from && from.split('?')[0] === '/reports/view/' + parent.slug ? from : null;
+      const url = own ?? this.router.serializeUrl(this.router.createUrlTree(['/reports/view', parent.slug], { queryParams: this.carryQuery(parent.slug) }));
+      out.push({ label: t(parent.titleKey), url });
+    }
+    out.push({ label: t(m.titleKey) });
+    return out;
+  });
+
+  /** Back: a drill-through's destination returns to the report it was opened from (same period, branches, filters), else the catalog. */
   back(): void {
+    const from = isDrillTarget(this.slug()) ? this.trail.source(this.router.url) : null;
+    if (from) { void this.router.navigateByUrl(from); return; }
     this.router.navigate(['/reports']);
   }
 }

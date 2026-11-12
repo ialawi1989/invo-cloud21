@@ -1,7 +1,8 @@
-import { Component, computed, input, output, signal } from '@angular/core';
+import { Component, computed, inject, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
+import { MynumberPipe } from '@core/pipes/mynumber.pipe';
 import { RouterLink } from '@angular/router';
 import { ReportCellLink, ReportColumn, ReportLinkContext, ReportTable } from '../../models/report.model';
 import { ReportEmptyComponent } from '../report-empty/report-empty.component';
@@ -15,7 +16,7 @@ import { ReportEmptyComponent } from '../report-empty/report-empty.component';
 @Component({
   selector: 'app-report-data-table',
   standalone: true,
-  imports: [ReportEmptyComponent, CommonModule, TranslateModule, MycurrencyPipe, RouterLink],
+  imports: [ReportEmptyComponent, CommonModule, TranslateModule, MycurrencyPipe, MynumberPipe, RouterLink],
   templateUrl: './report-data-table.component.html',
   styleUrl: './report-data-table.component.scss',
 })
@@ -66,6 +67,14 @@ export class ReportDataTableComponent {
   /** Where a cell links to, when its column has a link and the row has something to open. */
   linkOf(row: Record<string, any>, col: ReportColumn): ReportCellLink | null {
     return col.link && row[col.key] ? col.link(row, this.linkContext()) : null;
+  }
+
+  private translate = inject(TranslateService);
+  /** A status-like code through its translation (`col.i18n` + code); the code itself when nothing is translated. */
+  translateCode(col: ReportColumn, v: unknown): string {
+    const key = `${col.i18n}${v}`;
+    const t = this.translate.instant(key);
+    return t === key ? String(v) : t;
   }
 
   cellValue(row: Record<string, any>, col: ReportColumn): any {

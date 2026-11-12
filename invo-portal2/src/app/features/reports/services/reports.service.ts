@@ -35,7 +35,7 @@ export class ReportsService {
   async getReport(meta: ReportMeta, filter: ReportApiFilter): Promise<ReportResult> {
     const raw = await this.fetchRaw(meta.route, filter);
     const normalize = meta.normalize ?? ((r: RawReportResponse) => defaultNormalize(r));
-    const result = normalize(raw);
+    const result = normalize(raw, { filter, t: (key, params) => this.lang.instant(key, params) });
     if (meta.kpis?.length && (!result.kpis || result.kpis.length === 0)) {
       result.kpis = computeKpis(meta, result.table);
     }

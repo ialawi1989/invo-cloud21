@@ -133,6 +133,7 @@ export class SalesByProductComponent {
       preset: 'custom', fromDate: f.fromDate ?? null, toDate: f.toDate ?? null,
       branches: f.branches?.length ? f.branches.join(',') : null,
       openingHour: f.applyOpeningHour ? '1' : null,
+      sources: f['sources']?.length ? f['sources'].join(',') : null,
     };
   }
 

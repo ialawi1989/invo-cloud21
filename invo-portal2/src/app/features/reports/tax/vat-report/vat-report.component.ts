@@ -7,6 +7,7 @@ import { ReportKpiRowComponent } from '../../components/report-kpi-row/report-kp
 import { ReportErrorComponent } from '../../components/report-error/report-error.component';
 import { ReportApiFilter, ReportKpi } from '../../models/report.model';
 import { VatBox, VatReportData, VatReportService } from './vat-report.service';
+import { ReportSkeletonComponent } from '../../components/report-skeleton/report-skeleton.component';
 
 /**
  * VAT Report — headline figures, then the sales boxes, the purchase boxes and the net VAT due, as in the legacy page.
@@ -16,7 +17,7 @@ import { VatBox, VatReportData, VatReportService } from './vat-report.service';
 @Component({
   selector: 'app-vat-report',
   standalone: true,
-  imports: [ReportErrorComponent, TranslateModule, RouterLink, MycurrencyPipe, ReportKpiRowComponent],
+  imports: [ReportSkeletonComponent, ReportErrorComponent, TranslateModule, RouterLink, MycurrencyPipe, ReportKpiRowComponent],
   templateUrl: './vat-report.component.html',
   styleUrls: ['../../sales/sales-summary/sales-summary.component.scss', './vat-report.component.scss'],
 })

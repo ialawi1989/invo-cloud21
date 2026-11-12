@@ -14,7 +14,12 @@ import { reportIcon } from '../../models/report-icons';
 import { ReportsFavoritesService } from '../../services/reports-favorites.service';
 import { ReportsRecentService } from '../../services/reports-recent.service';
 import { groupAccent } from '../../models/report-accents';
-import { scheduleTypeFor } from '../../models/report-schedule';
+import { scheduleCapsFor, scheduleTypeFor } from '../../models/report-schedule';
+import { ApiService } from '@core/http/api.service';
+import { ModalService } from '@shared/modal/modal.service';
+import {
+  ReportScheduleModalComponent, ReportScheduleModalData, ReportScheduleModalResult,
+} from '../../components/report-schedule-modal/report-schedule-modal.component';
 import { SegmentedToggleComponent, SegmentedToggleOption } from '@shared/components/segmented-toggle/segmented-toggle.component';
 
 /** Meta-tabs shown before the business categories. */
@@ -29,6 +34,8 @@ type MetaTab = 'all' | 'favorites' | 'new';
 })
 export class ReportsCatalogComponent implements OnInit {
   private router = inject(Router);
+  private api = inject(ApiService);
+  private modal = inject(ModalService);
   private lang = inject(LanguageService);
   private privileges = inject(PrivilegeService);
   private company = inject(CompanyService);
@@ -134,11 +141,37 @@ export class ReportsCatalogComponent implements OnInit {
   accentOf = (r: ReportMeta): string => this.accent(this.groupKeyOf().get(r.slug) ?? 'others');
 
   /** What a report can do, as small chips on its card. */
+  /** True when the backend scheduler can run this report (the row then offers a quick "Schedule" button). */
+  canSchedule = (r: ReportMeta): boolean => !!scheduleTypeFor(r.slug);
+
+  private branchList: { value: string; label: string }[] | null = null;
+  private async branches(): Promise<{ value: string; label: string }[]> {
+    if (this.branchList) return this.branchList;
+    try {
+      const res = await this.api.request<any>(this.api.post('branch/getBranches/', { page: 1, limit: 500, searchTerm: '', sortBy: {} }));
+      this.branchList = ((res?.data?.list ?? []) as any[]).map(b => ({ value: b.id, label: b.name }));
+    } catch { this.branchList = []; }
+    return this.branchList;
+  }
+
+  /** Quick "Schedule report" straight from the catalog — opens the same dialog as the report's own schedule button, for a new schedule. */
+  async schedule(r: ReportMeta, event: Event): Promise<void> {
+    event.stopPropagation();
+    const type = scheduleTypeFor(r.slug);
+    if (!type) return;
+    const branches = await this.branches();
+    const ref = this.modal.open<ReportScheduleModalComponent, ReportScheduleModalData, ReportScheduleModalResult>(
+      ReportScheduleModalComponent, {
+        size: 'md', closeOnBackdrop: false,
+        data: { type, titleKey: r.titleKey, caps: scheduleCapsFor(r.slug), branches, schedule: null },
+      });
+    await ref.afterClosed();
+  }
+
   caps(r: ReportMeta): string[] {
     const out: string[] = [];
     if (r.filters?.comparePeriods || r.filters?.compare) out.push('COMPARE');
     if (r.export && (r.export.pdf || r.export.xlsx)) out.push('EXPORT');
-    if (scheduleTypeFor(r.slug)) out.push('SCHEDULE');
     return out;
   }
 

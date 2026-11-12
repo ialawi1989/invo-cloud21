@@ -12,6 +12,7 @@
   </div>
 } @else if (cfg(); as c) {
   <app-report-page-shell
+    [crumbs]="crumbs()"
     [title]="(isSub() ? ACCOUNT_JOURNALS.titleKey : c.titleKey) | translate"
     [titleChip]="isSub() ? accountName() : ''"
     [subtitle]="(isSub() ? c.titleKey : (meta()?.descriptionKey ?? '')) | translate"

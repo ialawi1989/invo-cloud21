@@ -12,6 +12,7 @@ import { ReportApiFilter } from '../../models/report.model';
 import { AggregatorSubData, AggregatorSubRecord, SalesByAggregatorSubService } from './sales-by-aggregator-sub.service';
 import { ReportErrorComponent } from '../../components/report-error/report-error.component';
 import { ReportEmptyComponent } from '../../components/report-empty/report-empty.component';
+import { ReportSkeletonComponent } from '../../components/report-skeleton/report-skeleton.component';
 
 const toNum = (v: unknown): number => { const n = typeof v === 'number' ? v : parseFloat(String(v ?? '')); return Number.isFinite(n) ? n : 0; };
 
@@ -19,7 +20,7 @@ const toNum = (v: unknown): number => { const n = typeof v === 'number' ? v : pa
 @Component({
   selector: 'app-sales-by-aggregator-sub',
   standalone: true,
-  imports: [ReportEmptyComponent, ReportErrorComponent, TranslateModule, RouterLink, MycurrencyPipe, PaginationComponent, BoTableShellComponent],
+  imports: [ReportSkeletonComponent, ReportEmptyComponent, ReportErrorComponent, TranslateModule, RouterLink, MycurrencyPipe, PaginationComponent, BoTableShellComponent],
   templateUrl: './sales-by-aggregator-sub.component.html',
   styleUrl: './sales-by-aggregator-sub.component.scss',
 })

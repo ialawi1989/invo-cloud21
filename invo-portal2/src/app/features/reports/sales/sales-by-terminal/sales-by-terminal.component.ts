@@ -9,6 +9,7 @@ import { ReportApiFilter } from '../../models/report.model';
 import { ListSort, SalesByTerminalService, TerminalRecord } from './sales-by-terminal.service';
 import { ReportErrorComponent } from '../../components/report-error/report-error.component';
 import { ReportEmptyComponent } from '../../components/report-empty/report-empty.component';
+import { ReportSkeletonComponent } from '../../components/report-skeleton/report-skeleton.component';
 
 type Col = 'invoiceProdQty' | 'invoiceSales' | 'creditNoteProdQty' | 'creditNoteSales' | 'totalSales';
 const COLS: { key: Col; labelKey: string; money: boolean }[] = [
@@ -25,7 +26,7 @@ const toNum = (v: unknown): number => { const n = typeof v === 'number' ? v : pa
 @Component({
   selector: 'app-sales-by-terminal',
   standalone: true,
-  imports: [ReportEmptyComponent, ReportErrorComponent, TranslateModule, MycurrencyPipe, BoTableShellComponent],
+  imports: [ReportSkeletonComponent, ReportEmptyComponent, ReportErrorComponent, TranslateModule, MycurrencyPipe, BoTableShellComponent],
   templateUrl: './sales-by-terminal.component.html',
   styleUrl: './sales-by-terminal.component.scss',
 })

@@ -26,9 +26,6 @@
 .ed-tag { display: inline-block; padding: 1px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 600; background: #f1f5f9; color: #475569;
   &.ok { background: #d1fae5; color: #047857; } &.warn { background: #fef3c7; color: #b45309; } &.bad { background: #fee2e2; color: #b91c1c; } }
 
-@keyframes ed-shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
-.ed-skel { height: 360px; border-radius: 12px; background: linear-gradient(90deg, #eef2f6 0%, #f6f8fa 50%, #eef2f6 100%); background-size: 200% 100%; animation: ed-shimmer 1.4s ease-in-out infinite; }
-@media (prefers-reduced-motion: reduce) { .ed-skel { animation: none; } }
 
 .ed-sales { margin-inline-start: auto; display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; background: #fff; border: 1px solid #1e8c9f; border-radius: 8px; color: #0f6f80; font-size: 13px; font-weight: 600; text-decoration: none; transition: background .15s;
   svg { width: 16px; height: 16px; } &:hover { background: #f0fafc; } &:focus-visible { outline: 2px solid #1e8c9f; outline-offset: 2px; } }

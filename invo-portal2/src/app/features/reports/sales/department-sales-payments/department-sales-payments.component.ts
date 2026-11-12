@@ -7,6 +7,7 @@ import { ReportApiFilter } from '../../models/report.model';
 import { DeptPaymentsData, DeptPaymentsRecord, DepartmentSalesPaymentsService } from './department-sales-payments.service';
 import { ReportErrorComponent } from '../../components/report-error/report-error.component';
 import { ReportEmptyComponent } from '../../components/report-empty/report-empty.component';
+import { ReportSkeletonComponent } from '../../components/report-skeleton/report-skeleton.component';
 
 const toNum = (v: unknown): number => { const n = typeof v === 'number' ? v : parseFloat(String(v ?? '')); return Number.isFinite(n) ? n : 0; };
 
@@ -17,7 +18,7 @@ const toNum = (v: unknown): number => { const n = typeof v === 'number' ? v : pa
 @Component({
   selector: 'app-department-sales-payments',
   standalone: true,
-  imports: [ReportEmptyComponent, ReportErrorComponent, TranslateModule, MycurrencyPipe, BoTableShellComponent],
+  imports: [ReportSkeletonComponent, ReportEmptyComponent, ReportErrorComponent, TranslateModule, MycurrencyPipe, BoTableShellComponent],
   templateUrl: './department-sales-payments.component.html',
   styleUrl: './department-sales-payments.component.scss',
 })
@@ -73,6 +74,10 @@ export class DepartmentSalesPaymentsComponent {
       if (mine === this.seq) this.loading.set(false);
     }
   }
+
+  /** A payment method's header as the legacy report shows it: split at camelCase joins / underscores (an acronym like KNET stays whole), each word capitalised ("creditCard" -> "Credit Card"). */
+  titleCase = (name: string): string =>
+    (name ?? '').split(/(?<=[a-z])(?=[A-Z])|_/).filter(Boolean).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
   trackRecord = (i: number, r: DeptPaymentsRecord) => `${r.filterName ?? ''}|${i}`;
 }

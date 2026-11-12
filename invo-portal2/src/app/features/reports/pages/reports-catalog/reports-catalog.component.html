@@ -119,6 +119,12 @@
                 }
                 <svg class="rc-go flip-rtl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
               </button>
+              @if (canSchedule(report)) {
+                <button type="button" class="rc-sched" [attr.aria-label]="'REPORTS.SCHEDULE.BUTTON' | translate" [attr.title]="'REPORTS.SCHEDULE.BUTTON' | translate"
+                        (click)="schedule(report, $event)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="12 14 12 17 14 18"/></svg>
+                </button>
+              }
               <button type="button" class="rc-star" [class.on]="isFavorite(report.slug)"
                       [attr.aria-label]="'REPORTS.VIEW.FAVORITE' | translate" [attr.aria-pressed]="isFavorite(report.slug)"
                       (click)="toggleFavorite(report.slug, $event)">

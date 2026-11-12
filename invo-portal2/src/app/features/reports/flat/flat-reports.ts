@@ -4,7 +4,9 @@
  * Adding a report of this shape = one entry here + one catalog entry (+ its column labels in `REPORTS.FLAT.COLUMNS`).
  */
 export type FlatCellType =
-  | 'text' | 'number' | 'currency' | 'date' | 'ymd' | 'daydate' | 'datetime'
+  | 'text' | 'number' | 'currency' | 'date' | 'dateLong' | 'ymd' | 'daydate' | 'datetime'
+  /** date and time on a 12-hour clock ("dd/MM/yyyy hh:mm a") */
+  | 'datetime12'
   /** a profit amount — green when positive, red when negative */
   | 'profit'
   /** a profit percentage as a coloured badge */
@@ -58,17 +60,21 @@ export interface FlatColumn {
   /** A zero shows as a dash (a count that is usually none: photos). */
   dashZero?: boolean;
   /** The value links to this report's detail: a product opens its Product Movement (when the row carries `productId`). */
-  link?: 'product';
+  link?: 'product' | 'supplier';
   /** The number opens another report for this row's customer, with the same period and branches. */
   drill?: { slug: string; idKey: string; /** URL param that carries the id (default `customers`). */ param?: string; /** value used when the row has no id */ fallback?: string; /** More URL params, each filled from a field of the row: `{ urlParam: 'rowField' }`. */ extra?: Record<string, string> };
   /** The cell opens this document (`journalLink(type, rec[idKey])`) when the row carries its id. */
-  doc?: { type?: string; /** read the document type from this row field instead */ typeKey?: string; idKey: string };
+  doc?: { type?: string; /** read the document type from this row field instead */ typeKey?: string; idKey: string; /** opens the document in a new tab (legacy Open / Pending PO) */ newTab?: boolean };
   /** A second record field shown as a small badge after the value (a product's barcode). */
   badge?: string;
   /** Red text (quantities / values that are losses). */
   danger?: boolean;
   /** The Total row shows `total[key]` for this column. */
   total?: boolean;
+  /** The backend names this column's grand total differently (surcharge: `grandTotalSurcharge`): the field of `total` to read. */
+  totalKey?: string;
+  /** Fixed decimals for a `number` column (0 = a whole count, 2 = an average; default is the company's decimals) or a `pct` / `profitPct` column (default 1 / 2). */
+  decimals?: number;
   /** Colours the whole column (solid header, tinted cells) so related figures read as a block (the legacy cashier report). */
   tone?: 'amber' | 'orange' | 'blue' | 'green' | 'red' | 'purple' | 'teal';
   /** i18n key of a short explanation shown as an ⓘ beside the header (a tooltip). */
@@ -107,7 +113,8 @@ export interface FlatReportConfig {
   groupBy?: { field: string; subtotal?: Record<string, string>; /** leave out each group's subtotal row */ noSubtotal?: boolean; /** a second field merged inside each group (Short / Over: the cashier within a date) */ then?: string };
 }
 
-const PRODUCT = { key: 'productName', badge: 'barcode', link: 'product' } as const;
+/** A product with its barcode. Legacy links it to Product Movement only in Product Sales vs Inventory Usage (and General Inventory). */
+const PRODUCT = { key: 'productName', badge: 'barcode' } as const;
 
 export const FLAT_REPORTS: Record<string, FlatReportConfig> = {
   'customer-order-history': {
@@ -120,9 +127,9 @@ export const FLAT_REPORTS: Record<string, FlatReportConfig> = {
   'sales-by-customers-summary': {
     route: 'salesByCustomer', paged: true,
     columns: [
-      { key: 'customerName' }, { key: 'numberOfInvoices', type: 'number', end: true, total: true, drill: { slug: 'customer-order-history', idKey: 'customerId' } },
+      { key: 'customerName' }, { key: 'numberOfInvoices', type: 'number', decimals: 0, end: true, total: true, drill: { slug: 'customer-order-history', idKey: 'customerId' } },
       { key: 'invoiceSales', type: 'currency', end: true, total: true },
-      { key: 'numberOfCreditNotes', type: 'number', end: true, total: true, drill: { slug: 'credit-notes', idKey: 'customerId' } },
+      { key: 'numberOfCreditNotes', type: 'number', decimals: 0, end: true, total: true },
       { key: 'creditNoteSales', type: 'currency', end: true, total: true }, { key: 'totalSales', type: 'currency', end: true, total: true },
     ],
   },
@@ -178,7 +185,7 @@ export const FLAT_REPORTS: Record<string, FlatReportConfig> = {
   'customer-wise-discount': {
     route: 'customerWiseDiscountReport', paged: true,
     groupedBy: { filterKey: 'groupBy', default: 'Customer', options: { Customer: { groupColumn: 'customerName', flatField: 'customerName' } } },
-    groupBy: { field: 'customerName' },
+    groupBy: { field: 'customerName', subtotal: { discountTotal: 'discountTotalPerCustomer' } },
     columns: [{ key: 'customerName' }, { key: 'discountName' }, { key: 'discountTotal', type: 'currency', end: true, total: true }],
   },
   'purchase-by-supplier': {
@@ -190,15 +197,19 @@ export const FLAT_REPORTS: Record<string, FlatReportConfig> = {
       return { ...r, docCount: v[0] ?? 0, docAmount: v[1] ?? 0, creditAmount: t['Supplier Credit Amount'] ?? v[2] ?? 0, total: t['total'] ?? 0 };
     },
     columns: [
-      { key: 'supplierName' }, { key: 'docCount', type: 'number', end: true, total: true }, { key: 'docAmount', type: 'currency', end: true, total: true },
+      { key: 'supplierName', drill: { slug: 'purchase-by-supplier-sub', idKey: 'supplierId', param: 'supplierId', extra: { supplierName: 'supplierName' } } }, { key: 'docCount', type: 'number', decimals: 0, end: true, total: true }, { key: 'docAmount', type: 'currency', end: true, total: true },
       { key: 'creditAmount', type: 'currency', end: true, total: true }, { key: 'total', type: 'currency', end: true, total: true },
     ],
+  },
+  'purchase-by-supplier-sub': {
+    route: 'purchaseBySupplierId', paged: true,
+    columns: [{ key: 'billingNumber', doc: { type: 'Billing', idKey: 'billingId' } }, { key: 'amount', type: 'currency', end: true, total: true }],
   },
   'supplier-balances': {
     route: 'supplierBalances', paged: true,
     columns: [
-      { key: 'name', label: 'REPORTS.FLAT.COLUMNS.supplierName' }, { key: 'billingBalance', type: 'currency', end: true, total: true },
-      { key: 'availableCredits', type: 'currency', end: true, total: true }, { key: 'balance', type: 'currency', end: true, total: true },
+      { key: 'name', label: 'REPORTS.FLAT.COLUMNS.supplierName', link: 'supplier' }, { key: 'billingBalance', type: 'currency', end: true, total: true },
+      { key: 'availableCredits', type: 'currency', end: true, total: true }, { key: 'balance', type: 'profit', end: true, total: true },
     ],
   },
   'payment-made': {
@@ -228,7 +239,7 @@ export const FLAT_REPORTS: Record<string, FlatReportConfig> = {
   'supplier-refunds': {
     route: 'supplierRefundReport', paged: true,
     columns: [
-      { key: 'refundDate', type: 'date' }, { key: 'referenceNumber' }, { key: 'supplierName' }, { key: 'mode' },
+      { key: 'refundDate', type: 'date' }, { key: 'refrenceNumber', label: 'REPORTS.FLAT.COLUMNS.referenceNumber' }, { key: 'supplierName' }, { key: 'mode' },
       { key: 'supplierCreditNumber', doc: { type: 'SupplierCredit', idKey: 'supplierCreditId' } }, { key: 'note' }, { key: 'amount', type: 'currency', end: true, total: true },
     ],
   },
@@ -236,7 +247,7 @@ export const FLAT_REPORTS: Record<string, FlatReportConfig> = {
     route: 'supplierChangePriceReport', paged: true,
     columns: [
       { key: 'supplierName' }, { key: 'productName', link: 'product' }, { key: 'oldPrice', type: 'currency', end: true }, { key: 'newPrice', type: 'currency', end: true },
-      { key: 'priceChange', type: 'profitPct', end: true }, { key: 'effectiveDate', type: 'date' },
+      { key: 'priceChange', type: 'number', decimals: 3, end: true }, { key: 'effectiveDate', type: 'ymd' },
     ],
   },
   'attendance': {
@@ -247,7 +258,7 @@ export const FLAT_REPORTS: Record<string, FlatReportConfig> = {
       return { ...r, in1: a[0]?.clockedIn, out1: a[0]?.clockedOut, in2: a[1]?.clockedIn, out2: a[1]?.clockedOut, in3: a[2]?.clockedIn, out3: a[2]?.clockedOut };
     },
     columns: [
-      { key: 'date', type: 'date' }, { key: 'employeeName', drill: { slug: 'attendance-detail', idKey: 'employeeId', param: 'employee' } }, { key: 'branchName' },
+      { key: 'date', type: 'date' }, { key: 'employeeName' }, { key: 'branchName' },
       { key: 'in1', tone: 'green', type: 'datetime' }, { key: 'out1', tone: 'orange', type: 'datetime' }, { key: 'in2', tone: 'green', type: 'datetime' }, { key: 'out2', tone: 'orange', type: 'datetime' },
       { key: 'in3', tone: 'green', type: 'datetime' }, { key: 'out3', tone: 'orange', type: 'datetime' }, { key: 'totalHours', tone: 'blue', end: true },
     ],
@@ -270,7 +281,7 @@ export const FLAT_REPORTS: Record<string, FlatReportConfig> = {
       },
     },
     columns: [
-      { key: 'employeeName' }, { key: 'productName', link: 'product' }, { key: 'invoiceProdQty', tone: 'blue', type: 'number', end: true, total: true }, { key: 'invoiceSales', tone: 'blue', type: 'currency', end: true, total: true },
+      { key: 'employeeName' }, { key: 'productName' }, { key: 'invoiceProdQty', tone: 'blue', type: 'number', end: true, total: true }, { key: 'invoiceSales', tone: 'blue', type: 'currency', end: true, total: true },
       { key: 'creditNoteProdQty', tone: 'orange', type: 'number', end: true, total: true }, { key: 'creditNoteSales', tone: 'orange', type: 'currency', end: true, total: true },
       { key: 'totalSalesQty', tone: 'green', type: 'number', end: true, total: true }, { key: 'totalSales', tone: 'green', type: 'currency', end: true, total: true },
     ],
@@ -305,34 +316,44 @@ export const FLAT_REPORTS: Record<string, FlatReportConfig> = {
     map: r => ({ ...r, grossMarginPct: Number(r['GrossMarginPercentage'] ?? 0) * 100 }),
     columns: [
       { key: 'DiscountName', drill: { slug: 'sales-by-discount', idKey: 'discountId', param: 'discount', fallback: 'others' } },
-      { key: 'salesCount', type: 'number', end: true, total: true }, { key: 'salesAmount', type: 'currency', end: true, total: true },
-      { key: 'netDiscountPercentage', type: 'number', end: true }, { key: 'discountTotal', type: 'currency', end: true, total: true },
-      { key: 'netSales', type: 'currency', end: true, total: true }, { key: 'costs', type: 'currency', end: true, total: true },
-      { key: 'grossMarginPct', type: 'profitPct', end: true }, { key: 'grossProfit', type: 'profit', end: true, total: true },
+      // (the legacy page has no Total row)
+      { key: 'salesCount', type: 'number', decimals: 0, end: true }, { key: 'salesAmount', type: 'currency', end: true },
+      { key: 'netDiscountPercentage', type: 'pct', decimals: 3, end: true }, { key: 'discountTotal', label: 'REPORTS.FLAT.COLUMNS.netDiscounts', type: 'currency', end: true },
+      { key: 'netSales', type: 'currency', end: true }, { key: 'costs', type: 'currency', end: true },
+      { key: 'grossMarginPct', type: 'profitPct', decimals: 3, end: true }, { key: 'grossProfit', type: 'profit', end: true },
     ],
   },
   'sales-by-discount': {
     route: 'salesByDiscountId', paged: true,
     columns: [
-      { key: 'code' }, { key: 'type' }, { key: 'salesAmount', type: 'currency', end: true, total: true }, { key: 'discountTotal', type: 'currency', end: true, total: true },
+      { key: 'code', doc: { typeKey: 'type', idKey: 'id' } }, { key: 'type', doc: { typeKey: 'type', idKey: 'id' } }, { key: 'sales', label: 'REPORTS.FLAT.COLUMNS.salesAmount', type: 'currency', end: true, total: true }, { key: 'discountTotal', type: 'currency', end: true, total: true },
       { key: 'taxTotal', type: 'currency', end: true, total: true }, { key: 'total', type: 'currency', end: true, total: true },
     ],
   },
   'product-wise-vat': {
     route: 'productWiseVatReport', paged: true,
     columns: [
-      { key: 'productName', link: 'product' }, { key: 'taxName' },
+      { key: 'productName', drill: { slug: 'product-wise-vat-sub', idKey: 'productId', param: 'productId', extra: { productName: 'productName' } } }, { key: 'taxName' },
       { key: 'salesAmountAfterDiscount', type: 'currency', end: true, total: true }, { key: 'salesTax', type: 'currency', end: true, total: true },
       { key: 'purchaseAmount', type: 'currency', end: true, total: true }, { key: 'purchaseTax', type: 'currency', end: true, total: true },
-      { key: 'netVat', type: 'currency', end: true, total: true },
+      { key: 'netVat', type: 'currency', end: true, total: true, totalKey: 'netVatTaxTotal' },
+    ],
+  },
+  'product-wise-vat-sub': {
+    route: 'vatReportByProductId', paged: true,
+    columns: [
+      { key: 'taxName' },
+      { key: 'salesAmountAfterDiscount', type: 'currency', end: true, total: true }, { key: 'salesTax', type: 'currency', end: true, total: true },
+      { key: 'purchaseAmount', type: 'currency', end: true, total: true }, { key: 'purchaseTax', type: 'currency', end: true, total: true },
     ],
   },
   'sales-by-tables': {
     route: 'getSalesByTables', paged: true,
     columns: [
       { key: 'tableName' }, { key: 'invoiceSales', type: 'currency', end: true, total: true }, { key: 'creditNoteSales', type: 'currency', end: true, total: true },
-      { key: 'totalSales', type: 'currency', end: true, total: true }, { key: 'numberOfInvoices', type: 'number', end: true, total: true },
-      { key: 'salesOrderAvg', type: 'currency', end: true, total: true }, { key: 'numberOfguests', type: 'number', end: true, total: true },
+      { key: 'totalSales', type: 'currency', end: true, total: true }, { key: 'numberOfInvoices', type: 'number', decimals: 0, end: true, total: true },
+      // the backend's grand total of the average per order is `total.salesAvg`; the guest average is its own
+      { key: 'salesOrderAvg', type: 'currency', end: true, total: true, totalKey: 'salesAvg' }, { key: 'numberOfguests', type: 'number', decimals: 0, end: true, total: true },
       { key: 'salesGuestAvg', type: 'currency', end: true, total: true },
     ],
   },
@@ -340,7 +361,7 @@ export const FLAT_REPORTS: Record<string, FlatReportConfig> = {
     route: 'getSalesByTableGroups', paged: true,
     columns: [
       { key: 'tableGroupName' }, { key: 'invoiceSales', type: 'currency', end: true, total: true }, { key: 'creditNoteSales', type: 'currency', end: true, total: true },
-      { key: 'totalSales', type: 'currency', end: true, total: true }, { key: 'numberOfInvoices', type: 'number', end: true, total: true },
+      { key: 'totalSales', type: 'currency', end: true, total: true }, { key: 'numberOfInvoices', type: 'number', decimals: 0, end: true, total: true },
       { key: 'salesAvg', type: 'currency', end: true, total: true },
     ],
   },
@@ -350,13 +371,13 @@ export const FLAT_REPORTS: Record<string, FlatReportConfig> = {
     columns: [
       { key: 'name', label: 'REPORTS.FLAT.COLUMNS.tableName' }, { key: 'invoiceNumber', doc: { type: 'Invoice', idKey: 'invoiceId' } },
       { key: 'creationTime', type: 'datetime' }, { key: 'settleTime', type: 'datetime' }, { key: 'usage', type: 'interval' },
-      { key: 'total', type: 'currency', end: true, total: true },
+      { key: 'total', type: 'currency', end: true, total: true, totalKey: 'invoiceTotal' },
     ],
   },
   'table-usage-summary-report': {
     route: 'tableUsageSummary', paged: true,
     columns: [
-      { key: 'name', label: 'REPORTS.FLAT.COLUMNS.tableName' }, { key: 'invoiceCount', type: 'number', end: true },
+      { key: 'name', label: 'REPORTS.FLAT.COLUMNS.tableName' }, { key: 'invoiceCount', type: 'number', decimals: 0, end: true },
       { key: 'usage', type: 'interval', end: true }, { key: 'avgUsage', type: 'interval', end: true },
     ],
   },
@@ -364,7 +385,7 @@ export const FLAT_REPORTS: Record<string, FlatReportConfig> = {
     route: 'getCashierReport', paged: true,
     columns: [
       { key: 'cashierName' }, { key: 'cashierIn', type: 'datetime' }, { key: 'cashierOut', type: 'datetime' },
-      { key: 'transactions', tone: 'amber', type: 'number', end: true, total: true }, { key: 'startAmount', tone: 'blue', type: 'currency', end: true, total: true },
+      { key: 'transactions', tone: 'amber', type: 'number', decimals: 0, end: true, total: true, totalKey: 'transactionsTotal' }, { key: 'startAmount', tone: 'blue', type: 'currency', end: true, total: true },
       { key: 'totalPayment', tone: 'green', type: 'currency', end: true, total: true }, { key: 'totalRefunds', tone: 'green', type: 'currency', end: true, total: true },
       { key: 'expected', tone: 'teal', type: 'currency', end: true, total: true }, { key: 'endAmount', tone: 'teal', type: 'currency', end: true, total: true },
       { key: 'variance', tone: 'teal', type: 'profit', end: true, total: true },
@@ -383,7 +404,7 @@ export const FLAT_REPORTS: Record<string, FlatReportConfig> = {
   'driver-report': {
     route: 'getDriverReport', paged: true,
     columns: [
-      { key: 'employeeName' }, { key: 'invoiceQty', tone: 'blue', type: 'number', end: true, total: true }, { key: 'invoiceTotal', tone: 'blue', type: 'currency', end: true, total: true },
+      { key: 'employeeName' }, { key: 'invoiceQty', tone: 'blue', type: 'number', decimals: 0, end: true, total: true }, { key: 'invoiceTotal', tone: 'blue', type: 'currency', end: true, total: true },
       { key: 'avgDeliveryTime', tone: 'teal', type: 'seconds', end: true },
     ],
   },
@@ -391,30 +412,32 @@ export const FLAT_REPORTS: Record<string, FlatReportConfig> = {
     route: 'getDriverDetailsReport', paged: true,
     columns: [
       { key: 'employeeName' }, { key: 'invoiceNumber', doc: { type: 'Invoice', idKey: 'invoiceId' } }, { key: 'invoiceTotal', tone: 'blue', type: 'currency', end: true, total: true },
-      { key: 'departureTime', tone: 'teal', type: 'datetime' }, { key: 'arrivalTime', tone: 'teal', type: 'datetime' }, { key: 'deliveryTime', tone: 'teal', type: 'seconds', end: true },
+      { key: 'departureTime', tone: 'teal', type: 'datetime12' }, { key: 'arrivalTime', tone: 'teal', type: 'datetime12' }, { key: 'deliveryTime', tone: 'teal', type: 'seconds', end: true },
     ],
   },
   'customer-table-by-employee': {
     route: 'customerTableByEmployee', paged: true,
     columns: [
-      { key: 'employeeName' }, { key: 'numberOfTables', type: 'number', end: true, total: true }, { key: 'numberOfguests', type: 'number', end: true, total: true },
-      { key: 'guestTableAvg', type: 'number', end: true, total: true },
+      { key: 'employeeName' }, { key: 'numberOfTables', type: 'number', decimals: 0, end: true, total: true, totalKey: 'totalNumberOfTables' },
+      { key: 'numberOfguests', type: 'number', decimals: 0, end: true, total: true, totalKey: 'totalNumberOfGuests' },
+      { key: 'guestTableAvg', type: 'number', decimals: 2, end: true, total: true },
     ],
   },
   'missing-punches': {
     route: '/attendance/missingPunches', paged: true,
     map: r => ({ ...r, age: r['ageMs'] != null ? Number(r['ageMs']) / 1000 : null }),
     columns: [
-      { key: 'employeeName', drill: { slug: 'attendance-detail', idKey: 'employeeId', param: 'employee' } }, { key: 'branchName' }, { key: 'clockedIn', tone: 'green', type: 'datetime' }, { key: 'clockedOut', tone: 'orange', type: 'datetime' },
-      { key: 'adjClockedIn', tone: 'blue', type: 'datetime' }, { key: 'adjClockedOut', tone: 'blue', type: 'datetime' }, { key: 'issue', type: 'tag' }, { key: 'age', type: 'age', end: true },
+      { key: 'employeeName' }, { key: 'branchName' }, { key: 'issue', type: 'tag' }, { key: 'clockedIn', tone: 'green', type: 'datetime' }, { key: 'clockedOut', tone: 'orange', type: 'datetime' },
+      { key: 'adjClockedIn', tone: 'blue', type: 'datetime' }, { key: 'adjClockedOut', tone: 'blue', type: 'datetime' }, { key: 'age', type: 'age', end: true },
     ],
   },
   'hours-summary': {
     route: '/attendance/hoursSummary', paged: true,
     kpis: [{ key: 'totalDaysWorked', tone: 'teal' }, { key: 'regularHours', tone: 'blue' }, { key: 'overtimeHours', tone: 'orange' }, { key: 'grossPayBHD', tone: 'green' }, { key: '#records', tone: 'purple' }],
     columns: [
-      { key: 'employeeName', drill: { slug: 'attendance-detail', idKey: 'employeeId', param: 'employee' } }, { key: 'totalDaysWorked', type: 'number', end: true }, { key: 'regularHours', tone: 'blue', type: 'number', end: true, total: true },
-      { key: 'overtimeHours', tone: 'orange', type: 'number', end: true, total: true }, { key: 'totalBreakDeduction', type: 'number', end: true }, { key: 'peakWeekHours', type: 'number', end: true },
+      { key: 'employeeName' }, { key: 'regularHours', tone: 'blue', type: 'number', decimals: 2, end: true, total: true },
+      { key: 'overtimeHours', tone: 'orange', type: 'number', decimals: 2, end: true, total: true }, { key: 'totalBreakDeduction', type: 'number', decimals: 2, end: true },
+      { key: 'totalDaysWorked', type: 'number', decimals: 0, end: true }, { key: 'peakWeekHours', type: 'number', decimals: 2, end: true },
       { key: 'hourlyRate', type: 'currency', end: true }, { key: 'grossPayBHD', tone: 'green', type: 'currency', end: true, total: true },
     ],
   },
@@ -422,8 +445,8 @@ export const FLAT_REPORTS: Record<string, FlatReportConfig> = {
     route: '/attendance/overtime', paged: true,
     kpis: [{ key: 'regularHours', tone: 'blue' }, { key: 'overtimeHours', tone: 'orange' }, { key: 'otPayBHD', tone: 'green' }, { key: '#records', tone: 'purple' }],
     columns: [
-      { key: 'employeeName', drill: { slug: 'attendance-detail', idKey: 'employeeId', param: 'employee' } }, { key: 'regularHours', tone: 'blue', type: 'number', end: true }, { key: 'overtimeHours', tone: 'orange', type: 'number', end: true, total: true },
-      { key: 'peakWeekHours', type: 'number', end: true }, { key: 'otPercentage', tone: 'orange', type: 'number', end: true }, { key: 'weeksOverLimit', type: 'number', end: true },
+      { key: 'employeeName' }, { key: 'regularHours', tone: 'blue', type: 'number', decimals: 2, end: true }, { key: 'overtimeHours', tone: 'orange', type: 'number', decimals: 2, end: true, total: true },
+      { key: 'peakWeekHours', type: 'number', decimals: 2, end: true }, { key: 'weeksOverLimit', type: 'number', decimals: 0, dashZero: true, end: true }, { key: 'otPercentage', tone: 'orange', type: 'pct', end: true },
       { key: 'status', type: 'tag' }, { key: 'otPayBHD', tone: 'green', type: 'currency', end: true, total: true },
     ],
   },
@@ -431,9 +454,9 @@ export const FLAT_REPORTS: Record<string, FlatReportConfig> = {
     route: '/attendance/lateAndEarly', paged: true,
     kpis: [{ key: 'lateCount', tone: 'amber' }, { key: 'totalMinutesLate', tone: 'amber' }, { key: 'earlyOutCount', tone: 'orange' }, { key: 'totalMinutesEarly', tone: 'orange' }, { key: '#records', tone: 'purple' }],
     columns: [
-      { key: 'employeeName', drill: { slug: 'attendance-detail', idKey: 'employeeId', param: 'employee' } }, { key: 'lateCount', tone: 'amber', type: 'number', end: true }, { key: 'totalMinutesLate', tone: 'amber', type: 'number', end: true },
-      { key: 'avgMinutesLate', tone: 'amber', type: 'number', end: true }, { key: 'worstLateMinutes', tone: 'amber', type: 'number', end: true }, { key: 'earlyOutCount', tone: 'orange', type: 'number', end: true },
-      { key: 'totalMinutesEarly', tone: 'orange', type: 'number', end: true },
+      { key: 'employeeName' }, { key: 'lateCount', tone: 'amber', type: 'number', decimals: 0, end: true }, { key: 'totalMinutesLate', tone: 'amber', type: 'number', decimals: 0, end: true },
+      { key: 'avgMinutesLate', tone: 'amber', type: 'number', decimals: 1, end: true }, { key: 'worstLateMinutes', tone: 'amber', type: 'number', decimals: 0, end: true }, { key: 'earlyOutCount', tone: 'orange', type: 'number', decimals: 0, end: true },
+      { key: 'totalMinutesEarly', tone: 'orange', type: 'number', decimals: 0, end: true },
     ],
   },
   'daily-sheet': {
@@ -451,7 +474,7 @@ export const FLAT_REPORTS: Record<string, FlatReportConfig> = {
       };
     },
     columns: [
-      { key: 'employeeName', drill: { slug: 'attendance-detail', idKey: 'employeeId', param: 'employee' } }, { key: 'shift' },
+      { key: 'employeeName' }, { key: 'shift' },
       { key: 'clockedIn', type: 'time' }, { key: 'clockedOut', type: 'time' }, { key: 'photos', type: 'shots' },
       { key: 'leaveTypeRaw', label: 'REPORTS.FLAT.COLUMNS.leaveType' }, { key: 'status', type: 'tag' }, { key: 'adjusted', type: 'yesno' },
     ],
@@ -460,17 +483,17 @@ export const FLAT_REPORTS: Record<string, FlatReportConfig> = {
     route: '/attendance/branchComparison', paged: false,
     kpis: [{ key: 'headcount', tone: 'blue' }, { key: 'attendancePct', tone: 'green', weightBy: 'scheduledDays', label: 'REPORTS.FLAT.KPI_ATTENDANCE_WEIGHTED' }, { key: 'overtimeHours', tone: 'orange' }, { key: '#records', tone: 'purple' }],
     columns: [
-      { key: 'branchRank', type: 'rank' }, { key: 'branchName' }, { key: 'headcount', type: 'number', end: true }, { key: 'scheduledDays', type: 'number', end: true },
-      { key: 'attendancePct', tone: 'green', type: 'number', end: true }, { key: 'absenceRatePct', tone: 'red', type: 'number', end: true },
-      { key: 'overtimeHours', tone: 'orange', type: 'number', end: true }, { key: 'avgOTHoursPerEmployee', tone: 'orange', type: 'number', end: true },
+      { key: 'branchRank', type: 'rank' }, { key: 'branchName' }, { key: 'headcount', type: 'number', decimals: 0, end: true }, { key: 'scheduledDays', type: 'number', decimals: 0, end: true },
+      { key: 'attendancePct', tone: 'green', type: 'pct', end: true }, { key: 'absenceRatePct', tone: 'red', type: 'pct', end: true },
+      { key: 'overtimeHours', tone: 'orange', type: 'number', decimals: 2, end: true }, { key: 'avgOTHoursPerEmployee', tone: 'orange', type: 'number', decimals: 2, end: true },
     ],
   },
   'scorecard': {
     route: '/attendance/scorecard', paged: true,
     columns: [
-      { key: 'employeeName', drill: { slug: 'attendance-detail', idKey: 'employeeId', param: 'employee' } },
-      { key: 'scheduledDays', tone: 'blue', type: 'number', end: true }, { key: 'attendedDays', tone: 'blue', type: 'number', end: true },
-      { key: 'missedPunches', tone: 'amber', type: 'number', end: true }, { key: 'unauthAbsenceDays', tone: 'red', type: 'number', end: true },
+      { key: 'employeeName' },
+      { key: 'scheduledDays', tone: 'blue', type: 'number', decimals: 0, end: true }, { key: 'attendedDays', tone: 'blue', type: 'number', decimals: 0, end: true },
+      { key: 'missedPunches', tone: 'amber', type: 'number', decimals: 0, end: true }, { key: 'unauthAbsenceDays', tone: 'red', type: 'number', decimals: 0, end: true },
       { key: 'onTimePct', tone: 'green', type: 'pct', end: true }, { key: 'noUnauthAbsencePct', tone: 'green', type: 'pct', end: true },
       { key: 'compositeScore', tone: 'teal', type: 'score', end: true, hint: 'REPORTS.FLAT.HINT_SCORE' }, { key: 'rating', type: 'tag' },
     ],
@@ -542,7 +565,7 @@ export const FLAT_REPORTS: Record<string, FlatReportConfig> = {
   'transaction-discount': {
     route: 'transactionDiscountReports', paged: false,
     columns: [
-      { key: 'code', doc: { typeKey: 'type', idKey: 'id' } }, { key: 'type', doc: { typeKey: 'type', idKey: 'id' } }, { key: 'sales', type: 'currency', end: true, total: true }, { key: 'discountTotal', type: 'currency', end: true, total: true },
+      { key: 'code', doc: { typeKey: 'type', idKey: 'id' } }, { key: 'type', doc: { typeKey: 'type', idKey: 'id' } }, { key: 'sales', label: 'REPORTS.FLAT.COLUMNS.salesAmount', type: 'currency', end: true, total: true }, { key: 'discountTotal', label: 'REPORTS.FLAT.COLUMNS.netDiscounts', type: 'currency', end: true, total: true },
       { key: 'taxTotal', type: 'currency', end: true, total: true }, { key: 'total', type: 'currency', end: true, total: true },
     ],
   },
@@ -556,16 +579,16 @@ export const FLAT_REPORTS: Record<string, FlatReportConfig> = {
   'unsold-products': {
     route: 'unsoldProductReport', paged: true,
     columns: [
-      { key: 'productName', link: 'product' }, { key: 'stock', type: 'number', end: true, total: true }, { key: 'unitCost', type: 'currency', end: true },
-      { key: 'stockValue', type: 'currency', end: true, total: true }, { key: 'lastSaleDate', type: 'date' }, { key: 'daysUnSold', type: 'number', end: true }, { key: 'ageBucket', type: 'tag' },
+      { key: 'productName', link: 'product' }, { key: 'stock', type: 'number', end: true, total: true, totalKey: 'totalStock' }, { key: 'unitCost', type: 'currency', end: true },
+      { key: 'stockValue', type: 'currency', end: true, total: true, totalKey: 'totalStockValue' }, { key: 'lastSaleDate', type: 'date' }, { key: 'daysUnSold', type: 'number', end: true }, { key: 'ageBucket', type: 'tag' },
     ],
   },
   'surcharge': {
     route: 'surchargeReport', paged: true,
     columns: [
-      { key: 'chargeName', drill: { slug: 'surcharge-sub', idKey: 'chargeId', param: 'surchageId', extra: { surchargeName: 'chargeName', chargeAmount: 'chargeAmount', chargePercentage: 'chargePercentage' } } }, { key: 'invoiceCount', type: 'number', end: true, total: true }, { key: 'chargeAmount', type: 'currency', pctKey: 'chargePercentage', end: true },
-      { key: 'salesIncludingSurcharge', type: 'currency', end: true, total: true }, { key: 'totalSurcharge', type: 'currency', end: true, total: true },
-      { key: 'averageSurcharge', type: 'currency', end: true, total: true },
+      { key: 'chargeName', drill: { slug: 'surcharge-sub', idKey: 'chargeId', param: 'surchageId', extra: { surchargeName: 'chargeName', chargeAmount: 'chargeAmount', chargePercentage: 'chargePercentage' } } }, { key: 'invoiceCount', type: 'number', end: true, total: true, totalKey: 'totalInvoiceCount' }, { key: 'chargeAmount', type: 'currency', pctKey: 'chargePercentage', end: true },
+      { key: 'salesIncludingSurcharge', type: 'currency', end: true, total: true, totalKey: 'grandTotalSalesIncludingSurcharge' }, { key: 'totalSurcharge', type: 'currency', end: true, total: true, totalKey: 'grandTotalSurcharge' },
+      { key: 'averageSurcharge', type: 'currency', end: true },
     ],
   },
   'surcharge-sub': {
@@ -579,9 +602,9 @@ export const FLAT_REPORTS: Record<string, FlatReportConfig> = {
   'delivery-charge': {
     route: 'deliveryCharge', paged: true,
     columns: [
-      { key: 'city', drill: { slug: 'delivery-charge-by-city', idKey: 'city', param: 'city' } }, { key: 'Invoices', type: 'number', end: true, total: true }, { key: 'ChargedInvoices', type: 'number', end: true, total: true }, { key: 'Free', type: 'number', end: true, total: true },
+      { key: 'city', drill: { slug: 'delivery-charge-by-city', idKey: 'city', param: 'city' } }, { key: 'Invoices', type: 'number', end: true, total: true, totalKey: 'numberOfInvoices' }, { key: 'ChargedInvoices', type: 'number', end: true, total: true }, { key: 'Free', type: 'number', end: true, total: true },
       { key: 'DeliveryCharge', type: 'currency', end: true, total: true }, { key: 'Refunded', type: 'currency', end: true, total: true },
-      { key: 'NetDeliveryCharges', type: 'currency', end: true, total: true }, { key: 'avgDeliveryCharge', type: 'currency', end: true, total: true },
+      { key: 'NetDeliveryCharges', type: 'currency', end: true, total: true }, { key: 'AvgDeliveryCharge', label: 'REPORTS.FLAT.COLUMNS.avgDeliveryCharge', type: 'currency', end: true, total: true, totalKey: 'Avg' },
     ],
   },
   'delivery-charge-by-city': {
@@ -596,7 +619,7 @@ export const FLAT_REPORTS: Record<string, FlatReportConfig> = {
   'payouts': {
     route: 'payoutsReport', paged: false,
     columns: [
-      { key: 'createdAt', type: 'datetime', label: 'REPORTS.FLAT.COLUMNS.date' }, { key: 'accountName' }, { key: 'cashierName' }, { key: 'PaymentName', label: 'REPORTS.FLAT.COLUMNS.paymentMethodName' },
+      { key: 'createdAt', type: 'date', label: 'REPORTS.FLAT.COLUMNS.date' }, { key: 'accountName' }, { key: 'cashierName' }, { key: 'PaymentName', label: 'REPORTS.FLAT.COLUMNS.paymentMethodName' },
       { key: 'amount', type: 'currency', end: true },
     ],
   },
@@ -612,13 +635,13 @@ export const FLAT_REPORTS: Record<string, FlatReportConfig> = {
       { key: 'date', type: 'daydate' }, { key: 'grossSales', type: 'currency', end: true, total: true }, { key: 'discount', type: 'currency', end: true, total: true },
       { key: 'breakfastSales', type: 'currency', end: true, total: true }, { key: 'lunchSales', type: 'currency', end: true, total: true }, { key: 'dinnerSales', type: 'currency', end: true, total: true },
       { key: 'salesInclVat', type: 'currency', end: true, total: true }, { key: 'taxTotal', type: 'currency', end: true, total: true }, { key: 'salesExclVat', type: 'currency', end: true, total: true },
-      { key: 'guests', type: 'number', end: true, total: true }, { key: 'avg', type: 'number', end: true },
+      { key: 'guests', type: 'number', end: true, total: true }, { key: 'avg', type: 'currency', end: true },
     ],
   },
   'payment-method-sub': {
     route: 'paymentTransactions', paged: true,
     columns: [
-      { key: 'paymentDate', type: 'datetime' }, { key: 'type', doc: { typeKey: 'type', idKey: 'referenceId' } }, { key: 'accountName' },
+      { key: 'paymentDate', type: 'date' }, { key: 'type', doc: { typeKey: 'type', idKey: 'referenceId' } }, { key: 'accountName' },
       { key: 'paymentTotal', type: 'currency', end: true, total: true }, { key: 'paymentEquivalent', type: 'currency', end: true, total: true },
     ],
   },
@@ -630,8 +653,8 @@ export const FLAT_REPORTS: Record<string, FlatReportConfig> = {
       return { ...r, billCount: t['Number Of Bills'] ?? r['billCount'] ?? 0, poAmount: t['PO Amount'] ?? 0, billedAmount: t['Converted Bill Amount'] ?? 0, remainingAmount: t['Remaining To Convert'] ?? 0 };
     },
     columns: [
-      { key: 'createdAt', type: 'date' }, { key: 'purchaseNumber', doc: { type: 'PurchaseOrder', idKey: 'purchaseOrderId' } }, { key: 'supplierName' },
-      { key: 'branchName' }, { key: 'conversionStatus', type: 'conversion' }, { key: 'billCount', type: 'number', end: true },
+      { key: 'createdAt', type: 'dateLong' }, { key: 'purchaseNumber', doc: { type: 'PurchaseOrder', idKey: 'purchaseOrderId', newTab: true } }, { key: 'supplierName' },
+      { key: 'branchName' }, { key: 'conversionStatus', type: 'conversion' }, { key: 'billCount', type: 'number', decimals: 0, end: true },
       { key: 'poAmount', type: 'currency', end: true, total: true }, { key: 'billedAmount', type: 'currency', end: true, total: true },
       { key: 'remainingAmount', type: 'currency', end: true, total: true },
     ],
@@ -662,22 +685,22 @@ export const FLAT_REPORTS: Record<string, FlatReportConfig> = {
   'expired-products': {
     route: 'expiredProductsReport', paged: true,
     columns: [
-      { ...PRODUCT }, { key: 'batch' }, { key: 'quantity', type: 'number', end: true, danger: true },
+      { ...PRODUCT }, { key: 'batch' }, { key: 'quantity', type: 'number', end: true, danger: true, total: true },
       { key: 'expirationDate', type: 'expiry' }, { key: 'branchName' },
     ],
   },
   'reorder-report': {
     route: 'reorderReport', paged: true,
     columns: [
-      { ...PRODUCT }, { key: 'UOM', label: 'REPORTS.FLAT.COLUMNS.uom' }, { key: 'onHand', type: 'stock', end: true },
+      { ...PRODUCT }, { key: 'UOM', label: 'REPORTS.FLAT.COLUMNS.uom' }, { key: 'onHand', type: 'stock', end: true, total: true },
       { key: 'reorderLevel', type: 'number', end: true }, { key: 'reorderPoint', type: 'number', end: true },
-      { key: 'suggestedOrderQty', type: 'orderQty', end: true }, { key: 'branchName' },
+      { key: 'suggestedOrderQty', type: 'orderQty', end: true, total: true }, { key: 'branchName' },
     ],
   },
   'reorder-alert': {
     route: 'reorderAlertReport', paged: true,
     columns: [
-      { key: 'branchName' }, { key: 'locationName' }, { key: 'barcode', label: 'REPORTS.FLAT.COLUMNS.productBarcode' }, { key: 'productName', link: 'product' },
+      { key: 'branchName' }, { key: 'locationName' }, { key: 'barcode', label: 'REPORTS.FLAT.COLUMNS.productBarcode' }, { key: 'productName' },
       { key: 'UOM', label: 'REPORTS.FLAT.COLUMNS.uom' },
       { key: 'parentBarcode' }, { key: 'parentName' }, { key: 'currentStock', type: 'stock', end: true },
       { key: 'reorderLevel', type: 'number', end: true }, { key: 'reorderPoint', type: 'number', end: true },
@@ -698,7 +721,7 @@ export const FLAT_REPORTS: Record<string, FlatReportConfig> = {
   'product-sales-vs-inventory-usage': {
     route: 'productSalesVsInventoryUsageReport', paged: true,
     columns: [
-      { ...PRODUCT }, { key: 'qty', type: 'number', end: true, total: true, label: 'REPORTS.FLAT.COLUMNS.quantity' },
+      { ...PRODUCT, link: 'product' }, { key: 'qty', type: 'number', end: true, total: true, label: 'REPORTS.FLAT.COLUMNS.quantity' },
       { key: 'sales', type: 'currency', end: true, total: true }, { key: 'usages', type: 'currency', end: true, total: true },
       { key: 'profitAmount', type: 'profit', end: true, total: true }, { key: 'profitPercentage', type: 'profitPct', end: true, total: true },
     ],

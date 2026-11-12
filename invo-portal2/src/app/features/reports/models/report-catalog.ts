@@ -166,7 +166,7 @@ export const REPORT_CATALOG: ReportGroup[] = [
         slug: 'sales-by-invoice', route: 'salesByInvoice', customBody: 'sales-by-invoice',
         titleKey: 'REPORTS.ITEMS.SALES_BY_INVOICE', descriptionKey: 'REPORTS.DESC.SALES_BY_INVOICE',
         icon: 'file-text', permission: 'reportsSecurity.actions.SalesByInvoice.access',
-        filters: { date: true, branches: true, applyOpeningHour: true }, export: { pdf: true, xlsx: true, csv: true, path: 'salesByInvoice' },
+        filters: { date: true, branches: true, applyOpeningHour: true }, export: { pdf: true, xlsx: true, path: 'salesByInvoice' },
       },
       {
         slug: 'daily-closing-report', route: 'getdailySalesReport', customBody: 'daily-closing',
@@ -234,7 +234,7 @@ export const REPORT_CATALOG: ReportGroup[] = [
         descriptionKey: 'REPORTS.DESC.CUSTOMER_BALANCE_SUMMARY', icon: 'credit-card',
         permission: 'reportsSecurity.actions.CustomerBalanceSummary.access',
         filters: {
-          date: true, branches: true, customers: true, hasBalanceOnly: true, customerType: true,
+          asOf: true, branches: true, customers: true, hasBalanceOnly: true, customerType: true,
         }, export: { pdf: true, xlsx: true, path: 'customerBalanceSummary' },
       },
       {
@@ -377,7 +377,7 @@ export const REPORT_CATALOG: ReportGroup[] = [
         slug: 'purchase-by-supplier', route: 'purchaseBySupplier', customBody: 'flat', titleKey: 'REPORTS.ITEMS.PURCHASE_BY_SUPPLIER',
         descriptionKey: 'REPORTS.DESC.PURCHASE_BY_SUPPLIER', icon: 'truck',
         permission: 'reportsSecurity.actions.PurchaseBySupplier.access',
-        filters: { date: true, branches: true, purchaseMode: true }, export: { pdf: true, xlsx: true },
+        filters: { date: true, branches: true, purchaseMode: true }, export: { pdf: true, xlsx: true, path: 'purchaseBySupplier' },
       },
       {
         slug: 'purchase-by-item', route: 'purchaseByItem', customBody: 'comparison', titleKey: 'REPORTS.ITEMS.PURCHASE_BY_ITEM',
@@ -426,13 +426,13 @@ export const REPORT_CATALOG: ReportGroup[] = [
         slug: 'sales-by-employee', route: 'salesByEmployeeReport', customBody: 'flat',
         titleKey: 'REPORTS.ITEMS.SALES_BY_EMPLOYEE', descriptionKey: 'REPORTS.DESC.SALES_BY_EMPLOYEE',
         icon: 'user-check', permission: 'reportsSecurity.actions.SalesByEmployee.access',
-        filters: { date: true, branches: true, applyOpeningHour: true, salesEmployee: true }, export: { pdf: true, xlsx: true, path: 'salesByEmployeeReport' },
+        filters: { date: true, branches: true, applyOpeningHour: true, salesEmployee: true }, export: { pdf: true, xlsx: true, path: 'salesByEmployee' },
       },
       {
         slug: 'sales-by-employee-vs-products', route: 'salesByProductVsEmployee', customBody: 'flat',
         titleKey: 'REPORTS.ITEMS.SALES_BY_EMPLOYEE_VS_PRODUCTS', descriptionKey: 'REPORTS.DESC.SALES_BY_EMPLOYEE_VS_PRODUCTS',
         icon: 'users', permission: 'reportsSecurity.actions.SalesByEmployeeVsProducts.access',
-        filters: { date: true, branches: true, applyOpeningHour: true, salesEmployee: true }, export: { pdf: true, xlsx: true, path: 'salesByProductVsEmployee' },
+        filters: { date: true, branches: true, applyOpeningHour: true, salesEmployee: true }, export: { pdf: true, xlsx: true, path: 'salesByEmployeeVsProducts' },
       },
       {
         slug: 'short-over-report', route: 'shortOver', customBody: 'flat', titleKey: 'REPORTS.ITEMS.SHORT_OVER',
@@ -473,7 +473,7 @@ export const REPORT_CATALOG: ReportGroup[] = [
         slug: 'attendance', route: 'getAttendanceReport', customBody: 'flat', titleKey: 'REPORTS.ITEMS.ATTENDANCE',
         descriptionKey: 'REPORTS.DESC.ATTENDANCE', icon: 'clock',
         permission: 'reportsSecurity.actions.AttendenceReport.access',
-        filters: { date: true, branches: true, singleBranch: true, singleEmployee: true }, export: { pdf: true, xlsx: true, path: 'getAttendanceReport' },
+        filters: { date: true, branches: true, singleBranch: true, singleEmployee: true }, export: { pdf: true, xlsx: true, path: 'attendenceReport' },
       },
       {
         slug: 'missing-punches', route: '/attendance/missingPunches', customBody: 'flat', titleKey: 'REPORTS.ITEMS.ATT_MISSING_PUNCHES',
@@ -539,7 +539,7 @@ export const REPORT_CATALOG: ReportGroup[] = [
         slug: 'attendance-detail', route: 'attendance/employeeDetail', customBody: 'attendance-detail', titleKey: 'REPORTS.ITEMS.ATT_EMPLOYEE_DETAIL',
         descriptionKey: 'REPORTS.DESC.ATT_EMPLOYEE_DETAIL', icon: 'user',
         permission: 'reportsSecurity.actions.AttendanceEmployeeDetail.access',
-        filters: { date: true, branches: true, singleEmployee: true, requireEmployee: true }, export: { pdf: true, xlsx: true, path: 'attendance/employeeDetail' },
+        filters: { date: true, branches: true, singleEmployee: true, requireEmployee: true },
       },
     ],
   },
@@ -566,7 +566,7 @@ export const REPORT_CATALOG: ReportGroup[] = [
         slug: 'supplier-balances', route: 'supplierBalances', customBody: 'flat', titleKey: 'REPORTS.ITEMS.SUPPLIER_BALANCES',
         descriptionKey: 'REPORTS.DESC.SUPPLIER_BALANCES', icon: 'credit-card',
         permission: 'reportsSecurity.actions.SupplierBalanceReport.access',
-        filters: { asOf: true, branches: true, suppliers: true }, export: { pdf: true, xlsx: true, path: 'supplierBalances' },
+        filters: { asOf: true, branches: true, suppliers: true }, export: { pdf: true, xlsx: true, path: 'supplierBalanceSummary' },
       },
       {
         slug: 'payment-made', route: 'paymentMade', customBody: 'flat', titleKey: 'REPORTS.ITEMS.PAYMENT_MADE',
@@ -740,7 +740,7 @@ export const REPORT_CATALOG: ReportGroup[] = [
         slug: 'discount-report', route: 'salesDiscountReport', customBody: 'flat', titleKey: 'REPORTS.ITEMS.DISCOUNT_REPORT',
         descriptionKey: 'REPORTS.DESC.DISCOUNT_REPORT', icon: 'percent',
         permission: 'reportsSecurity.actions.DiscountReport.access',
-        filters: { date: true, branches: true }, export: { pdf: true, xlsx: true, path: 'salesDiscountReport' },
+        filters: { date: true, branches: true }, export: { pdf: true, xlsx: true, path: 'discountReport' },
       },
       {
         slug: 'sales-by-discount', route: 'salesByDiscountId', customBody: 'flat', titleKey: 'REPORTS.ITEMS.SALES_BY_DISCOUNT',
@@ -779,12 +779,12 @@ export const REPORT_CATALOG: ReportGroup[] = [
         slug: 'prepared-time-summary', route: 'preparedTimeSummaryReport', customBody: 'comparison', titleKey: 'REPORTS.ITEMS.PREPARED_TIME',
         descriptionKey: 'REPORTS.DESC.PREPARED_TIME', icon: 'clock',
         permission: 'reportsSecurity.actions.PreparedTimeSummary.access',
-        filters: { date: true, branches: true }, export: { pdf: true, xlsx: true, path: 'preparedTimeSummary' },
+        filters: { date: true, branches: true }, export: { pdf: true, xlsx: true, path: 'preparedTimeSummaryReport' },
       },
       {
         slug: 'monthly-bld-breakdown', route: 'monthlyBLDBreakdownReport', customBody: 'flat', titleKey: 'REPORTS.ITEMS.MONTHLY_BLD',
         descriptionKey: 'REPORTS.DESC.MONTHLY_BLD', icon: 'calendar',
-        permission: 'reportsSecurity.actions.MonthlyBLDBreakdown.access',
+        permission: 'reportsSecurity.actions.MonthlyBldBreakdownReport.access',
         filters: { date: true, monthOnly: true, branches: true }, export: { pdf: true, xlsx: true, path: 'monthlyBLDBreakdown' },
       },
       {
@@ -837,7 +837,7 @@ export const ALL_REPORTS: ReportMeta[] = REPORT_CATALOG.flatMap(g => g.reports);
 export const SUB_REPORTS: ReportMeta[] = [
   {
     // The invoices and credit notes of one service (opened from a Sales by Service row, with the service in the URL).
-    slug: 'sales-by-service-details', route: 'salesByServiceId', customBody: 'service-details',
+    slug: 'sales-by-service-details', parent: 'sales-by-service', route: 'salesByServiceId', customBody: 'service-details',
     titleKey: 'REPORTS.ITEMS.SALES_BY_SERVICE_DETAILS', descriptionKey: 'REPORTS.DESC.SALES_BY_SERVICE_DETAILS',
     icon: 'layers', permission: 'reportsSecurity.actions.SalesByService.access',
     filters: { date: true, branches: true, applyOpeningHour: true },
@@ -845,15 +845,23 @@ export const SUB_REPORTS: ReportMeta[] = [
   },
   {
     // The invoices and credit notes of one aggregator (opened from a Sales by Aggregator row, with its name in the URL).
-    slug: 'sales-by-aggregator-sub', route: 'salesByAggregatorSubReport', customBody: 'aggregator-sub',
+    slug: 'sales-by-aggregator-sub', parent: 'sales-by-aggregator', route: 'salesByAggregatorSubReport', customBody: 'aggregator-sub',
     titleKey: 'REPORTS.ITEMS.SALES_BY_AGGREGATOR_SUB', descriptionKey: 'REPORTS.DESC.SALES_BY_AGGREGATOR_SUB',
     icon: 'bar-chart', permission: 'reportsSecurity.actions.SalesByAggregatorReport.access',
     filters: { date: true, branches: true, applyOpeningHour: true },
     export: { xlsx: true, path: 'salesByAggregatorSubReport' },
   },
   {
+    // The bills of one supplier (opened from a Purchase by Supplier row, with the supplier in the URL).
+    slug: 'purchase-by-supplier-sub', parent: 'purchase-by-supplier', route: 'purchaseBySupplierId', customBody: 'flat',
+    titleKey: 'REPORTS.ITEMS.PURCHASE_BY_SUPPLIER_SUB', descriptionKey: 'REPORTS.DESC.PURCHASE_BY_SUPPLIER_SUB',
+    icon: 'truck', permission: 'reportsSecurity.actions.PurchaseBySupplier.access',
+    filters: { date: true, branches: true },
+    export: { xlsx: true, pdf: true, path: 'purchaseBySupplierId' },
+  },
+  {
     // The suppliers a product was bought from (opened from a Purchase by Item row, with the product in the URL).
-    slug: 'purchase-by-item-sub', route: 'purchaseByItem', customBody: 'comparison',
+    slug: 'purchase-by-item-sub', parent: 'purchase-by-item', route: 'purchaseByItem', customBody: 'comparison',
     titleKey: 'REPORTS.ITEMS.PURCHASE_BY_ITEM_SUB', descriptionKey: 'REPORTS.DESC.PURCHASE_BY_ITEM_SUB',
     icon: 'box', permission: 'reportsSecurity.actions.PurchaseByItem.access',
     filters: { date: true, branches: true, comparePeriods: true, subColumns: true },
@@ -861,7 +869,7 @@ export const SUB_REPORTS: ReportMeta[] = [
   },
   {
     // The sales transactions behind the Daily Closing figures (same date, branch and sources).
-    slug: 'daily-sales-sub', route: 'dailySalesSubReport', customBody: 'daily-sales-sub',
+    slug: 'daily-sales-sub', parent: 'daily-closing-report', route: 'dailySalesSubReport', customBody: 'daily-sales-sub',
     titleKey: 'REPORTS.ITEMS.DAILY_SALES_SUB', descriptionKey: 'REPORTS.DESC.DAILY_SALES_SUB',
     icon: 'file-text', permission: 'reportsSecurity.actions.SalesBreakdownDailyClosing.access',
     filters: { asOf: true, branches: true, singleBranch: true, requireBranch: true, sources: ['CallCenter', 'Cloud', 'POS', 'Online'] },
@@ -869,23 +877,23 @@ export const SUB_REPORTS: ReportMeta[] = [
   },
   {
     // The invoices and credit notes behind one Sales by Product row (opened from it, with the product in the URL).
-    slug: 'sales-by-item-transactions', route: 'salesByItemTransactions', customBody: 'item-transactions',
+    slug: 'sales-by-item-transactions', parent: 'sales-by-product', route: 'salesByItemTransactions', customBody: 'item-transactions',
     titleKey: 'REPORTS.ITEMS.SALES_BY_ITEM_TRANSACTIONS', descriptionKey: 'REPORTS.DESC.SALES_BY_ITEM_TRANSACTIONS',
     icon: 'file-text', permission: 'reportsSecurity.actions.SalesByItemReport.access',
-    filters: { date: true, branches: true, applyOpeningHour: true },
+    filters: { date: true, branches: true, applyOpeningHour: true, sources: ['CallCenter', 'Cloud', 'POS', 'Online'] },
     export: { pdf: true, xlsx: true, path: 'salesByItemTransactions' },
   },
   {
     // The payments behind one Payment Method row (opened from its Transaction Count, with the method in the URL).
-    slug: 'payment-method-sub', route: 'paymentTransactions', customBody: 'flat',
+    slug: 'payment-method-sub', parent: 'payment-method', route: 'paymentTransactions', customBody: 'flat',
     titleKey: 'REPORTS.ITEMS.PAYMENT_METHOD_SUB', descriptionKey: 'REPORTS.DESC.PAYMENT_METHOD_SUB',
-    icon: 'credit-card', permission: 'reportsSecurity.actions.PaymentMethodSubReport.access',
+    icon: 'credit-card', permission: 'reportsSecurity.actions.PaymentMethodReport.access',
     filters: { date: true, branches: true, applyOpeningHour: true },
     export: { pdf: true, xlsx: true, path: 'paymentTransactions' },
   },
   {
     // The invoices behind one Surcharge row (opened from its name, with the surcharge in the URL).
-    slug: 'surcharge-sub', route: 'surchargeSubReport', customBody: 'flat',
+    slug: 'surcharge-sub', parent: 'surcharge', route: 'surchargeSubReport', customBody: 'flat',
     titleKey: 'REPORTS.ITEMS.SURCHARGE_SUB', descriptionKey: 'REPORTS.DESC.SURCHARGE_SUB',
     icon: 'percent', permission: 'reportsSecurity.actions.SurchargeReports.access',
     filters: { date: true, branches: true, applyOpeningHour: true },
@@ -893,7 +901,7 @@ export const SUB_REPORTS: ReportMeta[] = [
   },
   {
     // The invoices and credit notes behind one Delivery Charge row (opened from its city, with the city in the URL).
-    slug: 'delivery-charge-by-city', route: 'deliveryChargeByCity', customBody: 'flat',
+    slug: 'delivery-charge-by-city', parent: 'delivery-charge', route: 'deliveryChargeByCity', customBody: 'flat',
     titleKey: 'REPORTS.ITEMS.DELIVERY_CHARGE_BY_CITY', descriptionKey: 'REPORTS.DESC.DELIVERY_CHARGE_BY_CITY',
     icon: 'truck', permission: 'reportsSecurity.actions.DeliveryChargeReport.access',
     filters: { date: true, branches: true, applyOpeningHour: true },
@@ -901,21 +909,28 @@ export const SUB_REPORTS: ReportMeta[] = [
   },
   {
     // The bills of entry behind the VAT Report's "Imports subject to VAT paid at customs" row (opened from it; not listed).
-    slug: 'bill-of-entry-details-vat', route: 'billOfEntryDetailsVatReport', customBody: 'flat',
+    slug: 'bill-of-entry-details-vat', parent: 'vat-report', route: 'billOfEntryDetailsVatReport', customBody: 'flat',
     titleKey: 'REPORTS.ITEMS.BILL_OF_ENTRY_VAT', descriptionKey: 'REPORTS.DESC.BILL_OF_ENTRY_VAT', icon: 'file-text',
-    permission: 'reportsSecurity.actions.BillOfEntryDetailsVatReport.access',
+    permission: 'reportsSecurity.actions.VatReport.access',
     filters: { date: true, branches: true }, export: { pdf: true, xlsx: true, path: 'billOfEntryDetailsVatReport' },
   },
   {
+    // The tax lines of one product (opened from a Product-wise VAT row, with the product in the URL).
+    slug: 'product-wise-vat-sub', parent: 'product-wise-vat', route: 'vatReportByProductId', customBody: 'flat',
+    titleKey: 'REPORTS.ITEMS.PRODUCT_WISE_VAT_SUB', descriptionKey: 'REPORTS.DESC.PRODUCT_WISE_VAT_SUB',
+    icon: 'percent', permission: 'reportsSecurity.actions.ProductWiseVatReport.access',
+    filters: { date: true, branches: true, applyOpeningHour: true }, export: { pdf: true, xlsx: true, path: 'productWiseVatReport' },
+  },
+  {
     // The sales transactions of one tax (opened from a VAT Report sales row).
-    slug: 'vat-details-sales', route: 'salesVatDetailsByVatId', customBody: 'flat',
+    slug: 'vat-details-sales', parent: 'vat-report', route: 'salesVatDetailsByVatId', customBody: 'flat',
     titleKey: 'REPORTS.ITEMS.VAT_DETAILS_SALES', descriptionKey: 'REPORTS.DESC.VAT_DETAILS_SALES',
     icon: 'percent', permission: 'reportsSecurity.actions.VatReport.access',
     filters: { date: true, branches: true }, export: { pdf: true, xlsx: true, path: 'vatDetailsByVatId' },
   },
   {
     // The purchase transactions of one tax, or of the zero-rated / exempt taxes together (opened from a VAT Report purchase row).
-    slug: 'vat-details-purchases', route: 'purchaseVatDetailsByVatId', customBody: 'flat',
+    slug: 'vat-details-purchases', parent: 'vat-report', route: 'purchaseVatDetailsByVatId', customBody: 'flat',
     titleKey: 'REPORTS.ITEMS.VAT_DETAILS_PURCHASES', descriptionKey: 'REPORTS.DESC.VAT_DETAILS_PURCHASES',
     icon: 'percent', permission: 'reportsSecurity.actions.VatReport.access',
     filters: { date: true, branches: true }, export: { pdf: true, xlsx: true, path: 'vatDetailsByVatId' },
@@ -929,6 +944,6 @@ export function findReport(slug: string): { meta: ReportMeta; group: ReportGroup
     if (meta) return { meta, group };
   }
   const sub = SUB_REPORTS.find(r => r.slug === slug);
-  const home = REPORT_CATALOG.find(g => g.key === (sub?.slug.startsWith('purchase') ? 'purchase' : sub?.slug.startsWith('bill-of-entry') || sub?.slug.startsWith('vat-details') ? 'tax' : 'sales'));
+  const home = REPORT_CATALOG.find(g => g.key === (sub?.slug.startsWith('purchase') ? 'purchase' : sub?.slug.startsWith('bill-of-entry') || sub?.slug.startsWith('vat-details') || sub?.slug.startsWith('product-wise-vat') ? 'tax' : 'sales'));
   return sub && home ? { meta: sub, group: home } : undefined;
 }

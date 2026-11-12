@@ -12,6 +12,8 @@ import { PAGING_PARAMS, pickPageSize, pickSort } from '../../business-overview/s
 import { ReportApiFilter } from '../../models/report.model';
 import { ReportErrorComponent } from '../../components/report-error/report-error.component';
 import { ReportEmptyComponent } from '../../components/report-empty/report-empty.component';
+import { ReportSelectPromptComponent } from '../../components/report-select-prompt/report-select-prompt.component';
+import { ReportSkeletonComponent } from '../../components/report-skeleton/report-skeleton.component';
 import {
   ItemTransactionRecord, ItemTransactionsData, ListSort, SalesByItemTransactionsService,
 } from './sales-by-item-transactions.service';
@@ -32,7 +34,7 @@ const toNum = (v: unknown): number => {
 @Component({
   selector: 'app-sales-by-item-transactions',
   standalone: true,
-  imports: [ReportEmptyComponent, ReportErrorComponent, TranslateModule, DatePipe, RouterLink, MycurrencyPipe, PaginationComponent, BoTableShellComponent],
+  imports: [ReportSelectPromptComponent, ReportSkeletonComponent, ReportEmptyComponent, ReportErrorComponent, TranslateModule, DatePipe, RouterLink, MycurrencyPipe, PaginationComponent, BoTableShellComponent],
   templateUrl: './sales-by-item-transactions.component.html',
   styleUrl: './sales-by-item-transactions.component.scss',
 })

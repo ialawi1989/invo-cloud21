@@ -34,6 +34,14 @@
   <!-- ── Title strip ────────────────────────────────────────────── -->
   <div class="page-title-section">
     <div class="pts-text">
+      @if (crumbs().length) {
+        <nav class="crumbs" [attr.aria-label]="'REPORTS.VIEW.BREADCRUMB' | translate">
+          @for (c of crumbs(); track $index; let last = $last) {
+            @if (c.url && !last) { <a class="crumb" [routerLink]="c.url">{{ c.label }}</a> } @else { <span class="crumb current" [attr.aria-current]="last ? 'page' : null">{{ c.label }}</span> }
+            @if (!last) { <svg class="crumb-sep flip-rtl" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg> }
+          }
+        </nav>
+      }
       <h2 class="page-title">
         {{ title() }}
         @if (titleChip()) { <span class="rv-account">{{ titleChip() }}</span> }

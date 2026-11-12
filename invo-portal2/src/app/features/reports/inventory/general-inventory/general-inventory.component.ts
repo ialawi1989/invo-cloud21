@@ -1,4 +1,4 @@
-import { DecimalPipe } from '@angular/common';
+import { MynumberPipe } from '@core/pipes/mynumber.pipe';
 import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -12,6 +12,7 @@ import { ReportErrorComponent } from '../../components/report-error/report-error
 import { ReportApiFilter } from '../../models/report.model';
 import { GeneralInventoryData, GeneralInventoryRecord, GeneralInventoryService, GeneralInventoryTotal } from './general-inventory.service';
 import { ReportEmptyComponent } from '../../components/report-empty/report-empty.component';
+import { ReportSkeletonComponent } from '../../components/report-skeleton/report-skeleton.component';
 
 type K = keyof GeneralInventoryTotal;
 /** Column sections — each has its own colour so the four stages (beginning, receiving, usage, ending) read apart. */
@@ -28,7 +29,7 @@ const toNum = (v: unknown): number => { const n = typeof v === 'number' ? v : pa
 @Component({
   selector: 'app-general-inventory',
   standalone: true,
-  imports: [ReportEmptyComponent, ReportErrorComponent, TranslateModule, RouterLink, DecimalPipe, MycurrencyPipe, PaginationComponent, BoTableShellComponent],
+  imports: [ReportSkeletonComponent, ReportEmptyComponent, ReportErrorComponent, TranslateModule, RouterLink, MynumberPipe, MycurrencyPipe, PaginationComponent, BoTableShellComponent],
   templateUrl: './general-inventory.component.html',
   styleUrl: './general-inventory.component.scss',
 })

@@ -1,5 +1,5 @@
 @if (loading() && !rows()) {
-  <div class="dc-loading" aria-busy="true"><div class="dc-skel"></div></div>
+  <app-report-skeleton [columns]="8" [rows]="8" />
 } @else if (error()) {
   <app-report-error [message]="error()" (retry)="load()" />
 } @else if (rows(); as list) {
@@ -24,8 +24,8 @@
             @for (r of list; track $index) {
               <tr class="data-row">
                 <td class="sticky-col-1">{{ r.date | date: 'dd/MM/yyyy HH:mm' }}</td>
-                <td>{{ r.invoiceNumber }}</td>
-                <td>{{ r.customerName }}</td>
+                <td>{{ r.invoiceNumber || '-' }}</td>
+                <td>{{ r.customerName || '-' }}</td>
                 <td class="text-end">{{ num(r.totalSales) | mycurrency }}</td>
                 <td class="text-end">{{ num(r.itemDiscount) | mycurrency }}</td>
                 <td class="text-end">{{ num(r.taxTotal) | mycurrency }}</td>

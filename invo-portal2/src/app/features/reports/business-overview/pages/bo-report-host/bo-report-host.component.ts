@@ -1,7 +1,8 @@
-import { Component, ElementRef, OnDestroy, OnInit, computed, effect, inject, input, signal, viewChild } from '@angular/core';
+import { Component, DestroyRef, ElementRef, OnDestroy, OnInit, computed, effect, inject, input, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
+import { ReportBackTrail } from '../../../utils/report-back-trail';
 import { ApiService } from '@core/http/api.service';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { LanguageService } from '@core/i18n/language.service';
@@ -14,7 +15,7 @@ import {
 import {
   ExportFormat, ReportExportButtonComponent,
 } from '../../../components/report-export-button/report-export-button.component';
-import { ReportPageShellComponent } from '../../../components/report-page-shell/report-page-shell.component';
+import { ReportCrumb, ReportPageShellComponent } from '../../../components/report-page-shell/report-page-shell.component';
 import { findReport } from '../../../models/report-catalog';
 import { reportIcon } from '../../../models/report-icons';
 import { ReportsFavoritesService } from '../../../services/reports-favorites.service';
@@ -59,6 +60,8 @@ export class BoReportHostComponent implements OnInit, OnDestroy {
   private lang = inject(LanguageService);
   private toast = inject(ToastService);
   private modal = inject(ModalService);
+  /** The page this report was opened from (the Balance Sheet's "Current Year Net Profit" opens P&L). */
+  private trail = new ReportBackTrail(this.router, inject(DestroyRef));
   private layout = inject(LayoutService);
 
   /** `:slug` route param (component input binding). */
@@ -132,6 +135,22 @@ export class BoReportHostComponent implements OnInit, OnDestroy {
 
   readonly ACCOUNT_JOURNALS = ACCOUNT_JOURNALS;
   icon = (n?: string) => reportIcon(n);
+
+  /** Breadcrumb above the title: Reports › Business Overview › (the statement, for the account drill-down) › this page. */
+  crumbs = computed<ReportCrumb[]>(() => {
+    const c = this.cfg();
+    if (!c) return [];
+    const t = (k: string) => this.lang.instant(k);
+    const out: ReportCrumb[] = [{ label: t('REPORTS.CATALOG.TITLE'), url: '/reports' }, { label: t('REPORTS.GROUPS.BUSINESS_OVERVIEW'), url: '/reports' }];
+    if (this.isSub()) {
+      const [path, query] = this.router.url.split('?');
+      out.push({ label: t(c.titleKey), url: path.replace(/\/account-journals$/, '') + (query ? '?' + query : '') });
+      out.push({ label: t(this.ACCOUNT_JOURNALS.titleKey) });
+    } else {
+      out.push({ label: t(c.titleKey) });
+    }
+    return out;
+  });
 
   isFavorite = computed(() => this.favs.slugs().includes(this.slug()));
 
@@ -220,6 +239,7 @@ export class BoReportHostComponent implements OnInit, OnDestroy {
     const slug = await ref.afterClosed();
     if (!slug) return;
     if (slug !== this.slug() || this.isSub()) {
+      this.trail.reset();
       // Like the legacy app: the filters (dates / as-of, branches, comparison) come along to the report we open.
       void this.router.navigate(['/reports/view', slug], { queryParams: this.carryQuery(slug) });
     }
@@ -238,7 +258,10 @@ export class BoReportHostComponent implements OnInit, OnDestroy {
         queryParams: filterToQuery(this.filter(), this.asOfDefault()),
       });
     } else {
-      void this.router.navigate(['/reports']);
+      // Profit & Loss opened from the Balance Sheet goes back to the sheet with its filters
+      const from = this.slug() === 'profit-and-loss' ? this.trail.source(this.router.url) : null;
+      if (from?.startsWith('/reports/view/balance-sheet')) void this.router.navigateByUrl(from);
+      else void this.router.navigate(['/reports']);
     }
   }
 

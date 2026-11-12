@@ -1,9 +1,5 @@
 @if (loading() && !data()) {
-  <div class="ss-loading" aria-busy="true">
-    <div class="ss-skel-kpis">@for (i of [1,2,3,4,5,6,7,8]; track i) { <div class="ss-skel"></div> }</div>
-    <div class="ss-skel ss-skel-card"></div>
-    <div class="ss-skel ss-skel-card"></div>
-  </div>
+  <app-report-skeleton [kpis]="8" [chart]="true" [columns]="0" />
 } @else if (error()) {
   <app-report-error [message]="error()" (retry)="load()" />
 } @else if (data()) {
@@ -35,7 +31,7 @@
                     <td class="num strong">{{ r.salesTotal | mynumber }}</td>
                   </tr>
                 } @empty {
-                  <tr><td colspan="3" class="empty">{{ 'REPORTS.SALES_SUMMARY.NO_DATA' | translate }}</td></tr>
+                  <tr><td colspan="3" class="empty">{{ 'REPORTS.INLINE.NO_ROWS' | translate }}<br><small>{{ 'REPORTS.INLINE.NO_ROWS_HINT' | translate }}</small></td></tr>
                 }
                 @if (categories().length) {
                   <tr class="total">
@@ -94,7 +90,7 @@
                     <td class="num strong">{{ r.salesTotal | mynumber }}</td>
                   </tr>
                 } @empty {
-                  <tr><td colspan="3" class="empty">{{ 'REPORTS.SALES_SUMMARY.NO_DATA' | translate }}</td></tr>
+                  <tr><td colspan="3" class="empty">{{ 'REPORTS.INLINE.NO_ROWS' | translate }}<br><small>{{ 'REPORTS.INLINE.NO_ROWS_HINT' | translate }}</small></td></tr>
                 }
                 @if (services().length) {
                   <tr class="total">
@@ -155,7 +151,7 @@
                     <td class="num strong">{{ r.actual_amount_paid | mynumber }}</td>
                   </tr>
                 } @empty {
-                  <tr><td colspan="3" class="empty">{{ 'REPORTS.SALES_SUMMARY.NO_DATA' | translate }}</td></tr>
+                  <tr><td colspan="3" class="empty">{{ 'REPORTS.INLINE.NO_ROWS' | translate }}<br><small>{{ 'REPORTS.INLINE.NO_ROWS_HINT' | translate }}</small></td></tr>
                 }
                 @if (payments().length) {
                   <tr class="total">

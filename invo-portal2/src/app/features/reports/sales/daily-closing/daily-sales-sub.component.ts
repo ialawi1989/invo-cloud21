@@ -8,6 +8,7 @@ import { ReportApiFilter } from '../../models/report.model';
 import { DailyClosingService, DailySaleLine } from './daily-closing.service';
 import { ReportErrorComponent } from '../../components/report-error/report-error.component';
 import { ReportEmptyComponent } from '../../components/report-empty/report-empty.component';
+import { ReportSkeletonComponent } from '../../components/report-skeleton/report-skeleton.component';
 
 const toNum = (v: unknown): number => { const n = typeof v === 'number' ? v : parseFloat(String(v ?? '')); return Number.isFinite(n) ? n : 0; };
 
@@ -15,7 +16,7 @@ const toNum = (v: unknown): number => { const n = typeof v === 'number' ? v : pa
 @Component({
   selector: 'app-daily-sales-sub',
   standalone: true,
-  imports: [ReportEmptyComponent, ReportErrorComponent, TranslateModule, DatePipe, MycurrencyPipe, BoTableShellComponent],
+  imports: [ReportSkeletonComponent, ReportEmptyComponent, ReportErrorComponent, TranslateModule, DatePipe, MycurrencyPipe, BoTableShellComponent],
   templateUrl: './daily-sales-sub.component.html',
   styleUrl: './daily-closing.component.scss',
 })

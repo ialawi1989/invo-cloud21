@@ -10,6 +10,7 @@
   <!-- The same page frame as every other report: action bar + title strip + scrolling content. -->
   <app-report-page-shell
     [title]="m.titleKey | translate"
+    [crumbs]="crumbs()"
     [subtitle]="(m.descriptionKey ?? '') | translate"
     [favorite]="isFavorite()"
     [spinning]="spinning()"

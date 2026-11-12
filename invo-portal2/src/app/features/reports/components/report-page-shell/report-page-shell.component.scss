@@ -94,3 +94,10 @@
   :host, .rvh { display: block; }
   .content-area { padding: 0; overflow: visible; }
 }
+
+/* Breadcrumb above the title */
+.crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 4px; font-size: .78rem; line-height: 1.4; }
+.crumb { color: #64748b; text-decoration: none; }
+a.crumb:hover { color: #0f766e; text-decoration: underline; }
+.crumb.current { color: #94a3b8; }
+.crumb-sep { color: #cbd5e1; flex: none; }

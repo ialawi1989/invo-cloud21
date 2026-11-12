@@ -7,6 +7,7 @@ import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 import { ReportApiFilter } from '../../models/report.model';
 import { CategoryDetail, DailyClosingData, DailyClosingService, SalesReturn } from './daily-closing.service';
 import { ReportErrorComponent } from '../../components/report-error/report-error.component';
+import { ReportSkeletonComponent } from '../../components/report-skeleton/report-skeleton.component';
 
 const toNum = (v: unknown): number => { const n = typeof v === 'number' ? v : parseFloat(String(v ?? '')); return Number.isFinite(n) ? n : 0; };
 
@@ -19,7 +20,7 @@ interface BreakdownRow { key: string; labelKey: string; sales: number; ret: numb
 @Component({
   selector: 'app-daily-closing',
   standalone: true,
-  imports: [ReportErrorComponent, TranslateModule, DatePipe, RouterLink, MycurrencyPipe],
+  imports: [ReportSkeletonComponent, ReportErrorComponent, TranslateModule, DatePipe, RouterLink, MycurrencyPipe],
   templateUrl: './daily-closing.component.html',
   styleUrl: './daily-closing.component.scss',
 })
@@ -93,17 +94,6 @@ export class DailyClosingComponent {
       sources: Array.isArray(f['sources']) && f['sources'].length ? f['sources'].join(',') : null,
     };
   });
-
-  /** Same business day, branch and sources for the reports the rows open (the day's opening hours always apply). */
-  private dayParams(): Record<string, string | null> {
-    return { ...this.drillParams(), openingHour: '1' };
-  }
-  /** A service row opens its invoices and credit notes. */
-  serviceParams(r: { serviceId?: string | null; serviceName: string }): Record<string, string | null> {
-    return { ...this.dayParams(), serviceId: r.serviceId ?? null, serviceName: r.serviceName || null };
-  }
-  /** A category row opens the Sales by Category report for the same day. */
-  categoryParams = computed(() => this.dayParams());
 
   private seq = 0;
 

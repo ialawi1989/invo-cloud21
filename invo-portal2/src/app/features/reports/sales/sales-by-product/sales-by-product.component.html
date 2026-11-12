@@ -78,21 +78,21 @@
                 <td class="text-end">
                   @if (canDrillToVoids(r)) {
                     <a class="account-link" [routerLink]="['/reports/view', 'voided-sales']" [queryParams]="voidsParams(r)"
-                       [attr.title]="'REPORTS.SALES_BY_PRODUCT.VIEW_VOIDS' | translate" target="_blank" rel="noopener">{{ num(r.voidedQty) }}</a>
+                       [attr.title]="'REPORTS.SALES_BY_PRODUCT.VIEW_VOIDS' | translate">{{ num(r.voidedQty) }}</a>
                   } @else { {{ num(r.voidedQty) }} }
                 </td>
                 <td class="text-end">{{ num(r.returnedQty) }}</td>
                 <td class="text-end">
                   @if (canDrillToTransactions(r)) {
                     <a class="account-link" [routerLink]="['/reports/view', 'sales-by-item-transactions']"
-                       [queryParams]="transactionsParams(r)" [attr.title]="'REPORTS.SALES_BY_PRODUCT.VIEW_TRANSACTIONS' | translate" target="_blank" rel="noopener">{{ r.qty }}</a>
+                       [queryParams]="transactionsParams(r)" [attr.title]="'REPORTS.SALES_BY_PRODUCT.VIEW_TRANSACTIONS' | translate">{{ r.qty }}</a>
                   } @else { {{ r.qty }} }
                 </td>
                 <td class="text-end">{{ num(r.grossSales) | mycurrency }}</td>
                 <td class="text-end">
                   @if (canDrillToVoids(r)) {
                     <a class="account-link" [routerLink]="['/reports/view', 'voided-sales']" [queryParams]="voidsParams(r)"
-                       [attr.title]="'REPORTS.SALES_BY_PRODUCT.VIEW_VOIDS' | translate" target="_blank" rel="noopener">{{ num(r.voidAmount) | mycurrency }}</a>
+                       [attr.title]="'REPORTS.SALES_BY_PRODUCT.VIEW_VOIDS' | translate">{{ num(r.voidAmount) | mycurrency }}</a>
                   } @else { {{ num(r.voidAmount) | mycurrency }} }
                 </td>
                 <td class="text-end">{{ num(r.returnAmount) | mycurrency }}</td>

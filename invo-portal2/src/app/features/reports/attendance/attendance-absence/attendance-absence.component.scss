@@ -20,6 +20,3 @@ app-report-note { margin: 6px 0 -2px; }
   &.bad { background: #fee2e2; color: #b91c1c; } &.info { background: #fef3c7; color: #b45309; } }
 .ab-type { display: inline-block; padding: 1px 10px; border-radius: 999px; background: #fef3c7; color: #b45309; font-size: 12px; font-weight: 600; }
 
-@keyframes ab-shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
-.ab-skel { height: 320px; border-radius: 12px; background: linear-gradient(90deg, #eef2f6 0%, #f6f8fa 50%, #eef2f6 100%); background-size: 200% 100%; animation: ab-shimmer 1.4s ease-in-out infinite; }
-@media (prefers-reduced-motion: reduce) { .ab-skel { animation: none; } }

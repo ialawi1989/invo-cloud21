@@ -1,4 +1,4 @@
-import { DecimalPipe } from '@angular/common';
+import { MynumberPipe } from '@core/pipes/mynumber.pipe';
 import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService } from '@core/i18n/language.service';
@@ -11,6 +11,7 @@ import { ReportApiFilter } from '../../models/report.model';
 import { HoursByProductData, HoursProductRecord, SalesByHoursByProductService } from './sales-by-hours-by-product.service';
 import { ReportErrorComponent } from '../../components/report-error/report-error.component';
 import { ReportEmptyComponent } from '../../components/report-empty/report-empty.component';
+import { ReportSkeletonComponent } from '../../components/report-skeleton/report-skeleton.component';
 
 const toNum = (v: unknown): number => { const n = typeof v === 'number' ? v : parseFloat(String(v ?? '')); return Number.isFinite(n) ? n : 0; };
 
@@ -18,7 +19,7 @@ const toNum = (v: unknown): number => { const n = typeof v === 'number' ? v : pa
 @Component({
   selector: 'app-sales-by-hours-by-product',
   standalone: true,
-  imports: [ReportEmptyComponent, ReportErrorComponent, TranslateModule, DecimalPipe, MycurrencyPipe, PaginationComponent, BoTableShellComponent],
+  imports: [ReportSkeletonComponent, ReportEmptyComponent, ReportErrorComponent, TranslateModule, MynumberPipe, MycurrencyPipe, PaginationComponent, BoTableShellComponent],
   templateUrl: './sales-by-hours-by-product.component.html',
   styleUrl: './sales-by-hours-by-product.component.scss',
 })

@@ -1,5 +1,5 @@
 @if (loading() && !data()) {
-  <div class="cr-loading" aria-busy="true"><div class="cr-skel"></div><div class="cr-skel cr-skel-chart"></div></div>
+  <app-report-skeleton [chart]="true" [columns]="5" />
 } @else if (error()) {
   <app-report-error [message]="error()" (retry)="load()" />
 } @else if (data()) {
@@ -26,6 +26,7 @@
                   <th class="text-end" [attr.colspan]="subs().length || 1" [attr.data-period-index]="i"
                       [class]="c === 'Total' ? 'total-header' : 'bo-p' + slot(i)">{{ c | boColumn }}</th>
                 }
+                @if (showRowTotal()) { <th class="text-end total-header">{{ 'REPORTS.COMPARISON.TOTAL' | translate }}</th> }
               }
             </tr>
             @if (subs().length && !flatHeader()) {
@@ -47,7 +48,7 @@
                 <tr class="data-row">
                   <td class="sticky-col-1">
                     @if (config().drill && r[config().drill!.idField]) {
-                      <a class="account-link" [routerLink]="['/reports/view', config().drill!.slug]" [queryParams]="drillParams(r)" target="_blank" rel="noopener">{{ nameOf(r) }}</a>
+                      <a class="account-link" [routerLink]="['/reports/view', config().drill!.slug]" [queryParams]="drillParams(r)">{{ nameOf(r) }}</a>
                     } @else { {{ nameOf(r) }} }
                   </td>
                   @for (c of columns(); track c; let ci = $index) {
@@ -56,8 +57,8 @@
                         @let v = value(r, c, sc);
                         <td class="text-end" [class]="'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci" [class.negative]="v < 0">
                           @if (isCount(sc) && config().countDrill && r[config().countDrill!.idField] && v) {
-                            <a class="account-link" [routerLink]="['/reports/view', config().countDrill!.slug]" [queryParams]="drillParams(r, config().countDrill)" target="_blank" rel="noopener">{{ v | number: '1.0-3' }}</a>
-                          } @else { {{ isTime(sc) ? seconds(v) : isCount(sc) ? (v | number: '1.0-3') : (v | boAmount) }} }
+                            <a class="account-link" [routerLink]="['/reports/view', config().countDrill!.slug]" [queryParams]="drillParams(r, config().countDrill)">{{ v | mynumber }}</a>
+                          } @else { {{ isTime(sc) ? seconds(v) : isCount(sc) ? (v | mynumber) : (v | boAmount) }} }
                         </td>
                       }
                     } @else {
@@ -65,6 +66,7 @@
                       <td class="text-end" [class]="'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci" [class.negative]="v < 0">{{ v | boAmount }}</td>
                     }
                   }
+                  @if (showRowTotal()) { <td class="text-end total-cell" [class.negative]="rowTotal(r) < 0">{{ rowTotal(r) | boAmount }}</td> }
                 </tr>
               }
               @if (g.name !== null) {
@@ -73,12 +75,13 @@
                   @for (c of columns(); track c; let ci = $index) {
                     @if (subs().length) {
                       @for (sc of subs(); track sc) {
-                        <td class="text-end" [class]="'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci"><strong>{{ isTime(sc) ? seconds(groupTotal(g.rows, c, sc)) : isCount(sc) ? (groupTotal(g.rows, c, sc) | number: '1.0-3') : (groupTotal(g.rows, c, sc) | boAmount) }}</strong></td>
+                        <td class="text-end" [class]="'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci"><strong>{{ isTime(sc) ? seconds(groupTotal(g.rows, c, sc)) : isCount(sc) ? (groupTotal(g.rows, c, sc) | mynumber) : (groupTotal(g.rows, c, sc) | boAmount) }}</strong></td>
                       }
                     } @else {
                       <td class="text-end" [class]="'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci"><strong>{{ groupTotal(g.rows, c) | boAmount }}</strong></td>
                     }
                   }
+                  @if (showRowTotal()) { <td class="text-end total-cell"><strong>{{ groupRowTotal(g.rows) | boAmount }}</strong></td> }
                 </tr>
               }
             }
@@ -87,12 +90,13 @@
               @for (c of columns(); track c; let ci = $index) {
                 @if (subs().length) {
                   @for (sc of subs(); track sc) {
-                    <td class="text-end" [class]="'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci"><strong>{{ isTime(sc) ? seconds(columnTotal(c, sc)) : isCount(sc) ? (columnTotal(c, sc) | number: '1.0-3') : (columnTotal(c, sc) | boAmount) }}</strong></td>
+                    <td class="text-end" [class]="'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci"><strong>{{ isTime(sc) ? seconds(columnTotal(c, sc)) : isCount(sc) ? (columnTotal(c, sc) | mynumber) : (columnTotal(c, sc) | boAmount) }}</strong></td>
                   }
                 } @else {
                   <td class="text-end" [class]="'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci"><strong>{{ columnTotal(c) | boAmount }}</strong></td>
                 }
               }
+              @if (showRowTotal()) { <td class="text-end total-cell"><strong>{{ groupRowTotal(rows()) | boAmount }}</strong></td> }
             </tr>
           </tbody>
         </table>

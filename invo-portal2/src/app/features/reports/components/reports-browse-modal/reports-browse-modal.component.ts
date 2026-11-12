@@ -5,6 +5,7 @@ import { LanguageService } from '@core/i18n/language.service';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { CompanyService } from '@core/auth/company.service';
 import { isEmployeeEarningsEnabled } from '@core/auth/employee-earnings';
+import { SegmentedToggleComponent, SegmentedToggleOption } from '@shared/components/segmented-toggle/segmented-toggle.component';
 import { MODAL_DATA, MODAL_REF } from '@shared/modal/modal.tokens';
 import { ModalRef } from '@shared/modal/modal.service';
 import { REPORT_CATALOG } from '../../models/report-catalog';
@@ -23,7 +24,7 @@ export interface ReportsBrowseData { currentSlug: string; }
 @Component({
   selector: 'app-reports-browse-modal',
   standalone: true,
-  imports: [TranslateModule],
+  imports: [TranslateModule, SegmentedToggleComponent],
   templateUrl: './reports-browse-modal.component.html',
   styles: [`:host { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; height: 100%; }`],
 })
@@ -51,6 +52,19 @@ export class ReportsBrowseModalComponent {
   search = signal('');
   onlyFavorites = signal(false);
 
+  /** Same preference (and storage key) as the catalog page, so the two stay in step. */
+  sort = signal<'default' | 'az' | 'za'>(this.readSort());
+  readonly sortOptions: SegmentedToggleOption<'default' | 'az' | 'za'>[] = [
+    { value: 'default', label: 'REPORTS.CATALOG.SORT_DEFAULT' }, { value: 'az', label: 'REPORTS.CATALOG.SORT_AZ' }, { value: 'za', label: 'REPORTS.CATALOG.SORT_ZA' },
+  ];
+  setSort(v: 'default' | 'az' | 'za'): void {
+    this.sort.set(v);
+    try { localStorage.setItem('reports.catalog.sort', v); } catch { /* storage can be unavailable */ }
+  }
+  private readSort(): 'default' | 'az' | 'za' {
+    try { const v = localStorage.getItem('reports.catalog.sort'); return v === 'az' || v === 'za' ? v : 'default'; } catch { return 'default'; }
+  }
+
   /** Categories with only the reports this user can open (same gating as the catalog). */
   private allowed = computed<ReportGroup[]>(() =>
     REPORT_CATALOG
@@ -71,7 +85,7 @@ export class ReportsBrowseModalComponent {
     const q = this.search().trim().toLowerCase();
     const fav = this.onlyFavorites();
     const favSet = new Set(this.favs.slugs());
-    return this.allowed()
+    const filtered = this.allowed()
       .map(g => ({
         ...g,
         reports: g.reports.filter(r =>
@@ -79,6 +93,10 @@ export class ReportsBrowseModalComponent {
           && (!q || this.lang.instant(r.titleKey).toLowerCase().includes(q))),
       }))
       .filter(g => g.reports.length > 0);
+    const dir = this.sort() === 'az' ? 1 : this.sort() === 'za' ? -1 : 0;
+    if (!dir) return filtered;
+    const by = (a: string, b: string) => dir * this.lang.instant(a).localeCompare(this.lang.instant(b));
+    return filtered.map(g => ({ ...g, reports: [...g.reports].sort((a, b) => by(a.titleKey, b.titleKey)) })).sort((a, b) => by(a.titleKey, b.titleKey));
   });
 
   visibleCount = computed(() => this.groups().reduce((n, g) => n + g.reports.length, 0));

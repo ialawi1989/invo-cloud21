@@ -1,9 +1,9 @@
-import { DatePipe, DecimalPipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService } from '@core/i18n/language.service';
-import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
+import { MynumberPipe } from '@core/pipes/mynumber.pipe';
 import { PaginationComponent } from '@shared/components/pagination/pagination.component';
 import { QueryParamsService } from '@shared/services/query-params.service';
 import { journalLink } from '../../../settings/chart-of-accounts/utils/journal-links';
@@ -13,6 +13,7 @@ import { ReportErrorComponent } from '../../components/report-error/report-error
 import { ReportApiFilter } from '../../models/report.model';
 import { ProductMovementData, ProductMovementRecord, ProductMovementService } from './product-movement.service';
 import { ReportEmptyComponent } from '../../components/report-empty/report-empty.component';
+import { ReportSkeletonComponent } from '../../components/report-skeleton/report-skeleton.component';
 
 const toNum = (v: unknown): number => { const n = typeof v === 'number' ? v : parseFloat(String(v ?? '')); return Number.isFinite(n) ? n : 0; };
 
@@ -20,7 +21,7 @@ const toNum = (v: unknown): number => { const n = typeof v === 'number' ? v : pa
 @Component({
   selector: 'app-product-movement',
   standalone: true,
-  imports: [ReportEmptyComponent, ReportErrorComponent, TranslateModule, DatePipe, DecimalPipe, RouterLink, MycurrencyPipe, PaginationComponent, BoTableShellComponent],
+  imports: [ReportSkeletonComponent, ReportEmptyComponent, ReportErrorComponent, TranslateModule, DatePipe, RouterLink, MynumberPipe, PaginationComponent, BoTableShellComponent],
   templateUrl: './product-movement.component.html',
   styleUrl: './product-movement.component.scss',
 })

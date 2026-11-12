@@ -1,5 +1,4 @@
 import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
-import { DecimalPipe } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService } from '@core/i18n/language.service';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
@@ -8,6 +7,7 @@ import { ReportKpiRowComponent } from '../../components/report-kpi-row/report-kp
 import { ReportApiFilter, ReportKpi } from '../../models/report.model';
 import { SalesSummaryData, SalesSummaryService } from './sales-summary.service';
 import { ReportErrorComponent } from '../../components/report-error/report-error.component';
+import { ReportSkeletonComponent } from '../../components/report-skeleton/report-skeleton.component';
 
 /** Colours of the category / service dots (the legacy palette). */
 const PALETTE = [
@@ -27,7 +27,7 @@ const sum = (rows: any[], key: string): number =>
 @Component({
   selector: 'app-sales-summary',
   standalone: true,
-  imports: [ReportErrorComponent, TranslateModule, DecimalPipe, MycurrencyPipe, MynumberPipe, ReportKpiRowComponent],
+  imports: [ReportSkeletonComponent, ReportErrorComponent, TranslateModule, MycurrencyPipe, MynumberPipe, ReportKpiRowComponent],
   templateUrl: './sales-summary.component.html',
   styleUrl: './sales-summary.component.scss',
 })

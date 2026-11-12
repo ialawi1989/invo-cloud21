@@ -20,7 +20,7 @@
         <tbody>
           @for (e of d.employees; track e.id) {
             <tr>
-              <th class="at-name" scope="row"><a class="at-link" [routerLink]="['/reports/view', 'attendance-detail']" [queryParams]="detailQuery(e.id)" target="_blank" rel="noopener">{{ e.name }}</a></th>
+              <th class="at-name" scope="row">{{ e.name }}</th>
               @for (s of e.statuses; track $index) {
                 <td class="at-cell"><span [class]="'at-chip st-' + s" [attr.title]="title(d.dates[$index], s)" [attr.aria-label]="title(d.dates[$index], s)">{{ letter(s) }}</span></td>
               }
@@ -31,5 +31,5 @@
     </div>
   </div>
 } @else {
-  <div class="at-skel"></div>
+  <app-report-skeleton [columns]="4" [rows]="8" />
 }

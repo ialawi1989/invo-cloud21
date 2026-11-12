@@ -10,10 +10,10 @@ import { ReportApiFilter } from '../../models/report.model';
 import { DeliveryAreaData, DeliveryAreaTotal, ListSort, SalesByDeliveryAreaService } from './sales-by-delivery-area.service';
 import { ReportErrorComponent } from '../../components/report-error/report-error.component';
 import { ReportEmptyComponent } from '../../components/report-empty/report-empty.component';
+import { ReportSkeletonComponent } from '../../components/report-skeleton/report-skeleton.component';
 
 type Col = keyof DeliveryAreaTotal;
 const COLS: { key: Col; labelKey: string; money: boolean }[] = [
-  { key: 'numberOfInvoices', labelKey: 'INVOICES', money: false },
   { key: 'invoiceSales', labelKey: 'INVOICE_SALES', money: true },
   { key: 'creditNoteSales', labelKey: 'CREDIT_SALES', money: true },
   { key: 'totalSales', labelKey: 'TOTAL_SALES', money: true },
@@ -26,7 +26,7 @@ const toNum = (v: unknown): number => { const n = typeof v === 'number' ? v : pa
 @Component({
   selector: 'app-sales-by-delivery-area',
   standalone: true,
-  imports: [ReportEmptyComponent, ReportErrorComponent, TranslateModule, MycurrencyPipe, PaginationComponent, BoTableShellComponent],
+  imports: [ReportSkeletonComponent, ReportEmptyComponent, ReportErrorComponent, TranslateModule, MycurrencyPipe, PaginationComponent, BoTableShellComponent],
   templateUrl: './sales-by-delivery-area.component.html',
   styleUrl: './sales-by-delivery-area.component.scss',
 })

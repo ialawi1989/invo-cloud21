@@ -1,5 +1,5 @@
 @if (loading() && !data()) {
-  <div class="dc-loading" aria-busy="true"><div class="dc-skel"></div></div>
+  <app-report-skeleton [kpis]="2" [chart]="true" [columns]="5" [rows]="6" />
 } @else if (error()) {
   <app-report-error [message]="error()" (retry)="load()" />
 } @else if (data(); as d) {
@@ -102,7 +102,7 @@
                 <tr class="group"><td colspan="7"><b>{{ g.departmentName }}</b></td></tr>
                 @for (c of g.categories; track $index) {
                   <tr>
-                    <td class="indent"><a class="dc-link" [routerLink]="['/reports/view', 'sales-by-category']" [queryParams]="categoryParams()">{{ c.categoryName }}</a></td>
+                    <td class="indent">{{ c.categoryName }}</td>
                     <td class="n">{{ num(c.totalSales) | mycurrency }}</td>
                     <td class="n">{{ num(c.salesQty) }}</td>
                     <td class="n neg">{{ num(c.totalReturns) | mycurrency }}</td>
@@ -142,7 +142,7 @@
             <tbody>
               @for (s of d.serviceDetails; track $index) {
                 <tr>
-                  <td>@if (s.serviceId) { <a class="dc-link" [routerLink]="['/reports/view', 'sales-by-service-details']" [queryParams]="serviceParams(s)">{{ s.serviceName }}</a> } @else { {{ s.serviceName }} } @if (s.numberOfInvoices) { <span class="dc-badge">{{ s.numberOfInvoices }}</span> }</td>
+                  <td>{{ s.serviceName }} @if (s.numberOfInvoices) { <span class="dc-badge">{{ s.numberOfInvoices }}</span> }</td>
                   <td class="n">{{ num(s.totalSales) | mycurrency }}</td>
                   <td class="n">{{ num(s.salesQty) }}</td>
                   <td class="n neg">{{ num(s.totalReturns) | mycurrency }}</td>
