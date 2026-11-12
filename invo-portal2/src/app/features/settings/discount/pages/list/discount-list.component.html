@@ -17,6 +17,20 @@
   (prevPage)="goPrev()"
   (nextPage)="goNext()">
 
+  <div shellToolbarExtra class="dl-filters">
+    <app-search-dropdown class="dl-filter" [items]="typeItems" [multiple]="true" [searchable]="false" [displayWith]="typeLabel"
+      [value]="$any(fType())" (valueChange)="setFilter('type', $event)" [placeholder]="'DISCOUNT.LIST.TYPE' | translate"/>
+    <app-search-dropdown class="dl-filter" [items]="statusItems" [multiple]="true" [searchable]="false" [displayWith]="statusLabel"
+      [value]="$any(fStatus())" (valueChange)="setFilter('status', $event)" [placeholder]="'DISCOUNT.LIST.STATUS' | translate"/>
+    <app-search-dropdown class="dl-filter" [items]="applyItems" [multiple]="true" [searchable]="false" [displayWith]="applyLabel"
+      [value]="$any(fApply())" (valueChange)="setFilter('apply', $event)" [placeholder]="'DISCOUNT.LIST.FILTER_APPLY_TO' | translate"/>
+    <app-search-dropdown class="dl-filter" [loadFn]="loadBranchItems" [multiple]="true" [displayWith]="branchLabel"
+      [value]="$any(fBranch())" (valueChange)="setFilter('branch', $event)" [placeholder]="'DISCOUNT.LIST.FILTER_BRANCH' | translate"/>
+    @if (hasFilters()) {
+      <button type="button" class="btn btn-ghost btn-sm" (click)="clearFilters()">{{ 'DISCOUNT.LIST.CLEAR_FILTERS' | translate }}</button>
+    }
+  </div>
+
   <button shellActions type="button" class="btn btn-primary" (click)="add()">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <line x1="12" y1="5" x2="12" y2="19"/>

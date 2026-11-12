@@ -204,6 +204,14 @@ export const REPORT_CATALOG: ReportGroup[] = [
         export: { pdf: true, xlsx: true, path: 'voidedSales' },
         note: { key: 'REPORTS.NOTES.VOIDED_SALES', type: 'info' },
       },
+      {
+        // Weighing-scale default price vs the price an invoice line sold at (needs the weighing-scale integration).
+        slug: 'price-comparison-report', route: 'priceVarianceReport', customBody: 'flat',
+        titleKey: 'REPORTS.ITEMS.PRICE_COMPARISON', descriptionKey: 'REPORTS.DESC.PRICE_COMPARISON',
+        icon: 'scale', permission: 'reportsSecurity.actions.SalesByItemReport.access',
+        filters: { date: true, branches: true, products: true, categories: true, categoriesKey: 'categoriesIds', departments: true, applyOpeningHour: true },
+        export: { pdf: true, xlsx: true, path: 'priceVarianceReport' }, updated: '2026-09-29',
+      },
     ],
   },
 

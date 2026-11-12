@@ -638,6 +638,24 @@ export const FLAT_REPORTS: Record<string, FlatReportConfig> = {
       { key: 'guests', type: 'number', end: true, total: true }, { key: 'avg', type: 'currency', end: true },
     ],
   },
+  // Per invoice line: the weighing-scale default price vs the price it sold at. No default price = nothing to compare against,
+  // so the difference columns stay empty for that row (legacy suppressed their sign). `diff %` is not returned by the API.
+  'price-comparison-report': {
+    route: 'priceVarianceReport', paged: true,
+    map: r => {
+      const def = Number(r['defaultPrice']) || 0;
+      if (!def) return { ...r, difference: null, diffPct: null, totalImapct: null };
+      const diff = Number(r['difference']) || 0;
+      return { ...r, diffPct: (diff / def) * 100 };
+    },
+    columns: [
+      { key: 'date', type: 'date' }, { key: 'invoiceNumber', doc: { type: 'Invoice', idKey: 'invoiceId' } }, { key: 'branchName' },
+      { key: 'productName' }, { key: 'barcode' }, { key: 'qty', type: 'number', end: true },
+      { key: 'defaultPrice', type: 'currency', end: true }, { key: 'soldPrice', type: 'currency', end: true },
+      { key: 'difference', type: 'profit', end: true }, { key: 'diffPct', type: 'profitPct', end: true },
+      { key: 'totalImapct', type: 'profit', end: true }, { key: 'status', type: 'tag' },
+    ],
+  },
   'payment-method-sub': {
     route: 'paymentTransactions', paged: true,
     columns: [

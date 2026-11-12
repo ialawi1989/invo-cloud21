@@ -19,6 +19,17 @@
       "SCOPE_N_BRANCHES":   "{{count}} فروع",
       "MIN_QTY_LABEL":      "الحد الأدنى {{count}}",
       "EMPTY":              "لا توجد خصومات بعد — أضف خصمًا للبدء.",
+      "FILTER_TYPE_MANUAL": "يدوي",
+      "FILTER_TYPE_AUTOMATIC": "تلقائي",
+      "FILTER_STATUS_AVAILABLE": "متاح",
+      "FILTER_STATUS_UNAVAILABLE": "غير متاح",
+      "FILTER_STATUS_AVAILABLEONLINE": "متاح أونلاين",
+      "FILTER_STATUS_UNAVAILABLEONLINE": "غير متاح أونلاين",
+      "FILTER_APPLY_PRODUCT": "المنتجات",
+      "FILTER_APPLY_CATEGORY": "الفئات",
+      "FILTER_APPLY_TO": "ينطبق على",
+      "FILTER_BRANCH": "الفرع",
+      "CLEAR_FILTERS": "مسح الفلاتر",
       "NO_MATCH":           "لا توجد خصومات تطابق بحثك."
     },
     "FORM": {

@@ -39,6 +39,9 @@ export interface ReportFiltersModalData {
   /** Offer a category filter (multi-select). */
   categories: boolean;
   categoryIds: string[];
+  /** Offer a department filter (multi-select). */
+  departments: boolean;
+  departmentIds: string[];
   /** Offer a single-choice "filter by" with these values (empty → none). */
   filterByOptions: string[];
   filterBy: string;
@@ -105,6 +108,7 @@ export interface ReportFiltersModalResult {
   comparison: { period: 'Month' | 'Year'; qty: number } | null;
   productIds: string[];
   categoryIds: string[];
+  departmentIds: string[];
   sources: string[];
   voidTimings: string[];
   filterBy: string;
@@ -156,10 +160,12 @@ export class ReportFiltersModalComponent {
   openingHour = signal(this.data.openingHourValue);
   productIds = signal<string[]>([...this.data.productIds]);
   categoryIds = signal<string[]>([...this.data.categoryIds]);
+  departmentIds = signal<string[]>([...(this.data.departmentIds ?? [])]);
   sources = signal<string[]>([...this.data.sources]);
 
   /** Categories are searched on the server, a page at a time (the shared products helper, as the product pickers do). */
   readonly loadCategories = (p: DropdownLoadParams) => this.productList.getCategories({ page: p.page, pageSize: p.pageSize, search: p.search });
+  readonly loadDepartments = (p: DropdownLoadParams) => this.productList.getDepartments({ page: p.page, pageSize: p.pageSize, search: p.search });
   readonly categoryLabel = (c: { label: string; value: string }) => c.label;
   readonly categoryValue = (c: { label: string; value: string }) => c.value;
   readonly sameCategory = (a: any, b: any) => (a?.value ?? a) === (b?.value ?? b);
@@ -330,6 +336,7 @@ export class ReportFiltersModalComponent {
     this.productIds.set([]);
     this.sources.set([]);
     this.categoryIds.set([]);
+    this.departmentIds.set([]);
     this.voidTimings.set([]);
     this.employeeIds.set([]);
     this.voidReasons.set([]);
@@ -350,7 +357,7 @@ export class ReportFiltersModalComponent {
     if (this.missingRequired()) return;
     this.ref.close({
       branches: this.selected(), compare: this.compare(), applyOpeningHour: this.openingHour(), comparison: this.comparison(),
-      productIds: this.productIds(), categoryIds: this.categoryIds(), sources: this.sources(), voidTimings: this.voidTimings(), filterBy: this.filterBy(), employeeIds: this.employeeIds(), voidReasons: this.voidReasons(), mode: this.mode(), locationIds: this.locationIds(), hideDeleted: this.hideDeleted(), productTypes: this.productTypes(), customerIds: this.customerIds(), supplierIds: this.supplierIds(), discountIds: this.discountIds(), hasBalanceOnly: this.balanceOnly(), salesEmployee: this.salesEmployee(), customerType: this.customerType(),
+      productIds: this.productIds(), categoryIds: this.categoryIds(), departmentIds: this.departmentIds(), sources: this.sources(), voidTimings: this.voidTimings(), filterBy: this.filterBy(), employeeIds: this.employeeIds(), voidReasons: this.voidReasons(), mode: this.mode(), locationIds: this.locationIds(), hideDeleted: this.hideDeleted(), productTypes: this.productTypes(), customerIds: this.customerIds(), supplierIds: this.supplierIds(), discountIds: this.discountIds(), hasBalanceOnly: this.balanceOnly(), salesEmployee: this.salesEmployee(), customerType: this.customerType(),
     });
   }
 }

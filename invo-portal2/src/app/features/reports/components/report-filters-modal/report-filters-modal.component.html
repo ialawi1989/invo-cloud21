@@ -77,6 +77,20 @@
     </section>
   }
 
+  @if (data.departments) {
+    <section>
+      <h3 class="text-sm font-semibold text-slate-800 mb-2.5">
+        {{ 'REPORTS.FILTER.DEPARTMENTS' | translate }}
+        @if (departmentIds().length > 0) {
+          <span class="ms-1.5 px-2 py-0.5 rounded-full bg-brand-50 text-brand-700 text-xs font-semibold">{{ departmentIds().length }}</span>
+        }
+      </h3>
+      <app-search-dropdown [multiple]="true" [loadFn]="loadDepartments" [displayWith]="categoryLabel" [toValue]="categoryValue"
+        [compareWith]="sameCategory" [value]="$any(departmentIds())" (valueChange)="departmentIds.set(ids($event))"
+        [placeholder]="'REPORTS.FILTER.ALL_DEPARTMENTS' | translate" triggerClass="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white" />
+    </section>
+  }
+
   @if (data.purchaseMode) {
     <section>
       <h3 class="text-sm font-semibold text-slate-800 mb-2.5">{{ 'REPORTS.FILTER.PURCHASE_MODE' | translate }}</h3>

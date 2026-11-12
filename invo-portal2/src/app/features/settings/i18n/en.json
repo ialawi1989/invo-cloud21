@@ -388,6 +388,8 @@
         "DISABLE_WASTE_HINT":              "Removes the \"mark as waste\" option from the line-item menu.",
         "ADD_CUSTOMER_BY_MSR":             "Add customer via magnetic card reader",
         "ADD_CUSTOMER_BY_MSR_HINT":        "Allow attaching a customer by swiping an MSR card.",
+        "ADD_CUSTOMER_BY_QR":              "Add customer by QR",
+        "ADD_CUSTOMER_BY_QR_HINT":         "Lets the cashier attach a customer to an order by scanning the customer QR code.",
         "DISABLE_HALF_ITEM":               "Disable half-item quantities",
         "DISABLE_HALF_ITEM_HINT":          "Cashiers can't ring up fractional (½) units of an item.",
         "SHOW_PRICE":                      "Show price in menu",

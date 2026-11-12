@@ -68,6 +68,16 @@
       "NO_INVOICES": "No open invoices for this customer",
       "APPLY": "Apply credits"
     },
+    "REFUNDS": {
+      "TITLE": "Refunds",
+      "CREDIT_NOTE_NUMBER": "Credit Note #",
+      "REFUND_DATE": "Refund date",
+      "BRANCH": "Branch",
+      "EMPLOYEE": "Employee",
+      "PAYMENT_METHOD": "Payment method",
+      "TOTAL": "Total",
+      "EMPTY": "No refunds found"
+    },
     "REFUND": {
       "TITLE": "Refund",
       "NEW": "New Refund",

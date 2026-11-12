@@ -442,6 +442,7 @@
       "RECURRING_INVOICES": "Recurring Invoices",
       "PAYMENTS": "Payments",
       "CREDIT_NOTES": "Credit Notes",
+      "REFUNDS": "Refunds",
       "SALES_TARGET": "Sales Target Dashboard",
       "SUPPLIERS": "Suppliers",
       "INVENTORY_REQUEST": "Inventory Request",

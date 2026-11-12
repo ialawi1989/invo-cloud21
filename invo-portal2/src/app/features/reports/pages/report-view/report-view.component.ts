@@ -288,6 +288,7 @@ export class ReportViewComponent implements OnInit, OnDestroy {
       applyOpeningHour: meta.filters?.applyOpeningHour ? q['openingHour'] === '1' : undefined,
       productIds: meta.filters?.products ? (q['products'] ? String(q['products']).split(',').filter(isId) : []) : undefined,
       categoryIds: meta.filters?.categories ? (q['categories'] ? String(q['categories']).split(',').filter(isId) : []) : undefined,
+      departmentIds: meta.filters?.departments ? (q['departments'] ? String(q['departments']).split(',').filter(isId) : []) : undefined,
       filterBy: meta.filters?.filterBy?.length ? (meta.filters.filterBy.includes(String(q['filterBy'])) ? String(q['filterBy']) : meta.filters.filterBy[0]) : undefined,
       customerType: meta.filters?.customerType ? (['Individual', 'Business'].includes(String(q['customerType'])) ? String(q['customerType']) : '') : undefined,
       discountIds: meta.filters?.discount ? (q['discount'] ? String(q['discount']).split(',').filter(x => x === 'others' || isId(x)).slice(0, 1) : []) : undefined,
@@ -353,6 +354,7 @@ export class ReportViewComponent implements OnInit, OnDestroy {
         products: this.meta()?.filters?.products && s.productIds?.length ? s.productIds.join(',') : null,
         sources: this.meta()?.filters?.sources?.length && s.sources?.length ? s.sources.join(',') : null,
         categories: this.meta()?.filters?.categories && s.categoryIds?.length ? s.categoryIds.join(',') : null,
+        departments: this.meta()?.filters?.departments && s.departmentIds?.length ? s.departmentIds.join(',') : null,
         filterBy: this.meta()?.filters?.filterBy?.length && s.filterBy && s.filterBy !== this.meta()!.filters!.filterBy![0] ? s.filterBy : null,
         customerType: this.meta()?.filters?.customerType && s.customerType ? s.customerType : null,
         discount: this.meta()?.filters?.discount && s.discountIds?.length ? s.discountIds[0] : null,
@@ -403,7 +405,8 @@ export class ReportViewComponent implements OnInit, OnDestroy {
     // Product / source filters (the API names are `productIds` and `sources`, as in the legacy).
     if (this.meta()?.filters?.products && s.productIds?.length) filter['productIds'] = s.productIds;
     if (this.meta()?.filters?.sources?.length && s.sources?.length) filter[this.meta()!.filters!.sourcesKey ?? 'sources'] = s.sources;
-    if (this.meta()?.filters?.categories && s.categoryIds?.length) filter['categoryIds'] = s.categoryIds;
+    if (this.meta()?.filters?.categories && s.categoryIds?.length) filter[this.meta()!.filters!.categoriesKey ?? 'categoryIds'] = s.categoryIds;
+    if (this.meta()?.filters?.departments && s.departmentIds?.length) filter['departmentIds'] = s.departmentIds;
     if (this.meta()?.filters?.voidTimings && s.voidTimings?.length) filter['voidTimings'] = s.voidTimings;
     if (this.meta()?.filters?.voidedBy && s.employeeIds?.length) filter['employeeIds'] = s.employeeIds;
     if (this.meta()?.filters?.singleEmployee && s.employeeIds?.length) filter[this.meta()!.filters!.singleEmployeeKey ?? 'employeeId'] = s.employeeIds[0];

@@ -30,12 +30,16 @@ import {
   intCodec,
   StringCodec,
   enumCodec,
+  StringArrayCodec,
 } from '@shared/services/query-params.service';
 
+import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
+import type { DropdownLoadFn, DropdownLoadResult } from '@shared/components/dropdown/search-dropdown.types';
+import { BranchSettingsService } from '../../../services/branch-settings.service';
 import { DiscountService } from '../../services/discount.service';
 import { Discount } from '../../services/discount.types';
 
-const SORT_FIELDS = ['name', 'type', 'amount'] as const;
+const SORT_FIELDS = ['name', 'type', 'amount', 'createdAt'] as const;
 const SORT_DIRS = ['asc', 'desc'] as const;
 type SortField = typeof SORT_FIELDS[number] | '';
 type SortDir   = typeof SORT_DIRS[number] | '';
@@ -45,6 +49,10 @@ const QP = {
   pageSize: { key: 'limit',  codec: intCodec(15) }                          as ParamDef<number>,
   search:   { key: 'q',      codec: StringCodec }                           as ParamDef<string>,
   sortBy:   { key: 'sortBy', codec: enumCodec([...SORT_FIELDS, ''] as const, '') } as ParamDef<SortField>,
+  fType:    { key: 'fType',   codec: StringArrayCodec }                  as ParamDef<string[]>,
+  fStatus:  { key: 'fStatus', codec: StringArrayCodec }                  as ParamDef<string[]>,
+  fApply:   { key: 'fApply',  codec: StringArrayCodec }                  as ParamDef<string[]>,
+  fBranch:  { key: 'fBranch', codec: StringArrayCodec }                  as ParamDef<string[]>,
   sortDir:  { key: 'dir',    codec: enumCodec([...SORT_DIRS, ''] as const, '') }   as ParamDef<SortDir>,
 };
 
@@ -66,6 +74,7 @@ const QP = {
     SkeletonComponent,
     DropdownMenuBtnComponent,
     ListShellComponent,
+    SearchDropdownComponent,
     MycurrencyPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -78,6 +87,7 @@ export class DiscountListComponent implements OnInit {
   private router     = inject(Router);
   private destroyRef = inject(DestroyRef);
   private qp         = inject(QueryParamsService);
+  private branchSvc  = inject(BranchSettingsService);
 
   loading = signal<boolean>(false);
   rows    = signal<Discount[]>([]);
@@ -91,6 +101,55 @@ export class DiscountListComponent implements OnInit {
    *  Click cycles asc → desc → off, matching the legacy table. */
   sortValue     = signal<string | null>(null);
   sortDirection = signal<'asc' | 'desc' | null>(null);
+
+  // ─── Filters (legacy: type / status / apply-to / branch) ──────────
+  fType   = signal<string[]>([]);
+  fStatus = signal<string[]>([]);
+  fApply  = signal<string[]>([]);
+  fBranch = signal<string[]>([]);
+  /** Branch names seen so far, so a branch picked from the URL still shows its label. */
+  private branchNames = signal<Map<string, string>>(new Map());
+
+  readonly typeItems   = ['manual', 'automatic'];
+  readonly statusItems = ['available', 'unavailable', 'availableOnline', 'unavailableOnline'];
+  readonly applyItems  = ['product', 'category'];
+  typeLabel   = (v: string) => this.translate.instant('DISCOUNT.LIST.FILTER_TYPE_' + v.toUpperCase());
+  statusLabel = (v: string) => this.translate.instant('DISCOUNT.LIST.FILTER_STATUS_' + v.toUpperCase());
+  applyLabel  = (v: string) => this.translate.instant('DISCOUNT.LIST.FILTER_APPLY_' + v.toUpperCase());
+  branchLabel = (id: string) => this.branchNames().get(id) ?? id;
+  hasFilters  = computed(() => !!(this.fType().length || this.fStatus().length || this.fApply().length || this.fBranch().length));
+
+  loadBranchItems: DropdownLoadFn<string> = async (params) => {
+    const res = await this.branchSvc.getList({ page: params.page, limit: params.pageSize, searchTerm: params.search || '' });
+    this.branchNames.update(m => { const n = new Map(m); res.list.forEach(b => n.set(b.id, b.name)); return n; });
+    return { items: res.list.map(b => b.id), hasMore: params.page * params.pageSize < res.count } satisfies DropdownLoadResult<string>;
+  };
+
+  setFilter(which: 'type' | 'status' | 'apply' | 'branch', v: unknown): void {
+    const list = (Array.isArray(v) ? v : v == null ? [] : [v]).map(String);
+    ({ type: this.fType, status: this.fStatus, apply: this.fApply, branch: this.fBranch })[which].set(list);
+    this.page.set(1);
+    this.syncUrl();
+    void this.load();
+  }
+
+  clearFilters(): void {
+    this.fType.set([]); this.fStatus.set([]); this.fApply.set([]); this.fBranch.set([]);
+    this.page.set(1);
+    this.syncUrl();
+    void this.load();
+  }
+
+  private apiFilter() {
+    const flag = (on: string, off: string) => this.fStatus().filter(s => s === on || s === off).map(s => s === on);
+    return {
+      type: this.fType(),
+      applyTo: this.fApply(),
+      available: flag('available', 'unavailable'),
+      availableOnline: flag('availableOnline', 'unavailableOnline'),
+      branches: this.fBranch(),
+    };
+  }
 
   private i18nTick = signal(0);
 
@@ -141,6 +200,7 @@ export class DiscountListComponent implements OnInit {
     this.search.set(p.search);
     this.sortValue.set(p.sortBy || null);
     this.sortDirection.set((p.sortDir || null) as 'asc' | 'desc' | null);
+    this.fType.set(p.fType); this.fStatus.set(p.fStatus); this.fApply.set(p.fApply); this.fBranch.set(p.fBranch);
     await this.load();
   }
 
@@ -151,6 +211,10 @@ export class DiscountListComponent implements OnInit {
       search:   this.search(),
       sortBy:   (this.sortValue() ?? '') as SortField,
       sortDir:  (this.sortDirection() ?? '') as SortDir,
+      fType:    this.fType(),
+      fStatus:  this.fStatus(),
+      fApply:   this.fApply(),
+      fBranch:  this.fBranch(),
     });
   }
 
@@ -164,6 +228,7 @@ export class DiscountListComponent implements OnInit {
         limit:      this.pageSize(),
         searchTerm: this.search().trim(),
         sortBy:     sv && sd ? { sortValue: sv, sortDirection: sd } : undefined,
+        filter:     this.apiFilter(),
       });
       this.rows.set(res.list);
       this.total.set(res.count);

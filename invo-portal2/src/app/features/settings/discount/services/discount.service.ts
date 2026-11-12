@@ -43,6 +43,7 @@ export class DiscountService {
       limit:      params.limit ?? 15,
       searchTerm: params.searchTerm ?? '',
       sortBy:     params.sortBy ?? {},
+      filter:     params.filter ?? {},
     };
     const res = await this.api.request<any>(
       this.api.post('accounts/getDiscountList', body),

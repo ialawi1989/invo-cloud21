@@ -49,6 +49,12 @@ export class RefundsService {
     return refund;
   }
 
+  /** Paged refund list (`accounts/refundList`): `{ list, hasNext }`. */
+  async refundList(params: { page: number; limit: number; searchTerm: string }): Promise<{ list: any[]; hasNext: boolean }> {
+    const res = await this.api.request<any>(this.api.post('accounts/refundList', params));
+    return res?.success ? { list: res.data?.list ?? [], hasNext: !!res.data?.hasNext } : { list: [], hasNext: false };
+  }
+
   /** The refund's journal rows (`accounts/getJournal/:id`, the generic by-document journal). */
   async getJournal(id: string): Promise<any[]> {
     return (await this.api.request<any>(this.api.get('accounts/getJournal/' + id)))?.data ?? [];

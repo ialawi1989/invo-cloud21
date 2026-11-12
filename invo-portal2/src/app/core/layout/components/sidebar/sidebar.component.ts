@@ -163,6 +163,7 @@ export const SIDE_MENU: SideMenuItem[] = [
       { id: 75, label: 'MENU.SUB.RECURRING_INVOICES', link: '/account/recurring-invoice', requiredPermission: 'recurringInvoiceSecurity.actions.view.access' },
       { id: 76, label: 'MENU.SUB.PAYMENTS', link: '/account/payments', requiredPermission: 'invoicePaymentsSecurity.actions.view.access' },
       { id: 77, label: 'MENU.SUB.CREDIT_NOTES', link: '/account/credit-notes', requiredPermission: 'creditNoteSecurity.actions.view.access' },
+      { id: 79, label: 'MENU.SUB.REFUNDS', link: '/account/credit-notes/refunds', requiredPermission: 'creditNoteSecurity.actions.view.access' },
       { id: 78, label: 'MENU.SUB.SALES_TARGET', link: '/account/sales-target-dashboard', requiredPermission: 'salesTargetSecurity.actions.view.access', badge: { text: 'BETA', variant: 'danger' } },
     ],
   },

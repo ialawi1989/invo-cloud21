@@ -62,6 +62,17 @@ export interface DiscountListParams {
   limit?:      number;
   searchTerm?: string;
   sortBy?:     { sortValue?: string; sortDirection?: 'asc' | 'desc' };
+  /** List filters (backend `getDiscountList` `filter`): all optional, an empty list = no filter. */
+  filter?:     DiscountListFilter;
+}
+
+export interface DiscountListFilter {
+  type?:            string[];
+  applyTo?:         string[];
+  /** true = available, false = unavailable (both = no filter). */
+  available?:       boolean[];
+  availableOnline?: boolean[];
+  branches?:        string[];
 }
 
 export interface DiscountListResponse {

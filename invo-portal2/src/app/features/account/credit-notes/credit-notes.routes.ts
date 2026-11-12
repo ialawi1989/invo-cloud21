@@ -28,6 +28,12 @@ export const CREDIT_NOTES_ROUTES: Routes = [
     loadComponent: () => import('./pages/credit-notes-list/credit-notes-list.component').then(m => m.CreditNotesListComponent),
   },
   {
+    path: 'refunds',
+    canActivate: [translationsLoaded, privilegeGuard],
+    data: { permissionPath: 'creditNoteSecurity.actions.view.access' },
+    loadComponent: () => import('./pages/refunds-list/refunds-list.component').then(m => m.RefundsListComponent),
+  },
+  {
     path: 'view/:id',
     canActivate: [translationsLoaded, privilegeGuard],
     data: { permissionPath: 'creditNoteSecurity.actions.view.access' },

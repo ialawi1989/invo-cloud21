@@ -235,4 +235,18 @@ export class ReportsCatalogComponent implements OnInit {
   setTab(tab: MetaTab | string): void {
     this.activeTab.set(tab);
   }
+
+  /** True when a single topic (group) is selected rather than one of the All / Favorites / New views. */
+  isTopic = () => !['all', 'favorites', 'new'].includes(this.activeTab());
+
+  /** The "how to use" guide: open the first time, then remembered. */
+  showGuide = signal(this.readGuide());
+  toggleGuide(): void {
+    const next = !this.showGuide();
+    this.showGuide.set(next);
+    try { localStorage.setItem('reports.catalog.guide', next ? '1' : '0'); } catch { /* storage can be unavailable */ }
+  }
+  private readGuide(): boolean {
+    try { return localStorage.getItem('reports.catalog.guide') !== '0'; } catch { return true; }
+  }
 }

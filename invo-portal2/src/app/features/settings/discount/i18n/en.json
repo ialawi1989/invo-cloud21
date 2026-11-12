@@ -19,7 +19,18 @@
       "SCOPE_N_BRANCHES":   "{{count}} branches",
       "MIN_QTY_LABEL":      "Min qty {{count}}",
       "EMPTY":              "No discounts yet — add one to get started.",
-      "NO_MATCH":           "No discounts match your search."
+      "NO_MATCH":           "No discounts match your search.",
+      "FILTER_TYPE_MANUAL": "Manual",
+      "FILTER_TYPE_AUTOMATIC": "Automatic",
+      "FILTER_STATUS_AVAILABLE": "Available",
+      "FILTER_STATUS_UNAVAILABLE": "Unavailable",
+      "FILTER_STATUS_AVAILABLEONLINE": "Available online",
+      "FILTER_STATUS_UNAVAILABLEONLINE": "Unavailable online",
+      "FILTER_APPLY_PRODUCT": "Products",
+      "FILTER_APPLY_CATEGORY": "Categories",
+      "FILTER_APPLY_TO": "Applies to",
+      "FILTER_BRANCH": "Branch",
+      "CLEAR_FILTERS": "Clear filters"
     },
     "FORM": {
       "NEW_TITLE":          "New discount",

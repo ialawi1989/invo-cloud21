@@ -13,18 +13,41 @@
       <p>{{ 'REPORTS.CATALOG.SUBTITLE' | translate: { count: totalCount() } }}</p>
     </div>
 
-    <div class="rc-stats">
-      <button type="button" class="rc-stat" (click)="setTab('all')">
-        <b>{{ totalCount() }}</b><span>{{ 'REPORTS.CATALOG.STAT_REPORTS' | translate }}</span>
-      </button>
-      <button type="button" class="rc-stat fav" (click)="setTab('favorites')">
-        <b>{{ favoriteCount() }}</b><span>{{ 'REPORTS.TABS.FAVORITES' | translate }}</span>
-      </button>
-      <button type="button" class="rc-stat new" (click)="setTab('new')">
-        <b>{{ newCount() }}</b><span>{{ 'REPORTS.TABS.NEW' | translate }}</span>
-      </button>
-    </div>
+    <button type="button" class="rc-help" [class.on]="showGuide()" [attr.aria-expanded]="showGuide()" (click)="toggleGuide()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      {{ 'REPORTS.CATALOG.HOW_TO' | translate }}
+    </button>
   </header>
+
+  <!-- ── How to use: three steps + what the little icons mean ───── -->
+  @if (showGuide()) {
+    <section class="rc-guide" [attr.aria-label]="'REPORTS.CATALOG.HOW_TO' | translate">
+      <button type="button" class="rc-guide-close" (click)="toggleGuide()" [attr.aria-label]="'REPORTS.CATALOG.GUIDE_HIDE' | translate">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <ol class="rc-steps">
+        <li class="rc-step">
+          <span class="rc-step-n">1</span>
+          <div><b>{{ 'REPORTS.CATALOG.STEP1_T' | translate }}</b><p>{{ 'REPORTS.CATALOG.STEP1_D' | translate }}</p></div>
+        </li>
+        <li class="rc-step">
+          <span class="rc-step-n">2</span>
+          <div><b>{{ 'REPORTS.CATALOG.STEP2_T' | translate }}</b><p>{{ 'REPORTS.CATALOG.STEP2_D' | translate }}</p></div>
+        </li>
+        <li class="rc-step">
+          <span class="rc-step-n">3</span>
+          <div><b>{{ 'REPORTS.CATALOG.STEP3_T' | translate }}</b><p>{{ 'REPORTS.CATALOG.STEP3_D' | translate }}</p></div>
+        </li>
+      </ol>
+      <ul class="rc-legend">
+        <li><svg class="lg-star" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>{{ 'REPORTS.CATALOG.LEGEND_STAR' | translate }}</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>{{ 'REPORTS.CATALOG.LEGEND_SCHEDULE' | translate }}</li>
+        <li><span class="rc-cap">{{ 'REPORTS.CATALOG.CAP.COMPARE' | translate }}</span>{{ 'REPORTS.CATALOG.LEGEND_COMPARE' | translate }}</li>
+        <li><span class="rc-cap">{{ 'REPORTS.CATALOG.CAP.EXPORT' | translate }}</span>{{ 'REPORTS.CATALOG.LEGEND_EXPORT' | translate }}</li>
+        <li><span class="rc-new">{{ 'REPORTS.TABS.NEW' | translate }}</span>{{ 'REPORTS.CATALOG.LEGEND_NEW' | translate }}</li>
+      </ul>
+    </section>
+  }
 
   <!-- ── Recently viewed: jump back in ──────────────────────────── -->
   @if (showRecent()) {
@@ -60,32 +83,46 @@
       <app-segmented-toggle size="sm" [options]="sortOptions" [value]="sort()" (valueChange)="setSort($event)" />
     </div>
 
-    <nav class="rc-tabs" role="tablist">
-      <button type="button" role="tab" class="rc-tab" [class.active]="activeTab() === 'all'" [attr.aria-selected]="activeTab() === 'all'" (click)="setTab('all')">
-        {{ 'REPORTS.TABS.ALL' | translate }}
+    <!-- View: which slice of the catalog -->
+    <nav class="rc-views" role="tablist" [attr.aria-label]="'REPORTS.CATALOG.VIEW' | translate">
+      <button type="button" role="tab" class="rc-view" [class.active]="activeTab() === 'all' || isTopic()" [attr.aria-selected]="activeTab() === 'all'" (click)="setTab('all')">
+        {{ 'REPORTS.TABS.ALL' | translate }}<span class="rc-view-n">{{ totalCount() }}</span>
       </button>
-      <button type="button" role="tab" class="rc-tab" [class.active]="activeTab() === 'favorites'" [attr.aria-selected]="activeTab() === 'favorites'" (click)="setTab('favorites')">
+      <button type="button" role="tab" class="rc-view fav" [class.active]="activeTab() === 'favorites'" [attr.aria-selected]="activeTab() === 'favorites'" (click)="setTab('favorites')">
         <svg class="rc-tab-star" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-        {{ 'REPORTS.TABS.FAVORITES' | translate }}
+        {{ 'REPORTS.TABS.FAVORITES' | translate }}<span class="rc-view-n">{{ favoriteCount() }}</span>
       </button>
-      <button type="button" role="tab" class="rc-tab" [class.active]="activeTab() === 'new'" [attr.aria-selected]="activeTab() === 'new'" (click)="setTab('new')">
-        {{ 'REPORTS.TABS.NEW' | translate }}
-        @if (newCount() > 0) { <span class="rc-tab-badge">{{ newCount() }}</span> }
+      <button type="button" role="tab" class="rc-view new" [class.active]="activeTab() === 'new'" [attr.aria-selected]="activeTab() === 'new'" (click)="setTab('new')">
+        {{ 'REPORTS.TABS.NEW' | translate }}<span class="rc-view-n">{{ newCount() }}</span>
       </button>
-      <span class="rc-tab-sep"></span>
-      @for (g of visibleGroups(); track g.key) {
-        <button type="button" role="tab" class="rc-tab" [class.active]="activeTab() === g.key" [attr.aria-selected]="activeTab() === g.key"
-                [style.--accent]="accent(g.key)" (click)="setTab(g.key)">
-          <i class="rc-dot"></i>{{ g.titleKey | translate }}
-        </button>
-      }
-      @if (canViewCustom) {
-        <!-- The user's own saved reports (the report builder) — a page of its own. -->
-        <a class="rc-tab" role="tab" routerLink="/reports/custom">
-          <i class="rc-dot"></i>{{ 'CUSTOM_REPORTS.LIST.TAB' | translate }}
-        </a>
-      }
     </nav>
+
+    <!-- Topic: jump straight to one area of the business -->
+    <div class="rc-topics-wrap">
+      <span class="rc-topics-label">{{ 'REPORTS.CATALOG.TOPICS' | translate }}</span>
+      <div class="rc-topics">
+        @for (g of visibleGroups(); track g.key) {
+          <button type="button" class="rc-topic" [class.active]="activeTab() === g.key" [attr.aria-pressed]="activeTab() === g.key"
+                  [style.--accent]="accent(g.key)" (click)="setTab(activeTab() === g.key ? 'all' : g.key)">
+            <span class="rc-topic-icon" [innerHTML]="icon(g.icon)"></span>
+            <span class="rc-topic-text">
+              <span class="rc-topic-name">{{ g.titleKey | translate }}</span>
+              <span class="rc-topic-n">{{ 'REPORTS.CATALOG.REPORTS_COUNT' | translate: { count: g.reports.length } }}</span>
+            </span>
+          </button>
+        }
+        @if (canViewCustom) {
+          <!-- The user's own saved reports (the report builder) — a page of its own. -->
+          <a class="rc-topic custom" routerLink="/reports/custom">
+            <span class="rc-topic-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span>
+            <span class="rc-topic-text">
+              <span class="rc-topic-name">{{ 'CUSTOM_REPORTS.LIST.TAB' | translate }}</span>
+              <span class="rc-topic-n">{{ 'REPORTS.CATALOG.CUSTOM_HINT' | translate }}</span>
+            </span>
+          </a>
+        }
+      </div>
+    </div>
   </div>
 
   <!-- ── Group cards: description on the left, the reports on the right ── -->

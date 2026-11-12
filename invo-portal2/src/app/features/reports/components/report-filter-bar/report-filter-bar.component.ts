@@ -73,6 +73,7 @@ export class ReportFilterBarComponent implements OnInit {
   comparison = signal<{ period: 'Month' | 'Year'; qty: number } | null>(null);
   productIds = signal<string[]>([]);
   categoryIds = signal<string[]>([]);
+  departmentIds = signal<string[]>([]);
   sources = signal<string[]>([]);
   voidTimings = signal<string[]>([]);
   filterBy = signal<string>('');
@@ -95,7 +96,7 @@ export class ReportFilterBarComponent implements OnInit {
   /** The "Filters" button is shown when there is anything to put in it. */
   hasFilters = computed(() =>
     this.showBranches() || !!this.flags().compare || !!this.flags().comparePeriods || !!this.flags().applyOpeningHour
-    || !!this.flags().products || !!this.flags().categories || !!this.flags().sources?.length || !!this.flags().voidTimings || !!this.flags().filterBy?.length || !!this.flags().customerType || !!this.flags().customers || !!this.flags().suppliers || !!this.flags().discount || !!this.flags().hasBalanceOnly || !!this.flags().productTypes?.length || !!this.flags().locations || !!this.flags().hideDeleted || !!this.flags().purchaseMode || !!this.flags().salesEmployee || !!this.flags().voidedBy || !!this.flags().singleEmployee || !!this.flags().voidReasons);
+    || !!this.flags().products || !!this.flags().categories || !!this.flags().departments || !!this.flags().sources?.length || !!this.flags().voidTimings || !!this.flags().filterBy?.length || !!this.flags().customerType || !!this.flags().customers || !!this.flags().suppliers || !!this.flags().discount || !!this.flags().hasBalanceOnly || !!this.flags().productTypes?.length || !!this.flags().locations || !!this.flags().hideDeleted || !!this.flags().purchaseMode || !!this.flags().salesEmployee || !!this.flags().voidedBy || !!this.flags().singleEmployee || !!this.flags().voidReasons);
   /** How many filters are on (shown as the badge). */
   activeCount = computed(() =>
     (this.selectedBranches().length ? 1 : 0)
@@ -104,6 +105,7 @@ export class ReportFilterBarComponent implements OnInit {
     + (this.flags().comparePeriods && this.comparison() ? 1 : 0)
     + (this.flags().products && this.productIds().length ? 1 : 0)
     + (this.flags().categories && this.categoryIds().length ? 1 : 0)
+    + (this.flags().departments && this.departmentIds().length ? 1 : 0)
     + (this.flags().sources?.length && this.sources().length ? 1 : 0)
     + (this.flags().voidTimings && this.voidTimings().length ? 1 : 0)
     + (this.flags().filterBy?.length && this.filterBy() !== this.flags().filterBy![0] ? 1 : 0)
@@ -144,6 +146,7 @@ export class ReportFilterBarComponent implements OnInit {
     if (f.suppliers && this.supplierIds().length) out.push({ key: 'sups', label: list('REPORTS.FILTER.SUPPLIERS', this.supplierIds().length), clear: () => this.supplierIds.set([]) });
     if (f.products && this.productIds().length) out.push({ key: 'products', label: list('REPORTS.FILTER.PRODUCTS', this.productIds().length), clear: () => this.productIds.set([]) });
     if (f.categories && this.categoryIds().length) out.push({ key: 'cats', label: list('REPORTS.FILTER.CATEGORIES', this.categoryIds().length), clear: () => this.categoryIds.set([]) });
+    if (f.departments && this.departmentIds().length) out.push({ key: 'depts', label: list('REPORTS.FILTER.DEPARTMENTS', this.departmentIds().length), clear: () => this.departmentIds.set([]) });
     if (f.customers && this.customerIds().length) out.push({ key: 'custs', label: list('REPORTS.FILTER.CUSTOMERS', this.customerIds().length), clear: () => this.customerIds.set([]) });
     if (f.locations && this.locationIds().length) out.push({ key: 'locs', label: list('REPORTS.FILTER.LOCATIONS', this.locationIds().length), clear: () => this.locationIds.set([]) });
     if (f.productTypes?.length && this.productTypes().length) out.push({ key: 'ptypes', label: list('REPORTS.FILTER.PRODUCT_TYPES', this.productTypes().length), clear: () => this.productTypes.set([]) });
@@ -194,6 +197,7 @@ export class ReportFilterBarComponent implements OnInit {
           products: !!this.flags().products, productIds: this.productIds(),
           singleProduct: !!this.flags().singleProduct, requireProduct: !!this.flags().requireProduct,
           categories: !!this.flags().categories, categoryIds: this.categoryIds(),
+          departments: !!this.flags().departments, departmentIds: this.departmentIds(),
           filterByOptions: this.flags().filterBy ?? [], filterBy: this.filterBy(),
           filterByLabel: this.flags().filterByLabel ?? 'REPORTS.FILTER.FILTER_BY',
           purchaseMode: !!this.flags().purchaseMode, mode: this.mode(),
@@ -221,6 +225,7 @@ export class ReportFilterBarComponent implements OnInit {
     this.comparison.set(r.comparison);
     this.productIds.set(r.productIds);
     this.categoryIds.set(r.categoryIds);
+    this.departmentIds.set(r.departmentIds ?? []);
     this.sources.set(r.sources);
     this.voidTimings.set(r.voidTimings);
     this.filterBy.set(r.filterBy);
@@ -264,6 +269,7 @@ export class ReportFilterBarComponent implements OnInit {
     this.comparison.set(v.comparison ?? null);
     this.productIds.set(v.productIds ?? []);
     this.categoryIds.set(v.categoryIds ?? []);
+    this.departmentIds.set(v.departmentIds ?? []);
     this.sources.set(v.sources ?? []);
     this.voidTimings.set(v.voidTimings ?? []);
     this.filterBy.set(v.filterBy ?? this.flags().filterBy?.[0] ?? '');
@@ -378,6 +384,7 @@ export class ReportFilterBarComponent implements OnInit {
       comparison: this.flags().comparePeriods ? this.comparison() : undefined,
       productIds: this.flags().products ? this.productIds() : undefined,
       categoryIds: this.flags().categories ? this.categoryIds() : undefined,
+      departmentIds: this.flags().departments ? this.departmentIds() : undefined,
       sources: this.flags().sources?.length ? this.sources() : undefined,
       voidTimings: this.flags().voidTimings ? this.voidTimings() : undefined,
       filterBy: this.flags().filterBy?.length ? this.filterBy() : undefined,

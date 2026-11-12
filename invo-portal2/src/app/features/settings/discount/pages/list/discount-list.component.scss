@@ -170,3 +170,4 @@
 
   &:hover { background: #f1f5f9; color: #0f172a; }
 }
+.dl-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; } .dl-filter { min-width: 150px; }

@@ -51,6 +51,7 @@ const POS_TOGGLES: readonly ToggleSpec[] = [
   { controlName: 'voidedItemNeedExplanation',       labelKey: 'SETTINGS.POS_OPTIONS.OPTIONS.VOID_NEEDS_REASON',                hintKey: 'SETTINGS.POS_OPTIONS.OPTIONS.VOID_NEEDS_REASON_HINT' },
   { controlName: 'disableWaste',                    labelKey: 'SETTINGS.POS_OPTIONS.OPTIONS.DISABLE_WASTE',                    hintKey: 'SETTINGS.POS_OPTIONS.OPTIONS.DISABLE_WASTE_HINT' },
   { controlName: 'addCustomerByMSR',                labelKey: 'SETTINGS.POS_OPTIONS.OPTIONS.ADD_CUSTOMER_BY_MSR',              hintKey: 'SETTINGS.POS_OPTIONS.OPTIONS.ADD_CUSTOMER_BY_MSR_HINT' },
+  { controlName: 'addCustomerByQR',                 labelKey: 'SETTINGS.POS_OPTIONS.OPTIONS.ADD_CUSTOMER_BY_QR',               hintKey: 'SETTINGS.POS_OPTIONS.OPTIONS.ADD_CUSTOMER_BY_QR_HINT' },
   { controlName: 'disableHalfItem',                 labelKey: 'SETTINGS.POS_OPTIONS.OPTIONS.DISABLE_HALF_ITEM',                hintKey: 'SETTINGS.POS_OPTIONS.OPTIONS.DISABLE_HALF_ITEM_HINT' },
   { controlName: 'showPrice',                       labelKey: 'SETTINGS.POS_OPTIONS.OPTIONS.SHOW_PRICE',                       hintKey: 'SETTINGS.POS_OPTIONS.OPTIONS.SHOW_PRICE_HINT' },
   { controlName: 'showQty',                         labelKey: 'SETTINGS.POS_OPTIONS.OPTIONS.SHOW_QTY',                         hintKey: 'SETTINGS.POS_OPTIONS.OPTIONS.SHOW_QTY_HINT' },

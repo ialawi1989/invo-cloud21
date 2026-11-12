@@ -101,6 +101,10 @@ export interface ReportFilterFlags {
   voidTimings?: boolean;
   /** Category filter (multi-select, searched on the server) in the Filters dialog. */
   categories?: boolean;
+  /** API field the chosen categories are sent as (default `categoryIds`; Price Comparison sends `categoriesIds`). */
+  categoriesKey?: string;
+  /** Department filter (multi-select, searched on the server) in the Filters dialog; sent as `departmentIds`. */
+  departments?: boolean;
   /** Source filter (multi-select) with these choices in the Filters dialog, e.g. `['POS', 'Online']`. */
   sources?: string[];
   /** API field the choice list is sent as (default `sources`; VAT Audit sends `types`). */
@@ -231,6 +235,8 @@ export interface ReportFilterState {
   productIds?: string[];
   /** Selected categories (ids) of a `categories` report. */
   categoryIds?: string[];
+  /** Selected departments (ids) of a `departments` report. */
+  departmentIds?: string[];
   /** Selected "voided by" employee ids. */
   employeeIds?: string[];
   /** Selected void reasons. */
