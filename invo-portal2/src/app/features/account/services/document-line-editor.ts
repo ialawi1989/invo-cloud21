@@ -164,6 +164,7 @@ export class DocumentLineEditor {
     line.subItems = [];
     line.priceModel = null;
     line.priceOverride = null;
+    if (this.customerDiscount > 0) { line.discountPercentage = true; line.discountAmount = this.customerDiscount; }
     line.taxId = product.taxId == null || product.taxId === '' ? (this.defaultTax?.id ?? null) : product.taxId;
     line.note = product.description;
     line.commissionAmount = product.commissionAmount;
@@ -197,6 +198,28 @@ export class DocumentLineEditor {
    * Removes a line. On an edited invoice a saved line is voided (kept, flagged) rather than
    * dropped; unsaved lines are removed. Returns what happened so the UI can react.
    */
+  /**
+   * The discount (always a percentage, 10 = 10%) the document's customer carries on their account. New lines start
+   * with it and a customer change re-applies it, like the POS. 0 = none.
+   */
+  customerDiscount = 0;
+
+  /** Lines whose discount is still editable (a returned / voided / removed line is settled). */
+  private takesCustomerDiscount(l: InvoiceLine): boolean {
+    return !((l as any).isDeleted || l.isReturned || l.isVoided || (l.voidedItems?.length ?? 0) > 0);
+  }
+
+  /** The customer changed: their discount replaces the one on every open line (none = the lines lose it). */
+  applyCustomerDiscountToLines(discount: number): void {
+    this.customerDiscount = discount;
+    this.doc.lines.forEach(l => {
+      if (!this.takesCustomerDiscount(l)) return;
+      l.discountPercentage = true;
+      l.discountAmount = discount;
+    });
+    this.doc.calculateTotal();
+  }
+
   /** Documents without voids (estimates): saved lines are flagged `isDeleted` (the backend deletes them) instead of voided. */
   deleteMode = false;
 

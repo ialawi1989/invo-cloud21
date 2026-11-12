@@ -197,6 +197,8 @@ export class InvoiceFormComponent extends DocumentFormBase {
       d.orderDiscountAmountBasis = 'gross';
       d.calculateTotal();
     }
+    // lines added later carry the customer's discount; the lines of a saved invoice keep what it was saved with
+    if (d.customerId && this.editor) this.editor.customerDiscount = await this.customerAccountDiscount(d.customerId);
     if (this.formStatus === 'new') { d.paymentTerm = 'net7'; this.onTerm('net7'); }
     else { this.selectedTerm = d.paymentTerm ?? 'custome'; this.onTerm(this.selectedTerm, true); }
     if (this.formStatus === 'new' && this.route.snapshot.queryParamMap.get('aiDraft')) await this.applyAssistantDraft();
@@ -239,8 +241,18 @@ export class InvoiceFormComponent extends DocumentFormBase {
     return (this.doc?.status === 'Paid' || this.doc?.status === 'Partially Paid') && this.formStatus !== 'clone';
   }
 
+  /** The discount the customer carries on their own account (a percentage). */
+  private async customerAccountDiscount(customerId: string): Promise<number> {
+    const c: any = await this.customersService.getCustomer(customerId).catch(() => null);
+    return Math.min(Math.max(+(c?.discountAmount ?? 0) || 0, 0), 100);
+  }
+
   override async onCustomer(c: CustomerMini | undefined): Promise<void> {
     await super.onCustomer(c);
+    // the sale follows the customer now on it: their account discount replaces the one the lines carry
+    const discount = c ? await this.customerAccountDiscount(c.id) : 0;
+    this.editor?.applyCustomerDiscountToLines(discount);
+    this.markDirty();
     if (c) {
       this.inv.paymentTerm = c.paymentTerm ?? 'net7';
       this.onTerm(this.inv.paymentTerm!);

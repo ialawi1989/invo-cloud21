@@ -56,6 +56,11 @@
         </button>
       </header>
 
+      <label class="zone__taxx">
+        <input type="checkbox" [ngModel]="zone.taxExempt" (ngModelChange)="setZoneTaxExempt(zone.id, $event)"/>
+        {{ 'SHIPPING.ZONE.TAX_EXEMPT' | translate }}
+      </label>
+
       <!-- Countries strip -->
       <div class="zone__countries">
         <div class="zone__countries-row">

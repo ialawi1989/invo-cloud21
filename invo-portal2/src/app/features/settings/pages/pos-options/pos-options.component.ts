@@ -70,6 +70,7 @@ const PRINT_TOGGLES: readonly ToggleSpec[] = [
   { controlName: 'hideShortNoteInReceipt',            labelKey: 'SETTINGS.POS_OPTIONS.PRINT.HIDE_SHORT_NOTE',                hintKey: 'SETTINGS.POS_OPTIONS.PRINT.HIDE_SHORT_NOTE_HINT' },
   { controlName: 'printSecondLanguageInReceipt',      labelKey: 'SETTINGS.POS_OPTIONS.PRINT.SECOND_LANGUAGE',                hintKey: 'SETTINGS.POS_OPTIONS.PRINT.SECOND_LANGUAGE_HINT' },
   { controlName: 'groupItemsInReceipt',               labelKey: 'SETTINGS.POS_OPTIONS.PRINT.GROUP_ITEMS',                    hintKey: 'SETTINGS.POS_OPTIONS.PRINT.GROUP_ITEMS_HINT' },
+  { controlName: 'disableCashierReportsInDailySalesReport', labelKey: 'SETTINGS.POS_OPTIONS.PRINT.DISABLE_CASHIER_REPORTS', hintKey: 'SETTINGS.POS_OPTIONS.PRINT.DISABLE_CASHIER_REPORTS_HINT' },
 ];
 
 /** Receipt-copies dropdown options (0..5). */

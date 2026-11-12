@@ -8,6 +8,7 @@
 
     "ZONE": {
       "NAME":           "Zone name",
+      "TAX_EXEMPT":     "Tax exempt",
       "NAME_PLACEHOLDER":"Domestic, International, GCC…",
       "COUNTRIES":      "Countries",
       "EDIT_COUNTRIES": "Edit countries",

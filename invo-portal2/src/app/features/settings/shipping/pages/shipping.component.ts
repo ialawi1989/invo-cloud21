@@ -249,6 +249,10 @@ export class ShippingComponent implements OnInit, CanLeaveComponent {
     this.zones.update(list => [...list, z]);
   }
 
+  setZoneTaxExempt(zoneId: number, taxExempt: boolean): void {
+    this.zones.update(list => list.map(z => z.id === zoneId ? { ...z, taxExempt } : z));
+  }
+
   setZoneName(zoneId: number, name: string): void {
     this.zones.update(list => list.map(z => z.id === zoneId ? { ...z, name } : z));
   }
@@ -431,6 +435,7 @@ export class ShippingComponent implements OnInit, CanLeaveComponent {
       this.zones().map(z => ({
         name:      z.name,
         countries: [...z.countries].sort(),
+        taxExempt: !!z.taxExempt,
         rates:     z.rates.map(r => ({
           name:  r.name,
           type:  r.type,

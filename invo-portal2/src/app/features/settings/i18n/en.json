@@ -429,7 +429,9 @@
         "SECOND_LANGUAGE":              "Print second language on receipts",
         "SECOND_LANGUAGE_HINT":         "Add Arabic / English translation lines on bilingual receipts.",
         "GROUP_ITEMS":                  "Group identical items on receipts",
-        "GROUP_ITEMS_HINT":             "Combine duplicate lines on a receipt into one with a quantity."
+        "GROUP_ITEMS_HINT":             "Combine duplicate lines on a receipt into one with a quantity.",
+        "DISABLE_CASHIER_REPORTS":      "Hide cashier reports in the daily sales report",
+        "DISABLE_CASHIER_REPORTS_HINT": "The daily sales report no longer includes the per-cashier sections."
       }
     },
 

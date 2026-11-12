@@ -48,6 +48,7 @@ export class ShippingService {
       countries: (z.Countries ?? [])
         .map(code => byCode.get(code))
         .filter((n): n is string => !!n),
+      taxExempt: !!z.taxExempt,
       rates: (z.rates ?? []).map((r, ri): Rate => ({
         id:    seed + zi * 1000 + ri + 1,
         name:  String(r.name ?? ''),
@@ -70,6 +71,7 @@ export class ShippingService {
       Countries: z.countries
         .map(name => byName.get(name))
         .filter((c): c is string => !!c),
+      taxExempt: !!z.taxExempt,
       rates: z.rates.map(r => ({
         type:  r.type,
         from:  r.from,

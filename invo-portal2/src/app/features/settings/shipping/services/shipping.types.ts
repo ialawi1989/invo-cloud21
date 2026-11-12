@@ -37,6 +37,8 @@ export interface Zone {
   /** Human-readable country names. The wire format uses ISO codes;
    *  we resolve names ↔ codes via the bundled `Countries.json`. */
   countries: string[];
+  /** Shipping to this zone is not taxed (legacy `taxExempt`, honoured by cart / invoice processing). */
+  taxExempt: boolean;
   rates:     Rate[];
 }
 
@@ -72,6 +74,7 @@ export interface Overlap {
 export interface ShippingSettingWire {
   name:      string;
   Countries: string[];
+  taxExempt?: boolean;
   rates:     Array<{
     type:  RateType;
     from:  string;
@@ -163,6 +166,7 @@ export function emptyZone(): Zone {
     id:        Date.now() + Math.floor(Math.random() * 1000),
     name:      '',
     countries: [],
+    taxExempt: false,
     rates:     [],
   };
 }
