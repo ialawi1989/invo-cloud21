@@ -1,0 +1,6 @@
+.mi { padding: 16px 24px 24px; display: flex; flex-direction: column; gap: 14px; }
+.mi__card { border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; background: #fff;
+  h5 { margin: 0 0 8px; font-size: 13px; font-weight: 700; color: #0f172a; text-transform: uppercase; letter-spacing: .03em; } }
+.mi__row { display: flex; justify-content: space-between; gap: 16px; padding: 6px 0; font-size: 13.5px; border-top: 1px solid #f1f5f9;
+  &:first-of-type { border-top: 0; }
+  span { color: #64748b; } b { color: #0f172a; font-weight: 600; text-align: end; } }

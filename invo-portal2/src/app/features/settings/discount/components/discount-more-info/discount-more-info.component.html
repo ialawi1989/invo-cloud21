@@ -1,0 +1,39 @@
+<app-modal-header [title]="discount.name"/>
+
+<div class="mi">
+  <section class="mi__card">
+    <h5>{{ 'DISCOUNT.INFO.VALUE_AND_SCOPE' | translate }}</h5>
+    <div class="mi__row"><span>{{ (discount.percentage ? 'DISCOUNT.INFO.PERCENTAGE' : 'DISCOUNT.LIST.AMOUNT') | translate }}</span><b>{{ discount.amount }}{{ discount.percentage ? '%' : '' }}</b></div>
+    <div class="mi__row"><span>{{ 'DISCOUNT.LIST.FILTER_APPLY_TO' | translate }}</span><b>{{ (discount.applyTo === 'category' ? 'DISCOUNT.LIST.FILTER_APPLY_CATEGORY' : 'DISCOUNT.LIST.FILTER_APPLY_PRODUCT') | translate }}</b></div>
+    <div class="mi__row"><span>{{ 'DISCOUNT.INFO.MIN_QTY' | translate }}</span><b>{{ discount.minProductQty }}</b></div>
+    <div class="mi__row"><span>{{ 'DISCOUNT.INFO.ITEMS_SELECTED' | translate }}</span><b>{{ discount.items.length }}</b></div>
+  </section>
+
+  <section class="mi__card">
+    <h5>{{ 'DISCOUNT.INFO.VALIDITY' | translate }}</h5>
+    <div class="mi__row"><span>{{ 'DISCOUNT.LIST.TYPE' | translate }}</span><b>{{ (discount.type === 'automatic' ? 'DISCOUNT.LIST.FILTER_TYPE_AUTOMATIC' : 'DISCOUNT.LIST.FILTER_TYPE_MANUAL') | translate }}</b></div>
+    @if (discount.type === 'automatic') {
+      <div class="mi__row"><span>{{ 'DISCOUNT.INFO.START' | translate }}</span><b>{{ discount.startDate | date: 'dd/MM/yyyy' }} {{ allDay ? '' : discount.startAtTime }}</b></div>
+      <div class="mi__row"><span>{{ 'DISCOUNT.INFO.EXPIRE' | translate }}</span>
+        <b>@if (discount.expireDate) { {{ discount.expireDate | date: 'dd/MM/yyyy' }} {{ allDay ? '' : discount.expireAtTime }} } @else { {{ 'DISCOUNT.INFO.NO_EXPIRY' | translate }} }</b></div>
+      <div class="mi__row"><span>{{ 'DISCOUNT.INFO.ALL_DAY' | translate }}</span><b>{{ (allDay ? 'COMMON.YES' : 'COMMON.NO') | translate }}</b></div>
+    }
+  </section>
+
+  <section class="mi__card">
+    <h5>{{ 'DISCOUNT.INFO.AVAILABILITY' | translate }}</h5>
+    <div class="mi__row"><span>{{ 'DISCOUNT.INFO.AVAILABLE' | translate }}</span><b>{{ (discount.available ? 'COMMON.YES' : 'COMMON.NO') | translate }}</b></div>
+    <div class="mi__row"><span>{{ 'DISCOUNT.INFO.AVAILABLE_ONLINE' | translate }}</span><b>{{ (discount.availableOnline ? 'COMMON.YES' : 'COMMON.NO') | translate }}</b></div>
+    <div class="mi__row"><span>{{ 'DISCOUNT.INFO.BRANCHES' | translate }}</span>
+      <b>@if (!discount.branches.length) { {{ 'DISCOUNT.LIST.SCOPE_ALL_BRANCHES' | translate }} } @else { {{ branchNames().join(', ') }} }</b></div>
+  </section>
+
+  <section class="mi__card">
+    <h5>{{ (discount.taxId ? 'DISCOUNT.INFO.TAX_AND_EMPLOYEES' : 'DISCOUNT.INFO.EMPLOYEES') | translate }}</h5>
+    @if (discount.taxId) {
+      <div class="mi__row"><span>{{ 'DISCOUNT.INFO.TAX' | translate }}</span><b>{{ taxName() || ('DISCOUNT.INFO.NO_TAX' | translate) }}</b></div>
+    }
+    <div class="mi__row"><span>{{ 'DISCOUNT.INFO.EMPLOYEES' | translate }}</span>
+      <b>@if (!employeeNames().length) { {{ 'DISCOUNT.INFO.ALL_EMPLOYEES' | translate }} } @else { {{ employeeNames().join(', ') }} }</b></div>
+  </section>
+</div>

@@ -55,6 +55,8 @@ export interface Discount {
   startAtTime?:             string | null;
   expireAtTime?:            string | null;
   permittedEmployees?:      string[];
+  /** When the discount was created (ISO), if the server sent it. */
+  createdAt?:               string | null;
 }
 
 export interface DiscountListParams {

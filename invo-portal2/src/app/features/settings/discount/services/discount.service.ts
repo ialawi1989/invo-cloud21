@@ -295,6 +295,7 @@ export class DiscountService {
       startAtTime:               raw?.startAtTime  ?? null,
       expireAtTime:              raw?.expireAtTime ?? null,
       permittedEmployees:        this.toIdArray(raw?.permittedEmployees),
+      createdAt:                 raw?.createdAt ?? null,
     };
   };
 }

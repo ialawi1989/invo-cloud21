@@ -106,6 +106,14 @@
           </button>
         </th>
         <th class="table__status">{{ 'DISCOUNT.LIST.STATUS' | translate }}</th>
+        <th class="table__created">
+          <button type="button" class="th-sort"
+            [class.is-sorted]="sortDirOf('createdAt')"
+            (click)="toggleSort('createdAt')">
+            {{ 'DISCOUNT.LIST.CREATED_AT' | translate }}
+            <span class="th-sort__arrow" [attr.data-dir]="sortDirOf('createdAt') || ''" aria-hidden="true"></span>
+          </button>
+        </th>
         <th class="table__actions"></th>
       </tr>
     </thead>
@@ -156,6 +164,7 @@
               {{ (row.available ? 'DISCOUNT.LIST.STATUS_ACTIVE' : 'DISCOUNT.LIST.STATUS_INACTIVE') | translate }}
             </span>
           </td>
+          <td class="table__created">{{ (row.createdAt | date: 'dd/MM/yyyy') || '-' }}</td>
           <td class="table__actions" (click)="$event.stopPropagation()">
             <app-dropdown-menu-btn
               [items]="rowMenuItems(row)"

@@ -30,7 +30,29 @@
       "FILTER_APPLY_CATEGORY": "Categories",
       "FILTER_APPLY_TO": "Applies to",
       "FILTER_BRANCH": "Branch",
-      "CLEAR_FILTERS": "Clear filters"
+      "CLEAR_FILTERS": "Clear filters",
+      "MORE_INFO": "More info",
+      "CREATED_AT": "Created at"
+    },
+    "INFO": {
+      "VALUE_AND_SCOPE": "Value & scope",
+      "PERCENTAGE": "Percentage",
+      "MIN_QTY": "Minimum product quantity",
+      "ITEMS_SELECTED": "Items selected",
+      "VALIDITY": "Validity window",
+      "START": "Start date & time",
+      "EXPIRE": "Expire date & time",
+      "NO_EXPIRY": "No expiry",
+      "ALL_DAY": "All day",
+      "AVAILABILITY": "Availability",
+      "AVAILABLE": "Available",
+      "AVAILABLE_ONLINE": "Available online",
+      "BRANCHES": "Branches",
+      "TAX_AND_EMPLOYEES": "Tax & employees",
+      "TAX": "Tax",
+      "NO_TAX": "No tax",
+      "EMPLOYEES": "Permitted employees",
+      "ALL_EMPLOYEES": "All employees"
     },
     "FORM": {
       "NEW_TITLE":          "New discount",

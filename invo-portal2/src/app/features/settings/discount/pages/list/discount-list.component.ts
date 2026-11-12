@@ -36,6 +36,8 @@ import {
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import type { DropdownLoadFn, DropdownLoadResult } from '@shared/components/dropdown/search-dropdown.types';
 import { BranchSettingsService } from '../../../services/branch-settings.service';
+import { ModalService } from '@shared/modal/modal.service';
+import { DiscountMoreInfoComponent, DiscountMoreInfoData } from '../../components/discount-more-info/discount-more-info.component';
 import { DiscountService } from '../../services/discount.service';
 import { Discount } from '../../services/discount.types';
 
@@ -88,6 +90,7 @@ export class DiscountListComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private qp         = inject(QueryParamsService);
   private branchSvc  = inject(BranchSettingsService);
+  private modal      = inject(ModalService);
 
   loading = signal<boolean>(false);
   rows    = signal<Discount[]>([]);
@@ -182,7 +185,14 @@ export class DiscountListComponent implements OnInit {
   rowMenuItems(row: Discount): DropdownMenuBtnItem[] {
     return [
       { label: 'COMMON.EDIT', click: () => this.edit(row) },
+      { label: 'DISCOUNT.LIST.MORE_INFO', click: () => this.openMoreInfo(row) },
     ];
+  }
+
+  openMoreInfo(row: Discount): void {
+    this.modal.open<DiscountMoreInfoComponent, DiscountMoreInfoData>(DiscountMoreInfoComponent, {
+      drawer: true, drawerWidth: '440px', data: { discount: row },
+    });
   }
 
   constructor() {
