@@ -15,6 +15,8 @@ export interface ComparisonReportConfig {
   drill?: { idField: string; slug: string; /** URL param that carries the row's value (default: the product params of Purchase by Item). */ param?: string; /** Also carry the row's name under this URL param. */ nameParam?: string };
   /** A pie of the distribution per row under the table (the legacy offered it on some reports). */
   chart?: boolean;
+  /** Sub-columns that are counts (shown as whole numbers, not amounts). */
+  countSubs?: string[];
 }
 
 export const COMPARISON_REPORTS: Record<string, ComparisonReportConfig> = {
@@ -31,5 +33,8 @@ export const COMPARISON_REPORTS: Record<string, ComparisonReportConfig> = {
     groupFields: { Supplier: 'supplierName', Category: 'categoryName' },
     drill: { idField: 'productId', slug: 'purchase-by-item-sub' },
   },
+  'payment-method':       { route: 'getPaymentMethodReport',  nameField: 'paymentMethodName', countSubs: ['transactionCount'] },
+  'prepared-time-summary': { route: 'preparedTimeSummaryReport', nameField: 'serviceName', countSubs: ['countedInvoices', 'unCountedInvoices'] },
+  'product-prepared-time-summary': { route: 'productPreparedTimeSummaryReport', nameField: 'prodName', countSubs: ['qty'] },
   'purchase-by-item-sub': { route: 'purchaseByItem',             nameField: 'supplierName' },
 };

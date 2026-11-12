@@ -52,7 +52,15 @@ export class FlatReportComponent {
   config = computed(() => FLAT_REPORTS[this.slug()]);
   /** A report with coloured columns also gets dark headers on its plain columns. */
   hasTones = computed(() => !!this.config()?.columns.some(c => c.tone));
-  columns = computed(() => this.config().columns);
+  /** The config's columns; a `spread` column is replaced by one currency column per key found in the rows (the payment methods). */
+  columns = computed<FlatColumn[]>(() => {
+    const c = this.config();
+    if (!c.spread) return c.columns;
+    const keys = new Set<string>();
+    for (const r of this.data()?.records ?? []) for (const k of Object.keys((r[c.spread] as Record<string, unknown>) ?? {})) keys.add(k);
+    const dyn: FlatColumn[] = [...keys].map(k => ({ key: 'sp:' + k, label: k, type: 'currency' as const, end: true, total: true }));
+    return c.columns.flatMap(col => (col.key === c.spread ? dyn : [col]));
+  });
   hasTotal = computed(() => this.columns().some(c => c.total));
   /** Tiles above the table (the same tiles as Sales Summary): a column's sum over the rows shown, or the record count (`#records`). */
   kpiItems = computed<ReportKpi[]>(() => {
@@ -196,6 +204,7 @@ export class FlatReportComponent {
       const c = this.config();
       const d = await this.svc.load(c.route, this.filter(), c.paged ? { page: this.page(), limit: this.pageSize() } : null);
       if (c.expand) d.records = d.records.flatMap(r => (Array.isArray(r[c.expand!]) ? r[c.expand!] : []).map((x: any) => { const { [c.expand!]: _drop, ...rest } = r; return { ...rest, ...x }; }));
+      if (c.spread) d.records = d.records.map(r => ({ ...r, ...Object.fromEntries(Object.entries((r[c.spread!] as Record<string, unknown>) ?? {}).map(([k, v]) => ['sp:' + k, v])) }));
       if (c.map) d.records = d.records.map(c.map);
       if (mine === this.seq) this.data.set(d);
     } catch (e: any) {

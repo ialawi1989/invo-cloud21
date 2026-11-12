@@ -1,11 +1,12 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { MODAL_DATA, MODAL_REF } from '@shared/modal/modal.tokens';
 import { ModalRef } from '@shared/modal/modal.service';
 import { DropdownLoadParams, DropdownLoadResult } from '@shared/components/dropdown/search-dropdown.types';
 import { EmployeeService } from '../../../employees/services/employee.service';
 import { CompanyService } from '@core/auth/company.service';
+import { DiscountService } from '../../../settings/discount/services/discount.service';
 import { SuppliersService } from '../../../account/suppliers/services/suppliers.service';
 import { CustomersService } from '../../../account/customers/services/customers.service';
 import { InventoryLocationService } from '../../../products/services/inventory-location.service';
@@ -54,6 +55,10 @@ export interface ReportFiltersModalData {
   /** Offer the customer filter. */
   customers: boolean;
   customerIds: string[];
+  /** Offer the one-discount picker. */
+  discount: boolean;
+  requireDiscount?: boolean;
+  discountIds: string[];
   /** Offer the supplier filter. */
   suppliers: boolean;
   supplierIds: string[];
@@ -111,6 +116,7 @@ export interface ReportFiltersModalResult {
   productTypes: string[];
   customerIds: string[];
   supplierIds: string[];
+  discountIds: string[];
   salesEmployee: boolean;
   hasBalanceOnly: boolean;
   customerType: string;
@@ -134,11 +140,13 @@ export interface ReportFiltersModalResult {
   `],
 })
 export class ReportFiltersModalComponent {
+  private lang = inject(TranslateService);
   private productList = inject(ProductListService);
   private employees = inject(EmployeeService);
   private locationsApi = inject(InventoryLocationService);
   private customersApi = inject(CustomersService);
   private suppliersApi = inject(SuppliersService);
+  private discountsApi = inject(DiscountService);
   private company = inject(CompanyService);
   private ref = inject(MODAL_REF) as ModalRef<ReportFiltersModalResult | undefined>;
   readonly data = inject(MODAL_DATA) as ReportFiltersModalData;
@@ -163,6 +171,19 @@ export class ReportFiltersModalComponent {
   customerIds = signal<string[]>([...this.data.customerIds]);
   customerType = signal<string>(this.data.customerType);
   supplierIds = signal<string[]>([...this.data.supplierIds]);
+  discountIds = signal<string[]>([...this.data.discountIds]);
+  /** Discounts are searched on the server, a page at a time; the first page also offers "no discount". */
+  readonly loadDiscounts = async (p: DropdownLoadParams): Promise<DropdownLoadResult<{ id: string; name: string }>> => {
+    try {
+      const d = await this.discountsApi.getList({ page: p.page, limit: p.pageSize, searchTerm: p.search });
+      const items = d.list.map(x => ({ id: String((x as any).id), name: String((x as any).name ?? '') }));
+      const none = p.page === 1 && !p.search ? [{ id: 'others', name: this.lang.instant('REPORTS.FILTER.NO_DISCOUNT') }] : [];
+      return { items: [...none, ...items], hasMore: p.page < d.pageCount };
+    } catch { return { items: [], hasMore: false }; }
+  };
+  readonly discountLabel = (c: { id: string; name: string }) => c.name;
+  readonly discountId = (c: { id: string; name: string }) => c.id;
+  readonly sameDiscount = (a: any, b: any) => (a?.id ?? a) === (b?.id ?? b);
   /** Suppliers are searched on the server, a page at a time. */
   readonly loadSuppliers = async (p: DropdownLoadParams): Promise<DropdownLoadResult<{ id: string; name: string }>> => {
     try {
@@ -280,7 +301,7 @@ export class ReportFiltersModalComponent {
   isSelected = (id: string) => this.selected().includes(id);
   /** The required branch is not chosen yet — Apply stays disabled. */
   missingRequired = computed(() =>
-    (!!this.data.requireBranch && this.selected().length === 0) || (!!this.data.requireProduct && this.productIds().length === 0) || (!!this.data.requireEmployee && this.employeeIds().length === 0));
+    (!!this.data.requireBranch && this.selected().length === 0) || (!!this.data.requireProduct && this.productIds().length === 0) || (!!this.data.requireEmployee && this.employeeIds().length === 0) || (!!this.data.requireDiscount && this.discountIds().length === 0));
   /** The product dropdown hands back an id (single) or a list (multiple). */
   setProducts(v: unknown): void { this.productIds.set(pickIds(v)); }
   /** The dropdown's two-way value is its item objects — keep only their ids. */
@@ -318,6 +339,7 @@ export class ReportFiltersModalComponent {
     this.productTypes.set([]);
     this.customerIds.set([]);
     this.supplierIds.set([]);
+    this.discountIds.set([]);
     this.balanceOnly.set(false);
     this.salesEmployee.set(false);
     this.customerType.set('');
@@ -328,7 +350,7 @@ export class ReportFiltersModalComponent {
     if (this.missingRequired()) return;
     this.ref.close({
       branches: this.selected(), compare: this.compare(), applyOpeningHour: this.openingHour(), comparison: this.comparison(),
-      productIds: this.productIds(), categoryIds: this.categoryIds(), sources: this.sources(), voidTimings: this.voidTimings(), filterBy: this.filterBy(), employeeIds: this.employeeIds(), voidReasons: this.voidReasons(), mode: this.mode(), locationIds: this.locationIds(), hideDeleted: this.hideDeleted(), productTypes: this.productTypes(), customerIds: this.customerIds(), supplierIds: this.supplierIds(), hasBalanceOnly: this.balanceOnly(), salesEmployee: this.salesEmployee(), customerType: this.customerType(),
+      productIds: this.productIds(), categoryIds: this.categoryIds(), sources: this.sources(), voidTimings: this.voidTimings(), filterBy: this.filterBy(), employeeIds: this.employeeIds(), voidReasons: this.voidReasons(), mode: this.mode(), locationIds: this.locationIds(), hideDeleted: this.hideDeleted(), productTypes: this.productTypes(), customerIds: this.customerIds(), supplierIds: this.supplierIds(), discountIds: this.discountIds(), hasBalanceOnly: this.balanceOnly(), salesEmployee: this.salesEmployee(), customerType: this.customerType(),
     });
   }
 }

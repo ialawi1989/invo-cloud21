@@ -136,6 +136,19 @@
     </section>
   }
 
+  @if (data.discount) {
+    <section>
+      <h3 class="text-sm font-semibold text-slate-800 mb-2.5">
+        {{ 'REPORTS.FILTER.DISCOUNT' | translate }}@if (data.requireDiscount) { <span class="text-red-500" aria-hidden="true"> *</span> }
+      </h3>
+      <app-search-dropdown [multiple]="false" [clearable]="!data.requireDiscount" [loadFn]="loadDiscounts" [displayWith]="discountLabel" [toValue]="discountId"
+        [compareWith]="sameDiscount" [value]="$any(discountIds()[0] ?? null)" (valueChange)="discountIds.set(ids($event).slice(0, 1))"
+        [placeholder]="'REPORTS.FILTER.SELECT_DISCOUNT' | translate" triggerClass="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white"
+        [class.border-red-400]="data.requireDiscount && discountIds().length === 0" />
+      @if (data.requireDiscount && discountIds().length === 0) { <p class="mt-1.5 text-xs text-red-600">{{ 'REPORTS.FILTER.DISCOUNT_REQUIRED' | translate }}</p> }
+    </section>
+  }
+
   @if (data.suppliers) {
     <section>
       <h3 class="text-sm font-semibold text-slate-800 mb-2.5">

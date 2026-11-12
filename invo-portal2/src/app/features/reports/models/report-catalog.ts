@@ -748,6 +748,18 @@ export const REPORT_CATALOG: ReportGroup[] = [
         permission: 'reportsSecurity.actions.DiscountReport.access',
         filters: { date: true, branches: true }, export: { pdf: true, xlsx: true, path: 'salesDiscountReport' },
       },
+      {
+        slug: 'sales-by-discount', route: 'salesByDiscountId', customBody: 'flat', titleKey: 'REPORTS.ITEMS.SALES_BY_DISCOUNT',
+        descriptionKey: 'REPORTS.DESC.SALES_BY_DISCOUNT', icon: 'percent',
+        permission: 'reportsSecurity.actions.SalesByDiscountReport.access',
+        filters: { date: true, branches: true, discount: true, requireDiscount: true }, export: { pdf: true, xlsx: true, path: 'salesByDiscountId' },
+      },
+      {
+        slug: 'transaction-discount', route: 'transactionDiscountReports', customBody: 'flat', titleKey: 'REPORTS.ITEMS.TRANSACTION_DISCOUNT',
+        descriptionKey: 'REPORTS.DESC.TRANSACTION_DISCOUNT', icon: 'percent',
+        permission: 'reportsSecurity.actions.TransactionDiscountReport.access',
+        filters: { date: true, branches: true }, export: { pdf: true, xlsx: true, path: 'transactionDiscountReport' },
+      },
     ],
   },
 
@@ -758,17 +770,64 @@ export const REPORT_CATALOG: ReportGroup[] = [
     icon: 'grid',
     reports: [
       {
-        slug: 'payment-method', route: 'paymentMethod', titleKey: 'REPORTS.ITEMS.PAYMENT_METHOD',
+        slug: 'payment-method', route: 'getPaymentMethodReport', customBody: 'comparison', titleKey: 'REPORTS.ITEMS.PAYMENT_METHOD',
         descriptionKey: 'REPORTS.DESC.PAYMENT_METHOD', icon: 'credit-card',
         permission: 'reportsSecurity.actions.PaymentMethodReport.access',
-        filters: { date: true, branches: true }, export: { pdf: true, xlsx: true },
-        chart: { type: 'donut', labelKey: 'label', series: [{ key: 'amount', nameKey: 'REPORTS.KPI.AMOUNT' }] },
+        filters: { date: true, branches: true, comparePeriods: true, applyOpeningHour: true }, export: { pdf: true, xlsx: true, path: 'paymentTransactions' },
       },
       {
-        slug: 'void-transactions', route: 'voidTransactions', titleKey: 'REPORTS.ITEMS.VOID_TRANSACTIONS',
+        slug: 'product-prepared-time-summary', route: 'productPreparedTimeSummaryReport', customBody: 'comparison', titleKey: 'REPORTS.ITEMS.PRODUCT_PREPARED_TIME',
+        descriptionKey: 'REPORTS.DESC.PRODUCT_PREPARED_TIME', icon: 'clock',
+        permission: 'reportsSecurity.actions.ProductPreparedTimeSummary.access',
+        filters: { date: true, branches: true, comparePeriods: true }, export: { pdf: true, xlsx: true, path: 'productPreparedtimeSummary' },
+      },
+      {
+        slug: 'prepared-time-summary', route: 'preparedTimeSummaryReport', customBody: 'comparison', titleKey: 'REPORTS.ITEMS.PREPARED_TIME',
+        descriptionKey: 'REPORTS.DESC.PREPARED_TIME', icon: 'clock',
+        permission: 'reportsSecurity.actions.PreparedTimeSummary.access',
+        filters: { date: true, branches: true, comparePeriods: true }, export: { pdf: true, xlsx: true, path: 'preparedTimeSummary' },
+      },
+      {
+        slug: 'monthly-bld-breakdown', route: 'monthlyBLDBreakdownReport', customBody: 'flat', titleKey: 'REPORTS.ITEMS.MONTHLY_BLD',
+        descriptionKey: 'REPORTS.DESC.MONTHLY_BLD', icon: 'calendar',
+        permission: 'reportsSecurity.actions.MonthlyBLDBreakdown.access',
+        filters: { date: true, monthOnly: true, branches: true }, export: { pdf: true, xlsx: true, path: 'monthlyBLDBreakdown' },
+      },
+      {
+        slug: 'void-transactions', route: 'voidTransactionsReport', customBody: 'flat', titleKey: 'REPORTS.ITEMS.VOID_TRANSACTIONS',
         descriptionKey: 'REPORTS.DESC.VOID_TRANSACTIONS', icon: 'file-text',
         permission: 'reportsSecurity.actions.VoidRansactions.access',
-        filters: { date: true, branches: true, applyOpeningHour: true }, export: { pdf: true, xlsx: true },
+        filters: { date: true, branches: true, applyOpeningHour: true }, export: { pdf: true, xlsx: true, path: 'voidTransactions' },
+      },
+      {
+        slug: 'unsold-products', route: 'unsoldProductReport', customBody: 'flat', titleKey: 'REPORTS.ITEMS.UNSOLD_PRODUCTS',
+        descriptionKey: 'REPORTS.DESC.UNSOLD_PRODUCTS', icon: 'box',
+        permission: 'reportsSecurity.actions.UnsoldProductsReport.access',
+        filters: { date: true, branches: true, applyOpeningHour: true }, export: { pdf: true, xlsx: true, path: 'unsoldProductReport' },
+      },
+      {
+        slug: 'daily-payment', route: 'dailyPaymentReport', customBody: 'flat', titleKey: 'REPORTS.ITEMS.DAILY_PAYMENT',
+        descriptionKey: 'REPORTS.DESC.DAILY_PAYMENT', icon: 'credit-card',
+        permission: 'reportsSecurity.actions.DailyPaymentReport.access',
+        filters: { date: true, branches: true, singleBranch: true, requireBranch: true, applyOpeningHour: true }, export: { pdf: true, xlsx: true, path: 'dailyPaymentReport' },
+      },
+      {
+        slug: 'payouts', route: 'payoutsReport', customBody: 'flat', titleKey: 'REPORTS.ITEMS.PAYOUTS',
+        descriptionKey: 'REPORTS.DESC.PAYOUTS', icon: 'banknote',
+        permission: 'reportsSecurity.actions.PayoutsReport.access',
+        filters: { date: true, branches: true, singleBranch: true, requireBranch: true, applyOpeningHour: true }, export: { pdf: true, xlsx: true, path: 'payoutsReport' },
+      },
+      {
+        slug: 'surcharge', route: 'surchargeReport', customBody: 'flat', titleKey: 'REPORTS.ITEMS.SURCHARGE',
+        descriptionKey: 'REPORTS.DESC.SURCHARGE', icon: 'percent',
+        permission: 'reportsSecurity.actions.SurchargeReports.access',
+        filters: { date: true, branches: true, applyOpeningHour: true }, export: { pdf: true, xlsx: true, path: 'surchargeSubReport' },
+      },
+      {
+        slug: 'delivery-charge', route: 'deliveryCharge', customBody: 'flat', titleKey: 'REPORTS.ITEMS.DELIVERY_CHARGE',
+        descriptionKey: 'REPORTS.DESC.DELIVERY_CHARGE', icon: 'truck',
+        permission: 'reportsSecurity.actions.DeliveryChargeReport.access',
+        filters: { date: true, branches: true, applyOpeningHour: true }, export: { pdf: true, xlsx: true, path: 'deliveryChargeByCity' },
       },
     ],
   },
@@ -782,12 +841,6 @@ export const ALL_REPORTS: ReportMeta[] = REPORT_CATALOG.flatMap(g => g.reports);
  * filters but are not listed in the catalog or in "Browse Reports" — as in the legacy app.
  */
 export const SUB_REPORTS: ReportMeta[] = [
-  {
-    // The invoices and credit notes that used one discount (opened from a Discount Report row, with the discount in the URL).
-    slug: 'sales-by-discount', route: 'salesByDiscountId', customBody: 'flat', titleKey: 'REPORTS.ITEMS.SALES_BY_DISCOUNT',
-    descriptionKey: 'REPORTS.DESC.SALES_BY_DISCOUNT', icon: 'percent', permission: 'reportsSecurity.actions.DiscountReport.access',
-    filters: { date: true, branches: true }, export: { pdf: true, xlsx: true, path: 'salesByDiscountId' },
-  },
   {
     // The invoices and credit notes of one service (opened from a Sales by Service row, with the service in the URL).
     slug: 'sales-by-service-details', route: 'salesByServiceId', customBody: 'service-details',

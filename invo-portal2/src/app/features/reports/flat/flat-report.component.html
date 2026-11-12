@@ -32,7 +32,7 @@
                             <a class="account-link" [routerLink]="['/reports/view', c.drill.slug]" [queryParams]="drillParams(row.rec, c)" target="_blank" rel="noopener">{{ num(row.rec[c.key]) | number }}</a>
                           } @else if (c.dashZero && !num(row.rec[c.key])) { - } @else { {{ num(row.rec[c.key]) | number }} }
                         }
-                        @case ('currency') { {{ num(row.rec[c.key]) | mycurrency }} }
+                        @case ('currency') { {{ c.pctKey && row.rec[c.pctKey] === 'percentage' ? ((num(row.rec[c.key]) | number: '1.0-2') + '%') : (num(row.rec[c.key]) | mycurrency) }} }
                         @case ('date') { {{ isEmptyVal(row.rec[c.key]) ? '-' : (row.rec[c.key] | date: 'dd/MM/yyyy') }} }
                         @case ('datetime') { {{ isEmptyVal(row.rec[c.key]) ? '-' : (row.rec[c.key] | date: 'dd/MM/yyyy HH:mm') }} }
                         @case ('profit') { <span [class.neg]="num(row.rec[c.key]) < 0" [class.pos]="num(row.rec[c.key]) > 0">{{ num(row.rec[c.key]) | mycurrency }}</span> }

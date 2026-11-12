@@ -363,6 +363,18 @@ export function reportsSecurity() {
         name: "Bill Of Entry Details VAT Report",
         securityType: "cloud",
       }),
+      "SalesByDiscountReport": new PrivilegeSetting({
+        name: "Sales By Discount Report",
+        securityType: "cloud",
+      }),
+      "TransactionDiscountReport": new PrivilegeSetting({
+        name: "Transaction Discount Report",
+        securityType: "cloud",
+      }),
+      "PayoutsReport": new PrivilegeSetting({
+        name: "Payouts Report",
+        securityType: "cloud",
+      }),
       "MonthlyBLDBreakdown": new PrivilegeSetting({
         name: "Monthly BLD Breakdown",
         securityType: "cloud",

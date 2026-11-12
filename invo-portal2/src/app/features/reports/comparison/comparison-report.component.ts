@@ -1,4 +1,5 @@
 import { Component, computed, effect, inject, input, output, signal, untracked } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService } from '@core/i18n/language.service';
@@ -23,7 +24,7 @@ import { ReportEmptyComponent } from '../components/report-empty/report-empty.co
 @Component({
   selector: 'app-comparison-report',
   standalone: true,
-  imports: [ReportEmptyComponent, ReportErrorComponent, TranslateModule, RouterLink, BoTableShellComponent, BoAmountPipe, BoColumnPipe, ReportChartComponent, ReportColumnsButtonComponent],
+  imports: [DecimalPipe, ReportEmptyComponent,ReportErrorComponent, TranslateModule, RouterLink, BoTableShellComponent, BoAmountPipe, BoColumnPipe, ReportChartComponent, ReportColumnsButtonComponent],
   templateUrl: './comparison-report.component.html',
   styleUrl: './comparison-report.component.scss',
 })
@@ -96,6 +97,8 @@ export class ComparisonReportComponent {
     }
     return out;
   });
+  /** A sub-column that counts things: shown as a whole number. */
+  isCount = (sub: string): boolean => !!this.config().countSubs?.includes(sub);
   groupTotal(rows: ComparisonRecord[], column: string, sub?: string): number { return rows.reduce((t, r) => t + this.value(r, column, sub), 0); }
 
   /** URL params that carry the period / branches / comparison of this report, plus the row's product, to the drill-through. */

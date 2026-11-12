@@ -49,6 +49,8 @@ export interface FlatColumn {
   type?: FlatCellType;
   /** Right-aligned (numbers, amounts). */
   end?: boolean;
+  /** The amount is a percentage when this record field says `percentage` (a surcharge can be either). */
+  pctKey?: string;
   /** A zero shows as a dash (a count that is usually none: photos). */
   dashZero?: boolean;
   /** The value links to this report's detail: a product opens its Product Movement (when the row carries `productId`). */
@@ -81,6 +83,8 @@ export interface FlatReportConfig {
   map?: (rec: Record<string, any>) => Record<string, any>;
   /** Each record carries its rows in this list (`details`): they are spread into rows that keep the record's own fields (date, cashier). */
   expand?: string;
+  /** The record field is an object (`{ Cash: 10, Card: 5 }`): each of its keys becomes a currency column, in place of this column. */
+  spread?: string;
   /** Keys of the answer's `summary` object shown as figures above the table (`REPORTS.FLAT.SUMMARY.<key>`). */
   summary?: { key: string; tone: 'blue' | 'green' | 'amber' | 'red' | 'purple' | 'teal' | 'orange' }[];
   /** Figure tiles above the table: the sum of a column over the rows on the page, or the number of records. */
@@ -280,7 +284,7 @@ export const FLAT_REPORTS: Record<string, FlatReportConfig> = {
     // the margin comes as a fraction, the discount share already as a percentage
     map: r => ({ ...r, grossMarginPct: Number(r['GrossMarginPercentage'] ?? 0) * 100 }),
     columns: [
-      { key: 'DiscountName', drill: { slug: 'sales-by-discount', idKey: 'discountId', param: 'discountId', fallback: 'others' } },
+      { key: 'DiscountName', drill: { slug: 'sales-by-discount', idKey: 'discountId', param: 'discount', fallback: 'others' } },
       { key: 'salesCount', type: 'number', end: true, total: true }, { key: 'salesAmount', type: 'currency', end: true, total: true },
       { key: 'netDiscountPercentage', type: 'number', end: true }, { key: 'discountTotal', type: 'currency', end: true, total: true },
       { key: 'netSales', type: 'currency', end: true, total: true }, { key: 'costs', type: 'currency', end: true, total: true },
@@ -513,6 +517,65 @@ export const FLAT_REPORTS: Record<string, FlatReportConfig> = {
     columns: [
       { key: 'year' }, { key: 'productQty', type: 'number', end: true, total: true }, { key: 'grossSales', type: 'currency', end: true, total: true },
       { key: 'netSales', type: 'currency', end: true, total: true }, { key: 'salesInclTax', type: 'currency', end: true, total: true },
+    ],
+  },
+  'transaction-discount': {
+    route: 'transactionDiscountReports', paged: false,
+    columns: [
+      { key: 'code' }, { key: 'type' }, { key: 'sales', type: 'currency', end: true, total: true }, { key: 'discountTotal', type: 'currency', end: true, total: true },
+      { key: 'taxTotal', type: 'currency', end: true, total: true }, { key: 'total', type: 'currency', end: true, total: true },
+    ],
+  },
+  'void-transactions': {
+    route: 'voidTransactionsReport', paged: true,
+    columns: [
+      { key: 'createdAt', type: 'date', label: 'REPORTS.FLAT.COLUMNS.date' }, { key: 'invoiceNumber', doc: { type: 'Invoice', idKey: 'invoiceId' } }, { key: 'productName' }, { key: 'employeeName' },
+      { key: 'amount', type: 'currency', end: true, total: true }, { key: 'voidReason' },
+    ],
+  },
+  'unsold-products': {
+    route: 'unsoldProductReport', paged: true,
+    columns: [
+      { key: 'productName', link: 'product' }, { key: 'stock', type: 'number', end: true, total: true }, { key: 'unitCost', type: 'currency', end: true },
+      { key: 'stockValue', type: 'currency', end: true, total: true }, { key: 'lastSaleDate', type: 'date' }, { key: 'daysUnSold', type: 'number', end: true }, { key: 'ageBucket', type: 'tag' },
+    ],
+  },
+  'surcharge': {
+    route: 'surchargeReport', paged: true,
+    columns: [
+      { key: 'chargeName' }, { key: 'invoiceCount', type: 'number', end: true, total: true }, { key: 'chargeAmount', type: 'currency', pctKey: 'chargeAmountType', end: true },
+      { key: 'salesIncludingSurcharge', type: 'currency', end: true, total: true }, { key: 'totalSurcharge', type: 'currency', end: true, total: true },
+      { key: 'averageSurcharge', type: 'currency', end: true, total: true },
+    ],
+  },
+  'delivery-charge': {
+    route: 'deliveryCharge', paged: true,
+    columns: [
+      { key: 'city' }, { key: 'Invoices', type: 'number', end: true, total: true }, { key: 'ChargedInvoices', type: 'number', end: true, total: true }, { key: 'Free', type: 'number', end: true, total: true },
+      { key: 'DeliveryCharge', type: 'currency', end: true, total: true }, { key: 'Refunded', type: 'currency', end: true, total: true },
+      { key: 'NetDeliveryCharges', type: 'currency', end: true, total: true }, { key: 'avgDeliveryCharge', type: 'currency', end: true, total: true },
+    ],
+  },
+  'payouts': {
+    route: 'payoutsReport', paged: false,
+    columns: [
+      { key: 'createdAt', type: 'datetime', label: 'REPORTS.FLAT.COLUMNS.date' }, { key: 'accountName' }, { key: 'cashierName' }, { key: 'PaymentName', label: 'REPORTS.FLAT.COLUMNS.paymentMethodName' },
+      { key: 'amount', type: 'currency', end: true, total: true },
+    ],
+  },
+  'daily-payment': {
+    route: 'dailyPaymentReport', paged: false, spread: 'payments',
+    columns: [
+      { key: 'date', type: 'date' }, { key: 'dayOfWeek' }, { key: 'payments' }, { key: 'totalRefund', type: 'currency', end: true, total: true }, { key: 'total', type: 'currency', end: true, total: true },
+    ],
+  },
+  'monthly-bld-breakdown': {
+    route: 'monthlyBLDBreakdownReport', paged: false,
+    columns: [
+      { key: 'date', type: 'date' }, { key: 'grossSales', type: 'currency', end: true, total: true }, { key: 'discount', type: 'currency', end: true, total: true },
+      { key: 'breakfastSales', type: 'currency', end: true, total: true }, { key: 'lunchSales', type: 'currency', end: true, total: true }, { key: 'dinnerSales', type: 'currency', end: true, total: true },
+      { key: 'salesInclVat', type: 'currency', end: true, total: true }, { key: 'taxTotal', type: 'currency', end: true, total: true }, { key: 'salesExclVat', type: 'currency', end: true, total: true },
+      { key: 'guests', type: 'number', end: true, total: true }, { key: 'avg', type: 'currency', end: true, total: true },
     ],
   },
   'open-pending-po': {

@@ -61,6 +61,21 @@ export const REPORT_COLUMNS: Record<string, ReportColumnDef[]> = {
     { key: "salesAfterDiscount", label: { en: "Sales After Discount", ar: "المبيعات بعد الخصم" }, description: { en: "Sales amount after discounts but before taxes", ar: "Sales amount after discounts but before taxes" }, default: true },
     { key: "total", label: { en: "Net Total", ar: "صافي الإجمالي" }, description: { en: "Final amount after discounts and taxes", ar: "Final amount after discounts and taxes" }, default: true },
   ],
+  'payment-method': [
+    { key: "transactionCount", label: { en: "Transactions", ar: "عدد المعاملات" }, default: true },
+    { key: "paymentTotal", label: { en: "Total", ar: "الإجمالي" }, default: true },
+    { key: "paymentEquivalent", label: { en: "Equivalent", ar: "المعادل" }, default: true },
+  ],
+  'prepared-time-summary': [
+    { key: "countedInvoices", label: { en: "Counted Invoices", ar: "الفواتير المحتسبة" }, default: true },
+    { key: "unCountedInvoices", label: { en: "Uncounted Invoices", ar: "الفواتير غير المحتسبة" }, default: true },
+    { key: "totalReadyTime", label: { en: "Total Ready Time", ar: "إجمالي وقت التجهيز" }, default: true },
+  ],
+  'product-prepared-time-summary': [
+    { key: "qty", label: { en: "Quantity", ar: "الكمية" }, default: true },
+    { key: "totalPreparedTime", label: { en: "Total Prepared Time", ar: "إجمالي وقت التحضير" }, default: true },
+    { key: "avgReadyTime", label: { en: "Avg Ready Time", ar: "متوسط وقت التجهيز" }, default: true },
+  ],
   'purchase-by-item': [
     { key: "Qty", label: { en: "Quantity", ar: "الكمية" }, description: { en: "Total quantity purchased", ar: "Total quantity purchased" }, default: true },
     { key: "FOC Items", label: { en: "FOC Items", ar: "عناصر مجانية" }, description: { en: "Free of charge items received", ar: "Free of charge items received" }, default: true },

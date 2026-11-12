@@ -54,7 +54,7 @@
                     @if (subs().length) {
                       @for (sc of subs(); track sc) {
                         @let v = value(r, c, sc);
-                        <td class="text-end" [class]="'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci" [class.negative]="v < 0">{{ v | boAmount }}</td>
+                        <td class="text-end" [class]="'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci" [class.negative]="v < 0">{{ isCount(sc) ? (v | number: '1.0-0') : (v | boAmount) }}</td>
                       }
                     } @else {
                       @let v = value(r, c);
@@ -69,7 +69,7 @@
                   @for (c of columns(); track c; let ci = $index) {
                     @if (subs().length) {
                       @for (sc of subs(); track sc) {
-                        <td class="text-end" [class]="'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci"><strong>{{ groupTotal(g.rows, c, sc) | boAmount }}</strong></td>
+                        <td class="text-end" [class]="'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci"><strong>{{ isCount(sc) ? (groupTotal(g.rows, c, sc) | number: '1.0-0') : (groupTotal(g.rows, c, sc) | boAmount) }}</strong></td>
                       }
                     } @else {
                       <td class="text-end" [class]="'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci"><strong>{{ groupTotal(g.rows, c) | boAmount }}</strong></td>
@@ -83,7 +83,7 @@
               @for (c of columns(); track c; let ci = $index) {
                 @if (subs().length) {
                   @for (sc of subs(); track sc) {
-                    <td class="text-end" [class]="'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci"><strong>{{ columnTotal(c, sc) | boAmount }}</strong></td>
+                    <td class="text-end" [class]="'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci"><strong>{{ isCount(sc) ? (columnTotal(c, sc) | number: '1.0-0') : (columnTotal(c, sc) | boAmount) }}</strong></td>
                   }
                 } @else {
                   <td class="text-end" [class]="'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci"><strong>{{ columnTotal(c) | boAmount }}</strong></td>

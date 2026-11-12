@@ -166,6 +166,7 @@ export class ReportViewComponent implements OnInit, OnDestroy {
     const m = this.meta();
     if (m?.filters?.requireProduct && !(this.filterState().productIds?.length)) return true;
     if (m?.filters?.requireEmployee && !(this.filterState().employeeIds?.length)) return true;
+    if (m?.filters?.requireDiscount && !(this.filterState().discountIds?.length)) return true;
     if (!m?.filters?.requireBranch) return false;
     return (this.filterState().branches?.length ?? 0) !== 1;
   });
@@ -245,6 +246,7 @@ export class ReportViewComponent implements OnInit, OnDestroy {
       categoryIds: meta.filters?.categories ? (q['categories'] ? String(q['categories']).split(',').filter(isId) : []) : undefined,
       filterBy: meta.filters?.filterBy?.length ? (meta.filters.filterBy.includes(String(q['filterBy'])) ? String(q['filterBy']) : meta.filters.filterBy[0]) : undefined,
       customerType: meta.filters?.customerType ? (['Individual', 'Business'].includes(String(q['customerType'])) ? String(q['customerType']) : '') : undefined,
+      discountIds: meta.filters?.discount ? (q['discount'] ? String(q['discount']).split(',').filter(x => x === 'others' || isId(x)).slice(0, 1) : []) : undefined,
       supplierIds: meta.filters?.suppliers ? (q['suppliers'] ? String(q['suppliers']).split(',').filter(isId) : []) : undefined,
       customerIds: meta.filters?.customers ? (q['customers'] ? String(q['customers']).split(',').filter(isId) : []) : undefined,
       hasBalanceOnly: meta.filters?.hasBalanceOnly ? q['balanceOnly'] === '1' : undefined,
@@ -309,6 +311,7 @@ export class ReportViewComponent implements OnInit, OnDestroy {
         categories: this.meta()?.filters?.categories && s.categoryIds?.length ? s.categoryIds.join(',') : null,
         filterBy: this.meta()?.filters?.filterBy?.length && s.filterBy && s.filterBy !== this.meta()!.filters!.filterBy![0] ? s.filterBy : null,
         customerType: this.meta()?.filters?.customerType && s.customerType ? s.customerType : null,
+        discount: this.meta()?.filters?.discount && s.discountIds?.length ? s.discountIds[0] : null,
         suppliers: this.meta()?.filters?.suppliers && s.supplierIds?.length ? s.supplierIds.join(',') : null,
         customers: this.meta()?.filters?.customers && s.customerIds?.length ? s.customerIds.join(',') : null,
         balanceOnly: this.meta()?.filters?.hasBalanceOnly && s.hasBalanceOnly ? '1' : null,
@@ -364,8 +367,6 @@ export class ReportViewComponent implements OnInit, OnDestroy {
     if (this.meta()?.filters?.voidReasons && s.voidReasons?.length) filter['voidReasons'] = s.voidReasons;
     // The aggregator drill-through carries the aggregator's name in the URL (the export needs it too).
     if (this.meta()?.customBody === 'service-details') filter['serviceId'] = this.route.snapshot.queryParams['serviceId'];
-    // one discount's documents (a Discount Report row); `others` = documents with no discount
-    if (this.meta()?.slug === 'sales-by-discount') { const d = this.route.snapshot.queryParams['discountId']; filter['discountId'] = d && d !== 'others' ? d : null; }
     if (this.meta()?.customBody === 'aggregator-sub') filter['aggregatorName'] = this.route.snapshot.queryParams['aggregatorName'];
     // Cashier Report: the export is the chosen shift's report
     if (this.meta()?.customBody === 'cashier-shifts') { const c = this.route.snapshot.queryParams['cashierId']; if (c) filter['cashierId'] = c; }
@@ -388,6 +389,10 @@ export class ReportViewComponent implements OnInit, OnDestroy {
     if (this.meta()?.filters?.productTypes?.length && s.productTypes?.length) filter['types'] = s.productTypes;
     if (this.meta()?.filters?.customerType && s.customerType) filter['type'] = s.customerType;
     if (this.meta()?.filters?.suppliers && s.supplierIds?.length) filter['supplierIds'] = s.supplierIds;
+    // Monthly BLD Breakdown: the month, as the first day of it
+    if (this.meta()?.slug === 'monthly-bld-breakdown') filter['date'] = filter.fromDate;
+    // one discount's documents; `others` = documents with no discount
+    if (this.meta()?.filters?.discount) { const d = s.discountIds?.[0]; filter['discountId'] = d && d !== 'others' ? d : null; }
     if (this.meta()?.filters?.customers && s.customerIds?.length) filter['customerIds'] = s.customerIds;
     if (this.meta()?.filters?.hasBalanceOnly) filter['hasBalanceOnly'] = !!s.hasBalanceOnly;
     if (this.meta()?.filters?.salesEmployee) filter['isSalesEmployee'] = !!s.salesEmployee;
