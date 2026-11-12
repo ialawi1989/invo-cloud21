@@ -12,11 +12,23 @@
       <app-bo-table-shell [periods]="[]" [hintKey]="'flat_' + slug() + '_scrollHint'">
         <table class="bo-table" [class.tn-table]="hasTones()">
           <thead>
+            @if (headerSub().length) {
+            <tr class="header-row">
+              @for (t of headerTop(); track $index; let first = $first) {
+                @if (t.group) { <th class="tn-teal text-end fl-gband" [attr.colspan]="t.span">{{ t.group | translate }}</th> }
+                @else { <th rowspan="2" class="fl-gv" [class.sticky-col-1]="first" [class.text-end]="t.col!.end" [class.text-start]="!t.col!.end"><span class="fl-th">{{ labelOf(t.col!) | translate }}</span></th> }
+              }
+            </tr>
+            <tr class="header-row">
+              @for (c of headerSub(); track c.key) { <th class="tn-teal fl-sub text-end"><span class="fl-th">{{ labelOf(c) | translate }}</span></th> }
+            </tr>
+          } @else {
             <tr class="header-row">
               @for (c of columns(); track c.key; let first = $first) {
                 <th [class.sticky-col-1]="first" [class.text-end]="c.end" [class.text-start]="!c.end" [class]="c.tone ? 'tn-' + c.tone : ''"><span class="fl-th">{{ labelOf(c) | translate }}@if (c.hint) { <svg class="fl-hint" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [attr.title]="c.hint | translate" role="img" [attr.aria-label]="c.hint | translate"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> }</span></th>
               }
             </tr>
+          }
           </thead>
           <tbody>
             @for (row of rows(); track trackRow($index, row)) {
@@ -24,20 +36,21 @@
                 <tr class="data-row" [class.fl-group-start]="groupColumn() && row.first && $index > 0">
                   @for (c of columns(); track c.key; let first = $first) {
                     @if ((!groupColumn() || c.key !== groupColumn() || row.first) && (!secondColumn() || c.key !== secondColumn() || row.first2)) {
-                    <td [class.sticky-col-1]="first" [class.text-end]="c.end" [class.fl-danger]="c.danger" [class.tn]="!!c.tone" [attr.data-tone]="c.tone"
+                    <td [class.sticky-col-1]="first" [class.text-end]="c.end" [class.fl-danger]="c.danger" [class.fl-strong]="c.strong" [class.tn]="!!c.tone" [attr.data-tone]="c.tone"
                         [class.fl-group-cell]="c.key === groupColumn()" [class.fl-sub-cell]="c.key === secondColumn()" [attr.rowspan]="c.key === groupColumn() ? row.span : (c.key === secondColumn() ? row.span2 : null)">
                       @switch (c.type) {
                         @case ('number') {
                           @if (c.drill && row.rec[c.drill.idKey] && num(row.rec[c.key]) > 0) {
                             <a class="account-link" [routerLink]="['/reports/view', c.drill.slug]" [queryParams]="drillParams(row.rec, c)" target="_blank" rel="noopener">{{ num(row.rec[c.key]) | number }}</a>
-                          } @else if (c.dashZero && !num(row.rec[c.key])) { - } @else { {{ num(row.rec[c.key]) | number }} }
+                          } @else if (isTextVal(row.rec[c.key])) { {{ row.rec[c.key] }} } @else if (c.dashZero && !num(row.rec[c.key])) { - } @else { {{ num(row.rec[c.key]) | number }} }
                         }
-                        @case ('currency') { {{ c.pctKey && row.rec[c.pctKey] === 'percentage' ? ((num(row.rec[c.key]) | number: '1.0-2') + '%') : (num(row.rec[c.key]) | mycurrency) }} }
+                        @case ('currency') { {{ c.pctKey && (row.rec[c.pctKey] === true || row.rec[c.pctKey] === 'true' || row.rec[c.pctKey] === 'percentage') ? ((num(row.rec[c.key]) | number: '1.0-2') + '%') : (num(row.rec[c.key]) | mycurrency) }} }
                         @case ('daydate') {
-                          @if (isEmptyVal(row.rec[c.key])) { - } @else { <strong class="fl-dayname">{{ row.rec[c.key] | date: 'EEEE' }}</strong><small class="fl-days">{{ row.rec[c.key] | date: 'yyyy-MM-dd' }}</small> }
+                          @if (isEmptyVal(row.rec[c.key])) { - } @else if (!isDateVal(row.rec[c.key])) { {{ row.rec[c.key] }} } @else { <strong class="fl-dayname">{{ row.rec[c.key] | date: 'EEEE' }}</strong><small class="fl-days">{{ row.rec[c.key] | date: 'yyyy-MM-dd' }}</small> }
                         }
-                        @case ('date') { {{ isEmptyVal(row.rec[c.key]) ? '-' : (row.rec[c.key] | date: 'dd/MM/yyyy') }} }
-                        @case ('datetime') { {{ isEmptyVal(row.rec[c.key]) ? '-' : (row.rec[c.key] | date: 'dd/MM/yyyy HH:mm') }} }
+                        @case ('ymd') { {{ isEmptyVal(row.rec[c.key]) ? '-' : isDateVal(row.rec[c.key]) ? (row.rec[c.key] | date: 'yyyy/MM/dd') : row.rec[c.key] }} }
+                        @case ('date') { {{ isEmptyVal(row.rec[c.key]) ? '-' : isDateVal(row.rec[c.key]) ? (row.rec[c.key] | date: 'dd/MM/yyyy') : row.rec[c.key] }} }
+                        @case ('datetime') { {{ isEmptyVal(row.rec[c.key]) ? '-' : isDateVal(row.rec[c.key]) ? (row.rec[c.key] | date: 'dd/MM/yyyy HH:mm') : row.rec[c.key] }} }
                         @case ('profit') { <span [class.neg]="num(row.rec[c.key]) < 0" [class.pos]="num(row.rec[c.key]) > 0">{{ num(row.rec[c.key]) | mycurrency }}</span> }
                         @case ('profitPct') { <span class="fl-badge" [class]="'fl-badge ' + profitPctClass(row.rec[c.key])">{{ num(row.rec[c.key]) | number: '1.2-2' }}%</span> }
                         @case ('direction') {

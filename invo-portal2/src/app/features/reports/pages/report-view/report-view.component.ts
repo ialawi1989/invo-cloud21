@@ -37,6 +37,7 @@ import { ReportFilterBarComponent, BranchOption } from '../../components/report-
 import { ReportKpiRowComponent } from '../../components/report-kpi-row/report-kpi-row.component';
 import { ReportDataTableComponent } from '../../components/report-data-table/report-data-table.component';
 import { SalesSummaryComponent } from '../../sales/sales-summary/sales-summary.component';
+import { VatReportComponent } from '../../tax/vat-report/vat-report.component';
 import { ComparisonReportComponent } from '../../comparison/comparison-report.component';
 import { SalesByProductComponent } from '../../sales/sales-by-product/sales-by-product.component';
 import { SalesByItemTransactionsComponent } from '../../sales/sales-by-item-transactions/sales-by-item-transactions.component';
@@ -85,6 +86,7 @@ const isId = (v: string): boolean => !!v && !v.includes('[object');
     TranslateModule,
     ReportPageShellComponent,
     SalesSummaryComponent,
+    VatReportComponent,
     ComparisonReportComponent,
     SalesByProductComponent,
     SalesByItemTransactionsComponent,
@@ -169,6 +171,15 @@ export class ReportViewComponent implements OnInit, OnDestroy {
     if (m?.filters?.requireDiscount && !(this.filterState().discountIds?.length)) return true;
     if (!m?.filters?.requireBranch) return false;
     return (this.filterState().branches?.length ?? 0) !== 1;
+  });
+
+  /** Which mandatory choice is still missing (picks the prompt shown instead of the report). */
+  missingKind = computed<'employee' | 'branch' | 'product' | 'discount'>(() => {
+    const f = this.meta()?.filters; const s = this.filterState();
+    if (f?.requireProduct && !s.productIds?.length) return 'product';
+    if (f?.requireEmployee && !s.employeeIds?.length) return 'employee';
+    if (f?.requireDiscount && !s.discountIds?.length) return 'discount';
+    return 'branch';
   });
 
   /** The export formats this report offers (the shared export button also lists Print). */
@@ -369,6 +380,22 @@ export class ReportViewComponent implements OnInit, OnDestroy {
     if (this.meta()?.customBody === 'service-details') filter['serviceId'] = this.route.snapshot.queryParams['serviceId'];
     // Payment Method drill-through: the payments of the chosen method
     if (this.meta()?.slug === 'payment-method-sub') { const p = this.route.snapshot.queryParams['paymentId']; if (p) filter['paymentMethods'] = [p]; }
+    // Surcharge drill-through: the chosen surcharge and how its amount is charged
+    if (this.meta()?.slug === 'surcharge-sub') {
+      const q = this.route.snapshot.queryParams;
+      filter['surchageId'] = q['surchageId'];
+      filter['chargeAmount'] = Number(q['chargeAmount'] ?? 0);
+      filter['chargePercentage'] = q['chargePercentage'] === 'true';
+    }
+    // Delivery Charge drill-through: the chosen city
+    if (this.meta()?.slug === 'delivery-charge-by-city') filter['city'] = this.route.snapshot.queryParams['city'];
+    // VAT drill-through: the tax (or taxes) of the row that was opened
+    if (this.meta()?.slug === 'vat-details-sales' || this.meta()?.slug === 'vat-details-purchases') {
+      const q = this.route.snapshot.queryParams;
+      if (q['taxId']) filter['taxId'] = q['taxId'];
+      if (q['taxes']) filter['taxes'] = String(q['taxes']).split(',').filter(Boolean);
+      filter['type'] = this.meta()?.slug === 'vat-details-sales' ? 'sales' : 'purchases';
+    }
     if (this.meta()?.customBody === 'aggregator-sub') filter['aggregatorName'] = this.route.snapshot.queryParams['aggregatorName'];
     // Cashier Report: the export is the chosen shift's report
     if (this.meta()?.customBody === 'cashier-shifts') { const c = this.route.snapshot.queryParams['cashierId']; if (c) filter['cashierId'] = c; }

@@ -1,0 +1,85 @@
+@if (loading() && !data()) {
+  <div class="ss-loading" aria-busy="true">
+    <div class="ss-skel-kpis">@for (i of [1,2,3,4]; track i) { <div class="ss-skel"></div> }</div>
+    <div class="ss-skel ss-skel-card"></div>
+    <div class="ss-skel ss-skel-card"></div>
+  </div>
+} @else if (error()) {
+  <app-report-error [message]="error()" (retry)="load()" />
+} @else if (data(); as d) {
+  <div class="ss vat-sections" [class.stale]="loading()">
+    <app-report-kpi-row [kpis]="kpis()" [columns]="4" />
+
+    <!-- VAT on sales: boxes 1-7 -->
+    <section class="ss-card">
+      <h3>{{ 'REPORTS.VAT.ON_SALES' | translate }}</h3>
+      <div class="ss-scroll">
+        <table class="ss-table">
+          <thead><tr>
+            <th>#</th><th>{{ 'REPORTS.VAT.DESCRIPTION' | translate }}</th>
+            <th class="num">{{ 'REPORTS.VAT.AMOUNT' | translate }}</th><th class="num">{{ 'REPORTS.VAT.ADJUSTMENT' | translate }}</th><th class="num">{{ 'REPORTS.VAT.VAT_AMOUNT' | translate }}</th>
+          </tr></thead>
+          <tbody>
+            @for (r of d.sales.records; track $index) {
+              <tr>
+                <td>{{ r.boxNo }}</td>
+                <td>@if (hasDetails(r)) { <a class="vat-link" [routerLink]="['/reports/view', 'vat-details-sales']" [queryParams]="detailsParams(r)" target="_blank" rel="noopener">{{ r.description }}</a> } @else { {{ r.description }} }</td>
+                <td class="num">{{ r.amount | mycurrency }}</td><td class="num">{{ r.adjustment | mycurrency }}</td><td class="num">{{ r.vatAmount | mycurrency }}</td>
+              </tr>
+            }
+            <tr class="total">
+              <td>7</td><td>{{ 'REPORTS.VAT.TOTAL_SALES' | translate }}</td>
+              <td class="num">{{ d.sales.totalAmount | mycurrency }}</td><td class="num">{{ d.sales.totalAdjustment | mycurrency }}</td><td class="num">{{ d.sales.totalVatAmount | mycurrency }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- VAT on purchases: boxes 8-14 -->
+    <section class="ss-card">
+      <h3>{{ 'REPORTS.VAT.ON_PURCHASES' | translate }}</h3>
+      <div class="ss-scroll">
+        <table class="ss-table">
+          <thead><tr>
+            <th>#</th><th>{{ 'REPORTS.VAT.DESCRIPTION' | translate }}</th>
+            <th class="num">{{ 'REPORTS.VAT.AMOUNT' | translate }}</th><th class="num">{{ 'REPORTS.VAT.ADJUSTMENT' | translate }}</th><th class="num">{{ 'REPORTS.VAT.VAT_AMOUNT' | translate }}</th>
+          </tr></thead>
+          <tbody>
+            @for (r of d.purchases.records; track $index) {
+              <tr>
+                <td>{{ r.boxNo }}</td>
+                <td>
+                  @if (hasDetails(r)) { <a class="vat-link" [routerLink]="['/reports/view', 'vat-details-purchases']" [queryParams]="detailsParams(r)" target="_blank" rel="noopener">{{ r.description }}</a> }
+                  @else if (r.isBillOfEntry) { <a class="vat-link" [routerLink]="['/reports/view', 'bill-of-entry-details-vat']" [queryParams]="entryParams()" target="_blank" rel="noopener">{{ r.description }}</a> }
+                  @else { {{ r.description }} }
+                </td>
+                <td class="num">{{ r.amount | mycurrency }}</td><td class="num">{{ r.adjustment | mycurrency }}</td><td class="num">{{ r.vatAmount | mycurrency }}</td>
+              </tr>
+            }
+            <tr class="total">
+              <td>14</td><td>{{ 'REPORTS.VAT.TOTAL_PURCHASES' | translate }}</td>
+              <td class="num">{{ d.purchases.totalAmount | mycurrency }}</td><td class="num">{{ d.purchases.totalAdjustment | mycurrency }}</td><td class="num">{{ d.purchases.totalVatAmount | mycurrency }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Net VAT due: boxes 15-18 -->
+    <section class="ss-card">
+      <h3>{{ 'REPORTS.VAT.NET_DUE' | translate }}</h3>
+      <div class="ss-scroll">
+        <table class="ss-table">
+          <thead><tr><th>#</th><th>{{ 'REPORTS.VAT.DESCRIPTION' | translate }}</th><th class="num">{{ 'REPORTS.VAT.VAT_AMOUNT' | translate }}</th></tr></thead>
+          <tbody>
+            <tr><td>15</td><td>{{ 'REPORTS.VAT.DUE_CURRENT' | translate }}</td><td class="num">{{ netDue() | mycurrency }}</td></tr>
+            <tr><td>16</td><td>{{ 'REPORTS.VAT.CORRECTIONS' | translate }}</td><td class="num">{{ 0 | mycurrency }}</td></tr>
+            <tr><td>17</td><td>{{ 'REPORTS.VAT.CREDIT_FORWARD' | translate }}</td><td class="num">{{ 0 | mycurrency }}</td></tr>
+            <tr class="total"><td>18</td><td>{{ 'REPORTS.VAT.NET_DUE_OR_RECLAIMED' | translate }}</td><td class="num" [class.neg]="netDue() < 0">{{ netDue() | mycurrency }}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+}

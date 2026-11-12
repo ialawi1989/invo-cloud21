@@ -51,16 +51,27 @@ export class FlatReportComponent {
 
   config = computed(() => FLAT_REPORTS[this.slug()]);
   /** A report with coloured columns also gets dark headers on its plain columns. */
-  hasTones = computed(() => !!this.config()?.columns.some(c => c.tone));
+  hasTones = computed(() => this.columns().some(c => c.tone));
   /** The config's columns; a `spread` column is replaced by one currency column per key found in the rows (the payment methods). */
   columns = computed<FlatColumn[]>(() => {
     const c = this.config();
     if (!c.spread) return c.columns;
     const keys = new Set<string>();
     for (const r of this.data()?.records ?? []) for (const k of Object.keys((r[c.spread] as Record<string, unknown>) ?? {})) keys.add(k);
-    const dyn: FlatColumn[] = [...keys].map(k => ({ key: 'sp:' + k, label: k, type: 'currency' as const, end: true, total: true }));
+    const dyn: FlatColumn[] = [...keys].map(k => ({ key: 'sp:' + k, label: k, type: 'currency' as const, end: true, total: true, tone: 'teal' as const, group: 'REPORTS.FLAT.COLUMNS.' + c.spread }));
     return c.columns.flatMap(col => (col.key === c.spread ? dyn : [col]));
   });
+  /** With grouped columns the header has two rows: the top one merges each group, the second names its columns. */
+  headerTop = computed(() => {
+    const top: { col?: FlatColumn; group?: string; span: number }[] = [];
+    for (const c of this.columns()) {
+      const last = top[top.length - 1];
+      if (c.group && last?.group === c.group) last.span++;
+      else top.push(c.group ? { group: c.group, span: 1 } : { col: c, span: 1 });
+    }
+    return top;
+  });
+  headerSub = computed(() => this.columns().filter(c => c.group));
   hasTotal = computed(() => this.columns().some(c => c.total));
   /** Tiles above the table (the same tiles as Sales Summary): a column's sum over the rows shown, or the record count (`#records`). */
   kpiItems = computed<ReportKpi[]>(() => {
@@ -238,9 +249,14 @@ export class FlatReportComponent {
     return {
       preset: 'custom', fromDate: f.fromDate ?? null, toDate: f.toDate ?? null,
       branches: f.branches?.length ? f.branches.join(',') : null, [c.drill!.param ?? 'customers']: rec[c.drill!.idKey] ?? c.drill!.fallback ?? null,
+      ...Object.fromEntries(Object.entries(c.drill!.extra ?? {}).map(([k, f]) => [k, rec[f] === null || rec[f] === undefined ? null : String(rec[f])])),
     };
   }
   labelOf = (c: FlatColumn): string => c.label ?? `REPORTS.FLAT.COLUMNS.${c.key}`;
+  /** A value the date pipe can format (the API sends text such as `Never` for a missing date). */
+  isDateVal = (v: unknown): boolean => v instanceof Date || (typeof v === 'string' && !isNaN(Date.parse(v))) || typeof v === 'number';
+  /** Text where a number is expected (the API sends `Never` for the days since a sale that never happened). */
+  isTextVal = (v: unknown): boolean => typeof v === 'string' && v.trim() !== '' && isNaN(Number(v));
   isEmptyVal = (v: unknown): boolean => v === null || v === undefined || v === '';
 
   /** Colour of a stock-status badge (the legacy mapping). */

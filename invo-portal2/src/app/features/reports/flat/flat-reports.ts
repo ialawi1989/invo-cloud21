@@ -4,7 +4,7 @@
  * Adding a report of this shape = one entry here + one catalog entry (+ its column labels in `REPORTS.FLAT.COLUMNS`).
  */
 export type FlatCellType =
-  | 'text' | 'number' | 'currency' | 'date' | 'daydate' | 'datetime'
+  | 'text' | 'number' | 'currency' | 'date' | 'ymd' | 'daydate' | 'datetime'
   /** a profit amount — green when positive, red when negative */
   | 'profit'
   /** a profit percentage as a coloured badge */
@@ -46,17 +46,21 @@ export type FlatCellType =
 
 export interface FlatColumn {
   key: string;
+  /** Heading (translation key) shared by this and the neighbouring columns with the same group: a merged band over their own headers. */
+  group?: string;
+  /** Bold figures (a row total). */
+  strong?: boolean;
   type?: FlatCellType;
   /** Right-aligned (numbers, amounts). */
   end?: boolean;
-  /** The amount is a percentage when this record field says `percentage` (a surcharge can be either). */
+  /** The amount is a percentage when this record field is true (a surcharge can be either). */
   pctKey?: string;
   /** A zero shows as a dash (a count that is usually none: photos). */
   dashZero?: boolean;
   /** The value links to this report's detail: a product opens its Product Movement (when the row carries `productId`). */
   link?: 'product';
   /** The number opens another report for this row's customer, with the same period and branches. */
-  drill?: { slug: string; idKey: string; /** URL param that carries the id (default `customers`). */ param?: string; /** value used when the row has no id */ fallback?: string };
+  drill?: { slug: string; idKey: string; /** URL param that carries the id (default `customers`). */ param?: string; /** value used when the row has no id */ fallback?: string; /** More URL params, each filled from a field of the row: `{ urlParam: 'rowField' }`. */ extra?: Record<string, string> };
   /** The cell opens this document (`journalLink(type, rec[idKey])`) when the row carries its id. */
   doc?: { type?: string; /** read the document type from this row field instead */ typeKey?: string; idKey: string };
   /** A second record field shown as a small badge after the value (a product's barcode). */
@@ -271,10 +275,26 @@ export const FLAT_REPORTS: Record<string, FlatReportConfig> = {
       { key: 'totalSalesQty', tone: 'green', type: 'number', end: true, total: true }, { key: 'totalSales', tone: 'green', type: 'currency', end: true, total: true },
     ],
   },
+  'vat-details-sales': {
+    route: 'salesVatDetailsByVatId', paged: true,
+    columns: [
+      { key: 'date', type: 'date' }, { key: 'type' }, { key: 'referenceNumber', doc: { typeKey: 'type', idKey: 'referenceId' } }, { key: 'ContactName' }, { key: 'name' },
+      { key: 'taxableAmount', type: 'currency', end: true, total: true }, { key: 'vat', type: 'currency', end: true, total: true },
+      { key: 'none_taxableAmount', type: 'currency', end: true, total: true }, { key: 'totalAmount', type: 'currency', end: true, total: true },
+    ],
+  },
+  'vat-details-purchases': {
+    route: 'purchaseVatDetailsByVatId', paged: true,
+    columns: [
+      { key: 'date', type: 'date' }, { key: 'type' }, { key: 'referenceNumber', doc: { typeKey: 'type', idKey: 'referenceId' } }, { key: 'ContactName' }, { key: 'name' },
+      { key: 'taxableAmount', type: 'currency', end: true, total: true }, { key: 'vat', type: 'currency', end: true, total: true },
+      { key: 'none_taxableAmount', type: 'currency', end: true, total: true }, { key: 'totalAmount', type: 'currency', end: true, total: true },
+    ],
+  },
   'vat-audit': {
     route: 'vatDetailsReport', paged: true,
     columns: [
-      { key: 'date', type: 'date' }, { key: 'type' }, { key: 'referenceNumber' }, { key: 'ContactName' }, { key: 'name' },
+      { key: 'date', type: 'date' }, { key: 'type' }, { key: 'referenceNumber', doc: { typeKey: 'type', idKey: 'referenceId' } }, { key: 'ContactName' }, { key: 'name' },
       { key: 'taxableAmount', type: 'currency', end: true, total: true }, { key: 'vat', type: 'currency', end: true, total: true },
       { key: 'none_taxableAmount', type: 'currency', end: true, total: true }, { key: 'totalAmount', type: 'currency', end: true, total: true },
     ],
@@ -465,7 +485,7 @@ export const FLAT_REPORTS: Record<string, FlatReportConfig> = {
   'bill-of-entry-details-vat': {
     route: 'billOfEntryDetailsVatReport', paged: true,
     columns: [
-      { key: 'date', type: 'date' }, { key: 'type' }, { key: 'referenceNumber' }, { key: 'name' },
+      { key: 'date', type: 'date' }, { key: 'type' }, { key: 'referenceNumber', doc: { typeKey: 'type', idKey: 'referenceId' } }, { key: 'name' },
       { key: 'taxableAmount', type: 'currency', end: true, total: true }, { key: 'vat', type: 'currency', end: true, total: true },
       { key: 'none_taxableAmount', type: 'currency', end: true, total: true }, { key: 'totalAmount', type: 'currency', end: true, total: true },
     ],
@@ -543,30 +563,47 @@ export const FLAT_REPORTS: Record<string, FlatReportConfig> = {
   'surcharge': {
     route: 'surchargeReport', paged: true,
     columns: [
-      { key: 'chargeName' }, { key: 'invoiceCount', type: 'number', end: true, total: true }, { key: 'chargeAmount', type: 'currency', pctKey: 'chargeAmountType', end: true },
+      { key: 'chargeName', drill: { slug: 'surcharge-sub', idKey: 'chargeId', param: 'surchageId', extra: { surchargeName: 'chargeName', chargeAmount: 'chargeAmount', chargePercentage: 'chargePercentage' } } }, { key: 'invoiceCount', type: 'number', end: true, total: true }, { key: 'chargeAmount', type: 'currency', pctKey: 'chargePercentage', end: true },
       { key: 'salesIncludingSurcharge', type: 'currency', end: true, total: true }, { key: 'totalSurcharge', type: 'currency', end: true, total: true },
       { key: 'averageSurcharge', type: 'currency', end: true, total: true },
+    ],
+  },
+  'surcharge-sub': {
+    route: 'surchargeSubReport', paged: true,
+    columns: [
+      { key: 'Date', type: 'date', label: 'REPORTS.FLAT.COLUMNS.date' }, { key: 'number', label: 'REPORTS.FLAT.COLUMNS.surchargeNumber', doc: { type: 'Invoice', idKey: 'id' } },
+      { key: 'chargeAmount', type: 'currency', pctKey: 'chargePercentage', end: true }, { key: 'Sales', type: 'currency', end: true, total: true, label: 'REPORTS.FLAT.COLUMNS.surchargeSales' },
+      { key: 'Surcharge', type: 'currency', end: true, total: true, label: 'REPORTS.FLAT.COLUMNS.surchargeAmount' },
     ],
   },
   'delivery-charge': {
     route: 'deliveryCharge', paged: true,
     columns: [
-      { key: 'city' }, { key: 'Invoices', type: 'number', end: true, total: true }, { key: 'ChargedInvoices', type: 'number', end: true, total: true }, { key: 'Free', type: 'number', end: true, total: true },
+      { key: 'city', drill: { slug: 'delivery-charge-by-city', idKey: 'city', param: 'city' } }, { key: 'Invoices', type: 'number', end: true, total: true }, { key: 'ChargedInvoices', type: 'number', end: true, total: true }, { key: 'Free', type: 'number', end: true, total: true },
       { key: 'DeliveryCharge', type: 'currency', end: true, total: true }, { key: 'Refunded', type: 'currency', end: true, total: true },
       { key: 'NetDeliveryCharges', type: 'currency', end: true, total: true }, { key: 'avgDeliveryCharge', type: 'currency', end: true, total: true },
+    ],
+  },
+  'delivery-charge-by-city': {
+    route: 'deliveryChargeByCity', paged: true,
+    columns: [
+      { key: 'Date', type: 'date', label: 'REPORTS.FLAT.COLUMNS.date' }, { key: 'Type', label: 'REPORTS.FLAT.COLUMNS.type' },
+      { key: 'Number', label: 'REPORTS.FLAT.COLUMNS.surchargeNumber', doc: { typeKey: 'Type', idKey: 'id' } },
+      { key: 'DeliveryCharge', type: 'currency', end: true, total: true }, { key: 'Refunded', type: 'currency', end: true, total: true },
+      { key: 'NetDeliveryCharges', type: 'currency', end: true, total: true, label: 'REPORTS.FLAT.COLUMNS.net' },
     ],
   },
   'payouts': {
     route: 'payoutsReport', paged: false,
     columns: [
       { key: 'createdAt', type: 'datetime', label: 'REPORTS.FLAT.COLUMNS.date' }, { key: 'accountName' }, { key: 'cashierName' }, { key: 'PaymentName', label: 'REPORTS.FLAT.COLUMNS.paymentMethodName' },
-      { key: 'amount', type: 'currency', end: true, total: true },
+      { key: 'amount', type: 'currency', end: true },
     ],
   },
   'daily-payment': {
     route: 'dailyPaymentReport', paged: false, spread: 'payments',
     columns: [
-      { key: 'date', type: 'date' }, { key: 'dayOfWeek' }, { key: 'payments' }, { key: 'totalRefund', type: 'currency', end: true, total: true }, { key: 'total', type: 'currency', end: true, total: true },
+      { key: 'date', type: 'ymd' }, { key: 'dayOfWeek' }, { key: 'payments' }, { key: 'totalRefund', type: 'currency', end: true, total: true }, { key: 'total', type: 'currency', end: true, total: true, strong: true },
     ],
   },
   'monthly-bld-breakdown': {

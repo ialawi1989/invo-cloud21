@@ -178,7 +178,7 @@ export interface ReportMeta {
    * Render this component as the report body instead of the generic table (the page frame, filters, export and
    * favourites stay the shared ones). Used where the legacy report is not a flat table.
    */
-  customBody?: 'sales-summary' | 'comparison' | 'sales-by-product' | 'item-transactions' | 'voided-sales' | 'products-category' | 'products-vs-options' | 'sales-by-terminal' | 'sales-by-delivery-area' | 'sales-by-product-vs-service' | 'sales-by-hours-by-product' | 'department-sales-payments' | 'daily-closing' | 'daily-sales-sub' | 'aggregator-sub' | 'service-details' | 'sales-by-invoice' | 'general-inventory' | 'product-movement' | 'flat' | 'customer-aging' | 'customer-aging-summary' | 'supplier-aging' | 'supplier-aging-summary' | 'cashier-shifts' | 'attendance-trends' | 'attendance-detail' | 'attendance-audit' | 'attendance-absence';
+  customBody?: 'sales-summary' | 'comparison' | 'sales-by-product' | 'item-transactions' | 'voided-sales' | 'products-category' | 'products-vs-options' | 'sales-by-terminal' | 'sales-by-delivery-area' | 'sales-by-product-vs-service' | 'sales-by-hours-by-product' | 'department-sales-payments' | 'daily-closing' | 'daily-sales-sub' | 'aggregator-sub' | 'service-details' | 'sales-by-invoice' | 'general-inventory' | 'product-movement' | 'flat' | 'customer-aging' | 'customer-aging-summary' | 'supplier-aging' | 'supplier-aging-summary' | 'cashier-shifts' | 'attendance-trends' | 'attendance-detail' | 'attendance-audit' | 'attendance-absence' | 'vat-report';
   /** Pre-starred in the catalog for first-time users. */
   starredByDefault?: boolean;
   /** ISO date the report was added/updated — drives the "New" tab (< 30 days). */

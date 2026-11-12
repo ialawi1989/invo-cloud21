@@ -91,3 +91,9 @@ $tones: ('amber': (#d97706, #fffbeb), 'orange': (#c2410c, #fff7ed), 'blue': (#03
   &.below { transform: translate(-50%, 0); } }
 
 .fl-dayname { display: block; }
+
+/* A merged band over a group of columns (Daily Payment: the payment methods) and the lighter row naming them. */
+:host ::ng-deep table.bo-table th.tn-teal.fl-sub { background: #14b8a6 !important; }
+:host ::ng-deep table.bo-table th.fl-gband { vertical-align: middle; }
+:host ::ng-deep table.bo-table th.fl-gv { vertical-align: middle; }
+:host ::ng-deep table.bo-table td.fl-strong { font-weight: 700; }

@@ -609,7 +609,7 @@ export const REPORT_CATALOG: ReportGroup[] = [
     icon: 'percent',
     reports: [
       {
-        slug: 'vat-report', route: 'vatReport', titleKey: 'REPORTS.ITEMS.VAT_REPORT',
+        slug: 'vat-report', route: 'vatReport', customBody: 'vat-report', titleKey: 'REPORTS.ITEMS.VAT_REPORT',
         descriptionKey: 'REPORTS.DESC.VAT_REPORT', icon: 'percent',
         permission: 'reportsSecurity.actions.VatReport.access',
         filters: { date: true, branches: true }, canSchedule: true, export: { pdf: true, xlsx: true },
@@ -629,12 +629,6 @@ export const REPORT_CATALOG: ReportGroup[] = [
         descriptionKey: 'REPORTS.DESC.PRODUCT_WISE_VAT', icon: 'percent',
         permission: 'reportsSecurity.actions.ProductWiseVatReport.access',
         filters: { date: true, branches: true, applyOpeningHour: true }, export: { pdf: true, xlsx: true, path: 'productwisevatreport' },
-      },
-      {
-        slug: 'bill-of-entry-details-vat', route: 'billOfEntryDetailsVatReport', customBody: 'flat', titleKey: 'REPORTS.ITEMS.BILL_OF_ENTRY_VAT',
-        descriptionKey: 'REPORTS.DESC.BILL_OF_ENTRY_VAT', icon: 'file-text',
-        permission: 'reportsSecurity.actions.BillOfEntryDetailsVatReport.access',
-        filters: { date: true, branches: true }, export: { pdf: true, xlsx: true, path: 'billOfEntryDetailsVatReport' },
       },
       {
         slug: 'vat-transaction-details', route: 'taxTransactionDetailsReport', customBody: 'flat', titleKey: 'REPORTS.ITEMS.VAT_TRANSACTION_DETAILS',
@@ -821,13 +815,13 @@ export const REPORT_CATALOG: ReportGroup[] = [
         slug: 'surcharge', route: 'surchargeReport', customBody: 'flat', titleKey: 'REPORTS.ITEMS.SURCHARGE',
         descriptionKey: 'REPORTS.DESC.SURCHARGE', icon: 'percent',
         permission: 'reportsSecurity.actions.SurchargeReports.access',
-        filters: { date: true, branches: true, applyOpeningHour: true }, export: { pdf: true, xlsx: true, path: 'surchargeSubReport' },
+        filters: { date: true, branches: true, applyOpeningHour: true }, export: { pdf: true, xlsx: true, path: 'surchargeReport' },
       },
       {
         slug: 'delivery-charge', route: 'deliveryCharge', customBody: 'flat', titleKey: 'REPORTS.ITEMS.DELIVERY_CHARGE',
         descriptionKey: 'REPORTS.DESC.DELIVERY_CHARGE', icon: 'truck',
         permission: 'reportsSecurity.actions.DeliveryChargeReport.access',
-        filters: { date: true, branches: true, applyOpeningHour: true }, export: { pdf: true, xlsx: true, path: 'deliveryChargeByCity' },
+        filters: { date: true, branches: true, applyOpeningHour: true }, export: { pdf: true, xlsx: true, path: 'deliveryCharge' },
       },
     ],
   },
@@ -889,6 +883,43 @@ export const SUB_REPORTS: ReportMeta[] = [
     filters: { date: true, branches: true, applyOpeningHour: true },
     export: { pdf: true, xlsx: true, path: 'paymentTransactions' },
   },
+  {
+    // The invoices behind one Surcharge row (opened from its name, with the surcharge in the URL).
+    slug: 'surcharge-sub', route: 'surchargeSubReport', customBody: 'flat',
+    titleKey: 'REPORTS.ITEMS.SURCHARGE_SUB', descriptionKey: 'REPORTS.DESC.SURCHARGE_SUB',
+    icon: 'percent', permission: 'reportsSecurity.actions.SurchargeReports.access',
+    filters: { date: true, branches: true, applyOpeningHour: true },
+    export: { pdf: true, xlsx: true, path: 'surchargeSubReport' },
+  },
+  {
+    // The invoices and credit notes behind one Delivery Charge row (opened from its city, with the city in the URL).
+    slug: 'delivery-charge-by-city', route: 'deliveryChargeByCity', customBody: 'flat',
+    titleKey: 'REPORTS.ITEMS.DELIVERY_CHARGE_BY_CITY', descriptionKey: 'REPORTS.DESC.DELIVERY_CHARGE_BY_CITY',
+    icon: 'truck', permission: 'reportsSecurity.actions.DeliveryChargeReport.access',
+    filters: { date: true, branches: true, applyOpeningHour: true },
+    export: { pdf: true, xlsx: true, path: 'deliveryChargeByCity' },
+  },
+  {
+    // The bills of entry behind the VAT Report's "Imports subject to VAT paid at customs" row (opened from it; not listed).
+    slug: 'bill-of-entry-details-vat', route: 'billOfEntryDetailsVatReport', customBody: 'flat',
+    titleKey: 'REPORTS.ITEMS.BILL_OF_ENTRY_VAT', descriptionKey: 'REPORTS.DESC.BILL_OF_ENTRY_VAT', icon: 'file-text',
+    permission: 'reportsSecurity.actions.BillOfEntryDetailsVatReport.access',
+    filters: { date: true, branches: true }, export: { pdf: true, xlsx: true, path: 'billOfEntryDetailsVatReport' },
+  },
+  {
+    // The sales transactions of one tax (opened from a VAT Report sales row).
+    slug: 'vat-details-sales', route: 'salesVatDetailsByVatId', customBody: 'flat',
+    titleKey: 'REPORTS.ITEMS.VAT_DETAILS_SALES', descriptionKey: 'REPORTS.DESC.VAT_DETAILS_SALES',
+    icon: 'percent', permission: 'reportsSecurity.actions.VatReport.access',
+    filters: { date: true, branches: true }, export: { pdf: true, xlsx: true, path: 'vatDetailsByVatId' },
+  },
+  {
+    // The purchase transactions of one tax, or of the zero-rated / exempt taxes together (opened from a VAT Report purchase row).
+    slug: 'vat-details-purchases', route: 'purchaseVatDetailsByVatId', customBody: 'flat',
+    titleKey: 'REPORTS.ITEMS.VAT_DETAILS_PURCHASES', descriptionKey: 'REPORTS.DESC.VAT_DETAILS_PURCHASES',
+    icon: 'percent', permission: 'reportsSecurity.actions.VatReport.access',
+    filters: { date: true, branches: true }, export: { pdf: true, xlsx: true, path: 'vatDetailsByVatId' },
+  },
 ];
 
 /** Find a report by its URL slug (listed reports first, then the drill-through ones — under the Sales group). */
@@ -898,6 +929,6 @@ export function findReport(slug: string): { meta: ReportMeta; group: ReportGroup
     if (meta) return { meta, group };
   }
   const sub = SUB_REPORTS.find(r => r.slug === slug);
-  const home = REPORT_CATALOG.find(g => g.key === (sub?.slug.startsWith('purchase') ? 'purchase' : 'sales'));
+  const home = REPORT_CATALOG.find(g => g.key === (sub?.slug.startsWith('purchase') ? 'purchase' : sub?.slug.startsWith('bill-of-entry') || sub?.slug.startsWith('vat-details') ? 'tax' : 'sales'));
   return sub && home ? { meta: sub, group: home } : undefined;
 }

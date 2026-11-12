@@ -34,15 +34,10 @@
     @if (m.note; as n) { <app-report-note [key]="n.key" [type]="n.type" /> }
 
     <!-- ── Body ───────────────────────────────────────────────── -->
-    @if (requiredFiltersMissing() && m.filters?.requireEmployee) {
-      <app-report-select-prompt />
-    } @else if (requiredFiltersMissing() && m.filters?.requireDiscount) {
-      <app-report-select-prompt titleKey="REPORTS.PROMPT.DISCOUNT_TITLE" hintKey="REPORTS.PROMPT.DISCOUNT_HINT" />
-    } @else if (requiredFiltersMissing()) {
-      <div class="rv-error">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <p>{{ 'REPORTS.VIEW.SELECT_BRANCH_PROMPT' | translate }}</p>
-      </div>
+    @if (requiredFiltersMissing()) {
+      <app-report-select-prompt [kind]="missingKind()" />
+    } @else if (m.customBody === 'vat-report') {
+      <app-vat-report [filter]="bodyFilter()" [refresh]="refreshTick()" />
     } @else if (m.customBody === 'sales-summary') {
       <!-- A report with its own body (the legacy page is not a flat table); it loads its own data. -->
       <app-sales-summary [filter]="bodyFilter()" [refresh]="refreshTick()" />

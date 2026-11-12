@@ -25,8 +25,25 @@ import { TranslateModule } from '@ngx-translate/core';
           <rect x="70" y="30" width="120" height="30" rx="14" class="sp-head"/>
           <rect x="70" y="46" width="120" height="14" class="sp-head"/>
           <circle cx="130" cy="82" r="15" class="sp-avatar"/>
-          <circle cx="130" cy="78" r="6" class="sp-person"/>
-          <path d="M118 94c2-7 22-7 24 0" class="sp-person-line"/>
+          @switch (kind()) {
+            @case ('branch') {
+              <path d="M120 78l3-6h14l3 6z" class="sp-person-line"/>
+              <path d="M121 78v13h18V78M127 91v-6h6v6" class="sp-person-line"/>
+            }
+            @case ('product') {
+              <path d="M130 72l9 4.5v9L130 90l-9-4.5v-9z" class="sp-person-line"/>
+              <path d="M121 76.5l9 4.5 9-4.5M130 81v9" class="sp-person-line"/>
+            }
+            @case ('discount') {
+              <path d="M123 90l14-16" class="sp-person-line"/>
+              <circle cx="124" cy="77" r="3.2" class="sp-person"/>
+              <circle cx="136" cy="87" r="3.2" class="sp-person"/>
+            }
+            @default {
+              <circle cx="130" cy="78" r="6" class="sp-person"/>
+              <path d="M118 94c2-7 22-7 24 0" class="sp-person-line"/>
+            }
+          }
           <rect x="94" y="110" width="72" height="8" rx="4" class="sp-row"/>
           <rect x="106" y="126" width="48" height="8" rx="4" class="sp-row"/>
           <!-- the pointer -->
@@ -36,8 +53,8 @@ import { TranslateModule } from '@ngx-translate/core';
           <path d="M171 132h14M178 125v14" class="sp-plus"/>
         </g>
       </svg>
-      <h3 class="sp-title">{{ titleKey() | translate }}</h3>
-      <p class="sp-hint">{{ hintKey() | translate }}</p>
+      <h3 class="sp-title">{{ ('REPORTS.PROMPT.' + kind().toUpperCase() + '_TITLE') | translate }}</h3>
+      <p class="sp-hint">{{ ('REPORTS.PROMPT.' + kind().toUpperCase() + '_HINT') | translate }}</p>
     </div>
   `,
   styles: [`
@@ -68,7 +85,6 @@ import { TranslateModule } from '@ngx-translate/core';
   `],
 })
 export class ReportSelectPromptComponent {
-  /** i18n keys of the title and the hint. */
-  titleKey = input('REPORTS.PROMPT.EMPLOYEE_TITLE');
-  hintKey = input('REPORTS.PROMPT.EMPLOYEE_HINT');
+  /** What the report needs chosen first; picks the pictogram and the `REPORTS.PROMPT.<KIND>_TITLE / _HINT` texts. */
+  kind = input<'employee' | 'branch' | 'product' | 'discount'>('employee');
 }
