@@ -25,6 +25,7 @@ export interface Fields {
   preparationTime: FieldTemplate;
   serviceTime: FieldTemplate;
   orderByWeight: FieldTemplate;
+  priceAdjustable: FieldTemplate;
   discountableInPOS: FieldTemplate;
   isTaxable: FieldTemplate;
   maxItemPerTicket: FieldTemplate;

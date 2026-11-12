@@ -61,6 +61,7 @@ export class EstimateViewComponent extends DocumentViewBase {
     numberField: 'estimateNumber',
     whatsappType: 'estimate',
     filePrefix: 'estimate',
+    partyFields: ['customerName'],
     titleKey: 'ESTIMATES.FORM.ESTIMATE',
     dashboardCrumbKey: 'ESTIMATES.DASHBOARD',
     listCrumbKey: 'ESTIMATES.LIST.ESTIMATES_LIST',

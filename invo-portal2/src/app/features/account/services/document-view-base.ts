@@ -8,7 +8,7 @@ import { IntCodec, ParamDef, QueryParamsService, StringCodec } from '@shared/ser
 
 import { LanguageService } from '@core/i18n/language.service';
 import { LayoutService } from '@core/layout/services/layout.service';
-import { downloadPdf } from '@core/utils/pdf-download';
+import { buildPdfFileName, downloadPdf } from '@core/utils/pdf-download';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import type { DropdownMenuBtnItem } from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
 import { DocumentRenderData } from '@shared/components/document-paper/token-resolve';
@@ -79,6 +79,8 @@ export interface DocViewConfig {
   whatsappType: string;
   /** File-name prefix of the PDF / exported lines. */
   filePrefix: string;
+  /** Properties holding the customer / supplier name (first non-empty wins), for the `{prefix}-{party}-{number}` PDF name. */
+  partyFields?: string[];
   titleKey: string;
   dashboardCrumbKey: string;
   listCrumbKey: string;
@@ -299,7 +301,14 @@ export abstract class DocumentViewBase implements OnInit, OnDestroy {
 
   async savePdf(): Promise<void> {
     const res = await this.svc.pdf(this.id);
-    if (res) downloadPdf(res, `${this.cfg.filePrefix}-${this.doc()?.[this.cfg.numberField] ?? ''}.pdf`);
+    if (res) downloadPdf(res, `${this.pdfFileName}.pdf`, true);
+  }
+
+  /** `{entity}-{party}-{number}`, e.g. invoice-abbas-ali-1235; also the print tab's title (so Save-as-PDF picks it up). */
+  protected get pdfFileName(): string {
+    const d = this.doc();
+    const party = (this.cfg.partyFields ?? []).map(k => d?.[k]).find(v => !!v);
+    return buildPdfFileName(this.cfg.filePrefix, party, d?.[this.cfg.numberField]);
   }
 
   /** Legacy "print": the PDF opened in a new tab that prints itself once loaded. */
@@ -314,8 +323,9 @@ export abstract class DocumentViewBase implements OnInit, OnDestroy {
     const url = URL.createObjectURL(new Blob([arr], { type: 'application/pdf' }));
     const w = window.open('', '_blank');
     if (!w) return;
+    const title = this.pdfFileName.replace(/[<>&]/g, '');
     w.document.write(
-      `<html><body style="margin:0"><iframe id="pdf" src="${url}" style="width:100%;height:100vh;border:none"></iframe>` +
+      `<html><head><title>${title}</title></head><body style="margin:0"><iframe id="pdf" src="${url}" style="width:100%;height:100vh;border:none"></iframe>` +
       `<script>document.getElementById('pdf').onload=function(){this.contentWindow.focus();this.contentWindow.print();}<\/script></body></html>`,
     );
     w.document.close();
@@ -330,6 +340,7 @@ export abstract class DocumentViewBase implements OnInit, OnDestroy {
     const html = new HtmlRenderer(engine, new PaginationEngine(engine)).render({ template: design, data: this.reportData() ?? {}, locale: design.locale });
     w.document.write(html);
     w.document.close();
+    if (this.pdfFileName) w.document.title = this.pdfFileName; // Save-as-PDF from the print dialog uses it as the file name
     const imgs = Array.from(w.document.images).filter(i => !i.complete);
     await Promise.race([
       Promise.all(imgs.map(i => new Promise<void>(r => { i.addEventListener('load', () => r()); i.addEventListener('error', () => r()); }))),
@@ -345,9 +356,9 @@ export abstract class DocumentViewBase implements OnInit, OnDestroy {
     const bytes = atob(String(res).replace('data:application/pdf;base64,', ''));
     const arr = new Uint8Array(bytes.length);
     for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
-    const file = new File([arr], 'document.pdf', { type: 'application/pdf' });
+    const file = new File([arr], `${this.pdfFileName || 'document'}.pdf`, { type: 'application/pdf' });
     if (navigator.share && navigator.canShare?.({ files: [file] })) await navigator.share({ files: [file], title: 'Share PDF' });
-    else downloadPdf(res);
+    else downloadPdf(res, `${this.pdfFileName || 'document'}.pdf`, true);
   }
 
   exportLines(type: 'csv' | 'xlsx'): void {

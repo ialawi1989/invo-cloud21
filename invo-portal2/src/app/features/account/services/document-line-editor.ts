@@ -160,6 +160,10 @@ export class DocumentLineEditor {
     line.selectedItem = item;
 
     line.price = product.defaultPrice || 0;
+    line.defaultPrice = product.defaultPrice || 0;
+    line.subItems = [];
+    line.priceModel = null;
+    line.priceOverride = null;
     line.taxId = product.taxId == null || product.taxId === '' ? (this.defaultTax?.id ?? null) : product.taxId;
     line.note = product.description;
     line.commissionAmount = product.commissionAmount;
@@ -183,6 +187,10 @@ export class DocumentLineEditor {
     line.itemDetailsTemp = '';
     line.mediaUrl = null;
     line.price = 0;
+    line.subItems = [];
+    line.priceModel = null;
+    line.priceOverride = null;
+    line.defaultPrice = 0;
   }
 
   /**

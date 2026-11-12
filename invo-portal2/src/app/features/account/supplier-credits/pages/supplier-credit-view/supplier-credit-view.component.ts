@@ -48,6 +48,7 @@ export class SupplierCreditViewComponent extends DocumentViewBase {
     numberField: 'supplierCreditNumber',
     whatsappType: 'supplierCreditNote',
     filePrefix: 'supplier-credit',
+    partyFields: ['supplierName'],
     titleKey: 'SUPPLIER_CREDITS.FORM.SUPPLIER_CREDIT',
     dashboardCrumbKey: 'SUPPLIER_CREDITS.DASHBOARD',
     listCrumbKey: 'SUPPLIER_CREDITS.LIST.CREDITS_LIST',

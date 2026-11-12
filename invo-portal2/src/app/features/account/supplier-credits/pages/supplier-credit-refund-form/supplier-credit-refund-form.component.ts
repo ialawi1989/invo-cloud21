@@ -54,6 +54,16 @@ export class SupplierCreditRefundFormComponent implements OnInit, CanLeaveCompon
   methodId = '';
   reference = '';
   description = '';
+  // Currency of the supplier credit (null when it has none).
+  currencyId: string | null = null;
+  currencySymbol = '';
+  currencyCode = '';
+  exchangeRate = 1;
+  /** true: the refund is paid in the local currency (the foreign refund due is converted); false: in the credit's currency. */
+  payLocal = true;
+  /** The original refund due, in the currency of the credit. */
+  refundDueFx = 0;
+  private fxAmount = 0;
   /** Legacy "Payment mode" (Cash / Card), stored on the refund. */
   paymentMode = '';
   readonly paymentModes = ['Cash', 'Card'];
@@ -68,8 +78,18 @@ export class SupplierCreditRefundFormComponent implements OnInit, CanLeaveCompon
     await this.lang.loadFeature('account/supplier-credits');
     this.creditId = this.route.snapshot.paramMap.get('supplierCreditId') ?? '';
     this.credit = await this.credits.getSupplierCredit(this.creditId);
-    this.maxAmount = Number(this.credit.refundDue) || 0;
-    this.amount = this.maxAmount;
+    // Refund due + the currency of the credit's supplier (legacy: only these are needed, not the whole credit).
+    const info = await this.credits.getSupplierCreditRefundDue(this.creditId);
+    if (info) {
+      this.currencyId = info.currencyId ?? null;
+      this.currencySymbol = info.currencySymbol ?? '';
+      this.currencyCode = info.currencyCode ?? '';
+      this.exchangeRate = Number(info.exchangeRate) || 1;
+      this.refundDueFx = Number(info.refundDue) || 0;
+    } else {
+      this.refundDueFx = Number(this.credit.refundDue) || 0;
+    }
+    this.resetAmount();
     this.paymentMethods = await this.lookups.getMiniPaymentMethods(this.credit.branchId, null);
 
     const t = (k: string) => this.lang.instant(k);
@@ -93,6 +113,31 @@ export class SupplierCreditRefundFormComponent implements OnInit, CanLeaveCompon
     return out;
   }
 
+  get isForeignCurrency(): boolean { return !!this.currencyId; }
+  /** The credit's refund due converted to the local currency (the supplier's exchange rate). */
+  get refundDueLocal(): number { return Math.round(this.refundDueFx * (this.exchangeRate || 1) * 1e8) / 1e8; }
+
+  /** Sets the amount to the whole refund due in the selected payment currency. */
+  resetAmount(): void {
+    this.maxAmount = this.isForeignCurrency && this.payLocal ? this.refundDueLocal : this.refundDueFx;
+    this.amount = this.maxAmount;
+  }
+  onTogglePayLocal(): void { this.resetAmount(); this.markDirty(); }
+  onExchangeRate(v: any): void {
+    this.exchangeRate = Math.max(Number(v) || 0, 0);
+    this.resetAmount();
+    this.markDirty();
+  }
+
+  /** The line keeps both `amount` (local) and `fxAmount` (currency of the credit); the typed amount is in whichever the user chose. */
+  private amounts(): { amount: number; fxAmount: number } {
+    const rate = this.exchangeRate || 1;
+    if (!this.currencyId) return { amount: this.amount, fxAmount: 0 };
+    return this.payLocal
+      ? { amount: this.amount, fxAmount: Number((this.amount / rate).toFixed(8)) }
+      : { amount: Math.round(this.amount * rate * 100) / 100, fxAmount: this.amount };
+  }
+
   onDate(v: any): void { if (v instanceof Date) { this.refundDate = v; this.markDirty(); } }
   onAmount(v: any): void {
     let n = Number(v) || 0;
@@ -111,6 +156,7 @@ export class SupplierCreditRefundFormComponent implements OnInit, CanLeaveCompon
       return;
     }
     this.submitting = true;
+    const amts = this.amounts();
     try {
       const res: any = await this.credits.saveSupplierRefund({
         id: '',
@@ -120,8 +166,13 @@ export class SupplierCreditRefundFormComponent implements OnInit, CanLeaveCompon
         referenceNumber: this.reference,
         description: this.description,
         paymentMode: this.paymentMode,
-        total: this.amount,
-        lines: [{ amount: this.amount, paymentMethodId: this.methodId }],
+        total: amts.amount,
+        currencyId: this.currencyId,
+        currencyCode: this.currencyCode,
+        currencySymbol: this.currencySymbol,
+        exchangeRate: this.exchangeRate,
+        fxTotal: amts.fxAmount,
+        lines: [{ amount: amts.amount, fxAmount: amts.fxAmount, paymentMethodId: this.methodId }],
       });
       if (res?.success) {
         this.dirty = false;

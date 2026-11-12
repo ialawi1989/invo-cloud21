@@ -1,0 +1,159 @@
+<app-modal-header [title]="productName || ('SUB_ITEMS.TITLE' | translate)"/>
+
+<div class="psi">
+  @if (loading) { <div class="psi__state">{{ 'SUB_ITEMS.LOADING' | translate }}</div> }
+  @if (failed) { <div class="psi__state psi__state--err">{{ 'SUB_ITEMS.LOAD_FAILED' | translate }}</div> }
+  @if (!loading && !failed && !levels.length) { <div class="psi__state">{{ 'SUB_ITEMS.NO_ITEMS' | translate }}</div> }
+
+  @if (levels.length && !optionsOnly) {
+    <div class="psi__price">
+      <label for="subItemsPrice">{{ 'SUB_ITEMS.PRICE' | translate }}</label>
+      <input id="subItemsPrice" type="number" min="0" [ngModel]="priceValue" (ngModelChange)="onPriceChange($event)"/>
+      @if (priceDiffers) {
+        <span class="psi__price-total">
+          {{ 'SUB_ITEMS.TOTAL' | translate }}: {{ previewPrice | mycurrency }}
+          @if (!isFixedModel) { <a href="javascript:void(0)" (click)="resetPrice()">{{ 'SUB_ITEMS.RESET' | translate }}</a> }
+        </span>
+      }
+    </div>
+  }
+
+  @for (level of levels; track $index) {
+    <section class="psi__level">
+      @if (isMenuSelection) {
+        <header class="psi__level-head">
+          <div>
+            <span class="psi__level-title">{{ level.levelName }}</span>
+            <span class="psi__hint">{{ (isUnlimited(level) ? 'SUB_ITEMS.CHOOSE_ANY' : 'SUB_ITEMS.CHOOSE_N') | translate: { count: level.required } }}</span>
+          </div>
+          <span class="psi__count" [class.psi__count--done]="levelComplete(level)">
+            @if (levelComplete(level)) { ✓ }
+            {{ selectedCount(level) }}@if (!isUnlimited(level)) { / {{ level.required }} }
+          </span>
+        </header>
+      }
+
+      <div class="psi__grid">
+        @for (item of level.items; track item.key) {
+          <div class="psi__box" [class.psi__box--on]="item.selected"
+            [class.psi__box--off]="isMenuSelection && !item.selected && !isUnlimited(level) && level.required > 1 && levelComplete(level)">
+            @if (!optionsOnly) {
+              <div class="psi__card" [class.psi__card--static]="!isMenuSelection" (click)="toggleItem(level, item)">
+                @if (isMenuSelection) {
+                  <span class="psi__radio" [class.psi__radio--square]="level.required !== 1" [class.psi__radio--on]="item.selected">✓</span>
+                }
+                @if (item.mediaUrl && !item.imgFailed) {
+                  <img class="psi__img" [src]="item.mediaUrl" [alt]="item.name" (error)="item.imgFailed = true"/>
+                } @else { <span class="psi__img psi__img--ph"></span> }
+                <span class="psi__name">{{ item.name }}</span>
+                @if (!isMenuSelection && item.qty !== 1) { <span class="psi__tag">x{{ item.qty }}</span> }
+                @if (!isMenuSelection && hasOptions(item)) { <span class="psi__tag psi__tag--soft">{{ 'SUB_ITEMS.CUSTOMIZABLE' | translate }}</span> }
+                @if (item.selected && item.collapsed && itemIncomplete(item)) { <span class="psi__warn">!</span> }
+                @if (item.selected && hasOptions(item)) {
+                  <button type="button" class="psi__fold" [attr.aria-expanded]="!item.collapsed" (click)="toggleCollapse(item, $event)">{{ item.collapsed ? '▾' : '▴' }}</button>
+                }
+              </div>
+            }
+
+            @if (item.selected && (!item.collapsed || optionsOnly) && hasOptions(item)) {
+              <div class="psi__panel" [class.psi__panel--bare]="optionsOnly">
+                @if (item.defaultOptions.length) {
+                  <div class="psi__sec">
+                    <p class="psi__sec-label">{{ 'SUB_ITEMS.OPTIONS' | translate }}</p>
+                    @for (option of item.defaultOptions; track option.id) {
+                      <div class="psi__def">
+                        @if (option.mediaUrl && !option.imgFailed) {
+                          <img class="psi__img psi__img--sm" [src]="option.mediaUrl" [alt]="option.name" (error)="option.imgFailed = true"/>
+                        } @else { <span class="psi__img psi__img--sm psi__img--ph"></span> }
+                        <div class="psi__def-info">
+                          <span>{{ option.name }}</span>
+                          @if (option.price && showPrices) { <small class="psi__price-add">+ {{ option.price | mycurrency }}</small> }
+                        </div>
+                        <div class="psi__def-qty">
+                          @if (option.qty > 0) {
+                            <div class="psi__stepper">
+                              <button type="button" [disabled]="option.qty <= 1" (click)="decreaseDefault(option)">−</button>
+                              <span>{{ option.qty }}</span>
+                              <button type="button" [disabled]="option.qty >= option.maxQty" (click)="increaseDefault(option)">+</button>
+                            </div>
+                            <button type="button" class="psi__rm" [attr.title]="'SUB_ITEMS.REMOVE' | translate" (click)="removeDefault(option)">✕</button>
+                          } @else {
+                            <button type="button" class="psi__add" (click)="increaseDefault(option)">+ {{ 'SUB_ITEMS.ADD' | translate }}</button>
+                          }
+                          <small class="psi__max">{{ 'SUB_ITEMS.MAX_QTY' | translate: { count: option.maxQty } }}</small>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+
+                @for (group of item.groups; track group.id) {
+                  <div class="psi__sec" [class.psi__sec--err]="!groupComplete(item, group)">
+                    <div class="psi__group-head" (click)="toggleGroup(item, group)">
+                      <span class="psi__group-title">{{ group.title }}</span>
+                      @if (item.closedGroups[group.id]) { <span class="psi__summary">{{ chosenNames(item, group) }}</span> }
+                      <span class="psi__rules">
+                        @if (!groupComplete(item, group)) { <span class="psi__rule psi__rule--err">{{ 'SUB_ITEMS.MIN' | translate }} {{ group.min }}</span> }
+                        @if (group.max) { <span class="psi__rule">{{ 'SUB_ITEMS.MAX_LABEL' | translate }} {{ group.max }}</span> }
+                        <span>{{ item.closedGroups[group.id] ? '▾' : '▴' }}</span>
+                      </span>
+                    </div>
+                    @if (!item.closedGroups[group.id]) {
+                      <div class="psi__opts">
+                        @for (option of group.options; track option.id) {
+                          <div class="psi__opt" [class.psi__opt--on]="isChosen(item, group, option)" [class.psi__opt--off]="isGroupFull(item, group, option)"
+                            (click)="toggleOption(item, group, option)">
+                            @if (option.mediaUrl && !option.imgFailed) {
+                              <img class="psi__img psi__img--sm" [src]="option.mediaUrl" [alt]="option.name" (error)="option.imgFailed = true"/>
+                            } @else { <span class="psi__img psi__img--sm psi__img--ph"></span> }
+                            <div class="psi__def-info">
+                              <span>{{ option.name }}</span>
+                              @if (option.price && showPrices) { <small class="psi__price-add">+ {{ option.price | mycurrency }}</small> }
+                            </div>
+                            <span class="psi__tick">✓</span>
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+
+                @if (showPrices && itemOptionsTotal(item) > 0) {
+                  <div class="psi__opt-total"><span>{{ 'SUB_ITEMS.OPTIONS_TOTAL' | translate }}</span><strong>{{ itemOptionsTotal(item) | mycurrency }}</strong></div>
+                }
+
+                @if (item.quickOptions.length) {
+                  <div class="psi__sec">
+                    <div class="psi__group-head psi__group-head--static"><span class="psi__group-title">{{ 'SUB_ITEMS.QUICK_OPTIONS' | translate }}</span></div>
+                    <div class="psi__opts">
+                      @for (option of item.quickOptions; track option.id) {
+                        <div class="psi__opt" [class.psi__opt--on]="item.chosenQuick.includes(option.id)" (click)="toggleQuick(item, option)">
+                          @if (option.mediaUrl && !option.imgFailed) {
+                            <img class="psi__img psi__img--sm" [src]="option.mediaUrl" [alt]="option.name" (error)="option.imgFailed = true"/>
+                          } @else { <span class="psi__img psi__img--sm psi__img--ph"></span> }
+                          <div class="psi__def-info">
+                            <span>{{ option.name }}</span>
+                            @if (option.price && showPrices) { <small class="psi__price-add">+ {{ option.price | mycurrency }}</small> }
+                          </div>
+                          <span class="psi__tick">✓</span>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </section>
+  }
+</div>
+
+<app-modal-footer>
+  @if (levels.length) {
+    <div class="psi__total"><span>{{ 'SUB_ITEMS.TOTAL' | translate }}</span><strong>{{ grandTotal | mycurrency }}</strong></div>
+  }
+  <button type="button" class="psi__btn" (click)="cancel()">{{ 'SUB_ITEMS.CANCEL' | translate }}</button>
+  <button type="button" class="psi__btn psi__btn--primary" [disabled]="!canConfirm" (click)="confirm()">{{ 'SUB_ITEMS.CONFIRM' | translate }}</button>
+</app-modal-footer>

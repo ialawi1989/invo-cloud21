@@ -164,6 +164,7 @@ export class ProductOptionsComponent implements OnInit {
 
   // ─── Visibility shorthands (derived, for cleaner template) ─────────────
   showOrderByWeight         = computed(() => !!this.fieldsOptions()?.orderByWeight?.isVisible);
+  showPriceAdjustable       = computed(() => !!this.fieldsOptions()?.priceAdjustable?.isVisible);
   showDiscountableInPOS     = computed(() => !!this.fieldsOptions()?.discountableInPOS?.isVisible);
   showMaxItemPerTicket      = computed(() => !!this.fieldsOptions()?.maxItemPerTicket?.isVisible);
   showPreparationTime       = computed(() => !!this.fieldsOptions()?.preparationTime?.isVisible);
@@ -184,7 +185,7 @@ export class ProductOptionsComponent implements OnInit {
    * future type turns every flag off.
    */
   hasAnyVisible = computed(() =>
-    this.showOrderByWeight() || this.showDiscountableInPOS() ||
+    this.showOrderByWeight() || this.showPriceAdjustable() || this.showDiscountableInPOS() ||
     this.showMaxItemPerTicket() || this.showPreparationTime() ||
     this.showServiceTime() || this.showKitchenName() ||
     this.showTags() || this.showWarning() || this.showItemMessage() ||
@@ -201,6 +202,7 @@ export class ProductOptionsComponent implements OnInit {
     // visibility here would complicate the sync-back subscription.
     this.group = this.fb.group({
       orderByWeight:           [!!info.orderByWeight],
+      priceAdjustable:         [info.priceAdjustable !== false],   // default true
       discountableInPOS:       [info.isDiscountable !== false],   // null treated as true
       maxItemPerTicket:        [info.maxItemPerTicket ?? 0, [Validators.min(0)]],
       preparationTime:         [info.preparationTime ?? 0, [Validators.min(this.minServiceTime)]],
@@ -236,6 +238,7 @@ export class ProductOptionsComponent implements OnInit {
       .subscribe((v) => {
         const p = this.productInfo();
         p.orderByWeight     = !!v.orderByWeight;
+        p.priceAdjustable   = !!v.priceAdjustable;
         p.isDiscountable    = !!v.discountableInPOS;
         p.maxItemPerTicket  = Number(v.maxItemPerTicket ?? 0);
         // FIX: preparationTime used to be written back into `p.serviceTime`

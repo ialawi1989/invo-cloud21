@@ -12,6 +12,9 @@ import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
+import { DocAdditionalDetailsComponent } from '../../../components/doc-additional-details/doc-additional-details.component';
+import type { DocAdditionalDetailsConfig } from '../../../components/doc-additional-details/doc-additional-details.types';
+import type { DocJournalRow } from '../../../components/doc-journal-tab/doc-journal-tab.component';
 import { ToastService } from '@shared/components/toast/toast.service';
 
 import { CreditNote } from '../../../models/credit-note.model';
@@ -28,7 +31,7 @@ import { Refund, RefundsService, newRefund } from '../../services/refunds.servic
 @Component({
   selector: 'app-credit-note-refund-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, MycurrencyPipe, BreadcrumbsComponent, FormStickyFooterComponent, DatePickerComponent],
+  imports: [CommonModule, FormsModule, TranslateModule, MycurrencyPipe, BreadcrumbsComponent, FormStickyFooterComponent, DatePickerComponent, DocAdditionalDetailsComponent],
   templateUrl: './credit-note-refund-form.component.html',
   // Same card / field identity as the other account forms.
   styleUrls: ['../../../payments/pages/payment-form/payment-form.component.scss', './credit-note-refund-form.component.scss'],
@@ -93,6 +96,19 @@ export class CreditNoteRefundFormComponent implements OnInit, CanLeaveComponent 
       { label: t(this.formStatus === 'new' ? 'CREDIT_NOTES.REFUND.NEW' : 'CREDIT_NOTES.REFUND.EDIT') },
     ];
     this.loaded = true;
+  }
+
+  /** Edit mode: the saved refund's journal (legacy shows it under the form through `<additional-details type="refund">`). */
+  additionalDetails(): DocAdditionalDetailsConfig {
+    return {
+      tabs: ['journal'],
+      journalHeading: this.lang.instant('CREDIT_NOTES.REFUND.TITLE'),
+      loadJournal: async () => {
+        const rows: DocJournalRow[] = await this.refunds.getJournal(this.refund.id);
+        rows.sort((a, b) => ((a.debit ?? 0) < (b.debit ?? 0) ? 1 : -1));
+        return rows;
+      },
+    };
   }
 
   hasUnsavedChanges(): boolean { return !this.submitting && this.dirty; }

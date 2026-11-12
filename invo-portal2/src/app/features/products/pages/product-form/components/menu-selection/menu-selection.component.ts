@@ -137,6 +137,8 @@ export class MenuSelectionComponent implements OnInit {
       });
   }
 
+  protected max(a: number, b: number): number { return Math.max(Number(a) || 0, b); }
+
   // ─── FormGroup builders ──────────────────────────────────────────────
   private buildLevel(s: SelectionItem): FormGroup {
     const items = this.fb.array(
@@ -144,7 +146,7 @@ export class MenuSelectionComponent implements OnInit {
     );
     return this.fb.group({
       name:          [s['name'] ?? '', [Validators.required]],
-      noOfSelection: [s.noOfSelection ?? 1, [Validators.required, Validators.min(1)]],
+      noOfSelection: [s.noOfSelection ?? 1, [Validators.required, Validators.min(0)]]   /* 0 = unlimited */,
       items,
     }, { validators: levelMinItemsValidator });
   }

@@ -1,5 +1,6 @@
 import Decimal from 'decimal.js';
 import { MathUtils } from '@core/math/math-helpers';
+import { applySubItemsPricing, hasSubItemsPrice } from '../services/sub-items-pricing';
 import { CompanyService } from '@core/auth/company.service';
 import { CustomerAddress } from '../customers/models/customer.model';
 import { TaxDetails, TaxLineModel } from './tax.model';
@@ -756,7 +757,14 @@ export class InvoiceLine {
   employeeId: string = '';
   batch: string = '';
   serial: string = '';
+  /** package / menu selection: the picked items, saved as lines having parentId = this line */
   subItems: any[] = [];
+  /** the list price of the product (the base the price model works from) */
+  defaultPrice: number = 0;
+  /** price model of a package / menu selection, not saved: loaded with getSubItems */
+  priceModel: { model?: string; discount?: number } | null = null;
+  /** price typed in the sub items popup over the calculated one (total price models), not saved */
+  priceOverride: number | null = null;
   seatNumber: number = 0;
   parentId: string | null;
   salesEmployeeId: string | null;
@@ -966,6 +974,9 @@ export class InvoiceLine {
   calculateAmount(): number {
     let optionTotal = 0;
 
+    /** package / menu selection: the price comes from the price model, the sub items are priced at 0 */
+    applySubItemsPricing(this);
+
     this.options.forEach((element) => {
       optionTotal += this.qty * element.qty * element.price;
     });
@@ -1013,6 +1024,11 @@ export class InvoiceLine {
 
   get amount() {
     return this.calculateAmount();
+  }
+
+  /** package / menu selection: the price is set in the sub items popup, not on the line */
+  get priceFromSubItems(): boolean {
+    return hasSubItemsPrice(this);
   }
 
   /** Alias for `categoryName` so report templates can bind `row.category` —
@@ -1109,6 +1125,8 @@ export class InvoiceLineOption {
   optionName: string = '';
   note: string = '';
   price: number = 0;
+  /** the option list price, `price` is reset to 0 on the sub items of a package / menu selection */
+  defaultPrice: number = 0;
   qty: number = 0;
 
   ParseJson(json: any): void {

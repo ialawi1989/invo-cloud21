@@ -48,6 +48,7 @@ export class BillPaymentViewComponent extends DocumentViewBase {
     numberField: 'paymentName',
     whatsappType: 'billPayment',
     filePrefix: 'bill-payment',
+    partyFields: ['supplierName'],
     titleKey: 'BILLS_PAYMENT.VIEW.PAYMENT',
     dashboardCrumbKey: 'BILLS_PAYMENT.DASHBOARD',
     listCrumbKey: 'BILLS_PAYMENT.LIST.PAYMENTS_LIST',

@@ -86,11 +86,16 @@
                       {{ 'PRODUCTS.FORM.NO_OF_SELECTION' | translate }}
                       <input
                         type="number"
-                        min="1"
+                        min="0"
                         formControlName="noOfSelection"
                         (click)="$event.stopPropagation()"
                       />
                     </label>
+                    @if (!(levelAt(i).controls['noOfSelection'].value > 0)) {
+                      <span class="pf-ms-card__unlimited" [title]="'PRODUCTS.FORM.UNLIMITED_WARNING' | translate">
+                        · {{ 'PRODUCTS.FORM.UNLIMITED' | translate }}
+                      </span>
+                    }
                     <span class="pf-ms-card__items-count">
                       · {{ itemsOf(i).length }} {{ itemsOf(i).length === 1 ? 'item' : 'items' }}
                     </span>
@@ -126,7 +131,11 @@
                   </span>
                 } @else {
                   <span class="pf-ms-panel__hint">
-                    {{ 'PRODUCTS.FORM.LEVEL_OK' | translate: { current: itemsOf(activeLevel()).length, required: levelAt(activeLevel()).value['noOfSelection'] } }}
+                    @if (levelAt(activeLevel()).value['noOfSelection'] > 0) {
+                      {{ 'PRODUCTS.FORM.LEVEL_OK' | translate: { current: itemsOf(activeLevel()).length, required: levelAt(activeLevel()).value['noOfSelection'] } }}
+                    } @else {
+                      {{ 'PRODUCTS.FORM.UNLIMITED' | translate }}
+                    }
                   </span>
                 }
               </div>
@@ -147,7 +156,7 @@
                   <line x1="12" y1="16" x2="12.01" y2="16"/>
                 </svg>
                 <p>
-                  {{ 'PRODUCTS.FORM.NO_SELECTION_ITEMS_N' | translate: { required: levelAt(activeLevel()).value['noOfSelection'] } }}
+                  {{ 'PRODUCTS.FORM.NO_SELECTION_ITEMS_N' | translate: { required: max(levelAt(activeLevel()).value['noOfSelection'], 1) } }}
                 </p>
                 <button type="button" class="pf-btn pf-btn--outline pf-btn--sm" (click)="openPickerForActive()">
                   {{ 'PRODUCTS.FORM.ADD_ITEMS' | translate }}

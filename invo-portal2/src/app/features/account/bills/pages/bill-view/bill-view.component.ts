@@ -66,6 +66,7 @@ export class BillViewComponent extends DocumentViewBase {
     numberField: 'billingNumber',
     whatsappType: 'bills',
     filePrefix: 'bill',
+    partyFields: ['supplierName'],
     titleKey: 'BILLS.FORM.BILL',
     dashboardCrumbKey: 'BILLS.DASHBOARD',
     listCrumbKey: 'BILLS.LIST.BILLS_LIST',

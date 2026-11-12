@@ -9,6 +9,8 @@ export interface SalesLinesOptions {
   canRemove: NonNullable<DocLinesConfig['canRemove']>;
   /** Document kind sent to `product/searchByBarcodes` (`invoice`, `estimate`, …). */
   barcodeType: string;
+  /** Package / menu selection / menu item products are picked through the sub-items popup (invoices, estimates). */
+  subItems?: boolean;
 }
 
 /**
@@ -33,7 +35,8 @@ export function salesLinesConfig(doc: () => Invoice, lookups: SalesLookupsServic
     ],
     accounts: true,
     bulkItems: true,
-    bulkExcludeTypes: ['serialized', 'batch'],
+    bulkExcludeTypes: opts.subItems ? ['serialized', 'batch', 'package', 'menuSelection', 'menuItem'] : ['serialized', 'batch'],
+    subItems: opts.subItems ? { branchId: scope } : undefined,
     serialsLookup: id => lookups.getProductSerials(id, scope()),
     batchesLookup: id => lookups.getProductBatches(id, scope()),
     itemsDisabled: () => !scope(),

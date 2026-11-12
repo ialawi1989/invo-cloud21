@@ -26,6 +26,9 @@ import { DocImportLinesModalComponent, ImportLinesResult } from '../doc-import-l
 import { BulkUpdateData, BulkUpdateResult, DocBulkUpdateModalComponent } from '../doc-bulk-update-modal/doc-bulk-update-modal.component';
 import { BulkItemsData, BulkPick, DocBulkItemsModalComponent } from '../doc-bulk-items-modal/doc-bulk-items-modal.component';
 import { DocSerialBatchModalComponent, SerialBatchData } from '../doc-serial-batch-modal/doc-serial-batch-modal.component';
+import { PickSubItemsComponent, PickSubItemsData, PickSubItemsResult } from '../pick-sub-items/pick-sub-items.component';
+import { isSubItemsProduct } from '../../services/sub-items-pricing';
+import { InvoiceLineOption } from '../../models/invoice.model';
 import { DocBulkAction, DocLineColumn, DocLineErrors, DocLinesConfig, DocLinesContext } from './doc-lines.types';
 
 const blank = (v: any) => v == null || (typeof v === 'string' && v.trim() === '');
@@ -156,6 +159,8 @@ export class DocLinesTableComponent {
   cellDisabled(line: InvoiceLine, c: DocLineColumn): boolean {
     // A serialized line is always exactly one unit (legacy: qty locked on serial lines).
     if (c.type === 'qty' && !c.freeQty && line.selectedItem?.type === 'serialized') return true;
+    // package / menu selection: the price comes from the price model (set in the sub items popup)
+    if (c.type === 'money' && this.config().subItems && line.priceFromSubItems) return true;
     return this.isLocked(line) || (c.disabled?.(line, this.ctx()) ?? false);
   }
   canEditProduct(line: InvoiceLine): boolean {
@@ -246,12 +251,95 @@ export class DocLinesTableComponent {
     if (product) this.pickProduct(line, product);
   }
 
-  pickProduct(line: InvoiceLine, product: any): void {
+  async pickProduct(line: InvoiceLine, product: any): Promise<void> {
+    // package / menu selection / menu item: the sub items (and their options) are picked first; dismissing leaves the row as it was
+    let picked: PickSubItemsResult | null = null;
+    if (this.usesSubItems(product.type)) {
+      this.activeLine.set(null);
+      picked = await this.openSubItems({ productId: product.id, defaultPrice: product.defaultPrice || 0, ownOptions: product.type === 'menuItem' });
+      if (!picked) return;
+    }
     this.editor().chooseItem(line, product);
+    if (picked) this.applySubItems(line, product.type === 'menuItem', picked, product.defaultPrice || 0);
     this.activeLine.set(null);
     if (!this.editor().lastLineIsEmpty) this.editor().addLine();
     this.touch();
   }
+  // ── sub items (package / menu selection / menu item) ───────────────
+  private usesSubItems(type: string | null | undefined): boolean {
+    return !!this.config().subItems && (isSubItemsProduct(type) || type === 'menuItem');
+  }
+  /** The sub-items / options link under the item, shown while the product can still be changed. */
+  canEditSubItems(line: InvoiceLine): boolean {
+    return this.usesSubItems(line.selectedItem?.type) && this.canEditProduct(line) && !this.isLocked(line);
+  }
+  subOptionNames(s: any): string { return (s.options ?? []).map((o: any) => o.optionName).join(', '); }
+
+  private async openSubItems(p: Omit<PickSubItemsData, 'branchId'>): Promise<PickSubItemsResult | null> {
+    const res = await this.modal.open<PickSubItemsComponent, PickSubItemsData, PickSubItemsResult | null>(PickSubItemsComponent, {
+      size: 'lg',
+      closeOnBackdrop: false,
+      data: { ...p, branchId: this.config().subItems!.branchId() },
+    }).afterClosed();
+    return res ?? null;
+  }
+
+  /** The picked items become sub lines, the line total follows the price model; a menu item only takes the options. */
+  private applySubItems(line: InvoiceLine, menuItem: boolean, picked: PickSubItemsResult, defaultPrice: number): void {
+    line.defaultPrice = defaultPrice;
+    if (menuItem) {
+      line.subItems = [];
+      line.priceModel = null;
+      line.priceOverride = null;
+      line.options = (picked.subItems[0]?.options ?? []).map(o => {
+        const option = new InvoiceLineOption();
+        option.optionId = o.optionId;
+        option.optionName = o.optionName;
+        option.price = o.defaultPrice;
+        option.defaultPrice = o.defaultPrice;
+        option.qty = o.qty;
+        return option;
+      });
+      return;
+    }
+    line.priceModel = picked.priceModel;
+    line.defaultPrice = picked.defaultPrice;
+    line.priceOverride = picked.priceOverride;
+    line.subItems = picked.subItems.map(item => {
+      const sub = new InvoiceLine();
+      sub.productId = item.productId;
+      sub.productName = item.productName;
+      sub.qty = item.qty;
+      sub.defaultPrice = item.defaultPrice;
+      sub.price = 0;
+      sub.options = item.options.map(o => {
+        const option = new InvoiceLineOption();
+        option.optionId = o.optionId;
+        option.optionName = o.optionName;
+        option.defaultPrice = o.defaultPrice;
+        option.price = 0;
+        option.qty = o.qty;
+        return option;
+      });
+      return sub;
+    });
+  }
+
+  async editSubItems(line: InvoiceLine): Promise<void> {
+    const menuItem = line.selectedItem?.type === 'menuItem';
+    const picked = await this.openSubItems({
+      productId: line.productId,
+      defaultPrice: line.defaultPrice,
+      priceOverride: line.priceOverride,
+      ownOptions: menuItem,
+      previous: menuItem ? [{ productId: line.productId, options: line.options }] : line.subItems,
+    });
+    if (!picked) return;
+    this.applySubItems(line, menuItem, picked, line.defaultPrice);
+    this.doc().calculateTotal();
+    this.touch();
+  }
+
   // ── serialized / batch lines ───────────────────────────────────────
   /** Serial / batch lines need a value, picked from a modal and never typed. */
   isSerialBatch(line: InvoiceLine): boolean {

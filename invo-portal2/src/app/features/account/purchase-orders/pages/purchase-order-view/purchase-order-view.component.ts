@@ -55,6 +55,7 @@ export class PurchaseOrderViewComponent extends DocumentViewBase {
     numberField: 'purchaseNumber',
     whatsappType: 'PO',
     filePrefix: 'purchase-order',
+    partyFields: ['supplierName'],
     titleKey: 'PURCHASE_ORDERS.FORM.PURCHASE_ORDER',
     dashboardCrumbKey: 'PURCHASE_ORDERS.DASHBOARD',
     listCrumbKey: 'PURCHASE_ORDERS.LIST.PURCHASE_ORDER_LIST',

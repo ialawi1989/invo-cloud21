@@ -90,6 +90,7 @@ export class EstimateFormComponent extends DocumentFormBase {
       ...salesLinesConfig(() => this.doc!, this.lookups, {
         canAdjustPrice: () => this.actions.canAdjustPrice,
         barcodeType: 'estimate',
+        subItems: true,
         canRemove: line => (line as any).source !== 'POS' && this.doc?.source !== 'POS',
       }),
     };

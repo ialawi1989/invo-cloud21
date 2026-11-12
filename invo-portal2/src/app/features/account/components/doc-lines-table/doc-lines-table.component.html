@@ -89,6 +89,16 @@
                               }
                             </span>
                           </div>
+                          @if (line.subItems.length) {
+                            <div class="dl__sub">
+                              @for (s of line.subItems; track $index) {
+                                <div>• {{ s.productName }}@if (s.options?.length) { ({{ subOptionNames(s) }}) }</div>
+                              }
+                            </div>
+                          }
+                          @if (canEditSubItems(line)) {
+                            <div class="dl__sb"><a href="javascript:void(0)" (click)="editSubItems(line)">{{ (line.selectedItem.type === 'menuItem' ? 'SUB_ITEMS.EDIT_OPTIONS' : 'SUB_ITEMS.EDIT') | translate }}</a></div>
+                          }
                           @if (isSerialBatch(line)) {
                             <div class="dl__sb">
                               @if (pickedValue(line)) { <span class="dl__tag">{{ pickedValue(line) }}</span> }

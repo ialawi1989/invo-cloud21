@@ -113,6 +113,7 @@ export class Product {
   mediaId: string | null = null;
   mediaUrl: ProductImage = new ProductImage();
   orderByWeight = false;
+  priceAdjustable = true;
   isDiscountable: boolean | null = true;
   nutrition: Nutrition = new Nutrition();
   allergens: Allergens = new Allergens();

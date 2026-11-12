@@ -56,6 +56,7 @@ export class CreditNoteViewComponent extends DocumentViewBase {
     numberField: 'creditNoteNumber',
     whatsappType: 'credit-note',
     filePrefix: 'credit-note',
+    partyFields: ['customerName'],
     titleKey: 'CREDIT_NOTES.FORM.CREDIT_NOTE',
     dashboardCrumbKey: 'CREDIT_NOTES.DASHBOARD',
     listCrumbKey: 'CREDIT_NOTES.LIST.CREDIT_NOTES_LIST',

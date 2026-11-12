@@ -26,6 +26,14 @@
       </div>
     }
 
+    <!-- ── Price adjustable in POS ────────────────────────────────────── -->
+    @if (showPriceAdjustable()) {
+      <div class="pf-field">
+        <app-toggle formControlName="priceAdjustable"
+                    [label]="'PRODUCTS.FORM.PRICE_ADJUSTABLE' | translate"/>
+      </div>
+    }
+
     <!-- ── Discountable in POS ────────────────────────────────────────── -->
     @if (showDiscountableInPOS()) {
       <div class="pf-field">

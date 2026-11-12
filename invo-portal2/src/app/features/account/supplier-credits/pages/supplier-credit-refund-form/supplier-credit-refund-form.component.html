@@ -10,7 +10,7 @@
 
       <p class="pf-hint">
         {{ 'SUPPLIER_CREDITS.REFUND.CREDIT' | translate }} <b>{{ credit.supplierCreditNumber }}</b> ·
-        {{ 'SUPPLIER_CREDITS.REFUND.BALANCE' | translate }}: <b>{{ maxAmount | mycurrency }}</b>
+        {{ 'SUPPLIER_CREDITS.REFUND.BALANCE' | translate }}: <b>@if (isForeignCurrency && !payLocal) { {{ maxAmount | number: '1.0-8' }} {{ currencySymbol }} } @else { {{ maxAmount | mycurrency }} }</b>
       </p>
 
       <div class="pf-row">
@@ -23,6 +23,26 @@
           <input id="refundRef" class="pf-input" type="text" [(ngModel)]="reference" (ngModelChange)="markDirty()"/>
         </div>
       </div>
+
+      @if (isForeignCurrency) {
+        <div class="pf-field">
+          <label for="refundRate">{{ 'SUPPLIER_CREDITS.REFUND.EXCHANGE_RATE' | translate }}</label>
+          <div class="pf-row">
+            <input id="refundRate" class="pf-input pf-field--grow" type="number" min="0" [ngModel]="exchangeRate" (ngModelChange)="onExchangeRate($event)"/>
+            <span class="pf-hint">{{ currencySymbol }} {{ currencyCode }}</span>
+          </div>
+        </div>
+        <div class="pf-field">
+          <p class="pf-hint">
+            {{ 'SUPPLIER_CREDITS.REFUND.REFUND_DUE' | translate }}:
+            <b>{{ refundDueFx | number: '1.0-8' }} {{ currencySymbol }}</b> = <b>{{ refundDueLocal | number: '1.0-8' }}</b>
+          </p>
+          <label class="pf-check">
+            <input type="checkbox" [(ngModel)]="payLocal" (ngModelChange)="onTogglePayLocal()"/>
+            {{ (payLocal ? 'SUPPLIER_CREDITS.REFUND.PAY_LOCAL' : 'SUPPLIER_CREDITS.REFUND.PAY_FOREIGN') | translate: { code: currencyCode } }}
+          </label>
+        </div>
+      }
 
       <div class="pf-field">
         <label for="refundAmount">{{ 'SUPPLIER_CREDITS.REFUND.AMOUNT' | translate }} <span class="req">*</span></label>

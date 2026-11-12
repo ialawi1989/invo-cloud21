@@ -116,6 +116,11 @@ export const menuSelectionFields: Fields = {
     isDisabled: false,
     isRequired: false,
   },
+  priceAdjustable: {
+    isVisible: false,
+    isDisabled: false,
+    isRequired: false,
+  },
   discountableInPOS: {
     isVisible: true,
     isDisabled: false,

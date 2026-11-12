@@ -75,6 +75,8 @@ export interface DocLinesConfig {
   /** Enable the "Select serials…" / "Select batchs…" picker on serialized / batch lines. */
   serialsLookup?: (productId: string) => Promise<any[]>;
   batchesLookup?: (productId: string) => Promise<any[]>;
+  /** Package / menu selection / menu item lines: the popup that picks their sub items (and options) opens before the line is filled. */
+  subItems?: { branchId: () => string };
   /** Blocks the item picker (e.g. no branch chosen yet). */
   itemsDisabled?: () => boolean;
 

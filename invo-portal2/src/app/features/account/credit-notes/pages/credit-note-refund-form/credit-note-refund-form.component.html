@@ -50,6 +50,10 @@
       </div>
     </section>
 
+    @if (formStatus === 'edit' && refund.id) {
+      <app-doc-additional-details [config]="additionalDetails()"/>
+    }
+
     <app-form-sticky-footer>
       <button type="button" class="pf-btn" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
       <button type="button" class="pf-btn pf-btn--primary" [disabled]="submitting" (click)="save()">{{ 'COMMON.SAVE' | translate }}</button>

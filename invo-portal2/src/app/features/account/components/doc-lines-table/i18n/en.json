@@ -296,5 +296,29 @@
     "NOTHING": "No {{module}} match the selected filters.",
     "DONE": "{{count}} {{module}} exported",
     "FAILED": "The export failed."
+  },
+  "SUB_ITEMS": {
+    "TITLE": "Select items",
+    "LOADING": "Loading...",
+    "LOAD_FAILED": "Could not load the items of this product.",
+    "NO_ITEMS": "This product has no items.",
+    "CHOOSE_N": "Choose {{count}}",
+    "CHOOSE_ANY": "Choose any number",
+    "QUICK_OPTIONS": "Quick options",
+    "CANCEL": "Cancel",
+    "CONFIRM": "Confirm",
+    "OPTIONS": "Options",
+    "MAX_QTY": "Max. {{count}}",
+    "CUSTOMIZABLE": "Customizable",
+    "ADD": "Add",
+    "MIN": "Min",
+    "MAX_LABEL": "Max",
+    "PRICE": "Price",
+    "TOTAL": "Total",
+    "REMOVE": "Remove",
+    "RESET": "Reset",
+    "EDIT_OPTIONS": "Edit options",
+    "OPTIONS_TOTAL": "Options total",
+    "EDIT": "Edit items"
   }
 }

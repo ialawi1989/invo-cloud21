@@ -80,6 +80,7 @@ export class InvoiceViewComponent extends DocumentViewBase {
     numberField: 'invoiceNumber',
     whatsappType: 'invoice',
     filePrefix: 'invoice',
+    partyFields: ['customerName'],
     titleKey: 'INVOICES.FORM.INVOICE',
     dashboardCrumbKey: 'INVOICES.DASHBOARD',
     listCrumbKey: 'INVOICES.LIST.INVOICES_LIST',

@@ -60,6 +60,7 @@ export class PaymentViewComponent extends DocumentViewBase {
     numberField: 'paymentName',
     whatsappType: 'invoicePayment',
     filePrefix: 'payment',
+    partyFields: ['customerName'],
     titleKey: 'PAYMENTS.VIEW.PAYMENT',
     dashboardCrumbKey: 'PAYMENTS.DASHBOARD',
     listCrumbKey: 'PAYMENTS.LIST.PAYMENTS_LIST',

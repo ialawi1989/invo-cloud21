@@ -47,6 +47,7 @@ export class ExpenseViewComponent extends DocumentViewBase {
     numberField: 'expenseNumber',
     whatsappType: 'expense',
     filePrefix: 'expense',
+    partyFields: ['supplierName', 'customerName'],
     titleKey: 'EXPENSES.FORM.EXPENSE',
     dashboardCrumbKey: 'EXPENSES.DASHBOARD',
     listCrumbKey: 'EXPENSES.LIST.EXPENSE_LIST',

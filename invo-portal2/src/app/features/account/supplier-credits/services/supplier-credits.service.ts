@@ -149,6 +149,8 @@ export class SupplierCreditsService {
 
   /** Refund of a credit's unused balance. */
   saveSupplierRefund = (refund: any) => this.envelope(this.api.post('accounts/saveSupplierRefund', refund));
+  /** Refund due (in the credit's currency) + supplier / currency info of a credit, without loading the whole credit. */
+  getSupplierCreditRefundDue = (id: string) => this.data(this.api.get('accounts/getSupplierCreditRefundDue/' + id));
   /** Serials / batches of a product on a bill that can still be returned. */
   getProductBillingLines = (param: any) => this.data(this.api.post('accounts/getProductBillingLines', param));
 }

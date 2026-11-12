@@ -198,6 +198,7 @@ input[type=checkbox], input[type=radio] { accent-color: #2691a4; }
 .dl__req { display: inline; }
 
 /* serial / batch line: chosen value + "Select serials…" link */
+.dl__sub { margin: 4px 12px; font-size: 12.5px; color: #64748b; display: flex; flex-direction: column; gap: 1px; }
 .dl__sb { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin: 4px 12px; font-size: 13px; font-weight: 600; }
 .dl__sb a { color: #2691a4; text-decoration: none; }
 .dl__sb a:hover { text-decoration: underline; }
