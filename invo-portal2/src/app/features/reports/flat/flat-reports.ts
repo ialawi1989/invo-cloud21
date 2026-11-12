@@ -4,7 +4,7 @@
  * Adding a report of this shape = one entry here + one catalog entry (+ its column labels in `REPORTS.FLAT.COLUMNS`).
  */
 export type FlatCellType =
-  | 'text' | 'number' | 'currency' | 'date' | 'datetime'
+  | 'text' | 'number' | 'currency' | 'date' | 'daydate' | 'datetime'
   /** a profit amount — green when positive, red when negative */
   | 'profit'
   /** a profit percentage as a coloured badge */
@@ -58,7 +58,7 @@ export interface FlatColumn {
   /** The number opens another report for this row's customer, with the same period and branches. */
   drill?: { slug: string; idKey: string; /** URL param that carries the id (default `customers`). */ param?: string; /** value used when the row has no id */ fallback?: string };
   /** The cell opens this document (`journalLink(type, rec[idKey])`) when the row carries its id. */
-  doc?: { type: string; idKey: string };
+  doc?: { type?: string; /** read the document type from this row field instead */ typeKey?: string; idKey: string };
   /** A second record field shown as a small badge after the value (a product's barcode). */
   badge?: string;
   /** Red text (quantities / values that are losses). */
@@ -522,7 +522,7 @@ export const FLAT_REPORTS: Record<string, FlatReportConfig> = {
   'transaction-discount': {
     route: 'transactionDiscountReports', paged: false,
     columns: [
-      { key: 'code' }, { key: 'type' }, { key: 'sales', type: 'currency', end: true, total: true }, { key: 'discountTotal', type: 'currency', end: true, total: true },
+      { key: 'code', doc: { typeKey: 'type', idKey: 'id' } }, { key: 'type', doc: { typeKey: 'type', idKey: 'id' } }, { key: 'sales', type: 'currency', end: true, total: true }, { key: 'discountTotal', type: 'currency', end: true, total: true },
       { key: 'taxTotal', type: 'currency', end: true, total: true }, { key: 'total', type: 'currency', end: true, total: true },
     ],
   },
@@ -572,10 +572,17 @@ export const FLAT_REPORTS: Record<string, FlatReportConfig> = {
   'monthly-bld-breakdown': {
     route: 'monthlyBLDBreakdownReport', paged: false,
     columns: [
-      { key: 'date', type: 'date' }, { key: 'grossSales', type: 'currency', end: true, total: true }, { key: 'discount', type: 'currency', end: true, total: true },
+      { key: 'date', type: 'daydate' }, { key: 'grossSales', type: 'currency', end: true, total: true }, { key: 'discount', type: 'currency', end: true, total: true },
       { key: 'breakfastSales', type: 'currency', end: true, total: true }, { key: 'lunchSales', type: 'currency', end: true, total: true }, { key: 'dinnerSales', type: 'currency', end: true, total: true },
       { key: 'salesInclVat', type: 'currency', end: true, total: true }, { key: 'taxTotal', type: 'currency', end: true, total: true }, { key: 'salesExclVat', type: 'currency', end: true, total: true },
-      { key: 'guests', type: 'number', end: true, total: true }, { key: 'avg', type: 'currency', end: true, total: true },
+      { key: 'guests', type: 'number', end: true, total: true }, { key: 'avg', type: 'number', end: true },
+    ],
+  },
+  'payment-method-sub': {
+    route: 'paymentTransactions', paged: true,
+    columns: [
+      { key: 'paymentDate', type: 'datetime' }, { key: 'type', doc: { typeKey: 'type', idKey: 'referenceId' } }, { key: 'accountName' },
+      { key: 'paymentTotal', type: 'currency', end: true, total: true }, { key: 'paymentEquivalent', type: 'currency', end: true, total: true },
     ],
   },
   'open-pending-po': {

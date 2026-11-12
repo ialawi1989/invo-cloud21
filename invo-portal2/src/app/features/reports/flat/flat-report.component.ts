@@ -231,7 +231,7 @@ export class FlatReportComponent {
     };
   }
   /** The page of the document a cell links to (an invoice, a credit note …). */
-  docLink = (rec: FlatRecord, c: FlatColumn): string => journalLink(c.doc!.type, rec[c.doc!.idKey]);
+  docLink = (rec: FlatRecord, c: FlatColumn): string => journalLink(c.doc!.typeKey ? rec[c.doc!.typeKey] : c.doc!.type, rec[c.doc!.idKey]);
   /** Another report for the row's customer, over the same period and branches. */
   drillParams(rec: FlatRecord, c: FlatColumn): Record<string, string | null> {
     const f = this.filter();

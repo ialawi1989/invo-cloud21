@@ -773,7 +773,7 @@ export const REPORT_CATALOG: ReportGroup[] = [
         slug: 'payment-method', route: 'getPaymentMethodReport', customBody: 'comparison', titleKey: 'REPORTS.ITEMS.PAYMENT_METHOD',
         descriptionKey: 'REPORTS.DESC.PAYMENT_METHOD', icon: 'credit-card',
         permission: 'reportsSecurity.actions.PaymentMethodReport.access',
-        filters: { date: true, branches: true, comparePeriods: true, applyOpeningHour: true }, export: { pdf: true, xlsx: true, path: 'paymentTransactions' },
+        filters: { date: true, branches: true, comparePeriods: true, applyOpeningHour: true }, export: { pdf: true, xlsx: true, path: 'paymentMethodReport' },
       },
       {
         slug: 'product-prepared-time-summary', route: 'productPreparedTimeSummaryReport', customBody: 'comparison', titleKey: 'REPORTS.ITEMS.PRODUCT_PREPARED_TIME',
@@ -785,7 +785,7 @@ export const REPORT_CATALOG: ReportGroup[] = [
         slug: 'prepared-time-summary', route: 'preparedTimeSummaryReport', customBody: 'comparison', titleKey: 'REPORTS.ITEMS.PREPARED_TIME',
         descriptionKey: 'REPORTS.DESC.PREPARED_TIME', icon: 'clock',
         permission: 'reportsSecurity.actions.PreparedTimeSummary.access',
-        filters: { date: true, branches: true, comparePeriods: true }, export: { pdf: true, xlsx: true, path: 'preparedTimeSummary' },
+        filters: { date: true, branches: true }, export: { pdf: true, xlsx: true, path: 'preparedTimeSummary' },
       },
       {
         slug: 'monthly-bld-breakdown', route: 'monthlyBLDBreakdownReport', customBody: 'flat', titleKey: 'REPORTS.ITEMS.MONTHLY_BLD',
@@ -880,6 +880,14 @@ export const SUB_REPORTS: ReportMeta[] = [
     icon: 'file-text', permission: 'reportsSecurity.actions.SalesByItemReport.access',
     filters: { date: true, branches: true, applyOpeningHour: true },
     export: { pdf: true, xlsx: true, path: 'salesByItemTransactions' },
+  },
+  {
+    // The payments behind one Payment Method row (opened from its Transaction Count, with the method in the URL).
+    slug: 'payment-method-sub', route: 'paymentTransactions', customBody: 'flat',
+    titleKey: 'REPORTS.ITEMS.PAYMENT_METHOD_SUB', descriptionKey: 'REPORTS.DESC.PAYMENT_METHOD_SUB',
+    icon: 'credit-card', permission: 'reportsSecurity.actions.PaymentMethodSubReport.access',
+    filters: { date: true, branches: true, applyOpeningHour: true },
+    export: { pdf: true, xlsx: true, path: 'paymentTransactions' },
   },
 ];
 

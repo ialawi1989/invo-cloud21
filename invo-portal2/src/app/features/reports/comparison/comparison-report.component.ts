@@ -99,12 +99,17 @@ export class ComparisonReportComponent {
   });
   /** A sub-column that counts things: shown as a whole number. */
   isCount = (sub: string): boolean => !!this.config().countSubs?.includes(sub);
+  /** A duration sub-column (seconds from the API), shown as `12m 3.45s` like the legacy prepared-time reports. */
+  isTime = (sub: string): boolean => /time/i.test(sub);
+  seconds(v: number): string {
+    if (!v) return '0m 0.00s';
+    return `${Math.floor(v / 60)}m ${(v % 60).toFixed(2)}s`;
+  }
   groupTotal(rows: ComparisonRecord[], column: string, sub?: string): number { return rows.reduce((t, r) => t + this.value(r, column, sub), 0); }
 
   /** URL params that carry the period / branches / comparison of this report, plus the row's product, to the drill-through. */
-  drillParams(r: ComparisonRecord): Record<string, string | null> {
+  drillParams(r: ComparisonRecord, d = this.config().drill!): Record<string, string | null> {
     const f = this.filter();
-    const d = this.config().drill!;
     return {
       preset: 'custom', fromDate: f.fromDate ?? null, toDate: f.toDate ?? null,
       branches: f.branches?.length ? f.branches.join(',') : null,

@@ -54,7 +54,11 @@
                     @if (subs().length) {
                       @for (sc of subs(); track sc) {
                         @let v = value(r, c, sc);
-                        <td class="text-end" [class]="'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci" [class.negative]="v < 0">{{ isCount(sc) ? (v | number: '1.0-0') : (v | boAmount) }}</td>
+                        <td class="text-end" [class]="'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci" [class.negative]="v < 0">
+                          @if (isCount(sc) && config().countDrill && r[config().countDrill!.idField] && v) {
+                            <a class="account-link" [routerLink]="['/reports/view', config().countDrill!.slug]" [queryParams]="drillParams(r, config().countDrill)" target="_blank" rel="noopener">{{ v | number: '1.0-3' }}</a>
+                          } @else { {{ isTime(sc) ? seconds(v) : isCount(sc) ? (v | number: '1.0-3') : (v | boAmount) }} }
+                        </td>
                       }
                     } @else {
                       @let v = value(r, c);
@@ -69,7 +73,7 @@
                   @for (c of columns(); track c; let ci = $index) {
                     @if (subs().length) {
                       @for (sc of subs(); track sc) {
-                        <td class="text-end" [class]="'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci"><strong>{{ isCount(sc) ? (groupTotal(g.rows, c, sc) | number: '1.0-0') : (groupTotal(g.rows, c, sc) | boAmount) }}</strong></td>
+                        <td class="text-end" [class]="'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci"><strong>{{ isTime(sc) ? seconds(groupTotal(g.rows, c, sc)) : isCount(sc) ? (groupTotal(g.rows, c, sc) | number: '1.0-3') : (groupTotal(g.rows, c, sc) | boAmount) }}</strong></td>
                       }
                     } @else {
                       <td class="text-end" [class]="'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci"><strong>{{ groupTotal(g.rows, c) | boAmount }}</strong></td>
@@ -83,7 +87,7 @@
               @for (c of columns(); track c; let ci = $index) {
                 @if (subs().length) {
                   @for (sc of subs(); track sc) {
-                    <td class="text-end" [class]="'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci"><strong>{{ isCount(sc) ? (columnTotal(c, sc) | number: '1.0-0') : (columnTotal(c, sc) | boAmount) }}</strong></td>
+                    <td class="text-end" [class]="'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci"><strong>{{ isTime(sc) ? seconds(columnTotal(c, sc)) : isCount(sc) ? (columnTotal(c, sc) | number: '1.0-3') : (columnTotal(c, sc) | boAmount) }}</strong></td>
                   }
                 } @else {
                   <td class="text-end" [class]="'bo-p' + slot(ci) + '-cell'" [attr.data-p]="ci"><strong>{{ columnTotal(c) | boAmount }}</strong></td>

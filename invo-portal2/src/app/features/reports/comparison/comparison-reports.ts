@@ -12,6 +12,8 @@ export interface ComparisonReportConfig {
   /** Group the rows under a header + subtotal by one of these record fields, picked by the report filter's `groupBy` value. */
   groupFields?: Record<string, string>;
   /** The record field holding the row's id, and the report its name links to (a drill-through). */
+  /** The count sub-columns link to this report (the row's id and name in the URL), like the legacy transaction counts. */
+  countDrill?: { idField: string; slug: string; param: string; nameParam?: string };
   drill?: { idField: string; slug: string; /** URL param that carries the row's value (default: the product params of Purchase by Item). */ param?: string; /** Also carry the row's name under this URL param. */ nameParam?: string };
   /** A pie of the distribution per row under the table (the legacy offered it on some reports). */
   chart?: boolean;
@@ -33,7 +35,7 @@ export const COMPARISON_REPORTS: Record<string, ComparisonReportConfig> = {
     groupFields: { Supplier: 'supplierName', Category: 'categoryName' },
     drill: { idField: 'productId', slug: 'purchase-by-item-sub' },
   },
-  'payment-method':       { route: 'getPaymentMethodReport',  nameField: 'paymentMethodName', countSubs: ['transactionCount'] },
+  'payment-method':       { route: 'getPaymentMethodReport',  nameField: 'paymentMethodName', countSubs: ['transactionCount'], countDrill: { idField: 'paymentId', slug: 'payment-method-sub', param: 'paymentId', nameParam: 'paymentMethodName' } },
   'prepared-time-summary': { route: 'preparedTimeSummaryReport', nameField: 'serviceName', countSubs: ['countedInvoices', 'unCountedInvoices'] },
   'product-prepared-time-summary': { route: 'productPreparedTimeSummaryReport', nameField: 'prodName', countSubs: ['qty'] },
   'purchase-by-item-sub': { route: 'purchaseByItem',             nameField: 'supplierName' },

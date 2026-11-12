@@ -367,6 +367,8 @@ export class ReportViewComponent implements OnInit, OnDestroy {
     if (this.meta()?.filters?.voidReasons && s.voidReasons?.length) filter['voidReasons'] = s.voidReasons;
     // The aggregator drill-through carries the aggregator's name in the URL (the export needs it too).
     if (this.meta()?.customBody === 'service-details') filter['serviceId'] = this.route.snapshot.queryParams['serviceId'];
+    // Payment Method drill-through: the payments of the chosen method
+    if (this.meta()?.slug === 'payment-method-sub') { const p = this.route.snapshot.queryParams['paymentId']; if (p) filter['paymentMethods'] = [p]; }
     if (this.meta()?.customBody === 'aggregator-sub') filter['aggregatorName'] = this.route.snapshot.queryParams['aggregatorName'];
     // Cashier Report: the export is the chosen shift's report
     if (this.meta()?.customBody === 'cashier-shifts') { const c = this.route.snapshot.queryParams['cashierId']; if (c) filter['cashierId'] = c; }

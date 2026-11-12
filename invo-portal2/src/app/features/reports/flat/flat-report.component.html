@@ -33,6 +33,9 @@
                           } @else if (c.dashZero && !num(row.rec[c.key])) { - } @else { {{ num(row.rec[c.key]) | number }} }
                         }
                         @case ('currency') { {{ c.pctKey && row.rec[c.pctKey] === 'percentage' ? ((num(row.rec[c.key]) | number: '1.0-2') + '%') : (num(row.rec[c.key]) | mycurrency) }} }
+                        @case ('daydate') {
+                          @if (isEmptyVal(row.rec[c.key])) { - } @else { <strong class="fl-dayname">{{ row.rec[c.key] | date: 'EEEE' }}</strong><small class="fl-days">{{ row.rec[c.key] | date: 'yyyy-MM-dd' }}</small> }
+                        }
                         @case ('date') { {{ isEmptyVal(row.rec[c.key]) ? '-' : (row.rec[c.key] | date: 'dd/MM/yyyy') }} }
                         @case ('datetime') { {{ isEmptyVal(row.rec[c.key]) ? '-' : (row.rec[c.key] | date: 'dd/MM/yyyy HH:mm') }} }
                         @case ('profit') { <span [class.neg]="num(row.rec[c.key]) < 0" [class.pos]="num(row.rec[c.key]) > 0">{{ num(row.rec[c.key]) | mycurrency }}</span> }
@@ -93,8 +96,8 @@
                           }
                         }
                         @default {
-                          @if (c.doc && row.rec[c.doc.idKey] && docLink(row.rec, c) && !isEmptyVal(row.rec[c.key])) {
-                            <a class="account-link" [routerLink]="docLink(row.rec, c)" target="_blank" rel="noopener">{{ row.rec[c.key] }}</a>
+                          @if (c.doc && row.rec[c.doc.idKey] && docLink(row.rec, c) && (c.doc.typeKey || !isEmptyVal(row.rec[c.key]))) {
+                            <a class="account-link" [routerLink]="docLink(row.rec, c)" target="_blank" rel="noopener">{{ isEmptyVal(row.rec[c.key]) ? '-' : row.rec[c.key] }}</a>
                           } @else if (c.link === 'product' && row.rec['productId'] && !isEmptyVal(row.rec[c.key])) {
                             <a class="account-link" [routerLink]="['/reports/view', 'product-movement']" [queryParams]="movementParams(row.rec)"
                                [attr.title]="'REPORTS.GENERAL_INVENTORY.VIEW_MOVEMENT' | translate" target="_blank" rel="noopener">{{ row.rec[c.key] }}</a>
