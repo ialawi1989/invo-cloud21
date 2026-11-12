@@ -175,7 +175,7 @@ export class ReportV2Service {
       throw new ReportApiError(error?.error?.msg || error?.message || 'Request failed', error?.error?.error?.code);
     }
     if (!response || response.success === false) {
-      throw new ReportApiError(response?.msg || 'Request failed', response?.error?.code);
+      throw new ReportApiError(response?.msg || 'Request failed', response?.error?.code, response?.error);
     }
     return response.data as T;
   }

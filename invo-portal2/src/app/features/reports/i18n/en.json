@@ -1222,6 +1222,7 @@
       "SEND": "Send",
       "WORKING": "Building your report… this can take up to a minute.",
       "FAILED": "The AI couldn't answer right now. Try again.",
+      "UNAVAILABLE": {"rate_limited": "The AI provider's rate limit was reached.", "auth": "The API key was rejected.", "model_not_found": "The model or base URL wasn't found.", "bad_request": "The provider rejected the request (the model may not support tools).", "timeout": "The provider took too long to respond.", "unavailable": "The provider is unavailable.", "not_configured": "No AI provider is set up.", "TRY_IN": "Try again in about {{seconds}} seconds.", "SET_UP": "Set up my AI provider", "RETRY": "Try again", "RETRY_IN": "Try again ({{seconds}}s)"},
       "PREVIEW_MORE": "Preview only — the full table is in the builder.",
       "LOADED": "Loaded into the builder",
       "USE_THIS": "Use this report",

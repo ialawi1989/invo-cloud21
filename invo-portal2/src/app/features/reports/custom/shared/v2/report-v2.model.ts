@@ -163,9 +163,25 @@ export interface AiBuildResult {
 export type ReportErrorCode = 'REPORT_INVALID' | 'REPORT_TIMEOUT' | 'REPORT_FAILED';
 
 /** A refused or failed v2 call. `message` is safe to show as is. */
+/** `error` of an AI_UNAVAILABLE response from POST v2/ai/build (safe fields only). */
+export interface AiUnavailableDetails {
+  code: 'AI_UNAVAILABLE';
+  message?: string;
+  reason: 'rate_limited' | 'auth' | 'model_not_found' | 'bad_request' | 'timeout' | 'unavailable' | 'not_configured';
+  failedSource?: 'server' | 'content_ai' | 'both' | 'none';
+  contentAiReason?: string;
+  model?: string;
+  retryAfterSeconds?: number;
+  action?: { type: 'open_content_ai_settings' };
+}
+
 export class ReportApiError extends Error {
-  constructor(message: string, public code?: ReportErrorCode | string) {
+  /** The backend's `error` object (AI_UNAVAILABLE carries reason / retryAfterSeconds / action). */
+  details?: AiUnavailableDetails | Record<string, any>;
+
+  constructor(message: string, public code?: ReportErrorCode | string, details?: Record<string, any>) {
     super(message);
     this.name = 'ReportApiError';
+    this.details = details;
   }
 }

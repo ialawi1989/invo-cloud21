@@ -68,7 +68,29 @@
       }
       @if (turn.role === 'error') {
         <div class="msg msg--error" role="alert">
-          {{ turn.text || ('CUSTOM_REPORTS.AI.FAILED' | translate) }}
+          @if (turn.ai; as ai) {
+            <p class="err-reason">{{ aiReasonText(ai, turn.text) }}</p>
+            @if (ai.reason === 'rate_limited' && ai.retryAfterSeconds) {
+              <p class="fine">{{ 'CUSTOM_REPORTS.AI.UNAVAILABLE.TRY_IN' | translate: { seconds: ai.retryAfterSeconds } }}</p>
+            }
+            @if (ai.model) {
+              <p class="fine">{{ ai.model }}</p>
+            }
+            <div class="msg-actions">
+              @if (ai.action?.type === 'open_content_ai_settings') {
+                <button type="button" class="link-btn" (click)="openContentAiSettings()">
+                  {{ 'CUSTOM_REPORTS.AI.UNAVAILABLE.SET_UP' | translate }}
+                </button>
+              }
+              @if (ai.reason === 'rate_limited' && ai.retryAfterSeconds && i === turns.length - 1) {
+                <button type="button" class="link-btn" [disabled]="retryIn > 0 || pending" (click)="retry()">
+                  {{ (retryIn > 0 ? 'CUSTOM_REPORTS.AI.UNAVAILABLE.RETRY_IN' : 'CUSTOM_REPORTS.AI.UNAVAILABLE.RETRY') | translate: { seconds: retryIn } }}
+                </button>
+              }
+            </div>
+          } @else {
+            {{ turn.text || ('CUSTOM_REPORTS.AI.FAILED' | translate) }}
+          }
         </div>
       }
       @if (turn.role === 'assistant') {

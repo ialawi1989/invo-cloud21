@@ -3,11 +3,13 @@ import {
   ElementRef,
   EventEmitter,
   Input,
+  OnDestroy,
   OnInit,
   Output,
   ViewChild,
 } from '@angular/core';
 
+import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
@@ -15,13 +17,17 @@ import { ReportV2Service } from '../../services/report-v2.service';
 import {
   AiBuildResult,
   AiHistoryTurn,
+  AiUnavailableDetails,
   AiUsage,
+  ReportApiError,
   ReportSpecV2,
 } from '../../shared/v2/report-v2.model';
 
 interface ChatTurn {
   role: 'user' | 'assistant' | 'error';
   text: string;
+  /** Error turns: the AI_UNAVAILABLE details (why, and where to fix it). */
+  ai?: AiUnavailableDetails;
   /** Assistant turns: the spec the AI built (null = it couldn't build one). */
   spec?: ReportSpecV2 | null;
   preview?: AiBuildResult['preview'];
@@ -44,7 +50,7 @@ const MAX_MESSAGE = 4000;
   templateUrl: './ask-ai-panel.component.html',
   styleUrls: ['./ask-ai-panel.component.scss'],
 })
-export class AskAiPanelComponent implements OnInit {
+export class AskAiPanelComponent implements OnInit, OnDestroy {
   /** Builds the spec open in the builder, sent so follow-ups can change it. */
   @Input() currentSpec: () => ReportSpecV2 | null = () => null;
   /** True when the builder has columns — offers "change the open report". */
@@ -71,7 +77,48 @@ export class AskAiPanelComponent implements OnInit {
   constructor(
     private reportsV2: ReportV2Service,
     private translate: TranslateService,
+    private router: Router,
   ) {}
+
+  /** Seconds left before "Try again" unlocks (rate-limited AI_UNAVAILABLE). */
+  retryIn = 0;
+  private retryTimer: ReturnType<typeof setInterval> | null = null;
+
+  ngOnDestroy(): void {
+    this.stopRetryTimer();
+  }
+
+  private stopRetryTimer(): void {
+    if (this.retryTimer) clearInterval(this.retryTimer);
+    this.retryTimer = null;
+    this.retryIn = 0;
+  }
+
+  private startRetryTimer(seconds: number): void {
+    this.stopRetryTimer();
+    this.retryIn = Math.max(1, Math.ceil(seconds));
+    this.retryTimer = setInterval(() => {
+      this.retryIn = Math.max(0, this.retryIn - 1);
+      if (this.retryIn === 0) this.stopRetryTimer();
+    }, 1000);
+  }
+
+  /** The reason line of an AI_UNAVAILABLE turn: translated by reason, else the server's message. */
+  aiReasonText(ai: AiUnavailableDetails, fallback: string): string {
+    const known = ['rate_limited', 'auth', 'model_not_found', 'bad_request', 'timeout', 'unavailable', 'not_configured'];
+    if (!known.includes(ai.reason)) return fallback || ai.message || '';
+    return this.translate.instant('CUSTOM_REPORTS.AI.UNAVAILABLE.' + ai.reason);
+  }
+
+  openContentAiSettings(): void {
+    void this.router.navigate(['/settings/plugins/content-ai', '0']);
+  }
+
+  /** Re-send the question that was kept in the box. */
+  retry(): void {
+    if (this.retryIn > 0) return;
+    this.send();
+  }
 
   /** Null until known; the meter stays hidden if the usage call fails. */
   usage: AiUsage | null = null;
@@ -148,7 +195,16 @@ export class AskAiPanelComponent implements OnInit {
       ];
       if (result.spec) this.applySpec.emit(result.spec);
     } catch (err: any) {
-      this.turns = [...this.turns, { role: 'error', text: err?.message || '' }];
+      if (err instanceof ReportApiError && err.code === 'AI_UNAVAILABLE' && err.details) {
+        const ai = err.details as AiUnavailableDetails;
+        // Nothing is lost: the question goes back in the box and the history stays.
+        this.message = message;
+        // (the failed question is dropped from the thread so a retry doesn't send it twice)
+        this.turns = [...this.turns.slice(0, -1), { role: 'error', text: err.message || '', ai }];
+        if (ai.reason === 'rate_limited' && ai.retryAfterSeconds) this.startRetryTimer(ai.retryAfterSeconds);
+      } else {
+        this.turns = [...this.turns, { role: 'error', text: err?.message || '' }];
+      }
     } finally {
       this.pending = false;
       this.scrollToEnd();
