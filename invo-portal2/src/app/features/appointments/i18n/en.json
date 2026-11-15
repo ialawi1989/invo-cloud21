@@ -12,6 +12,7 @@
     "VIEW_WEEK": "Week",
     "VIEW_MONTH": "Month",
     "NO_ADD_PERMISSION": "You don't have permission to add appointments.",
+    "NO_EDIT_PERMISSION": "You don't have permission to edit appointments.",
     "RESCHEDULED": "Appointment rescheduled",
     "RESCHEDULE_FAILED": "Couldn't reschedule — the new time may be unavailable.",
     "FORM": {

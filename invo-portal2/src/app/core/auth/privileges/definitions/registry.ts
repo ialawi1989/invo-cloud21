@@ -111,7 +111,6 @@ import { recurringBillSecurity } from './recurringBillSecurity';
 import { recurringExpenseSecurity } from './recurringExpenseSecurity';
 import { recurringInvoiceSecurity } from './recurringInvoiceSecurity';
 import { recurringJournalSecurity } from './recurringJournalSecurity';
-import { appointmentsSecurity } from './appointmentsSecurity';
 import { reportsSecurity } from './reportsSecurity';
 import { salonSecurity } from './salonSecurity';
 import { salesTargetSecurity } from './salesTargetSecurity';
@@ -258,7 +257,6 @@ export const SECURITY_DEFINITIONS = {
   mapTrackingSecurity,
   notificationSettingsSecurity,
   messageTemplatesSecurity,
-  appointmentsSecurity,
   privilegeSecurity,
   accountSecurity,
   customerSecurity,

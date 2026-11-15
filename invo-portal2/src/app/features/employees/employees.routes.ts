@@ -192,7 +192,7 @@ export const EMPLOYEES_ROUTES: Routes = [
     // action rather than an employees privilege.
     path: 'service-team',
     canActivate: [serviceTeamTranslationsLoaded, privilegeGuard],
-    data: { permissionPath: 'appointmentsSecurity.actions.serviceTeam.access' },
+    data: { permissionPath: 'salonSecurity.actions.serviceTeam.access' },
     loadComponent: () =>
       import('./pages/service-team/service-team.component').then(m => m.ServiceTeamComponent),
   },

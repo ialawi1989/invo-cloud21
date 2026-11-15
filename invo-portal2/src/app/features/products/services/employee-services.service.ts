@@ -9,17 +9,32 @@ export interface EmployeeServiceRow {
 }
 
 /**
- * Employee-centric view of a service product's "Price per team": the services a
- * staff member performs, with their own price + duration for each. Verified
- * against the legacy `employee/getEmployeeServices` / `saveEmployeeServices`.
+ * Employee-centric view of a service product's "Price per team", split in two independent halves (as legacy):
+ *  - capability: WHICH services the employee performs (`getEmployeeServicesCapability` / `setEmployeeServicesPricing`)
+ *  - pricing:    the employee's OWN price + duration per service (`getEmployeePricing` / `setEmployeePricing`)
+ * Verified against InvoCloudBack `routes/v1/app/employee.ts` + `employeeService.repo.ts`.
  */
 @Injectable({ providedIn: 'root' })
 export class EmployeeServicesService {
   private api = inject(ApiService);
 
-  async get(employeeId: string): Promise<EmployeeServiceRow[]> {
-    const data = await this.api.call<any>(this.api.get(`employee/getEmployeeServices/${employeeId}`));
-    return (data?.services ?? []).map((s: any): EmployeeServiceRow => ({
+  /** Ids of the services the employee performs. */
+  async getCapability(employeeId: string): Promise<string[]> {
+    const data = await this.api.call<any>(this.api.get(`employee/getEmployeeServicesCapability/${employeeId}`));
+    const list = Array.isArray(data) ? data : data?.serviceIds || data?.services || [];
+    return list.map((x: any) => (typeof x === 'string' ? x : x.productId ?? x.serviceId ?? x.id));
+  }
+
+  /** Full replace of the services the employee performs. */
+  async setCapability(employeeId: string, serviceIds: string[]): Promise<void> {
+    await this.api.call(this.api.post('employee/setEmployeeServicesPricing', { employeeId, serviceIds }));
+  }
+
+  /** The employee's own price + duration per service. */
+  async getPricing(employeeId: string): Promise<EmployeeServiceRow[]> {
+    const data = await this.api.call<any>(this.api.get(`employee/getEmployeePricing/${employeeId}`));
+    const list: any[] = Array.isArray(data) ? data : data?.services ?? [];
+    return list.map((s): EmployeeServiceRow => ({
       productId: s.productId,
       name: s.name,
       price: s.price ?? 0,
@@ -27,15 +42,13 @@ export class EmployeeServicesService {
     }));
   }
 
-  /** Full replace - an empty list clears the employee's services. */
-  async save(employeeId: string, services: EmployeeServiceRow[]): Promise<void> {
-    await this.api.call(this.api.post('employee/saveEmployeeServices', {
+  /** Upsert (body is an array, one entry per employee + service). Rows removed from the list are not deleted server-side. */
+  async setPricing(employeeId: string, services: EmployeeServiceRow[]): Promise<void> {
+    await this.api.call(this.api.post('employee/setEmployeePricing', services.map(s => ({
       employeeId,
-      services: services.map(s => ({
-        productId: s.productId,
-        price: Number(s.price) || 0,
-        serviceTime: Number(s.serviceTime) || 0,
-      })),
-    }));
+      productId: s.productId,
+      price: Number(s.price) || 0,
+      serviceTime: Number(s.serviceTime) || 0,
+    }))));
   }
 }

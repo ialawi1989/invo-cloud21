@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { SegmentedToggleComponent, SegmentedToggleOption } from '@shared/components/segmented-toggle/segmented-toggle.component';
 import { ErrorService } from '@core/http/error.service';
 import { ModalService } from '@shared/modal/modal.service';
 import { ToastService } from '@shared/components/toast/toast.service';
@@ -17,6 +18,13 @@ interface EmployeeVm {
   email: string;
 }
 
+interface AssignState {
+  loading: boolean;
+  saving: boolean;
+  dirty: boolean;
+  rows: { productId: string; name: string }[];
+}
+
 interface ServicesState {
   loading: boolean;
   saving: boolean;
@@ -25,15 +33,14 @@ interface ServicesState {
 }
 
 /**
- * Employee Service Pricing - pick a staff member, then manage the services they
- * perform and their own price + duration for each (the employee-centric side
- * of a service product's "Price per team"). Saving also keeps the appointments
- * capability matrix in sync, as the legacy page did.
+ * Employee Services - pick a staff member, then either assign the services they perform ("Assign services" tab,
+ * the appointments capability) or set their own price + duration per service ("Own time & pricing" tab). The two
+ * tabs load and save independently, as in legacy.
  */
 @Component({
   selector: 'app-employee-services',
   standalone: true,
-  imports: [FormsModule, TranslateModule],
+  imports: [FormsModule, TranslateModule, SegmentedToggleComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './employee-services.component.html',
   styleUrl: './employee-services.component.scss',
@@ -62,6 +69,21 @@ export class EmployeeServicesComponent implements OnInit {
 
   expandedId = signal<string | null>(null);
   states = signal<Record<string, ServicesState>>({});
+  assignStates = signal<Record<string, AssignState>>({});
+
+  tab = signal<'assign' | 'pricing'>('assign');
+  readonly tabs: SegmentedToggleOption<'assign' | 'pricing'>[] = [
+    { value: 'assign', label: 'PRODUCTS.EMPLOYEE_SERVICES.TAB_ASSIGN' },
+    { value: 'pricing', label: 'PRODUCTS.EMPLOYEE_SERVICES.TAB_PRICING' },
+  ];
+  /** Service names by id (from the capability matrix), to label the assigned ids. */
+  private serviceNames = new Map<string, string>();
+
+  setTab(tab: 'assign' | 'pricing'): void {
+    if (this.tab() === tab) return;
+    this.tab.set(tab);
+    this.expandedId.set(null);
+  }
 
   async ngOnInit(): Promise<void> {
     await this.load();
@@ -104,11 +126,28 @@ export class EmployeeServicesComponent implements OnInit {
   async toggle(emp: EmployeeVm): Promise<void> {
     if (this.expandedId() === emp.id) { this.expandedId.set(null); return; }
     this.expandedId.set(emp.id);
-    if (this.state(emp.id)) return;
 
+    if (this.tab() === 'assign') {
+      if (this.assignState(emp.id)) return;
+      this.patchAssign(emp.id, { loading: true });
+      try {
+        if (!this.serviceNames.size) {
+          (await this.capabilitySvc.getMatrix()).forEach(r => this.serviceNames.set(r.serviceId, r.serviceName));
+        }
+        const ids = await this.servicesSvc.getCapability(emp.id);
+        this.patchAssign(emp.id, { rows: ids.map(id => ({ productId: id, name: this.serviceNames.get(id) ?? id })), dirty: false });
+      } catch (error) {
+        await this.errorService.handleError(error);
+      } finally {
+        this.patchAssign(emp.id, { loading: false });
+      }
+      return;
+    }
+
+    if (this.state(emp.id)) return;
     this.patchState(emp.id, { loading: true });
     try {
-      this.patchState(emp.id, { rows: await this.servicesSvc.get(emp.id), dirty: false });
+      this.patchState(emp.id, { rows: await this.servicesSvc.getPricing(emp.id), dirty: false });
     } catch (error) {
       await this.errorService.handleError(error);
     } finally {
@@ -116,6 +155,46 @@ export class EmployeeServicesComponent implements OnInit {
     }
   }
 
+  // ─── Tab 1: assign services (capability) ───────────────────────────
+  assignState(id: string): AssignState | undefined {
+    return this.assignStates()[id];
+  }
+
+  private patchAssign(id: string, patch: Partial<AssignState>): void {
+    this.assignStates.update(s => ({ ...s, [id]: { ...(s[id] ?? { loading: false, saving: false, dirty: false, rows: [] }), ...patch } }));
+  }
+
+  async assignServices(emp: EmployeeVm): Promise<void> {
+    const rows = this.assignState(emp.id)?.rows ?? [];
+    const result = await this.modal.open<PickProductModalComponent, unknown, PickProductResult>(PickProductModalComponent, {
+      drawer: true, drawerWidth: '650px', drawerResizable: true, drawerMinWidth: 650,
+      data: { types: ['service'], multiple: true, excludedIds: rows.map(r => r.productId) },
+    }).afterClosed();
+    if (!result?.added?.length) return;
+    result.added.forEach(p => this.serviceNames.set(p.id, p.name));
+    this.patchAssign(emp.id, { dirty: true, rows: [...rows, ...result.added.map(p => ({ productId: p.id, name: p.name }))] });
+  }
+
+  removeAssigned(emp: EmployeeVm, productId: string): void {
+    const rows = this.assignState(emp.id)?.rows ?? [];
+    this.patchAssign(emp.id, { dirty: true, rows: rows.filter(r => r.productId !== productId) });
+  }
+
+  async saveAssigned(emp: EmployeeVm): Promise<void> {
+    const rows = this.assignState(emp.id)?.rows ?? [];
+    this.patchAssign(emp.id, { saving: true });
+    try {
+      await this.servicesSvc.setCapability(emp.id, rows.map(r => r.productId));
+      this.patchAssign(emp.id, { dirty: false });
+      this.toast.success(this.translate.instant('PRODUCTS.EMPLOYEE_SERVICES.SAVED'));
+    } catch (error) {
+      await this.errorService.handleError(error);
+    } finally {
+      this.patchAssign(emp.id, { saving: false });
+    }
+  }
+
+  // ─── Tab 2: own time & pricing ─────────────────────────────────────
   async addServices(emp: EmployeeVm): Promise<void> {
     const rows = this.state(emp.id)?.rows ?? [];
     const result = await this.modal.open<PickProductModalComponent, unknown, PickProductResult>(PickProductModalComponent, {
@@ -154,10 +233,7 @@ export class EmployeeServicesComponent implements OnInit {
     }
     this.patchState(emp.id, { saving: true });
     try {
-      await this.servicesSvc.save(emp.id, rows);
-      // Keep the appointments capability matrix (which services an employee is
-      // bookable for) in sync with their priced service list.
-      await this.capabilitySvc.saveEmployeeCapability(emp.id, rows.map(r => r.productId));
+      await this.servicesSvc.setPricing(emp.id, rows);
       this.patchState(emp.id, { dirty: false });
       this.toast.success(this.translate.instant('PRODUCTS.EMPLOYEE_SERVICES.SAVED'));
     } catch (error) {

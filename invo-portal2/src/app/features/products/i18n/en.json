@@ -715,6 +715,10 @@
     },
     "EMPLOYEE_SERVICES": {
       "TITLE": "Employee Service Pricing",
+      "TAB_ASSIGN": "Assign services",
+      "TAB_PRICING": "Own time & pricing",
+      "ASSIGN_DESC": "Choose which services this staff member performs. Leave empty to let them perform any service.",
+      "PRICING_DESC": "Set this staff member's own price and duration for each service. Services without an own price use the product's price.",
       "HINT": "Choose the services each staff member performs and set their own price and duration for each. Saving also updates which services they can be booked for.",
       "SEARCH": "Search employees",
       "EMPTY": "No employees found.",

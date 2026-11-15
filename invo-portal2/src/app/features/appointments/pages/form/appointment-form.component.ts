@@ -75,7 +75,7 @@ export class AppointmentFormComponent implements OnInit {
   private customerLookup = inject(CustomerLookupService);
   private privileges = inject(PrivilegeService);
 
-  readonly canDelete = computed(() => this.privileges.check('appointmentsSecurity.actions.delete.access'));
+  readonly canDelete = computed(() => this.privileges.check('salonSecurity.actions.delete.access'));
 
   loading = signal(false);
   saving = signal(false);

@@ -165,7 +165,7 @@
           [date]="currentDate()"
           [employees]="visibleEmployees()"
           [tasks]="visibleTasks()"
-          [canEdit]="canAdd()"
+          [canEdit]="canEdit()"
           (slotClick)="onDaySlotClick($event)"
           (taskClick)="openTask($event)"
           (reschedule)="onReschedule($event)"
@@ -175,7 +175,7 @@
         <app-week-view
           [date]="currentDate()"
           [tasks]="visibleTasks()"
-          [canEdit]="canAdd()"
+          [canEdit]="canEdit()"
           (slotClick)="onWeekSlotClick($event)"
           (dayClick)="onDayHeaderClick($event)"
           (taskClick)="openTask($event)"

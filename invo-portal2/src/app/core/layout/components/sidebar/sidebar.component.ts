@@ -134,7 +134,7 @@ export const SIDE_MENU: SideMenuItem[] = [
     requiredPermission: '',
     badge: { text: 'BETA', variant: 'danger' },
     subItems: [
-      { id: 181, label: 'MENU.SUB.APPOINTMENTS_CALENDAR', link: '/appointments', requiredPermission: 'appointmentsSecurity.actions.view.access' },
+      { id: 181, label: 'MENU.SUB.APPOINTMENTS_CALENDAR', link: '/appointments', requiredPermission: 'salonSecurity.actions.view.access' },
     ],
   },
   // ── Accounts ───────────────────────────────────────────────────────

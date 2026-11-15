@@ -8,7 +8,7 @@ import { AuthService } from '../auth/auth.service';
  *
  * Route data:
  *   permissionPath  — dot-path e.g. "invoiceSecurity.actions.view"
- *                     or "invoiceSecurity.access"
+ *                     or "invoiceSecurity.access", or { new, edit } for a shared form route
  *   redirectTo      — where to go on deny (default: 'dashboard')
  *   silentRedirect  — if true, redirect without an error message
  *
@@ -20,7 +20,11 @@ export const privilegeGuard: CanActivateFn = async (route: ActivatedRouteSnapsho
   const router           = inject(Router);
   const auth             = inject(AuthService);
 
-  const permissionPath: string | undefined = route.data['permissionPath'];
+  // A form route shared by create and edit can name one privilege per mode ({ new, edit }), picked by `?mode=`.
+  const pathData = route.data['permissionPath'];
+  const permissionPath: string | undefined = pathData && typeof pathData === 'object'
+    ? pathData[route.queryParams['mode'] === 'edit' ? 'edit' : 'new']
+    : pathData;
   const redirectTo:     string             = route.data['redirectTo'] ?? '/dashboard';
   const silentRedirect: boolean            = route.data['silentRedirect'] ?? false;
 

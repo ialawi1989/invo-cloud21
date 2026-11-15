@@ -6,6 +6,11 @@
   </div>
   }
 
+  <div class="es__tabs">
+    <app-segmented-toggle [options]="tabs" [value]="tab()" (valueChange)="setTab($event)"/>
+  </div>
+  <p class="es__desc">{{ (tab() === 'assign' ? 'PRODUCTS.EMPLOYEE_SERVICES.ASSIGN_DESC' : 'PRODUCTS.EMPLOYEE_SERVICES.PRICING_DESC') | translate }}</p>
+
   <div class="es__toolbar">
     <input type="text" class="es__search" [ngModel]="search()" (ngModelChange)="search.set($event)"
       (keydown.enter)="onSearch()" [placeholder]="'PRODUCTS.EMPLOYEE_SERVICES.SEARCH' | translate" />
@@ -24,6 +29,8 @@
     <div class="es__list">
       @for (emp of employees(); track emp.id) {
         @let st = state(emp.id);
+        @let asg = assignState(emp.id);
+        @let cur = tab() === 'assign' ? asg : st;
         <div class="es__item" [class.is-open]="expandedId() === emp.id">
           <button type="button" class="es__row" (click)="toggle(emp)">
             <span class="es__avatar">{{ emp.name.charAt(0).toUpperCase() }}</span>
@@ -31,10 +38,10 @@
               <strong>{{ emp.name }}</strong>
               @if (emp.email) { <small>{{ emp.email }}</small> }
             </span>
-            @if (st && !st.loading) {
-              <span class="es__badge">{{ st.rows.length }} {{ 'PRODUCTS.EMPLOYEE_SERVICES.SERVICES' | translate }}</span>
+            @if (cur && !cur.loading) {
+              <span class="es__badge">{{ cur.rows.length }} {{ 'PRODUCTS.EMPLOYEE_SERVICES.SERVICES' | translate }}</span>
             }
-            @if (st?.dirty) {
+            @if (cur?.dirty) {
               <span class="es__badge es__badge--warn">{{ 'PRODUCTS.EMPLOYEE_SERVICES.UNSAVED' | translate }}</span>
             }
             <span class="es__chev">{{ expandedId() === emp.id ? '&#9650;' : '&#9660;' }}</span>
@@ -42,9 +49,33 @@
 
           @if (expandedId() === emp.id) {
             <div class="es__body">
-              @if (!st || st.loading) {
+              @if (!cur || cur.loading) {
                 <div class="es__state">...</div>
-              } @else {
+              } @else if (tab() === 'assign' && asg) {
+                <div class="es__actions">
+                  @if (asg.rows.length === 0) {
+                    <span class="es__none">{{ 'PRODUCTS.EMPLOYEE_SERVICES.NONE' | translate }}</span>
+                  }
+                  <span class="es__spacer"></span>
+                  <button type="button" class="es__btn" (click)="assignServices(emp)">{{ 'PRODUCTS.EMPLOYEE_SERVICES.ADD' | translate }}</button>
+                  <button type="button" class="es__btn es__btn--primary" [disabled]="!asg.dirty || asg.saving" (click)="saveAssigned(emp)">
+                    {{ 'PRODUCTS.EMPLOYEE_SERVICES.SAVE' | translate }}
+                  </button>
+                </div>
+                @if (asg.rows.length > 0) {
+                  <table class="es__table">
+                    <thead><tr><th>{{ 'PRODUCTS.EMPLOYEE_SERVICES.SERVICE' | translate }}</th><th></th></tr></thead>
+                    <tbody>
+                      @for (row of asg.rows; track row.productId) {
+                        <tr>
+                          <td class="es__name">{{ row.name }}</td>
+                          <td class="es__del"><button type="button" class="es__x" (click)="removeAssigned(emp, row.productId)">&#10005;</button></td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                }
+              } @else if (st) {
                 <div class="es__actions">
                   @if (st.rows.length === 0) {
                     <span class="es__none">{{ 'PRODUCTS.EMPLOYEE_SERVICES.NONE' | translate }}</span>

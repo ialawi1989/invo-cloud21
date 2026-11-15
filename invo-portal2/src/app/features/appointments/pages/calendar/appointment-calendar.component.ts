@@ -92,7 +92,8 @@ export class AppointmentCalendarComponent implements OnInit, OnDestroy {
     return branch ? this.employees().filter(e => !e.branchId || e.branchId === branch) : this.employees();
   });
 
-  readonly canAdd = computed(() => this.privileges.check('appointmentsSecurity.actions.add.access'));
+  readonly canAdd = computed(() => this.privileges.check('salonSecurity.actions.newAppointment.access'));
+  readonly canEdit = computed(() => this.privileges.check('salonSecurity.actions.editAppointment.access'));
 
   view = signal<CalendarView>(this.qp.read({ view: VIEW_PARAM }).view);
   currentDate = signal<Date>(this.readInitialDate());
@@ -123,7 +124,7 @@ export class AppointmentCalendarComponent implements OnInit, OnDestroy {
   /** Which entry of the Settings view's side list is open. */
   setting = signal<'service-team' | 'pricing'>(this.qp.read({ setting: SETTING_PARAM }).setting);
   readonly canSeePricing = computed(() => this.privileges.check('productSecurity.actions.view.access'));
-  readonly canSeeServiceTeam = computed(() => this.privileges.check('appointmentsSecurity.actions.serviceTeam.access'));
+  readonly canSeeServiceTeam = computed(() => this.privileges.check('salonSecurity.actions.serviceTeam.access'));
 
   /** Free-text filter over the appointments already loaded for the current range. */
   searchTerm = signal(this.qp.read({ q: SEARCH_PARAM }).q ?? '');
@@ -381,6 +382,10 @@ export class AppointmentCalendarComponent implements OnInit, OnDestroy {
   }
 
   openTask(task: AppointmentTask): void {
+    if (!this.canEdit()) {
+      this.toast.error(this.translate.instant('APPOINTMENTS.NO_EDIT_PERMISSION'));
+      return;
+    }
     this.router.navigate(['/appointments/form'], {
       queryParams: { mode: 'edit', id: task.id, taskId: task.taskId, isInvoiced: task.isInvoiced ? 1 : 0 },
     });

@@ -2,6 +2,9 @@
 .es__header h1 { margin: 0 0 4px; font-size: 20px; font-weight: 700; color: #111827; }
 .es__header p { margin: 0 0 16px; font-size: 13px; color: #6b7280; }
 
+.es__tabs { margin-bottom: 10px; }
+.es__desc { margin: 0 0 14px; font-size: 12.5px; color: #6b7280; }
+
 .es__toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
 .es__search { width: 280px; max-width: 100%; padding: 9px 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 13px; font-family: inherit; background: #fff; }
 .es__search:focus { outline: none; border-color: #32acc1; }
