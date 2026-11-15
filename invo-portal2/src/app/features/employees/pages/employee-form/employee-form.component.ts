@@ -105,7 +105,7 @@ interface Option {
 /**
  * Employee add/edit form
  * ──────────────────────
- * `/employees/:id` — `:id === '0'` creates, anything else edits.
+ * `/employees/:id` — `:id === 'new'` creates, anything else edits.
  *
  * Migrated from the legacy `employee-form` (InvoCloudFront2). Modernised to
  * the invo-portal2 form conventions: standalone + OnPush + signals, a reactive
@@ -172,7 +172,7 @@ export class EmployeeFormComponent implements OnInit, OnDestroy, CanLeaveCompone
   employeeId = signal<string | null>(null);
   isCreate   = computed<boolean>(() => {
     const id = this.employeeId();
-    return id === null || id === '0';
+    return id === null || id === '0' || id === 'new';
   });
 
   /** Loaded record — spread into the save payload so unknown fields survive. */
@@ -852,7 +852,7 @@ export class EmployeeFormComponent implements OnInit, OnDestroy, CanLeaveCompone
   }
 
   async ngOnInit(): Promise<void> {
-    // The id can live on EITHER route. `/employees/0` carries it itself, but
+    // The id can live on EITHER route. `/employees/new` carries it itself, but
     // `/employees/:id/edit` carries it on the PARENT — the record shell owns
     // `:id` and this child declares no params of its own. Angular does not
     // inherit params down into a child of a component-bearing route, so

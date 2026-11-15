@@ -396,6 +396,7 @@
     "SECTION": {
       "PEOPLE": "People",
       "TIME": "Time & attendance",
+      "PAY": "Payroll & earnings",
       "CATALOG": "Catalog",
       "CLASSIFICATIONS": "Classifications",
       "OPTIONS_RECIPES": "Options & Recipes"
@@ -549,10 +550,8 @@
       "NEW_EMPLOYEE_DESC": "Add a new employee to your team.",
       "NEW_SCHEDULE": "New Schedule",
       "NEW_SCHEDULE_DESC": "Create a work schedule.",
-      "NEW_CAMPAIGN": "New Campaign",
-      "NEW_CAMPAIGN_DESC": "Create a discount campaign.",
-      "NEW_COUPON": "New Coupon",
-      "NEW_COUPON_DESC": "Generate discount coupons."
+      "NEW_VOUCHER": "New Voucher",
+      "NEW_VOUCHER_DESC": "Create a gift voucher."
     }
   },
   "COMPANY_SWITCHER": {

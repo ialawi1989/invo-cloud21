@@ -173,9 +173,8 @@ export class AppointmentCalendarComponent implements OnInit, OnDestroy {
   });
 
   async ngOnInit(): Promise<void> {
-    // Full-bleed page: no content padding, and the wide grid gets the room of a collapsed side menu.
+    // Full-bleed page: no content padding. The side menu is left as the user has it (not auto-collapsed).
     this.layout.setNoPadding(true);
-    this.layout.setCollapseSidebar(true);
     await this.loadEmployees();
     void this.branchSvc.load().catch(() => {});
     await this.restoreStaffFilter();
@@ -184,7 +183,6 @@ export class AppointmentCalendarComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.layout.setNoPadding(false);
-    this.layout.setCollapseSidebar(false);
   }
 
   private readInitialDate(): Date {

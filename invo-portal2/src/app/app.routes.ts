@@ -346,6 +346,12 @@ export const routes: Routes = [
           import('./features/products/products.routes').then(m => m.PRODUCTS_ROUTES)
       },
       {
+        // Manual stock / unit-cost adjustments (sidebar → Inventory → Manual Adjustment).
+        path: 'manual-adjustment',
+        loadChildren: () =>
+          import('./features/inventory/manual-adjustment/manual-adjustment.routes').then(m => m.MANUAL_ADJUSTMENT_ROUTES)
+      },
+      {
         // Inventory transfers (sidebar → Inventory → Transfers). Declared before the generic `inventory` routes.
         path: 'inventory/transfer',
         loadChildren: () =>

@@ -113,14 +113,8 @@ export const SIDE_MENU: SideMenuItem[] = [
       { id: 45, label: 'MENU.SUB.ACCESS_REQUESTS', link: '/employees/access-requests', requiredPermission: 'privilegeSecurity.actions.view.access' },
       { id: 43, section: 'MENU.SECTION.TIME', label: 'MENU.SUB.SCHEDULE', link: '/employees/schedule', requiredPermission: 'employeeScheduleSecurity.actions.view.access' },
       { id: 44, label: 'MENU.SUB.ATTENDANCE', link: '/employees/attendance', requiredPermission: 'employeeAttendenceSecurity.actions.view.access' },
-    ],
-  },
-  // ── Payroll & earnings (HR money side; each item is gated by its own feature / grant) ──
-  {
-    id: 49, label: 'MENU.PAYROLL_EARNINGS', icon: 'account',
-    requiredPermission: '',
-    subItems: [
-      { id: 46, label: 'MENU.SUB.PAYROLL', link: '/employees/payroll-run',
+      // Money side of HR; each item stays gated by its own feature / grant.
+      { id: 46, section: 'MENU.SECTION.PAY', label: 'MENU.SUB.PAYROLL', link: '/employees/payroll-run',
         requiredHrFeature: 'hr.payroll', requiredHrGrant: { group: 'employeePayrollSecurity', action: 'viewPay' } },
       { id: 47, label: 'MENU.SUB.EMPLOYEE_PAYOUTS', link: '/employees/payouts', requiredPermission: 'employeePayoutSecurity.actions.view.access',
         requiredEarningsFeature: ['commission', 'tips'] },

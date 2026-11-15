@@ -46,7 +46,7 @@ export function employeeEmailValidator(
 
     // Editing and the address hasn't changed — nothing to check.
     const id = opts.getEmployeeId();
-    const isEdit = !!id && id !== '0';
+    const isEdit = !!id && id !== '0' && id !== 'new';
     if (isEdit && opts.getOriginalEmail() === email) return of(null);
 
     return timer(debounce).pipe(
@@ -105,7 +105,7 @@ export function passcodeUniqueValidator(
     return timer(debounce).pipe(
       switchMap(() => from(service.validateName({
         tableName: 'passCode',
-        id:        !id || id === '0' ? '' : id,
+        id:        !id || id === '0' || id === 'new' ? '' : id,
         name:      value,
       }))),
       map(res => (res.success ? null : { exist: true })),

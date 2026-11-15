@@ -134,7 +134,7 @@ export class EmployeesListComponent implements OnInit {
   }
 
   add(): void {
-    void this.router.navigate(['/employees', 0]);
+    void this.router.navigate(['/employees', 'new']);
   }
 
   invite(): void {

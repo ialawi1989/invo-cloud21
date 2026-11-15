@@ -119,7 +119,7 @@ export class EmployeeViewComponent implements OnInit, OnDestroy {
   }
 
   goToList(): void { void this.router.navigate(['/employees']); }
-  add(): void { void this.router.navigate(['/employees', 0]); }
+  add(): void { void this.router.navigate(['/employees', 'new']); }
   edit(): void { void this.router.navigate(['/employees', this.employeeId(), 'edit']); }
   terminate(): void { void this.router.navigate(['/employees', this.employeeId(), 'end-of-service']); }
 }

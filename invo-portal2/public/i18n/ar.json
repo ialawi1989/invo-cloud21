@@ -396,6 +396,7 @@
     "SECTION": {
       "PEOPLE": "الموظفون",
       "TIME": "الوقت والحضور",
+      "PAY": "الرواتب والمكافآت",
       "CATALOG": "الكتالوج",
       "CLASSIFICATIONS": "التصنيفات",
       "OPTIONS_RECIPES": "الخيارات والوصفات"
@@ -549,10 +550,8 @@
       "NEW_EMPLOYEE_DESC": "إضافة موظف جديد إلى فريقك.",
       "NEW_SCHEDULE": "جدول جديد",
       "NEW_SCHEDULE_DESC": "إنشاء جدول عمل.",
-      "NEW_CAMPAIGN": "حملة جديدة",
-      "NEW_CAMPAIGN_DESC": "إنشاء حملة خصم.",
-      "NEW_COUPON": "كوبون جديد",
-      "NEW_COUPON_DESC": "إنشاء كوبونات خصم."
+      "NEW_VOUCHER": "قسيمة جديدة",
+      "NEW_VOUCHER_DESC": "إنشاء قسيمة هدية."
     }
   },
   "COMPANY_SWITCHER": {

@@ -74,7 +74,7 @@ import { hrGrantFor } from '../../hr-privilege';
  * this must sign in as a non-admin holding a known grant.
  * ─────────────────────────────────────────────────────────────────────────────
  *
- * New employees (`:id === '0'`) get no tabs. There is no record to hang a
+ * New employees (`:id === 'new'`) get no tabs. There is no record to hang a
  * document or a leave request on until the profile has been saved once, and
  * offering the tabs would produce a set of screens that all fail the same way.
  */
@@ -307,7 +307,7 @@ export class EmployeeRecordComponent {
     effect(() => {
       const id = this.employeeId();
       this.childSegment();
-      if (!id || id === '0') { this.employee.set(null); return; }
+      if (!id || id === '0' || id === 'new') { this.employee.set(null); return; }
       untracked(() => void this.loadMeta(id));
     });
   }
@@ -355,7 +355,7 @@ export class EmployeeRecordComponent {
     { initialValue: this.route.snapshot.paramMap.get('id') ?? '0' },
   );
 
-  readonly isNew = computed(() => this.employeeId() === '0');
+  readonly isNew = computed(() => this.employeeId() === 'new' || this.employeeId() === '0');
 
   /** Is this the signed-in employee's own record? Leave turns on this. */
   readonly isOwnRecord = computed(() => {

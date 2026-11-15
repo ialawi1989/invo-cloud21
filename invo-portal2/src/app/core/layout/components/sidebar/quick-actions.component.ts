@@ -39,8 +39,7 @@ const ALL_CATEGORIES: QuickCategory[] = [
         labelKey: 'QUICK_ACTIONS.ACTIONS.NEW_INVOICE',
         description: 'Create and send an invoice to get paid.',
         icon: 'invoice',
-        link: '/account/invoices',
-        queryParams: { action: 'create' },
+        link: '/account/invoices/new',
         permission: 'invoiceSecurity.actions.add.access',
       },
       {
@@ -48,8 +47,7 @@ const ALL_CATEGORIES: QuickCategory[] = [
         labelKey: 'QUICK_ACTIONS.ACTIONS.NEW_ESTIMATE',
         description: 'Send a price estimate before the job.',
         icon: 'estimate',
-        link: '/account/estimate',
-        queryParams: { action: 'create' },
+        link: '/account/estimate/new',
         permission: 'estimateSecurity.actions.add.access',
       },
       {
@@ -57,8 +55,7 @@ const ALL_CATEGORIES: QuickCategory[] = [
         labelKey: 'QUICK_ACTIONS.ACTIONS.NEW_CREDIT_NOTE',
         description: 'Issue a credit note for a refund.',
         icon: 'credit',
-        link: '/account/credit-notes',
-        queryParams: { action: 'create' },
+        link: '/account/credit-notes/new',
         permission: 'creditNoteSecurity.actions.add.access',
       },
       {
@@ -66,8 +63,7 @@ const ALL_CATEGORIES: QuickCategory[] = [
         labelKey: 'QUICK_ACTIONS.ACTIONS.NEW_CUSTOMER',
         description: 'Add a new customer to your contacts.',
         icon: 'customer',
-        link: '/account/customers',
-        queryParams: { action: 'create' },
+        link: '/account/customers/new',
         permission: 'customerSecurity.actions.add.access',
       },
       {
@@ -75,8 +71,7 @@ const ALL_CATEGORIES: QuickCategory[] = [
         labelKey: 'QUICK_ACTIONS.ACTIONS.NEW_RECURRING_INVOICE',
         description: 'Set up automatic recurring billing.',
         icon: 'recurring',
-        link: '/account/recurring-invoice',
-        queryParams: { action: 'create' },
+        link: '/account/recurring-invoice/new',
         permission: 'recurringInvoiceSecurity.actions.add.access',
       },
     ],
@@ -91,8 +86,7 @@ const ALL_CATEGORIES: QuickCategory[] = [
         labelKey: 'QUICK_ACTIONS.ACTIONS.NEW_PURCHASE_ORDER',
         description: 'Send a purchase order to your supplier.',
         icon: 'purchase',
-        link: '/account/purchase-order',
-        queryParams: { action: 'create' },
+        link: '/account/purchase-order/new',
         permission: 'purchaseOrderSecurity.actions.add.access',
       },
       {
@@ -100,8 +94,7 @@ const ALL_CATEGORIES: QuickCategory[] = [
         labelKey: 'QUICK_ACTIONS.ACTIONS.NEW_BILL',
         description: 'Record a bill from a supplier.',
         icon: 'bill',
-        link: '/account/bills',
-        queryParams: { action: 'create' },
+        link: '/account/bills/new',
         permission: 'billingSecurity.actions.add.access',
       },
       {
@@ -109,8 +102,7 @@ const ALL_CATEGORIES: QuickCategory[] = [
         labelKey: 'QUICK_ACTIONS.ACTIONS.NEW_EXPENSE',
         description: 'Log a business expense.',
         icon: 'expense',
-        link: '/account/expense',
-        queryParams: { action: 'create' },
+        link: '/account/expense/new',
         permission: 'expenseSecurity.actions.add.access',
       },
       {
@@ -118,8 +110,7 @@ const ALL_CATEGORIES: QuickCategory[] = [
         labelKey: 'QUICK_ACTIONS.ACTIONS.NEW_SUPPLIER',
         description: 'Add a new supplier to your contacts.',
         icon: 'supplier',
-        link: '/account/suppliers',
-        queryParams: { action: 'create' },
+        link: '/account/suppliers/new',
         permission: 'supplierSecurity.actions.add.access',
       },
       {
@@ -127,8 +118,7 @@ const ALL_CATEGORIES: QuickCategory[] = [
         labelKey: 'QUICK_ACTIONS.ACTIONS.NEW_SUPPLIER_CREDIT',
         description: 'Record a credit from a supplier.',
         icon: 'credit',
-        link: '/account/supplier-credit',
-        queryParams: { action: 'create' },
+        link: '/account/supplier-credit/new',
         permission: 'supplierCredit.actions.add.access',
       },
     ],
@@ -143,8 +133,7 @@ const ALL_CATEGORIES: QuickCategory[] = [
         labelKey: 'QUICK_ACTIONS.ACTIONS.NEW_PRODUCT',
         description: 'Add a new product to your catalog.',
         icon: 'product',
-        link: '/products',
-        queryParams: { action: 'create' },
+        link: '/products/form/inventory/new',
         permission: 'productSecurity.actions.add.access',
       },
       {
@@ -152,8 +141,7 @@ const ALL_CATEGORIES: QuickCategory[] = [
         labelKey: 'QUICK_ACTIONS.ACTIONS.NEW_CATEGORY',
         description: 'Create a product category.',
         icon: 'category',
-        link: '/products/category',
-        queryParams: { action: 'create' },
+        link: '/products/category/new',
         permission: 'categorySecurity.actions.add.access',
       },
       {
@@ -161,8 +149,7 @@ const ALL_CATEGORIES: QuickCategory[] = [
         labelKey: 'QUICK_ACTIONS.ACTIONS.NEW_BRAND',
         description: 'Add a new brand.',
         icon: 'brand',
-        link: '/products/brands',
-        queryParams: { action: 'create' },
+        link: '/products/brands/new',
         permission: 'brandSecurity.actions.add.access',
       },
       {
@@ -171,16 +158,14 @@ const ALL_CATEGORIES: QuickCategory[] = [
         description: 'Apply bulk price changes to products.',
         icon: 'price',
         link: '/products/price-change',
-        queryParams: { action: 'create' },
-        permission: 'priceChangeSecurity.actions.add.access',
+        permission: 'priceChangeSecurity.actions.view.access',
       },
       {
         label: 'Manual Adjustment',
         labelKey: 'QUICK_ACTIONS.ACTIONS.MANUAL_ADJUSTMENT',
         description: 'Adjust inventory stock levels.',
         icon: 'adjustment',
-        link: '/manual-adjustment',
-        queryParams: { action: 'create' },
+        link: '/manual-adjustment/new',
         permission: 'manualAdjustmentSecurity.actions.add.access',
       },
       {
@@ -188,8 +173,7 @@ const ALL_CATEGORIES: QuickCategory[] = [
         labelKey: 'QUICK_ACTIONS.ACTIONS.INVENTORY_TRANSFER',
         description: 'Transfer stock between locations.',
         icon: 'transfer',
-        link: '/inventory/transfer',
-        queryParams: { action: 'create' },
+        link: '/inventory/transfer/new/in',
         permission: 'inventoryTransferSecurity.actions.add.access',
       },
     ],
@@ -204,8 +188,7 @@ const ALL_CATEGORIES: QuickCategory[] = [
         labelKey: 'QUICK_ACTIONS.ACTIONS.NEW_JOURNAL',
         description: 'Create a manual journal entry.',
         icon: 'journal',
-        link: '/account/journal',
-        queryParams: { action: 'create' },
+        link: '/account/manual-journals/new',
         permission: 'manualJournalSecurity.actions.add.access',
       },
       {
@@ -213,8 +196,7 @@ const ALL_CATEGORIES: QuickCategory[] = [
         labelKey: 'QUICK_ACTIONS.ACTIONS.NEW_BUDGET',
         description: 'Set a budget for a period.',
         icon: 'budget',
-        link: '/account/budget',
-        queryParams: { action: 'create' },
+        link: '/account/budget/new',
         permission: 'budgetSecurity.actions.add.access',
       },
       {
@@ -237,8 +219,7 @@ const ALL_CATEGORIES: QuickCategory[] = [
         labelKey: 'QUICK_ACTIONS.ACTIONS.NEW_EMPLOYEE',
         description: 'Add a new employee to your team.',
         icon: 'employee',
-        link: '/employees',
-        queryParams: { action: 'create' },
+        link: '/employees/new',
         permission: 'employeeSecurity.actions.add.access',
       },
       {
@@ -246,9 +227,8 @@ const ALL_CATEGORIES: QuickCategory[] = [
         labelKey: 'QUICK_ACTIONS.ACTIONS.NEW_SCHEDULE',
         description: 'Create a work schedule.',
         icon: 'schedule',
-        link: '/employeeSchedule',
-        queryParams: { action: 'create' },
-        permission: 'employeeScheduleSecurity.actions.add.access',
+        link: '/employees/schedule',
+        permission: 'employeeScheduleSecurity.actions.view',
       },
     ],
   },
@@ -258,23 +238,13 @@ const ALL_CATEGORIES: QuickCategory[] = [
     subtitleKey: 'QUICK_ACTIONS.CATEGORIES.PROMOTIONS_SUB',
     actions: [
       {
-        label: 'New Campaign',
-        labelKey: 'QUICK_ACTIONS.ACTIONS.NEW_CAMPAIGN',
-        description: 'Create a discount campaign.',
-        icon: 'promotion',
-        link: '/promotions/campaigns',
-        queryParams: { action: 'create' },
-        permission: 'campaignsSecurity.access',
-        feature: 'promotions',
-      },
-      {
-        label: 'New Coupon',
-        labelKey: 'QUICK_ACTIONS.ACTIONS.NEW_COUPON',
-        description: 'Generate discount coupons.',
+        label: 'New Voucher',
+        labelKey: 'QUICK_ACTIONS.ACTIONS.NEW_VOUCHER',
+        description: 'Create a gift voucher.',
         icon: 'coupon',
-        link: '/promotions/coupons',
-        queryParams: { action: 'create' },
-        permission: 'couponsSecurity.access',
+        link: '/promotions/promotions-vouchers/new',
+        // Same grant + plan feature the sidebar entry and the route enforce.
+        permission: 'PromotionalVoucherPrivileges.actions.AddVoucher.access',
         feature: 'promotions',
       },
     ],
@@ -431,13 +401,13 @@ const ALL_CATEGORIES: QuickCategory[] = [
         &::placeholder { color: #b0b8c1; }
       }
     }
-    .qa-search-box:focus-within { border-color: #556ee6; }
+    .qa-search-box:focus-within { border-color: var(--color-brand-500, #32acc1); }
     .qa-cat-select {
       position: relative; display: flex; align-items: center; gap: 4px;
       cursor: pointer; user-select: none; white-space: nowrap;
     }
-    .qa-cat-label { font-size: 12px; color: #556ee6; font-weight: 500; }
-    .qa-cat-select > svg { color: #556ee6; transition: transform .15s; flex-shrink: 0; }
+    .qa-cat-label { font-size: 12px; color: var(--color-brand-500, #32acc1); font-weight: 500; }
+    .qa-cat-select > svg { color: var(--color-brand-500, #32acc1); transition: transform .15s; flex-shrink: 0; }
 
     .cat-dropdown {
       position: absolute; top: calc(100% + 6px); right: 0;
@@ -456,11 +426,11 @@ const ALL_CATEGORIES: QuickCategory[] = [
       padding: 10px 16px; font-size: 13px; color: #2a3042;
       cursor: pointer; transition: background .1s;
     }
-    .cat-option:hover { background: #f4f6ff; }
+    .cat-option:hover { background: var(--color-brand-50, #effbfd); }
     .cat-option.selected {
-      background: #556ee6; color: #fff; font-weight: 600;
+      background: var(--color-brand-500, #32acc1); color: #fff; font-weight: 600;
     }
-    .cat-option.selected:hover { background: #4a5fd4; }
+    .cat-option.selected:hover { background: var(--color-brand-600, #2691a4); }
 
     /* Body */
     .qa-body {
@@ -495,12 +465,12 @@ const ALL_CATEGORIES: QuickCategory[] = [
       transition: all .12s; cursor: pointer;
       border-radius: 0;
       &:hover {
-        background: #f4f6ff;
-        border-color: #e4e8ff;
+        background: var(--color-brand-50, #effbfd);
+        border-color: var(--color-brand-100, #d6f4f8);
       }
       &:hover .qa-action-plus {
-        border-color: #556ee6;
-        color: #556ee6;
+        border-color: var(--color-brand-500, #32acc1);
+        color: var(--color-brand-500, #32acc1);
       }
       &:not(:last-child) { border-bottom: 1px solid #f4f5f7; }
     }
@@ -508,7 +478,7 @@ const ALL_CATEGORIES: QuickCategory[] = [
     .qa-action-icon {
       width: 36px; height: 36px; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
-      background: #f4f5f7; border-radius: 8px; color: #556ee6;
+      background: #f4f5f7; border-radius: 8px; color: var(--color-brand-500, #32acc1);
       svg { width: 18px; height: 18px; }
     }
 

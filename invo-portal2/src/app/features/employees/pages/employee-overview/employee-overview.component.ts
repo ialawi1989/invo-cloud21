@@ -118,7 +118,7 @@ export class EmployeeOverviewComponent implements OnInit {
       ?? this.route.snapshot.paramMap.get('id')
       ?? this.route.parent?.snapshot.paramMap.get('id')
       ?? null;
-    if (!id || id === '0') { this.router.navigate(['/employees']); return; }
+    if (!id || id === '0' || id === 'new') { this.router.navigate(['/employees']); return; }
 
     this.loading.set(true);
     try {

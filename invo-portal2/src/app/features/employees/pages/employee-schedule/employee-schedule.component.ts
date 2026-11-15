@@ -363,7 +363,7 @@ export class EmployeeScheduleComponent implements OnInit {
     this.i18nTick();
     return [
       { label: this.translate.instant('EMPLOYEES.SCHEDULE.ADD_TIME_OFF'),     click: () => this.openTimeOff() },
-      { label: this.translate.instant('EMPLOYEES.SCHEDULE.NEW_TEAM_MEMBER'),  click: () => this.router.navigate(['/employees', '0']) },
+      { label: this.translate.instant('EMPLOYEES.SCHEDULE.NEW_TEAM_MEMBER'),  click: () => this.router.navigate(['/employees', 'new']) },
     ];
   });
 

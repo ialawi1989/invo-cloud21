@@ -25,7 +25,7 @@ import { employeeEarningsGuard } from './employee-earnings.guard';
  *   /employees/tips            → pool-tip distribution (needs tips switched on)
  *   /employees/my-account      → the signed-in employee's own account
  *   /employees/invitation/:id  → invite / edit invited employee (0 = new)
- *   /employees/0               → add-employee form (single page)
+ *   /employees/new              → add-employee form (single page)
  *   /employees/:id             → employee record shell; redirects to the form
  *   /employees/:id/edit        → the form; `?section=` narrows it to one card
  *   /employees/:id/documents   → documents tab
@@ -230,7 +230,7 @@ export const EMPLOYEES_ROUTES: Routes = [
      * a tab strip would point at tabs that cannot load. The single-page form
      * supplies its own header instead.
      */
-    path: '0',
+    path: 'new',
     canActivate: [translationsLoaded, privilegeGuard],
     canDeactivate: [unsavedChangesGuard],
     data: { permissionPath: 'employeeSecurity.actions.add.access' },
