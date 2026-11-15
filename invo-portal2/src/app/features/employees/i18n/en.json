@@ -1301,13 +1301,6 @@
         "PENALTY": "Penalty",
         "OTHER_DEDUCTION": "Other deduction"
       },
-      "TAX_IDENTIFIER": "Tax identifier",
-      "TAX_IDENTIFIER_HINT": "TIN / tax code / NI number",
-      "TAX_COUNTRY": "Tax country",
-      "TAX_COUNTRY_HINT": "e.g. BH",
-      "TAX_RATE": "Withholding rate (%)",
-      "TAX_NOTES": "Tax notes",
-      "TAX_NOT_CALCULATED": "Tax information is recorded here only. No tax is calculated or deducted from any figure on this page.",
       "NO_PAY_ALERT": "No pay record yet. Payroll can't run for this employee until one is set up.",
       "SET_UP_PAY": "Set Up Pay",
       "STATUS": "Status",
