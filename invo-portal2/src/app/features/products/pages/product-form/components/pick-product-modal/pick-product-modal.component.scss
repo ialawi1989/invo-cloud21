@@ -121,6 +121,10 @@
   cursor: pointer;
   border-bottom: 1px solid #f1f5f9;
   transition: background 120ms ease;
+  /* Off-screen rows skip layout + paint, so a list scrolled to thousands of rows stays smooth. Same look and
+     behaviour; 61px is only the placeholder height until a row is first rendered. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 61px;
 
   &:last-child { border-bottom: none; }
   &:hover { background: #f8fafc; }
