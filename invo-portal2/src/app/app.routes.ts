@@ -1,3 +1,4 @@
+import { E_INVOICE_PUBLIC_ROUTES } from './features/e-invoice/e-invoice.routes';
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { guestGuard } from './core/guards/guest.guard';
@@ -38,6 +39,8 @@ export const routes: Routes = [
         .then(m => m.DeliveryNotePrintComponent),
   },
 
+  // ── Public customer pages (no auth, no layout): payment link + invoice signing. Paths are fixed by the backend. ──
+  ...E_INVOICE_PUBLIC_ROUTES,
   // ── Full-page builders (no main layout chrome) ─────────────────────────
   // Table Management is a visual floor-plan builder — like the receipt /
   // invoice builders, it takes over the full viewport rather than living
@@ -345,6 +348,7 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./features/products/products.routes').then(m => m.PRODUCTS_ROUTES)
       },
+      { path: 'settings/cheque-builder', loadChildren: () => import('./features/cheque-builder/cheque-builder.routes').then(m => m.CHEQUE_BUILDER_ROUTES) },
       { path: 'price-management', loadChildren: () => import('./features/price-management/price-management.routes').then(m => m.PRICE_MANAGEMENT_ROUTES) },
       { path: 'branch-payments', loadChildren: () => import('./features/branch-payments/branch-payments.routes').then(m => m.BRANCH_PAYMENTS_ROUTES) },
       { path: 'accept-reject-order-cloud', loadChildren: () => import('./features/accept-reject-orders/accept-reject-orders.routes').then(m => m.ACCEPT_REJECT_ORDERS_ROUTES) },
