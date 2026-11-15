@@ -1,5 +1,7 @@
+import { WizardStepsComponent, WizardStepItem } from '@shared/components/wizard-steps/wizard-steps.component';
+import { ToastService } from '@shared/components/toast/toast.service';
 import { GosiExemptionsComponent } from '../../components/gosi-exemptions/gosi-exemptions.component';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -62,7 +64,7 @@ type PayView = 'pay' | 'history' | 'loans' | 'bank';
 @Component({
   selector: 'app-employee-payroll',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, SearchDropdownComponent, AlertComponent, SegmentedToggleComponent, DateFieldComponent, GosiExemptionsComponent],
+  imports: [CommonModule, ReactiveFormsModule, TranslateModule, SearchDropdownComponent, AlertComponent, SegmentedToggleComponent, WizardStepsComponent, DateFieldComponent, GosiExemptionsComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './employee-payroll.component.html',
   styleUrls: ['./employee-payroll.component.scss'],
@@ -74,6 +76,7 @@ export class EmployeePayrollComponent {
   private readonly auth = inject(AuthService);
   private readonly fb = inject(FormBuilder);
   private readonly translate = inject(TranslateService);
+  private readonly toast = inject(ToastService);
 
   readonly employeeId =
     this.route.parent?.snapshot.paramMap.get('id')
@@ -251,10 +254,60 @@ export class EmployeePayrollComponent {
     (c?.components ?? []).forEach(x => this.components.push(this.componentGroup(x)));
     this.error.set(null);
     this.payTried.set(false);
+    this.payStep.set(0);
     this.recording.set(true);
+    this.scrollToPayForm();
   }
 
-  cancelRecord(): void { this.recording.set(false); this.payTried.set(false); }
+  // ── "Record a pay change" as four short steps ───────────────────────────
+  readonly payStepItems: WizardStepItem[] = [
+    { key: 'pay', label: 'EMPLOYEES.PAYROLL.STEP_PAY' },
+    { key: 'components', label: 'EMPLOYEES.PAYROLL.COMPONENTS' },
+    { key: 'insurance', label: 'EMPLOYEES.PAYROLL.CARD_SOCIAL_INSURANCE' },
+    { key: 'review', label: 'EMPLOYEES.PAYROLL.STEP_REVIEW' },
+  ];
+  readonly lastStep = 3;
+  readonly payStep = signal(0);
+
+  /** The required fields of step 1; the rest of the form has nothing mandatory until the server sees it. */
+  private firstStepValid(): boolean {
+    const names = ['effectiveFrom', 'basicSalary', 'currency', 'payFrequency', ...(this.isFirstPay() ? [] : ['changeReason'])];
+    return names.every(n => this.payForm.get(n)?.valid);
+  }
+
+  private readonly host = inject(ElementRef<HTMLElement>);
+
+  /** Brings the pay-change form into view: it opens below the figures, which can be off-screen. */
+  private scrollToPayForm(): void {
+    setTimeout(() => {
+      const el = (this.host.nativeElement as HTMLElement).querySelector('form.pay-form') as HTMLElement | null;
+      el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
+  nextStep(): void {
+    if (this.payStep() === 0 && !this.firstStepValid()) {
+      this.payTried.set(true);
+      this.payForm.markAllAsTouched();
+      return;
+    }
+    if (this.payStep() === 1 && this.components.invalid) {
+      this.components.markAllAsTouched();
+      return;
+    }
+    this.payStep.update(s => Math.min(this.lastStep, s + 1));
+    this.scrollToPayForm();
+  }
+
+  prevStep(): void { this.payStep.update(s => Math.max(0, s - 1)); this.scrollToPayForm(); }
+
+  /** Enter inside a field moves to the next step; only the last step saves. */
+  onPayEnter(): void {
+    if (this.payStep() < this.lastStep) this.nextStep();
+    else void this.submitPayChange();
+  }
+
+  cancelRecord(): void { this.recording.set(false); this.payTried.set(false); this.payStep.set(0); }
 
   /** A required pay-form field is empty and the form was submitted (or the field touched). */
   showErr(name: string): boolean {
@@ -519,6 +572,25 @@ export class EmployeePayrollComponent {
   });
 
   maskIban = maskIban;
+
+  // ── Bank accounts shown as rows that open ───────────────────────────────
+  /** Which account rows are open (`main`, `s0`, `s1`...). Replaced, never mutated, so a signal sees the change. */
+  private readonly openBank = signal<ReadonlySet<string>>(new Set(['main']));
+  isBankOpen(key: string): boolean { return this.openBank().has(key); }
+  toggleBank(key: string): void {
+    this.openBank.update(s => { const n = new Set(s); n.has(key) ? n.delete(key) : n.add(key); return n; });
+  }
+
+  /** Copies the full value (the viewer already holds the viewBank grant) and says so. */
+  async copyText(value: string | null | undefined): Promise<void> {
+    if (!value) return;
+    try {
+      await navigator.clipboard.writeText(value);
+      this.toast.success('EMPLOYEES.PAYROLL.COPIED');
+    } catch {
+      this.toast.error('COMMON.OPS', this.translate.instant('EMPLOYEES.PAYROLL.COPY_FAILED'));
+    }
+  }
 
   optionKey = (o: { key: string }) => o.key;
   optionName = (o: { key: string; labelKey?: string }) =>

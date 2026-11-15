@@ -1,3 +1,5 @@
+import { PayslipModalComponent, PayslipData } from './payslip-modal/payslip-modal.component';
+import { SegmentedToggleComponent, SegmentedToggleOption } from '@shared/components/segmented-toggle/segmented-toggle.component';
 import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -53,7 +55,7 @@ interface Col {
 @Component({
   selector: 'app-payroll-run',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, TranslateModule, MycurrencyPipe, BreadcrumbsComponent, DatePickerComponent],
+  imports: [CommonModule, FormsModule, RouterLink, TranslateModule, MycurrencyPipe, BreadcrumbsComponent, DatePickerComponent, SegmentedToggleComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './payroll-run.component.html',
   styleUrls: ['./payroll-run.component.scss'],
@@ -110,6 +112,76 @@ export class PayrollRunComponent {
     { key: 'otherDeductions', labelKey: 'COL_OTHER', step: '0.001',
       computed: () => 0, value: l => l.result.otherDeductions },
   ];
+
+  /**
+   * Where the run's cost goes, from the lines already on the page: net pay, the employee's social insurance, loan repayments,
+   * every other deduction (absence, recurring...) and the employer's own social-insurance cost. Together they are what the run
+   * costs the company (gross + employer share). Null when there is nothing to show.
+   */
+  readonly costBreakdown = computed(() => {
+    const lines = this.run()?.lines ?? [];
+    const sum = (f: (l: PayrollLine) => number) => lines.reduce((s, l) => s + (Number(f(l)) || 0), 0);
+    const net = sum(l => l.result.net);
+    const gosiEe = sum(l => l.result.gosiEmployee);
+    const loans = sum(l => l.result.loanDeduction);
+    const other = sum(l => l.result.totalDeductions) - gosiEe - loans;
+    const gosiEr = sum(l => l.result.gosiEmployer);
+    const raw = [
+      { key: 'net', labelKey: 'SEG_NET', color: '#32acc1', amount: net },
+      { key: 'gosiEe', labelKey: 'SEG_GOSI_EE', color: '#f59e0b', amount: gosiEe },
+      { key: 'loans', labelKey: 'SEG_LOANS', color: '#8b5cf6', amount: loans },
+      { key: 'other', labelKey: 'SEG_OTHER', color: '#ef4444', amount: other },
+      { key: 'gosiEr', labelKey: 'SEG_GOSI_ER', color: '#64748b', amount: gosiEr },
+    ].filter(x => x.amount > 0);
+    const total = raw.reduce((s, x) => s + x.amount, 0);
+    if (!lines.length || total <= 0) return null;
+    let from = 0;
+    const parts: string[] = [];
+    const segments = raw.map(x => {
+      const pct = (x.amount / total) * 100;
+      parts.push(`${x.color} ${from.toFixed(2)}% ${(from + pct).toFixed(2)}%`);
+      from += pct;
+      return { ...x, percent: Math.round(pct * 10) / 10 };
+    });
+    return { total, segments, gradient: `conic-gradient(${parts.join(', ')})` };
+  });
+
+  // ── Which employees are shown, and which rows are open ──────────────────
+  readonly filter = signal<'all' | 'review'>('all');
+  readonly search = signal('');
+  /** Employees whose adjustments are open. A Set is replaced, never mutated, so the OnPush view sees the change. */
+  private readonly openIds = signal<ReadonlySet<string>>(new Set());
+
+  readonly filterOptions = computed<SegmentedToggleOption<'all' | 'review'>[]>(() => [
+    { value: 'all', label: 'EMPLOYEES.PAYROLL_RUN.ALL_EMPLOYEES', count: this.run()?.lines.length ?? 0 },
+    { value: 'review', label: 'EMPLOYEES.PAYROLL_RUN.NEEDS_REVIEW', count: this.totals().flagged },
+  ]);
+
+  readonly visibleLines = computed(() => {
+    const q = this.search().trim().toLowerCase();
+    const onlyFlagged = this.filter() === 'review';
+    return (this.run()?.lines ?? []).filter(l =>
+      (!onlyFlagged || l.result.flags.length > 0) && (!q || l.employeeName.toLowerCase().includes(q)));
+  });
+
+  /** The employee's payslip for this run, from the line already on the page. */
+  viewPayslip(l: PayrollLine): void {
+    const r = this.run();
+    if (!r) return;
+    this.modal.open<PayslipModalComponent, PayslipData, void>(PayslipModalComponent, {
+      size: 'md', data: { line: l, period: this.periodLabel(r), status: r.status },
+    });
+  }
+
+  isOpen(l: PayrollLine): boolean { return this.openIds().has(l.employeeId); }
+  toggle(l: PayrollLine): void {
+    this.openIds.update(s => { const n = new Set(s); n.has(l.employeeId) ? n.delete(l.employeeId) : n.add(l.employeeId); return n; });
+  }
+  /** From the "N need review" card: show only the flagged people, with their adjustments open. */
+  showReview(): void {
+    this.filter.set('review');
+    this.openIds.set(new Set((this.run()?.lines ?? []).filter(l => l.result.flags.length > 0).map(l => l.employeeId)));
+  }
 
   readonly totals = computed(() => {
     const lines = this.run()?.lines ?? [];

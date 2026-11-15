@@ -44,12 +44,57 @@
       </details>
     }
 
-    <div class="pr-summary">
-      <div><span>{{ 'EMPLOYEES.PAYROLL_RUN.GROSS' | translate }}</span><b>{{ totals().gross | mycurrency }}</b></div>
-      <div><span>{{ 'EMPLOYEES.PAYROLL_RUN.DEDUCTIONS' | translate }}</span><b>{{ totals().deductions | mycurrency }}</b></div>
-      <div><span>{{ 'EMPLOYEES.PAYROLL_RUN.TOTAL_NET' | translate }}</span><b>{{ totals().net | mycurrency }}</b></div>
-      <div><span>{{ 'EMPLOYEES.PAYROLL_RUN.NEEDS_REVIEW' | translate }}</span><b [class.pr-warn]="totals().flagged > 0">{{ totals().flagged }}</b></div>
+    <!-- Three totals, and one card that says what to do next (review the flagged people, then finalize). -->
+    <div class="pr-kpis">
+      <div class="pr-kpi pr-kpi--gross">
+        <span>{{ 'EMPLOYEES.PAYROLL_RUN.GROSS' | translate }}</span>
+        <b>{{ totals().gross | mycurrency }}</b>
+      </div>
+      <div class="pr-kpi pr-kpi--ded">
+        <span>{{ 'EMPLOYEES.PAYROLL_RUN.DEDUCTIONS' | translate }}</span>
+        <b>{{ totals().deductions | mycurrency }}</b>
+      </div>
+      <div class="pr-kpi pr-kpi--net">
+        <span>{{ 'EMPLOYEES.PAYROLL_RUN.TOTAL_NET' | translate }}</span>
+        <b>{{ totals().net | mycurrency }}</b>
+      </div>
+      <div class="pr-kpi pr-kpi--action" [class.pr-kpi--warn]="totals().flagged > 0" [class.pr-kpi--ok]="totals().flagged === 0">
+        @if (totals().flagged > 0) {
+          <span>{{ 'EMPLOYEES.PAYROLL_RUN.ACTION_REVIEW' | translate: { n: totals().flagged } }}</span>
+          <button type="button" class="btn btn-primary btn-sm" (click)="showReview()">{{ 'EMPLOYEES.PAYROLL_RUN.REVIEW' | translate }}</button>
+        } @else if (isDraft()) {
+          <span>{{ 'EMPLOYEES.PAYROLL_RUN.ACTION_READY' | translate }}</span>
+          <button type="button" class="btn btn-primary btn-sm" [disabled]="busy()" (click)="finalize()">{{ 'EMPLOYEES.PAYROLL_RUN.FINALIZE' | translate }}</button>
+        } @else {
+          <span>{{ 'EMPLOYEES.PAYROLL_RUN.ACTION_DONE' | translate }}</span>
+        }
+      </div>
     </div>
+
+    <!-- Where the money goes: net pay, then what is taken off, then the employer's own social-insurance cost. -->
+    @if (costBreakdown(); as cb) {
+      <section class="pr-cost">
+        <div class="pr-cost__donut" [style.background]="cb.gradient" role="img"
+             [attr.aria-label]="'EMPLOYEES.PAYROLL_RUN.COST_BREAKDOWN' | translate">
+          <div class="pr-cost__hole">
+            <span>{{ 'EMPLOYEES.PAYROLL_RUN.COST_TOTAL' | translate }}</span>
+            <b>{{ cb.total | mycurrency }}</b>
+          </div>
+        </div>
+        <div class="pr-cost__legend">
+          <h3 class="pr-cost__title">{{ 'EMPLOYEES.PAYROLL_RUN.COST_BREAKDOWN' | translate }}</h3>
+          @for (s of cb.segments; track s.key) {
+            <div class="pr-cost__row">
+              <span class="pr-cost__dot" [style.background]="s.color"></span>
+              <span class="pr-cost__name">{{ 'EMPLOYEES.PAYROLL_RUN.' + s.labelKey | translate }}</span>
+              <span class="pr-cost__amount">{{ s.amount | mycurrency }}</span>
+              <span class="pr-cost__pct">{{ s.percent }}%</span>
+              <span class="pr-cost__bar"><i [style.width.%]="s.percent" [style.background]="s.color"></i></span>
+            </div>
+          }
+        </div>
+      </section>
+    }
 
     @if (run()?.gosiRemittance; as rm) {
       <!-- Bahrain: the SIO rounds the AGGREGATE total, not each payslip. -->
@@ -65,30 +110,30 @@
       </div>
     }
 
+    <!-- Filter: the full table is long, so the common question - "who needs my attention?" - is one click. -->
+    <div class="pr-toolbar">
+      <app-segmented-toggle [options]="filterOptions()" [value]="filter()" (valueChange)="filter.set($event)"/>
+      <input class="pr-input pr-input--search" type="search" [value]="search()"
+             [placeholder]="'EMPLOYEES.PAYROLL_RUN.SEARCH_EMPLOYEE' | translate"
+             (input)="search.set($any($event.target).value)"/>
+    </div>
+
+    <!-- One row per employee with the figures that matter; the editable adjustments open underneath it. -->
     <div class="pr-scroll">
-      <table class="pr-table">
+      <table class="pr-table pr-table--summary">
         <thead>
           <tr>
             <th class="pr-sticky">{{ 'EMPLOYEES.PAYROLL_RUN.COL_EMPLOYEE' | translate }}</th>
-            @for (c of cols; track c.key) {
-              <th [class.pr-ro]="c.auto">{{ 'EMPLOYEES.PAYROLL_RUN.' + c.labelKey | translate }}</th>
-              @if (c.auto) {
-                <th>{{ 'EMPLOYEES.PAYROLL_RUN.COL_OVERRIDE' | translate }}</th>
-              }
-              @if (c.key === 'attendanceDays') {
-                <th class="pr-ro">{{ 'EMPLOYEES.PAYROLL_RUN.COL_ABSENT' | translate }}</th>
-                <th class="pr-ro">{{ 'EMPLOYEES.PAYROLL_RUN.COL_UNPAID' | translate }}</th>
-              }
-            }
+            <th class="pr-ro">{{ 'EMPLOYEES.PAYROLL_RUN.COL_ATTEND' | translate }}</th>
             <th class="pr-ro">{{ 'EMPLOYEES.PAYROLL_RUN.COL_GOSI_ER' | translate }}</th>
-            <th class="pr-ro">{{ 'EMPLOYEES.PAYROLL_RUN.COL_ABSENCE_DED' | translate }}</th>
+            <th class="pr-ro">{{ 'EMPLOYEES.PAYROLL_RUN.DEDUCTIONS' | translate }}</th>
             <th class="pr-ro pr-net">{{ 'EMPLOYEES.PAYROLL_RUN.COL_NET' | translate }}</th>
-            <th>{{ 'EMPLOYEES.PAYROLL_RUN.COL_NOTES' | translate }}</th>
+            <th><span class="sr-only">{{ 'EMPLOYEES.PAYROLL_RUN.ADJUSTMENTS' | translate }}</span></th>
           </tr>
         </thead>
         <tbody>
-          @for (l of r.lines; track l.employeeId) {
-            <tr [class.pr-row--flag]="l.result.flags.length > 0">
+          @for (l of visibleLines(); track l.employeeId) {
+            <tr class="pr-row" [class.pr-row--flag]="l.result.flags.length > 0" [class.pr-row--open]="isOpen(l)" (click)="toggle(l)">
               <td class="pr-sticky">
                 <div class="pr-emp">{{ l.employeeName }}</div>
                 @for (f of l.result.flags; track f) {
@@ -99,63 +144,78 @@
                   <span class="pr-flag pr-flag--info">{{ 'EMPLOYEES.PAYROLL_RUN.PARTIAL_MONTH' | translate: { days: l.inputs.notEmployedDays } }}</span>
                 }
               </td>
-
-              @for (c of cols; track c.key) {
-                @if (c.auto) {
-                  <!-- Calculated from punches: text only. -->
-                  <td class="pr-ro">
-                    <span class="pr-auto">{{ c.computed(l) }}</span>
-                    @if (c.key === 'attendanceDays') {
-                      <small class="pr-hint">{{ 'EMPLOYEES.PAYROLL_RUN.OF_WORKING' | translate: { n: l.result.workingDays } }}</small>
-                    }
-                  </td>
-                  <!-- Its override, in its own column beside it. Empty = use the calculated figure. -->
-                  <td>
-                    <div class="pr-cell" [class.pr-cell--edited]="isOverridden(l, c)">
-                      <input class="pr-input pr-input--narrow" type="number" min="0" [step]="c.step"
-                             [value]="isOverridden(l, c) ? c.value(l) : ''"
-                             placeholder="—"
-                             [disabled]="!isDraft()"
-                             (change)="onCell(l, c, $any($event.target).value)"/>
-                      @if (isOverridden(l, c) && isDraft()) {
-                        <button type="button" class="pr-reset" [title]="'EMPLOYEES.PAYROLL_RUN.RESET' | translate"
-                                (click)="onCell(l, c, '')">×</button>
-                      }
-                    </div>
-                  </td>
-                } @else {
-                <td>
-                  <div class="pr-cell" [class.pr-cell--edited]="isOverridden(l, c)">
-                    <input class="pr-input" type="number" min="0" [step]="c.step"
-                           [value]="c.value(l)"
-                           [placeholder]="'' + c.computed(l)"
-                           [disabled]="!isDraft()"
-                           (change)="onCell(l, c, $any($event.target).value)"/>
-                    @if (isOverridden(l, c) && isDraft()) {
-                      <button type="button" class="pr-reset" [title]="'EMPLOYEES.PAYROLL_RUN.RESET' | translate"
-                              (click)="onCell(l, c, '')">×</button>
-                    }
-                  </div>
-                </td>
-                }
-                @if (c.key === 'attendanceDays') {
-                  <td class="pr-ro" [class.pr-warn]="l.result.absentDays > 0">{{ l.result.absentDays }}</td>
-                  <td class="pr-ro">{{ l.result.unpaidLeaveDays }}</td>
-                }
-              }
-
+              <td class="pr-ro">
+                {{ l.result.attendanceDays }}
+                <small class="pr-hint">{{ 'EMPLOYEES.PAYROLL_RUN.OF_WORKING' | translate: { n: l.result.workingDays } }}</small>
+              </td>
               <td class="pr-ro">
                 {{ l.result.gosiEmployer | mycurrency }}
                 @if (gosiNote(l); as note) { <small class="pr-hint">{{ note }}</small> }
               </td>
-              <td class="pr-ro">{{ (l.result.absenceDeduction + l.result.prorationDeduction) | mycurrency }}</td>
+              <td class="pr-ro">{{ l.result.totalDeductions | mycurrency }}</td>
               <td class="pr-ro pr-net" [class.pr-warn]="l.result.net < 0">{{ l.result.net | mycurrency }}</td>
-              <td>
-                <input class="pr-input pr-input--text" type="text" maxlength="500"
-                       [value]="l.overrides.notes ?? ''" [disabled]="!isDraft()"
-                       (change)="onNotes(l, $any($event.target).value)"/>
+              <td class="pr-chev">
+                <button type="button" class="pr-chev__btn" [class.pr-chev__btn--open]="isOpen(l)"
+                        [attr.aria-expanded]="isOpen(l)" [attr.aria-label]="'EMPLOYEES.PAYROLL_RUN.ADJUSTMENTS' | translate"
+                        (click)="toggle(l); $event.stopPropagation()">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
               </td>
             </tr>
+
+            @if (isOpen(l)) {
+              <tr class="pr-detail">
+                <td colspan="6">
+                  <div class="pr-adjust">
+                    @for (c of cols; track c.key) {
+                      <div class="pr-adjust__field" [class.pr-adjust__field--edited]="isOverridden(l, c)">
+                        <span class="pr-adjust__label">{{ 'EMPLOYEES.PAYROLL_RUN.' + c.labelKey | translate }}</span>
+                        @if (c.auto) {
+                          <!-- Calculated from punches: shown as text, overridden in its own box - never typed over in place. -->
+                          <span class="pr-auto">{{ c.computed(l) }}</span>
+                          @if (c.key === 'attendanceDays') {
+                            <small class="pr-hint">
+                              {{ 'EMPLOYEES.PAYROLL_RUN.OF_WORKING' | translate: { n: l.result.workingDays } }}
+                              · {{ 'EMPLOYEES.PAYROLL_RUN.COL_ABSENT' | translate }} {{ l.result.absentDays }}
+                              · {{ 'EMPLOYEES.PAYROLL_RUN.COL_UNPAID' | translate }} {{ l.result.unpaidLeaveDays }}
+                            </small>
+                          }
+                          <div class="pr-cell" [class.pr-cell--edited]="isOverridden(l, c)">
+                            <input class="pr-input" type="number" min="0" [step]="c.step"
+                                   [value]="isOverridden(l, c) ? c.value(l) : ''" placeholder="—"
+                                   [attr.aria-label]="'EMPLOYEES.PAYROLL_RUN.COL_OVERRIDE' | translate"
+                                   [disabled]="!isDraft()" (change)="onCell(l, c, $any($event.target).value)"/>
+                            @if (isOverridden(l, c) && isDraft()) {
+                              <button type="button" class="pr-reset" [title]="'EMPLOYEES.PAYROLL_RUN.RESET' | translate" (click)="onCell(l, c, '')">×</button>
+                            }
+                          </div>
+                        } @else {
+                          <div class="pr-cell" [class.pr-cell--edited]="isOverridden(l, c)">
+                            <input class="pr-input" type="number" min="0" [step]="c.step"
+                                   [value]="c.value(l)" [placeholder]="'' + c.computed(l)"
+                                   [disabled]="!isDraft()" (change)="onCell(l, c, $any($event.target).value)"/>
+                            @if (isOverridden(l, c) && isDraft()) {
+                              <button type="button" class="pr-reset" [title]="'EMPLOYEES.PAYROLL_RUN.RESET' | translate" (click)="onCell(l, c, '')">×</button>
+                            }
+                          </div>
+                        }
+                      </div>
+                    }
+                    <div class="pr-adjust__field pr-adjust__field--wide">
+                      <span class="pr-adjust__label">{{ 'EMPLOYEES.PAYROLL_RUN.COL_NOTES' | translate }}</span>
+                      <input class="pr-input pr-input--text" type="text" maxlength="500"
+                             [value]="l.overrides.notes ?? ''" [disabled]="!isDraft()"
+                             (change)="onNotes(l, $any($event.target).value)"/>
+                    </div>
+                    <div class="pr-adjust__field pr-adjust__field--wide pr-adjust__actions">
+                      <button type="button" class="btn btn-default btn-sm" (click)="viewPayslip(l)">{{ 'EMPLOYEES.PAYROLL_RUN.VIEW_PAYSLIP' | translate }}</button>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            }
+          } @empty {
+            <tr><td colspan="6" class="pr-empty">{{ 'EMPLOYEES.PAYROLL_RUN.NO_MATCH' | translate }}</td></tr>
           }
         </tbody>
       </table>

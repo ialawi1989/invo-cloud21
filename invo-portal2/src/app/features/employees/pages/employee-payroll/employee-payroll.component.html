@@ -153,29 +153,34 @@
                         <div>
                           <dt>{{ 'EMPLOYEES.PAYROLL.NET_AFTER_GOSI' | translate }}</dt>
                           <dd>{{ money(c.netAfterGosi, c.currency) }}</dd>
-                          <dd class="pay-facts__note">{{ 'EMPLOYEES.PAYROLL.NOT_TAKE_HOME' | translate }}</dd>
+                          <dd class="pay-facts__note">{{ 'EMPLOYEES.PAYROLL.NOT_TAKE_HOME_SHORT' | translate }}</dd>
                         </div>
                       </dl>
                     } @else if (g.reason) {
                       <p class="pay-card__text">{{ 'EMPLOYEES.PAYROLL.GOSI_REASON_' + g.reason.toUpperCase() | translate }}</p>
                     }
                   }
-                  <!-- Waiver windows for this person: both shares, or just one. Changing them refreshes the figures above. -->
-                  @if (c.socialInsuranceApplicable) {
-                    <app-gosi-exemptions [employeeId]="employeeId" [canEdit]="canEditPay()" (changed)="load()"/>
-                  }
                 </section>
               }
             </div>
           </div>
+
+        <!-- Waiver windows for this person: both shares, or just one. Full width: its form is too wide for the side column.
+             Changing them refreshes the figures above. -->
+        @if (c.socialInsuranceApplicable) {
+          <app-gosi-exemptions [employeeId]="employeeId" [canEdit]="canEditPay()" (changed)="load()"/>
+        }
         }
 
         @if (recording()) {
-          <form class="pay-form" [formGroup]="payForm" (ngSubmit)="submitPayChange()">
+          <form class="pay-form" [formGroup]="payForm" (ngSubmit)="onPayEnter()">
             <!-- Stated at the top of the form so nobody is surprised by the
                  history growing a row rather than the figure being replaced. -->
             <p class="pay-form__note">{{ 'EMPLOYEES.PAYROLL.CHANGE_NOTE' | translate }}</p>
 
+            <app-wizard-steps [steps]="payStepItems" [current]="payStepItems[payStep()].key"/>
+
+            @if (payStep() === 0) {
             <div class="pay-form__grid">
               <label class="pay-field">
                 <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.EFFECTIVE_FROM' | translate }} <em>*</em></span>
@@ -241,6 +246,11 @@
                 <textarea class="form-control" rows="2" formControlName="changeNote"></textarea>
               </label>
 
+            </div>
+            }
+
+            @if (payStep() === 2) {
+            <div class="pay-form__grid">
               <!-- ── Social insurance enrolment ───────────────────────────────
                    Without this switch nobody is ever deducted. The registration
                    date picks the rate regime where a country has two (Saudi Arabia,
@@ -268,7 +278,9 @@
               }
 
             </div>
+            }
 
+            @if (payStep() === 1) {
             <section class="pay-sub">
               <header class="pay-sub__head">
                 <h3 class="pay-sub__title">{{ 'EMPLOYEES.PAYROLL.COMPONENTS' | translate }}</h3>
@@ -301,6 +313,49 @@
                 }
               </div>
             </section>
+            }
+
+            <!-- Step 4: read it back before it becomes a new row in the pay history. -->
+            @if (payStep() === 3) {
+              @let v = payForm.getRawValue();
+              <div class="pay-review">
+                <p class="pay-form__note">{{ 'EMPLOYEES.PAYROLL.REVIEW_NOTE' | translate }}</p>
+                <dl class="pay-facts pay-facts--stack">
+                  <div><dt>{{ 'EMPLOYEES.PAYROLL.EFFECTIVE_FROM' | translate }}</dt><dd>{{ v.effectiveFrom }}</dd></div>
+                  <div><dt>{{ 'EMPLOYEES.PAYROLL.BASIC' | translate }}</dt><dd>{{ money(v.basicSalary, v.currency) }}</dd></div>
+                  <div><dt>{{ 'EMPLOYEES.PAYROLL.FREQUENCY_LABEL' | translate }}</dt><dd>{{ frequencyLabel(v.payFrequency) | translate }}</dd></div>
+                  @if (!isFirstPay()) {
+                    <div><dt>{{ 'EMPLOYEES.PAYROLL.CHANGE_REASON' | translate }}</dt><dd>{{ reasonLabel(v.changeReason) | translate }}</dd></div>
+                  }
+                  @if (v.paymentMethod) {
+                    <div><dt>{{ 'EMPLOYEES.PAYROLL.METHOD_LABEL' | translate }}</dt><dd>{{ methodLabel(v.paymentMethod) | translate }}</dd></div>
+                  }
+                  @if (v.changeNote) {
+                    <div><dt>{{ 'EMPLOYEES.PAYROLL.CHANGE_NOTE_FIELD' | translate }}</dt><dd>{{ v.changeNote }}</dd></div>
+                  }
+                  <div>
+                    <dt>{{ 'EMPLOYEES.PAYROLL.SI_ENROLLED' | translate }}</dt>
+                    <dd>
+                      {{ (v.socialInsuranceApplicable ? 'COMMON.YES' : 'COMMON.NO') | translate }}
+                      @if (v.socialInsuranceApplicable && v.socialInsuranceRegisteredOn) { · {{ v.socialInsuranceRegisteredOn }} }
+                    </dd>
+                  </div>
+                </dl>
+                @if (components.length) {
+                  <ul class="pay-components">
+                    @for (g of components.getRawValue(); track $index) {
+                      <li>
+                        <span class="pay-components__name">{{ componentLabel(g.type) | translate }}</span>
+                        <span class="pay-components__amount">
+                          @if (g.calculation === 'PercentOfBasic') { {{ g.amount ?? '—' }}% } @else { {{ money(g.amount, v.currency) }} }
+                        </span>
+                        <span class="pay-components__flag">{{ (g.isRecurring === false ? 'EMPLOYEES.PAYROLL.ONE_OFF' : 'EMPLOYEES.PAYROLL.RECURRING') | translate }}</span>
+                      </li>
+                    }
+                  </ul>
+                }
+              </div>
+            }
 
             @if (payTried() && payForm.invalid) {
               <p class="pay-field__error">{{ 'COMMON.FORM_ERRORS.TITLE' | translate }}</p>
@@ -311,9 +366,16 @@
               <button type="button" class="btn btn-secondary" (click)="cancelRecord()">
                 {{ 'COMMON.CANCEL' | translate }}
               </button>
-              <button type="submit" class="btn btn-primary" [disabled]="busy() !== null">
-                {{ 'EMPLOYEES.PAYROLL.RECORD_CHANGE' | translate }}
-              </button>
+              @if (payStep() > 0) {
+                <button type="button" class="btn btn-secondary" (click)="prevStep()">{{ 'EMPLOYEES.PAYROLL.STEP_BACK' | translate }}</button>
+              }
+              @if (payStep() < lastStep) {
+                <button type="button" class="btn btn-primary" (click)="nextStep()">{{ 'EMPLOYEES.PAYROLL.STEP_NEXT' | translate }}</button>
+              } @else {
+                <button type="submit" class="btn btn-primary" [disabled]="busy() !== null">
+                  {{ 'EMPLOYEES.PAYROLL.RECORD_CHANGE' | translate }}
+                </button>
+              }
             </div>
           </form>
         }
@@ -474,36 +536,72 @@
       @if (!bank() && !editingBank()) {
         <div class="pay-empty">{{ 'EMPLOYEES.PAYROLL.NO_BANK' | translate }}</div>
       } @else if (bank(); as b) {
-        <dl class="pay-facts">
-          @if (b.bankName) { <div><dt>{{ 'EMPLOYEES.PAYROLL.BANK_NAME' | translate }}</dt><dd>{{ b.bankName }}</dd></div> }
-          @if (b.iban) {
-            <div>
-              <dt>{{ 'EMPLOYEES.PAYROLL.IBAN' | translate }}</dt>
-              <dd class="pay-iban">
-                {{ ibanRevealed() ? b.iban : maskIban(b.iban) }}
-                <button type="button" class="btn btn-link btn-sm pay-reveal"
-                        [attr.aria-pressed]="ibanRevealed()"
-                        (click)="ibanRevealed.set(!ibanRevealed())">
-                  {{ (ibanRevealed() ? 'EMPLOYEES.PAYROLL.HIDE' : 'EMPLOYEES.PAYROLL.REVEAL') | translate }}
-                </button>
-              </dd>
+        <!-- One row per account, collapsed to a single line; open it for the full details. The main account first, then the split accounts. -->
+        <div class="bank-rows">
+          <div class="bank-row" [class.bank-row--open]="isBankOpen('main')">
+            <button type="button" class="bank-row__head" [attr.aria-expanded]="isBankOpen('main')" (click)="toggleBank('main')">
+              <span class="bank-row__icon" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V10m14 11V10M9 21V10m6 11V10M2 10l10-7 10 7"/></svg>
+              </span>
+              <span class="bank-row__main">
+                <strong>{{ b.bankName || ('EMPLOYEES.PAYROLL.BANK' | translate) }}</strong>
+                <small>{{ b.accountHolderName }}</small>
+              </span>
+              @if (b.iban) { <span class="pay-iban bank-row__num">{{ maskIban(b.iban) }}</span> }
+              @if (b.splitAccounts.length) { <span class="bank-row__tag">{{ 'EMPLOYEES.PAYROLL.MAIN_ACCOUNT' | translate }}</span> }
+              <svg class="bank-row__chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            @if (isBankOpen('main')) {
+              <dl class="pay-facts bank-row__body">
+                @if (b.bankName) { <div><dt>{{ 'EMPLOYEES.PAYROLL.BANK_NAME' | translate }}</dt><dd>{{ b.bankName }}</dd></div> }
+                @if (b.accountHolderName) { <div><dt>{{ 'EMPLOYEES.PAYROLL.ACCOUNT_HOLDER' | translate }}</dt><dd>{{ b.accountHolderName }}</dd></div> }
+                @if (b.iban) {
+                  <div class="bank-row__wide">
+                    <dt>{{ 'EMPLOYEES.PAYROLL.IBAN' | translate }}</dt>
+                    <dd class="pay-iban">
+                      {{ ibanRevealed() ? b.iban : maskIban(b.iban) }}
+                      <button type="button" class="btn btn-link btn-sm pay-reveal" [attr.aria-pressed]="ibanRevealed()" (click)="ibanRevealed.set(!ibanRevealed())">
+                        {{ (ibanRevealed() ? 'EMPLOYEES.PAYROLL.HIDE' : 'EMPLOYEES.PAYROLL.REVEAL') | translate }}
+                      </button>
+                      <button type="button" class="btn btn-link btn-sm pay-reveal" (click)="copyText(b.iban)">{{ 'EMPLOYEES.PAYROLL.COPY' | translate }}</button>
+                    </dd>
+                  </div>
+                }
+                @if (b.swift) { <div><dt>{{ 'EMPLOYEES.PAYROLL.SWIFT' | translate }}</dt><dd>{{ b.swift }}</dd></div> }
+              </dl>
+            }
+          </div>
+
+          @for (s of b.splitAccounts; track trackIndex($index); let i = $index) {
+            <div class="bank-row" [class.bank-row--open]="isBankOpen('s' + i)">
+              <button type="button" class="bank-row__head" [attr.aria-expanded]="isBankOpen('s' + i)" (click)="toggleBank('s' + i)">
+                <span class="bank-row__icon" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V10m14 11V10M9 21V10m6 11V10M2 10l10-7 10 7"/></svg>
+                </span>
+                <span class="bank-row__main"><strong>{{ s.bankName }}</strong></span>
+                <span class="pay-iban bank-row__num">{{ maskIban(s.iban) }}</span>
+                <span class="bank-row__tag bank-row__tag--pct">{{ s.percentage ?? '—' }}%</span>
+                <svg class="bank-row__chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              @if (isBankOpen('s' + i)) {
+                <dl class="pay-facts bank-row__body">
+                  <div><dt>{{ 'EMPLOYEES.PAYROLL.BANK_NAME' | translate }}</dt><dd>{{ s.bankName }}</dd></div>
+                  <div class="bank-row__wide">
+                    <dt>{{ 'EMPLOYEES.PAYROLL.IBAN' | translate }}</dt>
+                    <dd class="pay-iban">
+                      {{ ibanRevealed() ? s.iban : maskIban(s.iban) }}
+                      <button type="button" class="btn btn-link btn-sm pay-reveal" [attr.aria-pressed]="ibanRevealed()" (click)="ibanRevealed.set(!ibanRevealed())">
+                        {{ (ibanRevealed() ? 'EMPLOYEES.PAYROLL.HIDE' : 'EMPLOYEES.PAYROLL.REVEAL') | translate }}
+                      </button>
+                      <button type="button" class="btn btn-link btn-sm pay-reveal" (click)="copyText(s.iban)">{{ 'EMPLOYEES.PAYROLL.COPY' | translate }}</button>
+                    </dd>
+                  </div>
+                  <div><dt>{{ 'EMPLOYEES.PAYROLL.SPLIT_PERCENT' | translate }}</dt><dd>{{ s.percentage ?? '—' }}%</dd></div>
+                </dl>
+              }
             </div>
           }
-          @if (b.swift) { <div><dt>{{ 'EMPLOYEES.PAYROLL.SWIFT' | translate }}</dt><dd>{{ b.swift }}</dd></div> }
-          @if (b.accountHolderName) { <div><dt>{{ 'EMPLOYEES.PAYROLL.ACCOUNT_HOLDER' | translate }}</dt><dd>{{ b.accountHolderName }}</dd></div> }
-        </dl>
-
-        @if (b.splitAccounts.length) {
-          <ul class="pay-splits">
-            @for (s of b.splitAccounts; track trackIndex($index)) {
-              <li>
-                <span>{{ s.bankName }}</span>
-                <span class="pay-iban">{{ ibanRevealed() ? s.iban : maskIban(s.iban) }}</span>
-                <span class="pay-splits__pct">{{ s.percentage ?? '—' }}%</span>
-              </li>
-            }
-          </ul>
-        }
+        </div>
       }
 
       @if (editingBank()) {
