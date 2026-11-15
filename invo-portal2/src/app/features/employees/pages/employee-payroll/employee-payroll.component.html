@@ -1,14 +1,22 @@
 <div class="employee-payroll">
 
-  @if (error(); as err) {
-    <div class="hr-error" role="alert">
-      <div class="hr-error__title">{{ err.titleKey | translate }}</div>
-      @if (err.hintKey) { <div class="hr-error__hint">{{ err.hintKey | translate }}</div> }
-      @if (err.detail) { <pre class="hr-error__detail">{{ err.detail }}</pre> }
-      <button type="button" class="hr-error__dismiss" (click)="error.set(null)">
-        {{ 'COMMON.DISMISS' | translate }}
-      </button>
-    </div>
+  <!-- The error banner. Shown at the top of the page, and again inside the pay form while it is open: the form sits
+       far below the top, so an error shown only up there is never seen by the person who just pressed the button. -->
+  <ng-template #errorBanner>
+    @if (error(); as err) {
+      <div class="hr-error" role="alert">
+        <div class="hr-error__title">{{ err.titleKey | translate }}</div>
+        @if (err.hintKey) { <div class="hr-error__hint">{{ err.hintKey | translate }}</div> }
+        @if (err.detail) { <pre class="hr-error__detail">{{ err.detail }}</pre> }
+        <button type="button" class="hr-error__dismiss" (click)="error.set(null)">
+          {{ 'COMMON.DISMISS' | translate }}
+        </button>
+      </div>
+    }
+  </ng-template>
+
+  @if (!recording()) {
+    <ng-container [ngTemplateOutlet]="errorBanner"/>
   }
 
   @if (isOwnRecord()) {
@@ -18,271 +26,304 @@
   <!-- ═══ PAY ═══════════════════════════════════════════════════════════
        Gated on viewPay alone. The bank panel below asks a separate question
        and neither answer implies the other. -->
-  @if (canViewPay()) {
+  <!-- One section at a time: the page used to stack pay, history, loans and bank details in a single scroll. -->
+  @if (tabs().length > 1) {
+    <app-segmented-toggle class="pay-tabs" [options]="tabs()" [value]="activeView()" (valueChange)="view.set($event)"/>
+  }
+
+  @if (canViewPay() && (activeView() === 'pay' || activeView() === 'history')) {
     <section class="pay-panel">
-      <header class="pay-panel__head">
-        <h2 class="pay-panel__title">{{ 'EMPLOYEES.PAYROLL.CURRENT_PAY' | translate }}</h2>
-        @if (canEditPay() && !recording() && current()) {
-          <!-- "Record a pay change", never "Edit salary": that is what the
-               server does, and calling it editing invites someone to expect
-               the old figure to disappear. -->
-          <button type="button" class="btn btn-primary" (click)="startRecordChange()">
-            {{ 'EMPLOYEES.PAYROLL.RECORD_CHANGE' | translate }}
-          </button>
-        }
-      </header>
-
-      @if (loading()) {
-        <div class="pay-loading">{{ 'COMMON.LOADING' | translate }}</div>
-      } @else if (!current() && !recording()) {
-        <app-alert variant="warning">
-          {{ 'EMPLOYEES.PAYROLL.NO_PAY_ALERT' | translate }}
-          @if (canEditPay()) {
-            <button alertAction type="button" class="btn btn-primary btn-sm" (click)="startRecordChange()">
-              {{ 'EMPLOYEES.PAYROLL.SET_UP_PAY' | translate }}
-            </button>
-          }
-        </app-alert>
-      } @else if (current(); as c) {
-        <div class="pay-figures">
-          <div class="pay-figure">
-            <span class="pay-figure__label">{{ 'EMPLOYEES.PAYROLL.BASIC' | translate }}</span>
-            <span class="pay-figure__value">{{ money(c.basicSalary, c.currency) }}</span>
-          </div>
-          <div class="pay-figure">
-            <span class="pay-figure__label">{{ 'EMPLOYEES.PAYROLL.GROSS' | translate }}</span>
-            <span class="pay-figure__value">{{ money(c.grossSalary, c.currency) }}</span>
-          </div>
-          <div class="pay-figure">
-            <span class="pay-figure__label">{{ 'EMPLOYEES.PAYROLL.DEDUCTIONS' | translate }}</span>
-            <span class="pay-figure__value">{{ money(c.recurringDeductions, c.currency) }}</span>
-          </div>
-
-          <!--
-            ══ THE FIGURE MOST LIKELY TO MISLEAD ═════════════════════════
-            NOT take-home pay. Gratuity, GOSI and WPS are not calculated, so
-            this is gross minus the recurring deductions that ARE recorded and
-            nothing else. The disclaimer sits against the number rather than in
-            a footnote, because a footnote is not read by someone scanning for
-            a salary figure.
-          -->
-          <div class="pay-figure pay-figure--net">
-            <span class="pay-figure__label">{{ 'EMPLOYEES.PAYROLL.NET_BEFORE_STATUTORY' | translate }}</span>
-            <span class="pay-figure__value">{{ money(c.netBeforeStatutory, c.currency) }}</span>
-            @if (!statutoryIncluded()) {
-              <span class="pay-figure__caveat">{{ 'EMPLOYEES.PAYROLL.NOT_TAKE_HOME' | translate }}</span>
-            }
-          </div>
-
-          <!-- GOSI, from the company's GOSI settings and this person's nationality.
-               When it cannot be worked out the reason is shown instead of a number:
-               an empty figure would read as "no contribution". -->
-          @if (c.gosi; as g) {
-            @if (g.applicable) {
-              <div class="pay-figure">
-                <span class="pay-figure__label">{{ 'EMPLOYEES.PAYROLL.GOSI_EMPLOYEE' | translate }}</span>
-                <span class="pay-figure__value">{{ money(g.employee, c.currency) }}</span>
-                <span class="pay-figure__caveat">{{ 'EMPLOYEES.PAYROLL.GOSI_BASIS' | translate: { rate: g.employeeRatePercent, wage: money(g.subjectWage, c.currency) } }}</span>
-              </div>
-              <div class="pay-figure">
-                <span class="pay-figure__label">{{ 'EMPLOYEES.PAYROLL.GOSI_EMPLOYER' | translate }}</span>
-                <span class="pay-figure__value">{{ money(g.employer, c.currency) }}</span>
-                <span class="pay-figure__caveat">{{ 'EMPLOYEES.PAYROLL.GOSI_EMPLOYER_NOTE' | translate: { rate: g.employerRatePercent } }}</span>
-              </div>
-              <div class="pay-figure pay-figure--net">
-                <span class="pay-figure__label">{{ 'EMPLOYEES.PAYROLL.NET_AFTER_GOSI' | translate }}</span>
-                <span class="pay-figure__value">{{ money(c.netAfterGosi, c.currency) }}</span>
-                <span class="pay-figure__caveat">{{ 'EMPLOYEES.PAYROLL.NOT_TAKE_HOME' | translate }}</span>
-              </div>
-            } @else if (g.reason) {
-              <div class="pay-figure">
-                <span class="pay-figure__label">GOSI</span>
-                <span class="pay-figure__caveat">{{ 'EMPLOYEES.PAYROLL.GOSI_REASON_' + g.reason.toUpperCase() | translate }}</span>
-              </div>
-            }
-          }
-        </div>
-
-        <!-- Waiver windows for this person: both shares, or just one. Changing them refreshes the figures above. -->
-        @if (c.socialInsuranceApplicable) {
-          <app-gosi-exemptions [employeeId]="employeeId" [canEdit]="canEditPay()" (changed)="load()"/>
-        }
-
-        <dl class="pay-facts">
-          @if (c.effectiveFrom) {
-            <div><dt>{{ 'EMPLOYEES.PAYROLL.EFFECTIVE_FROM' | translate }}</dt><dd>{{ c.effectiveFrom }}</dd></div>
-          }
-          @if (c.payFrequency) {
-            <div><dt>{{ 'EMPLOYEES.PAYROLL.FREQUENCY_LABEL' | translate }}</dt><dd>{{ frequencyLabel(c.payFrequency) | translate }}</dd></div>
-          }
-          @if (c.paymentMethod) {
-            <div><dt>{{ 'EMPLOYEES.PAYROLL.METHOD_LABEL' | translate }}</dt><dd>{{ methodLabel(c.paymentMethod) | translate }}</dd></div>
-          }
-          @if (c.changeReason) {
-            <div><dt>{{ 'EMPLOYEES.PAYROLL.LAST_CHANGE' | translate }}</dt><dd>{{ reasonLabel(c.changeReason) | translate }}</dd></div>
-          }
-        </dl>
-
-        @if (c.components.length) {
-          <ul class="pay-components">
-            @for (comp of c.components; track trackIndex($index)) {
-              <li>
-                <span class="pay-components__name">{{ componentLabel(comp.type) | translate }}</span>
-                <span class="pay-components__amount">
-                  @if (comp.calculation === 'PercentOfBasic') {
-                    <!-- 25 means 25%, never 0.25. -->
-                    {{ comp.amount ?? '—' }}%
-                  } @else {
-                    {{ money(comp.amount, c.currency) }}
-                  }
-                </span>
-                <span class="pay-components__flag">
-                  {{ (comp.isRecurring === false
-                      ? 'EMPLOYEES.PAYROLL.ONE_OFF'
-                      : 'EMPLOYEES.PAYROLL.RECURRING') | translate }}
-                </span>
-              </li>
-            }
-          </ul>
-        }
-      }
-
-      @if (recording()) {
-        <form class="pay-form" [formGroup]="payForm" (ngSubmit)="submitPayChange()">
-          <!-- Stated at the top of the form so nobody is surprised by the
-               history growing a row rather than the figure being replaced. -->
-          <p class="pay-form__note">{{ 'EMPLOYEES.PAYROLL.CHANGE_NOTE' | translate }}</p>
-
-          <div class="pay-form__grid">
-            <label class="pay-field">
-              <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.EFFECTIVE_FROM' | translate }} <em>*</em></span>
-              <app-date-field formControlName="effectiveFrom"/>
-              <span class="pay-field__hint">{{ 'EMPLOYEES.PAYROLL.EFFECTIVE_HINT' | translate }}</span>
-            </label>
-
-            <label class="pay-field">
-              <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.BASIC' | translate }} <em>*</em></span>
-              <input class="form-control form-control--num" type="number" min="0" step="0.001"
-                     formControlName="basicSalary" />
-            </label>
-
-            <label class="pay-field">
-              <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.CURRENCY' | translate }} <em>*</em></span>
-              <input class="form-control" type="text" maxlength="3" formControlName="currency" />
-            </label>
-
-            <label class="pay-field">
-              <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.FREQUENCY_LABEL' | translate }} <em>*</em></span>
-              <app-search-dropdown
-                formControlName="payFrequency"
-                [items]="catalog().frequencies"
-                [displayWith]="optionName" [toValue]="optionKey" [compareWith]="optionMatches"
-                [searchable]="false"
-                [placeholder]="'EMPLOYEES.PAYROLL.FREQUENCY_LABEL' | translate">
-              </app-search-dropdown>
-            </label>
-
-            <label class="pay-field">
-              <!-- Required. A pay history with no reasons cannot answer
-                   "promotion or correction", which is where every dispute and
-                   every pay-equity review starts. -->
-              <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.CHANGE_REASON' | translate }} <em>*</em></span>
-              <app-search-dropdown
-                formControlName="changeReason"
-                [items]="catalog().changeReasons"
-                [displayWith]="optionName" [toValue]="optionKey" [compareWith]="optionMatches"
-                [searchable]="false"
-                [placeholder]="'EMPLOYEES.PAYROLL.CHANGE_REASON' | translate">
-              </app-search-dropdown>
-            </label>
-
-            <label class="pay-field">
-              <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.METHOD_LABEL' | translate }}</span>
-              <app-search-dropdown
-                formControlName="paymentMethod"
-                [items]="catalog().paymentMethods"
-                [displayWith]="optionName" [toValue]="optionKey" [compareWith]="optionMatches"
-                [searchable]="false"
-                [placeholder]="'EMPLOYEES.PAYROLL.METHOD_LABEL' | translate">
-              </app-search-dropdown>
-            </label>
-
-            <label class="pay-field pay-field--wide">
-              <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.CHANGE_NOTE_FIELD' | translate }}</span>
-              <textarea class="form-control" rows="2" formControlName="changeNote"></textarea>
-            </label>
-
-            <!-- ── Social insurance enrolment ───────────────────────────────
-                 Without this switch nobody is ever deducted. The registration
-                 date picks the rate regime where a country has two (Saudi Arabia,
-                 UAE); it is the FIRST registration with the authority, not the
-                 hire date. -->
-            <label class="pay-field pay-field--wide pay-check">
-              <input type="checkbox" formControlName="socialInsuranceApplicable" />
-              <span>{{ 'EMPLOYEES.PAYROLL.SI_ENROLLED' | translate }}</span>
-            </label>
-
-            @if (payForm.get('socialInsuranceApplicable')?.value) {
-              <label class="pay-field">
-                <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.SI_NUMBER' | translate }}</span>
-                <input class="form-control" type="text" formControlName="gosiNumber" />
-              </label>
-
-              <label class="pay-field">
-                <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.SI_REGISTERED_ON' | translate }}</span>
-                <app-date-field formControlName="socialInsuranceRegisteredOn"/>
-                <span class="pay-field__hint">{{ 'EMPLOYEES.PAYROLL.SI_REGISTERED_ON_HINT' | translate }}</span>
-              </label>
-            }
-
-          </div>
-
-          <section class="pay-sub">
-            <header class="pay-sub__head">
-              <h3 class="pay-sub__title">{{ 'EMPLOYEES.PAYROLL.COMPONENTS' | translate }}</h3>
-              <button type="button" class="btn btn-link" (click)="addComponent()">
-                {{ 'EMPLOYEES.PAYROLL.ADD_COMPONENT' | translate }}
-              </button>
-            </header>
-            <div formArrayName="components" class="pay-rows">
-              @for (comp of components.controls; track trackIndex($index); let i = $index) {
-                <div class="pay-row" [formGroupName]="i">
-                  <app-search-dropdown
-                    formControlName="type"
-                    [items]="catalog().componentTypes"
-                    [displayWith]="optionName" [toValue]="optionKey" [compareWith]="optionMatches"
-                    [placeholder]="'EMPLOYEES.PAYROLL.COMPONENT_TYPE' | translate">
-                  </app-search-dropdown>
-                  <app-search-dropdown
-                    formControlName="calculation"
-                    [items]="calculationOptions()"
-                    [displayWith]="optionName" [toValue]="optionKey" [compareWith]="optionMatches"
-                    [searchable]="false" [clearable]="false">
-                  </app-search-dropdown>
-                  <input class="form-control form-control--num" type="number" step="0.001"
-                         formControlName="amount"
-                         [placeholder]="'EMPLOYEES.PAYROLL.AMOUNT_OR_PERCENT' | translate" />
-                  <button type="button" class="btn btn-link btn-link--danger" (click)="removeComponent(i)">
-                    {{ 'COMMON.DELETE' | translate }}
-                  </button>
-                </div>
-              }
-            </div>
-          </section>
-
-          <div class="pay-form__actions">
-            <button type="button" class="btn btn-secondary" (click)="cancelRecord()">
-              {{ 'COMMON.CANCEL' | translate }}
-            </button>
-            <button type="submit" class="btn btn-primary" [disabled]="busy() !== null">
+      @if (activeView() === 'pay') {
+        <header class="pay-panel__head">
+          <h2 class="pay-panel__title">{{ 'EMPLOYEES.PAYROLL.CURRENT_PAY' | translate }}</h2>
+          @if (canEditPay() && !recording() && current()) {
+            <!-- "Record a pay change", never "Edit salary": that is what the
+                 server does, and calling it editing invites someone to expect
+                 the old figure to disappear. -->
+            <button type="button" class="btn btn-primary" (click)="startRecordChange()">
               {{ 'EMPLOYEES.PAYROLL.RECORD_CHANGE' | translate }}
             </button>
+          }
+        </header>
+      }
+
+      @if (activeView() === 'pay') {
+        @if (loading()) {
+          <div class="pay-loading">{{ 'COMMON.LOADING' | translate }}</div>
+        } @else if (!current() && !recording()) {
+          <app-alert variant="warning">
+            {{ 'EMPLOYEES.PAYROLL.NO_PAY_ALERT' | translate }}
+            @if (canEditPay()) {
+              <button alertAction type="button" class="btn btn-primary btn-sm" (click)="startRecordChange()">
+                {{ 'EMPLOYEES.PAYROLL.SET_UP_PAY' | translate }}
+              </button>
+            }
+          </app-alert>
+        } @else if (current(); as c) {
+          <!-- The three figures someone scans for. Everything else sits in the cards below, grouped by what it is. -->
+          <div class="pay-kpis">
+            <div class="pay-kpi pay-kpi--gross">
+              <span class="pay-kpi__label">{{ 'EMPLOYEES.PAYROLL.GROSS' | translate }}</span>
+              <span class="pay-kpi__value">{{ money(c.grossSalary, c.currency) }}</span>
+              <span class="pay-kpi__sub">{{ 'EMPLOYEES.PAYROLL.BASIC' | translate }}: {{ money(c.basicSalary, c.currency) }}</span>
+            </div>
+            <div class="pay-kpi pay-kpi--ded">
+              <span class="pay-kpi__label">{{ 'EMPLOYEES.PAYROLL.DEDUCTIONS' | translate }}</span>
+              <span class="pay-kpi__value">{{ money(c.recurringDeductions, c.currency) }}</span>
+            </div>
+            <!--
+              ══ THE FIGURE MOST LIKELY TO MISLEAD ═════════════════════════
+              NOT take-home pay. Gratuity, GOSI and WPS are not calculated, so this is gross minus the recurring
+              deductions that ARE recorded and nothing else. The disclaimer sits against the number rather than in a
+              footnote, because a footnote is not read by someone scanning for a salary figure.
+            -->
+            <div class="pay-kpi pay-kpi--net">
+              <span class="pay-kpi__label">{{ 'EMPLOYEES.PAYROLL.NET_BEFORE_STATUTORY' | translate }}</span>
+              <span class="pay-kpi__value">{{ money(c.netBeforeStatutory, c.currency) }}</span>
+              @if (!statutoryIncluded()) {
+                <span class="pay-kpi__caveat">{{ 'EMPLOYEES.PAYROLL.NOT_TAKE_HOME' | translate }}</span>
+              }
+            </div>
           </div>
-        </form>
+
+          <div class="pay-layout">
+            <section class="pay-card">
+              <h3 class="pay-card__title">{{ 'EMPLOYEES.PAYROLL.CARD_EARNINGS' | translate }}</h3>
+              <ul class="pay-components">
+                <li class="pay-components__basic">
+                  <span class="pay-components__name">{{ 'EMPLOYEES.PAYROLL.BASIC' | translate }}</span>
+                  <span class="pay-components__amount">{{ money(c.basicSalary, c.currency) }}</span>
+                </li>
+                @for (comp of c.components; track trackIndex($index)) {
+                  <li>
+                    <span class="pay-components__name">{{ componentLabel(comp.type) | translate }}</span>
+                    <span class="pay-components__amount">
+                      @if (comp.calculation === 'PercentOfBasic') {
+                        <!-- 25 means 25%, never 0.25. -->
+                        {{ comp.amount ?? '—' }}%
+                      } @else {
+                        {{ money(comp.amount, c.currency) }}
+                      }
+                    </span>
+                    <span class="pay-components__flag">
+                      {{ (comp.isRecurring === false ? 'EMPLOYEES.PAYROLL.ONE_OFF' : 'EMPLOYEES.PAYROLL.RECURRING') | translate }}
+                    </span>
+                  </li>
+                }
+              </ul>
+            </section>
+
+            <div class="pay-side">
+              <section class="pay-card">
+                <h3 class="pay-card__title">{{ 'EMPLOYEES.PAYROLL.CARD_DETAILS' | translate }}</h3>
+                <dl class="pay-facts pay-facts--stack">
+                  @if (c.effectiveFrom) {
+                    <div><dt>{{ 'EMPLOYEES.PAYROLL.EFFECTIVE_FROM' | translate }}</dt><dd>{{ c.effectiveFrom }}</dd></div>
+                  }
+                  @if (c.payFrequency) {
+                    <div><dt>{{ 'EMPLOYEES.PAYROLL.FREQUENCY_LABEL' | translate }}</dt><dd>{{ frequencyLabel(c.payFrequency) | translate }}</dd></div>
+                  }
+                  @if (c.paymentMethod) {
+                    <div><dt>{{ 'EMPLOYEES.PAYROLL.METHOD_LABEL' | translate }}</dt><dd>{{ methodLabel(c.paymentMethod) | translate }}</dd></div>
+                  }
+                  @if (c.changeReason) {
+                    <div><dt>{{ 'EMPLOYEES.PAYROLL.LAST_CHANGE' | translate }}</dt><dd>{{ reasonLabel(c.changeReason) | translate }}</dd></div>
+                  }
+                </dl>
+              </section>
+
+              <!-- GOSI, from the country rules / company settings and this person's nationality. When it cannot be
+                   worked out the reason is shown instead of a number: an empty figure would read as "no contribution". -->
+              @if (c.socialInsuranceApplicable || c.gosi?.applicable) {
+                <section class="pay-card">
+                  <h3 class="pay-card__title">{{ 'EMPLOYEES.PAYROLL.CARD_SOCIAL_INSURANCE' | translate }}</h3>
+                  @if (c.gosi; as g) {
+                    @if (g.applicable) {
+                      <dl class="pay-facts pay-facts--stack">
+                        <div>
+                          <dt>{{ 'EMPLOYEES.PAYROLL.GOSI_EMPLOYEE' | translate }}</dt>
+                          <dd>{{ money(g.employee, c.currency) }}</dd>
+                          <dd class="pay-facts__note">{{ 'EMPLOYEES.PAYROLL.GOSI_BASIS' | translate: { rate: g.employeeRatePercent, wage: money(g.subjectWage, c.currency) } }}</dd>
+                        </div>
+                        <div>
+                          <dt>{{ 'EMPLOYEES.PAYROLL.GOSI_EMPLOYER' | translate }}</dt>
+                          <dd>{{ money(g.employer, c.currency) }}</dd>
+                          <dd class="pay-facts__note">{{ 'EMPLOYEES.PAYROLL.GOSI_EMPLOYER_NOTE' | translate: { rate: g.employerRatePercent } }}</dd>
+                        </div>
+                        <div>
+                          <dt>{{ 'EMPLOYEES.PAYROLL.NET_AFTER_GOSI' | translate }}</dt>
+                          <dd>{{ money(c.netAfterGosi, c.currency) }}</dd>
+                          <dd class="pay-facts__note">{{ 'EMPLOYEES.PAYROLL.NOT_TAKE_HOME' | translate }}</dd>
+                        </div>
+                      </dl>
+                    } @else if (g.reason) {
+                      <p class="pay-card__text">{{ 'EMPLOYEES.PAYROLL.GOSI_REASON_' + g.reason.toUpperCase() | translate }}</p>
+                    }
+                  }
+                  <!-- Waiver windows for this person: both shares, or just one. Changing them refreshes the figures above. -->
+                  @if (c.socialInsuranceApplicable) {
+                    <app-gosi-exemptions [employeeId]="employeeId" [canEdit]="canEditPay()" (changed)="load()"/>
+                  }
+                </section>
+              }
+            </div>
+          </div>
+        }
+
+        @if (recording()) {
+          <form class="pay-form" [formGroup]="payForm" (ngSubmit)="submitPayChange()">
+            <!-- Stated at the top of the form so nobody is surprised by the
+                 history growing a row rather than the figure being replaced. -->
+            <p class="pay-form__note">{{ 'EMPLOYEES.PAYROLL.CHANGE_NOTE' | translate }}</p>
+
+            <div class="pay-form__grid">
+              <label class="pay-field">
+                <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.EFFECTIVE_FROM' | translate }} <em>*</em></span>
+                <app-date-field formControlName="effectiveFrom"/>
+                <span class="pay-field__hint">{{ 'EMPLOYEES.PAYROLL.EFFECTIVE_HINT' | translate }}</span>
+                @if (showErr('effectiveFrom')) { <span class="pay-field__error">{{ 'COMMON.REQUIRED' | translate }}</span> }
+              </label>
+
+              <label class="pay-field">
+                <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.BASIC' | translate }} <em>*</em></span>
+                <input class="form-control form-control--num" type="number" min="0" step="0.001"
+                       formControlName="basicSalary" />
+                @if (showErr('basicSalary')) { <span class="pay-field__error">{{ 'COMMON.REQUIRED' | translate }}</span> }
+              </label>
+
+              <label class="pay-field">
+                <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.CURRENCY' | translate }} <em>*</em></span>
+                <input class="form-control" type="text" maxlength="3" formControlName="currency" />
+                @if (showErr('currency')) { <span class="pay-field__error">{{ 'COMMON.REQUIRED' | translate }}</span> }
+              </label>
+
+              <label class="pay-field">
+                <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.FREQUENCY_LABEL' | translate }} <em>*</em></span>
+                <app-search-dropdown
+                  formControlName="payFrequency"
+                  [items]="catalog().frequencies"
+                  [displayWith]="optionName" [toValue]="optionKey" [compareWith]="optionMatches"
+                  [searchable]="false"
+                  [placeholder]="'EMPLOYEES.PAYROLL.FREQUENCY_LABEL' | translate">
+                </app-search-dropdown>
+              </label>
+
+              @if (!isFirstPay()) {
+                <label class="pay-field">
+                  <!-- Required. A pay history with no reasons cannot answer
+                       "promotion or correction", which is where every dispute and
+                       every pay-equity review starts. -->
+                  <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.CHANGE_REASON' | translate }} <em>*</em></span>
+                  <app-search-dropdown
+                    formControlName="changeReason"
+                    [items]="catalog().changeReasons"
+                    [displayWith]="optionName" [toValue]="optionKey" [compareWith]="optionMatches"
+                    [searchable]="false"
+                    [placeholder]="'EMPLOYEES.PAYROLL.CHANGE_REASON' | translate">
+                  </app-search-dropdown>
+                  @if (showErr('changeReason')) { <span class="pay-field__error">{{ 'COMMON.REQUIRED' | translate }}</span> }
+                </label>
+              }
+
+              <label class="pay-field">
+                <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.METHOD_LABEL' | translate }}</span>
+                <app-search-dropdown
+                  formControlName="paymentMethod"
+                  [items]="catalog().paymentMethods"
+                  [displayWith]="optionName" [toValue]="optionKey" [compareWith]="optionMatches"
+                  [searchable]="false"
+                  [placeholder]="'EMPLOYEES.PAYROLL.METHOD_LABEL' | translate">
+                </app-search-dropdown>
+              </label>
+
+              <label class="pay-field pay-field--wide">
+                <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.CHANGE_NOTE_FIELD' | translate }}</span>
+                <textarea class="form-control" rows="2" formControlName="changeNote"></textarea>
+              </label>
+
+              <!-- ── Social insurance enrolment ───────────────────────────────
+                   Without this switch nobody is ever deducted. The registration
+                   date picks the rate regime where a country has two (Saudi Arabia,
+                   UAE); it is the FIRST registration with the authority, not the
+                   hire date. -->
+              <label class="pay-field pay-field--wide pay-check">
+                <input type="checkbox" formControlName="socialInsuranceApplicable" />
+                <span>{{ 'EMPLOYEES.PAYROLL.SI_ENROLLED' | translate }}</span>
+              </label>
+
+              @if (payForm.get('socialInsuranceApplicable')?.value) {
+                <!-- Two equal columns on their own row, so a long label wraps inside its column and both inputs stay level. -->
+                <div class="pay-field--wide pay-pair">
+                  <label class="pay-field">
+                    <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.SI_NUMBER' | translate }}</span>
+                    <input class="form-control" type="text" formControlName="gosiNumber" />
+                  </label>
+
+                  <label class="pay-field">
+                    <span class="pay-field__label">{{ 'EMPLOYEES.PAYROLL.SI_REGISTERED_ON' | translate }}</span>
+                    <app-date-field formControlName="socialInsuranceRegisteredOn"/>
+                    <span class="pay-field__hint">{{ 'EMPLOYEES.PAYROLL.SI_REGISTERED_ON_HINT' | translate }}</span>
+                  </label>
+                </div>
+              }
+
+            </div>
+
+            <section class="pay-sub">
+              <header class="pay-sub__head">
+                <h3 class="pay-sub__title">{{ 'EMPLOYEES.PAYROLL.COMPONENTS' | translate }}</h3>
+                <button type="button" class="btn btn-link" (click)="addComponent()">
+                  {{ 'EMPLOYEES.PAYROLL.ADD_COMPONENT' | translate }}
+                </button>
+              </header>
+              <div formArrayName="components" class="pay-rows">
+                @for (comp of components.controls; track trackIndex($index); let i = $index) {
+                  <div class="pay-row" [formGroupName]="i">
+                    <app-search-dropdown
+                      formControlName="type"
+                      [items]="catalog().componentTypes"
+                      [displayWith]="optionName" [toValue]="optionKey" [compareWith]="optionMatches"
+                      [placeholder]="'EMPLOYEES.PAYROLL.COMPONENT_TYPE' | translate">
+                    </app-search-dropdown>
+                    <app-search-dropdown
+                      formControlName="calculation"
+                      [items]="calculationOptions()"
+                      [displayWith]="optionName" [toValue]="optionKey" [compareWith]="optionMatches"
+                      [searchable]="false" [clearable]="false">
+                    </app-search-dropdown>
+                    <input class="form-control form-control--num" type="number" step="0.001"
+                           formControlName="amount"
+                           [placeholder]="'EMPLOYEES.PAYROLL.AMOUNT_OR_PERCENT' | translate" />
+                    <button type="button" class="btn btn-link btn-link--danger" (click)="removeComponent(i)">
+                      {{ 'COMMON.DELETE' | translate }}
+                    </button>
+                  </div>
+                }
+              </div>
+            </section>
+
+            @if (payTried() && payForm.invalid) {
+              <p class="pay-field__error">{{ 'COMMON.FORM_ERRORS.TITLE' | translate }}</p>
+            }
+            <ng-container [ngTemplateOutlet]="errorBanner"/>
+
+            <div class="pay-form__actions">
+              <button type="button" class="btn btn-secondary" (click)="cancelRecord()">
+                {{ 'COMMON.CANCEL' | translate }}
+              </button>
+              <button type="submit" class="btn btn-primary" [disabled]="busy() !== null">
+                {{ 'EMPLOYEES.PAYROLL.RECORD_CHANGE' | translate }}
+              </button>
+            </div>
+          </form>
+        }
       }
 
       <!-- ── HISTORY ── -->
-      @if (history().length) {
+      @if (activeView() === 'history' && !history().length) {
+        <div class="pay-empty">{{ 'EMPLOYEES.PAYROLL.NO_HISTORY' | translate }}</div>
+      }
+      @if (activeView() === 'history' && history().length) {
         <section class="pay-sub">
           <h3 class="pay-sub__title">{{ 'EMPLOYEES.PAYROLL.HISTORY' | translate }}</h3>
           <div class="pay-table-wrap">
@@ -333,7 +374,10 @@
 
     </section>
 
-    <!-- ── LOANS: a card of its own ── -->
+  }
+
+  <!-- ── LOANS ── -->
+  @if (canViewPay() && activeView() === 'loans') {
     <section class="pay-panel pay-panel--loans">
         <header class="pay-panel__head">
           <h2 class="pay-panel__title">{{ 'EMPLOYEES.PAYROLL.LOANS' | translate }}</h2>
@@ -416,7 +460,7 @@
   <!-- ═══ BANK ══════════════════════════════════════════════════════════
        Its own grant. Absent entirely without viewBank, even for someone who
        can see every salary figure above. -->
-  @if (canViewBank()) {
+  @if (canViewBank() && activeView() === 'bank') {
     <section class="pay-panel pay-panel--bank">
       <header class="pay-panel__head">
         <h2 class="pay-panel__title">{{ 'EMPLOYEES.PAYROLL.BANK' | translate }}</h2>

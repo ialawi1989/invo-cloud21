@@ -358,4 +358,78 @@
 .pay-panel--loans { margin-top: 16px; }
 
 .pay-check { flex-direction: row; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; }
+.pay-pair {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  align-items: start;
+}
+@media (max-width: 640px) { .pay-pair { grid-template-columns: minmax(0, 1fr); } }
 .pay-field__hint { font-size: 11px; color: #94a3b8; line-height: 1.4; }
+
+// ─── Sections and overview cards ─────────────────────────────────────────
+.pay-tabs { align-self: flex-start; max-width: 100%; overflow-x: auto; }
+
+/** The three figures someone scans for, tinted like the reference dashboards: purple, red, amber. */
+.pay-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.75rem;
+}
+.pay-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.875rem 1rem;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  min-width: 0;
+
+  &__label { font-size: 0.75rem; color: #475569; }
+  &__value { font-size: 1.5rem; font-weight: 700; font-variant-numeric: tabular-nums; color: #0f172a; }
+  &__sub { font-size: 0.75rem; color: #64748b; }
+  &__caveat { font-size: 0.75rem; color: #92400e; line-height: 1.35; }
+
+  &--gross { background: var(--color-brand-50, #effbfd); border-color: var(--color-brand-100, #d6f4f8); }
+  &--ded { background: #fef2f2; border-color: #fee2e2; }
+  /* Not take-home pay: the amber edge keeps the caveat attached to the number. */
+  &--net { background: #fffbeb; border-color: #fde68a; .pay-kpi__value { color: #92400e; } }
+}
+
+.pay-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 0.75rem;
+  align-items: start;
+}
+@media (max-width: 900px) { .pay-layout { grid-template-columns: minmax(0, 1fr); } }
+
+.pay-side { display: flex; flex-direction: column; gap: 0.75rem; min-width: 0; }
+
+.pay-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  padding: 0.875rem 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+  min-width: 0;
+
+  &__title { margin: 0; font-size: 0.875rem; font-weight: 700; color: #0f172a; }
+  &__text { margin: 0; font-size: 0.8125rem; color: #475569; }
+}
+
+.pay-components__basic { font-weight: 600; padding-bottom: 0.375rem; border-bottom: 1px solid #f1f5f9; }
+.pay-components li + li:not(:last-child) { padding-block: 0.125rem; }
+
+/** A label / value list down a narrow card (one fact per line) instead of the old wrap-anywhere grid. */
+.pay-facts--stack {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.625rem;
+
+  > div { display: flex; flex-direction: column; gap: 0.0625rem; }
+  dd { font-weight: 600; }
+}
+.pay-facts__note { font-size: 0.75rem; color: #64748b; font-weight: 400 !important; line-height: 1.35; }

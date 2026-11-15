@@ -10,6 +10,7 @@ import { AuthService } from '@core/auth/auth.service';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { AlertComponent } from '@shared/components/alert/alert.component';
+import { SegmentedToggleComponent, SegmentedToggleOption } from '@shared/components/segmented-toggle/segmented-toggle.component';
 
 import { HrError, describeError } from '../../hr-error';
 import { portalKey } from '../../hr-labels';
@@ -56,10 +57,12 @@ import {
  * update path on the server and there is none here.
  * ─────────────────────────────────────────────────────────────────────────────
  */
+type PayView = 'pay' | 'history' | 'loans' | 'bank';
+
 @Component({
   selector: 'app-employee-payroll',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, SearchDropdownComponent, AlertComponent, DateFieldComponent, GosiExemptionsComponent],
+  imports: [CommonModule, ReactiveFormsModule, TranslateModule, SearchDropdownComponent, AlertComponent, SegmentedToggleComponent, DateFieldComponent, GosiExemptionsComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './employee-payroll.component.html',
   styleUrls: ['./employee-payroll.component.scss'],
@@ -80,6 +83,8 @@ export class EmployeePayrollComponent {
   readonly loading = signal(true);
   readonly busy = signal<string | null>(null);
   readonly error = signal<HrError | null>(null);
+  /** The pay-change form was submitted at least once: its missing required fields are shown. */
+  readonly payTried = signal(false);
 
   readonly current = signal<PayrollRow | null>(null);
   readonly history = signal<PayrollRow[]>([]);
@@ -160,6 +165,27 @@ export class EmployeePayrollComponent {
 
   readonly recording = signal(false);
 
+  /** The page shows one section at a time instead of stacking pay, history, loans and bank details in one scroll. */
+  readonly view = signal<PayView>('pay');
+
+  /** The sections this person may see; the segmented control is hidden when there is only one. */
+  readonly tabs = computed<SegmentedToggleOption<PayView>[]>(() => {
+    const out: SegmentedToggleOption<PayView>[] = [];
+    if (this.canViewPay()) {
+      out.push({ value: 'pay', label: 'EMPLOYEES.PAYROLL.TAB_OVERVIEW' });
+      out.push({ value: 'history', label: 'EMPLOYEES.PAYROLL.HISTORY', count: this.history().length || null });
+      out.push({ value: 'loans', label: 'EMPLOYEES.PAYROLL.LOANS', count: this.loans().filter(l => l.isSettled !== true).length || null });
+    }
+    if (this.canViewBank()) out.push({ value: 'bank', label: 'EMPLOYEES.PAYROLL.BANK' });
+    return out;
+  });
+
+  /** The chosen section, or the first one available when the chosen one is not (no grant for it). */
+  readonly activeView = computed<PayView>(() => {
+    const tabs = this.tabs();
+    return tabs.some(t => t.value === this.view()) ? this.view() : (tabs[0]?.value ?? 'pay');
+  });
+
   readonly payForm = this.fb.group({
     effectiveFrom: this.fb.control<string | null>(null, Validators.required),
     basicSalary: this.fb.control<number | null>(null, [Validators.required, Validators.min(0)]),
@@ -202,6 +228,9 @@ export class EmployeePayrollComponent {
    * effective date and the reason are deliberately left blank: they are the two
    * things that must be a decision, not a default.
    */
+  /** No pay row exists yet (not even a scheduled one): this is the employee's first pay, so there is no change to give a reason for. */
+  readonly isFirstPay = computed(() => !this.current() && this.history().length === 0);
+
   startRecordChange(): void {
     const c = this.current();
     this.payForm.reset({
@@ -209,7 +238,8 @@ export class EmployeePayrollComponent {
       basicSalary: c?.basicSalary ?? null,
       currency: c?.currency ?? null,
       payFrequency: c?.payFrequency ?? null,
-      changeReason: null,
+      // The first pay needs no reason from the user: the backend requires one, and this is it.
+      changeReason: this.isFirstPay() ? 'InitialSetup' : null,
       changeNote: null,
       paymentMethod: c?.paymentMethod ?? null,
       socialInsuranceApplicable: c?.socialInsuranceApplicable ?? false,
@@ -220,13 +250,21 @@ export class EmployeePayrollComponent {
     this.components.clear();
     (c?.components ?? []).forEach(x => this.components.push(this.componentGroup(x)));
     this.error.set(null);
+    this.payTried.set(false);
     this.recording.set(true);
   }
 
-  cancelRecord(): void { this.recording.set(false); }
+  cancelRecord(): void { this.recording.set(false); this.payTried.set(false); }
+
+  /** A required pay-form field is empty and the form was submitted (or the field touched). */
+  showErr(name: string): boolean {
+    const c = this.payForm.get(name);
+    return !!c && c.invalid && (c.touched || this.payTried());
+  }
 
   async submitPayChange(): Promise<void> {
     if (this.payForm.invalid) {
+      this.payTried.set(true);
       this.payForm.markAllAsTouched();
       return;
     }
