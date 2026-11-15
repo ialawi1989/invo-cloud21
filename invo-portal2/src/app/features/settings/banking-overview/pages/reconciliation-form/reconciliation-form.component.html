@@ -17,7 +17,7 @@
     <div class="rf-fields">
       <label class="rf-field">
         <span>{{ 'BANKING_OVERVIEW.FORM.FROM_DATE' | translate }}</span>
-        <app-date-picker [value]="fromValue()" [max]="today" [clearable]="false" [disabled]="status() === 'reconciled'" (valueChange)="onFromPicked($event)"/>
+        <app-date-picker [value]="fromValue()" [clearable]="false" [disabled]="status() === 'reconciled'" (valueChange)="onFromPicked($event)"/>
       </label>
       <label class="rf-field">
         <span>{{ 'BANKING_OVERVIEW.FORM.TO_DATE' | translate }}</span>
