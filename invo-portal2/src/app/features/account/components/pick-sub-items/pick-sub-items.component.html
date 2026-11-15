@@ -5,19 +5,6 @@
   @if (failed) { <app-empty-state icon="error" [title]="'SUB_ITEMS.LOAD_FAILED' | translate" [body]="'SUB_ITEMS.LOAD_FAILED_HINT' | translate"/> }
   @if (!loading && !failed && !levels.length) { <app-empty-state icon="package" [title]="'SUB_ITEMS.NO_ITEMS' | translate"/> }
 
-  @if (levels.length && !optionsOnly) {
-    <div class="psi__price">
-      <label for="subItemsPrice">{{ 'SUB_ITEMS.PRICE' | translate }}</label>
-      <input id="subItemsPrice" type="number" min="0" [ngModel]="priceValue" (ngModelChange)="onPriceChange($event)"/>
-      @if (priceDiffers) {
-        <span class="psi__price-total">
-          {{ 'SUB_ITEMS.TOTAL' | translate }}: {{ previewPrice | mycurrency }}
-          @if (!isFixedModel) { <a href="javascript:void(0)" (click)="resetPrice()">{{ 'SUB_ITEMS.RESET' | translate }}</a> }
-        </span>
-      }
-    </div>
-  }
-
   @for (level of levels; track $index) {
     <section class="psi__level">
       @if (isMenuSelection) {
@@ -153,6 +140,16 @@
 <app-modal-footer>
   @if (levels.length) {
     <div class="psi__total"><span>{{ 'SUB_ITEMS.TOTAL' | translate }}</span><strong>{{ grandTotal | mycurrency }}</strong></div>
+  }
+  @if (levels.length && !optionsOnly) {
+    @if (isFixedModel) {
+      <div class="psi__price">
+        <label for="subItemsPrice">{{ 'SUB_ITEMS.PRICE' | translate }}</label>
+        <input id="subItemsPrice" type="number" min="0" [ngModel]="priceValue" [disabled]="!canConfirm" (ngModelChange)="onPriceChange($event)"/>
+      </div>
+    } @else {
+      <small class="psi__note">{{ 'SUB_ITEMS.PRICE_CALCULATED_NOTE' | translate }}</small>
+    }
   }
   <button type="button" class="psi__btn" (click)="cancel()">{{ 'SUB_ITEMS.CANCEL' | translate }}</button>
   <button type="button" class="psi__btn psi__btn--primary" [disabled]="!canConfirm" (click)="confirm()">{{ 'SUB_ITEMS.CONFIRM' | translate }}</button>

@@ -341,7 +341,8 @@ export class PickSubItemsComponent implements OnInit {
     this.ref.close({
       defaultPrice: this.normalizedBasePrice,
       priceModel: this.definition!.priceModel,
-      priceOverride: !this.isFixedModel && this.customPrice != null ? MathUtils.roundDecimal(Math.max(0, this.customPrice)) : null,
+      // total price models are always calculated from the items; a typed price is not kept
+      priceOverride: null,
       subItems: this.currentSubItems(),
     });
   }
