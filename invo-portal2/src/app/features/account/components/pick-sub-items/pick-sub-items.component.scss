@@ -1,4 +1,4 @@
-:host { display: block; min-width: min(760px, 94vw); }
+:host { display: block; width: 100%; min-width: 0; }
 
 .psi { padding: 16px 24px; display: flex; flex-direction: column; gap: 16px; max-height: 70vh; overflow-y: auto; }
 .psi__state { text-align: center; color: #64748b; padding: 24px 0; }

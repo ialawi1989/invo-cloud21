@@ -301,6 +301,7 @@
     "TITLE": "Select items",
     "LOADING": "Loading...",
     "LOAD_FAILED": "Could not load the items of this product.",
+    "LOAD_FAILED_HINT": "Check your connection and try again. If it keeps happening, contact support.",
     "NO_ITEMS": "This product has no items.",
     "CHOOSE_N": "Choose {{count}}",
     "CHOOSE_ANY": "Choose any number",

@@ -1,3 +1,4 @@
+import { EmptyStateComponent } from '../../empty-state/empty-state.component';
 import {
   Component,
   Input,
@@ -105,6 +106,7 @@ import {
   imports: [
     CommonModule,
     FormsModule,
+    EmptyStateComponent,
     ListCellTemplateDirective,
     ListRowActionsDirective,
     ListMobileThumbDirective,

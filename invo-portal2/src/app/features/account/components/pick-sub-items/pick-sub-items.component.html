@@ -2,8 +2,8 @@
 
 <div class="psi">
   @if (loading) { <div class="psi__state">{{ 'SUB_ITEMS.LOADING' | translate }}</div> }
-  @if (failed) { <div class="psi__state psi__state--err">{{ 'SUB_ITEMS.LOAD_FAILED' | translate }}</div> }
-  @if (!loading && !failed && !levels.length) { <div class="psi__state">{{ 'SUB_ITEMS.NO_ITEMS' | translate }}</div> }
+  @if (failed) { <app-empty-state icon="error" [title]="'SUB_ITEMS.LOAD_FAILED' | translate" [body]="'SUB_ITEMS.LOAD_FAILED_HINT' | translate"/> }
+  @if (!loading && !failed && !levels.length) { <app-empty-state icon="package" [title]="'SUB_ITEMS.NO_ITEMS' | translate"/> }
 
   @if (levels.length && !optionsOnly) {
     <div class="psi__price">

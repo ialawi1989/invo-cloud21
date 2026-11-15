@@ -1,5 +1,6 @@
 import '../../account-i18n';
-import { Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
@@ -84,12 +85,13 @@ export interface PickSubItemsResult {
 @Component({
   selector: 'app-pick-sub-items',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, MycurrencyPipe, ModalHeaderComponent, ModalFooterComponent],
+  imports: [CommonModule, FormsModule, TranslateModule, MycurrencyPipe, ModalHeaderComponent, ModalFooterComponent, EmptyStateComponent],
   templateUrl: './pick-sub-items.component.html',
   styleUrl: './pick-sub-items.component.scss',
 })
 export class PickSubItemsComponent implements OnInit {
   private api = inject(ApiService);
+  private cdr = inject(ChangeDetectorRef);
   protected data = inject<PickSubItemsData>(MODAL_DATA);
   private ref = inject<ModalRef<PickSubItemsResult | null>>(MODAL_REF);
 
@@ -131,6 +133,8 @@ export class PickSubItemsComponent implements OnInit {
       this.failed = true;
     } finally {
       this.loading = false;
+      /** the modal container is OnPush: the fields set after the request are only rendered once marked dirty */
+      this.cdr.markForCheck();
     }
   }
 
