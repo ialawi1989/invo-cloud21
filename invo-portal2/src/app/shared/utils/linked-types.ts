@@ -95,7 +95,7 @@ export function getTransactionRoute(type: string, id: string): string | null {
     // ── Physical Count ───────────────────────────────────────
     case 'physical count':
     case 'physicalcount':
-      return `/inventory/physical-counts/${id}`;
+      return `/inventory/physical-counts/view/${id}`;
 
     // ── Manual Adjustment ────────────────────────────────────
     case 'manual adjusment':       // legacy typo kept intentionally

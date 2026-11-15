@@ -1,0 +1,162 @@
+@if (c; as d) {
+  <app-doc-form-shell
+    [title]="title" [breadcrumbs]="breadcrumbs"
+    [canDraft]="isOpen || (isCalculated && canCalculate)"
+    [draftLabel]="(isOpen ? 'PHYSICAL_COUNT.CALCULATE' : 'PHYSICAL_COUNT.RECALCULATE') | translate"
+    [draftDisabled]="isOpen && !liveLines.length"
+    [saveLabel]="'PHYSICAL_COUNT.SAVE' | translate"
+    [submitting]="submitting" [saveDisabled]="showErrors && missing.length > 0"
+    [showView]="!isNew" [total]="isOpen ? 0 : totals.counted" [totalQty]="totalQty"
+    (draft)="isOpen ? calculate() : recalculate()" (save)="save()" (cancel)="cancel()" (view)="view()">
+
+    <!-- Details -->
+    <section class="df-card">
+      <div class="df-row">
+        <div class="df-field df-field--grow">
+          <label>{{ 'PHYSICAL_COUNT.BRANCH' | translate }} <span class="req">*</span></label>
+          <app-search-dropdown [items]="branches" [displayWith]="label" [compareWith]="byId" [clearable]="false"
+            [value]="choiceOf(branches, d.branchId)" (valueChange)="onBranch($any($event))" [disabled]="branchLocked"
+            [placeholder]="'PHYSICAL_COUNT.SELECT_BRANCH' | translate"/>
+          @if (showErrors && !d.branchId) { <p class="df-error">{{ 'PHYSICAL_COUNT.MISSING.BRANCH' | translate }}</p> }
+        </div>
+        <div class="df-field df-field--grow">
+          <label>{{ 'PHYSICAL_COUNT.REFERENCE' | translate }}</label>
+          <input class="df-input" type="text" [(ngModel)]="d.reference" (ngModelChange)="mark()" [disabled]="!isOpen" autocomplete="off"/>
+        </div>
+        <div class="df-field df-field--grow">
+          <label>{{ 'PHYSICAL_COUNT.STATUS_LABEL' | translate }}</label>
+          <div class="pc-status" [class.pc-status--calc]="isCalculated">{{ 'PHYSICAL_COUNT.STATUS.' + d.status | translate }}</div>
+        </div>
+      </div>
+      <div class="df-field">
+        <label>{{ 'PHYSICAL_COUNT.NOTE' | translate }}</label>
+        <textarea class="df-input" rows="2" [(ngModel)]="d.note" (ngModelChange)="mark()" [disabled]="!isOpen"></textarea>
+      </div>
+      @if (isCalculated) { <p class="pc-hint">{{ 'PHYSICAL_COUNT.NOTE_CALCULATED' | translate }}</p> }
+    </section>
+
+    <!-- Start: how the products of a new count are chosen -->
+    @if (showStart && mode) {
+      <section class="df-card">
+        <h2 class="df-card__title">{{ 'PHYSICAL_COUNT.START_TITLE' | translate }}</h2>
+        @switch (mode) {
+          @case ('by-product') {
+            <p class="pc-hint">{{ 'PHYSICAL_COUNT.START_BY_PRODUCT' | translate }}</p>
+            <div class="pc-tools">
+              <button type="button" class="df-btn df-btn--primary" [disabled]="!d.branchId" (click)="pickProducts()">{{ 'PHYSICAL_COUNT.ADD_PRODUCTS' | translate }}</button>
+              <button type="button" class="df-btn" [disabled]="!d.branchId" (click)="importLines()">{{ 'PHYSICAL_COUNT.IMPORT' | translate }}</button>
+            </div>
+          }
+          @case ('by-all-products') {
+            <p class="pc-hint">{{ 'PHYSICAL_COUNT.START_BY_ALL' | translate }}</p>
+            <div class="pc-tools">
+              <button type="button" class="df-btn df-btn--primary" [disabled]="!canLoad || loadingProducts" (click)="loadProducts()">
+                {{ (loadingProducts ? 'PHYSICAL_COUNT.LOADING' : 'PHYSICAL_COUNT.LOAD_PRODUCTS') | translate }}
+              </button>
+            </div>
+          }
+          @case ('by-inventory') {
+            <div class="df-field df-field--wide">
+              <label>{{ 'PHYSICAL_COUNT.INVENTORY_LOCATIONS' | translate }}</label>
+              <app-search-dropdown [items]="locations" [displayWith]="label" [compareWith]="byId" [multiple]="true"
+                [value]="pickedLocations" (valueChange)="pickedLocations = $any($event) ?? []"
+                [placeholder]="'PHYSICAL_COUNT.SELECT_LOCATIONS' | translate"/>
+            </div>
+            <div class="pc-tools">
+              <button type="button" class="df-btn df-btn--primary" [disabled]="!canLoad || loadingProducts" (click)="loadProducts()">
+                {{ (loadingProducts ? 'PHYSICAL_COUNT.LOADING' : 'PHYSICAL_COUNT.LOAD_PRODUCTS') | translate }}
+              </button>
+            </div>
+          }
+          @case ('by-category') {
+            <div class="df-field df-field--wide">
+              <label>{{ 'PHYSICAL_COUNT.CATEGORIES' | translate }}</label>
+              <app-search-dropdown [loadFn]="loadCategories" [displayWith]="label" [compareWith]="byId" [multiple]="true"
+                [value]="pickedCategories" (valueChange)="pickedCategories = $any($event) ?? []"
+                [placeholder]="'PHYSICAL_COUNT.SELECT_CATEGORIES' | translate"/>
+            </div>
+            <div class="pc-tools">
+              <button type="button" class="df-btn df-btn--primary" [disabled]="!canLoad || loadingProducts" (click)="loadProducts()">
+                {{ (loadingProducts ? 'PHYSICAL_COUNT.LOADING' : 'PHYSICAL_COUNT.LOAD_PRODUCTS') | translate }}
+              </button>
+            </div>
+          }
+        }
+        @if (showErrors && !liveLines.length) { <p class="df-error">{{ 'PHYSICAL_COUNT.MISSING.LINES' | translate }}</p> }
+      </section>
+    }
+
+    <!-- Products -->
+    @if (!showStart) {
+      <section class="df-card">
+        <div class="pc-head">
+          <h2 class="df-card__title">{{ 'PHYSICAL_COUNT.PRODUCTS' | translate }} ({{ liveLines.length }})</h2>
+          <div class="pc-tools">
+            @if (liveLines.length) {
+              <input class="df-input pc-filter" type="text" [(ngModel)]="filterTerm" [placeholder]="'PHYSICAL_COUNT.FILTER_LINES' | translate"/>
+            }
+            @if (isOpen) {
+              <button type="button" class="df-btn" (click)="pickProducts()">{{ 'PHYSICAL_COUNT.ADD_PRODUCTS' | translate }}</button>
+              <button type="button" class="df-btn" (click)="importLines()">{{ 'PHYSICAL_COUNT.IMPORT' | translate }}</button>
+            }
+          </div>
+        </div>
+
+        @if (!liveLines.length) {
+          <p class="pc-empty">{{ 'PHYSICAL_COUNT.NO_LINES' | translate }}</p>
+          @if (showErrors) { <p class="df-error">{{ 'PHYSICAL_COUNT.MISSING.LINES' | translate }}</p> }
+        } @else {
+          <div class="pc-wrap">
+            <table class="pc-table">
+              <thead>
+                <tr>
+                  <th>{{ 'PHYSICAL_COUNT.BARCODE' | translate }}</th>
+                  <th>{{ 'PHYSICAL_COUNT.PRODUCT' | translate }}</th>
+                  @if (isCalculated) { <th class="end">{{ 'PHYSICAL_COUNT.SYSTEM_QTY' | translate }}</th> }
+                  <th class="end">{{ 'PHYSICAL_COUNT.COUNTED' | translate }}</th>
+                  @if (isCalculated) { <th class="end">{{ 'PHYSICAL_COUNT.DIFFERENCE' | translate }}</th> }
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (l of shownLines; track l.productId) {
+                  <tr>
+                    <td>{{ l.barcode }}</td>
+                    <td>
+                      <strong>{{ l.productName }}</strong>@if (l.UOM) { <span class="pc-chip">{{ l.UOM }}</span> }
+                      @if (l.categoryName) { <div class="pc-muted">{{ l.categoryName }}</div> }
+                    </td>
+                    @if (isCalculated) { <td class="end">{{ expected(l) }}</td> }
+                    <td class="end">
+                      @if (hasUnits(l)) {
+                        <button type="button" class="pc-units" (click)="openUnits(l)">
+                          {{ entered(l) }}
+                          <span>{{ (isSerial(l) ? 'PHYSICAL_COUNT.SERIALS' : 'PHYSICAL_COUNT.BATCHES') | translate }}</span>
+                        </button>
+                      } @else if (isOpen) {
+                        <input class="pc-num" type="number" min="0" [ngModel]="l.enteredQty" (ngModelChange)="setQty(l, $event)"/>
+                      } @else {
+                        {{ entered(l) }}
+                      }
+                    </td>
+                    @if (isCalculated) {
+                      <td class="end" [class.pc-neg]="diff(l) < 0" [class.pc-pos]="diff(l) > 0">{{ diff(l) }}</td>
+                    }
+                    <td class="end">
+                      @if (isOpen) { <button type="button" class="pc-del" (click)="removeLine(l)">{{ 'COMMON.DELETE' | translate }}</button> }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+    }
+
+    <!-- The commit step: only a calculated count can be committed -->
+    <button footerExtra type="button" class="df-btn df-btn--primary" [hidden]="!isCalculated || !canCommit" [disabled]="submitting" (click)="commit()">
+      {{ 'PHYSICAL_COUNT.COMMIT' | translate }}
+    </button>
+  </app-doc-form-shell>
+}

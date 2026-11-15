@@ -208,16 +208,25 @@ export class ReconciliationsComponent implements OnInit {
     // check — matches the legacy screen's guard (`this.pageNum == 1`).
     if (params.page === 1 && !this.statusFilter() && !this.selectedBranchIds().length && !params.searchTerm) {
       this.latestPeriod.set(res.list[0] ?? null);
+    } else if (!this.latestPeriod()) {
+      // A filtered / later page can't tell which period is the latest, so ask for it once.
+      const latest = await this.service.getReconciliationList({ accountId: this.accountId(), page: 1, limit: 1 });
+      this.latestPeriod.set(latest.list[0] ?? null);
     }
     return { list: res.list, count: res.count, pageCount: res.pageCount };
   };
 
+  /**
+   * Edit / Undo / Delete exist for the latest period only (legacy showed them on the first row of page 1; the backend
+   * refuses delete and undo on any other with "Only Latest Reconciliation Can Be Edited").
+   */
   rowMenuItems(row: ReconciliationListRow): DropdownMenuBtnItem[] {
     const items: DropdownMenuBtnItem[] = [];
+    if (!this.isMostRecent(row)) return items;
     if (row.status !== 'reconciled') {
       items.push({ label: this.translate.instant('COMMON.EDIT'), click: () => this.edit(row) });
     }
-    if (row.status === 'reconciled' && this.isMostRecent(row)) {
+    if (row.status === 'reconciled') {
       items.push({ label: this.translate.instant('BANKING_OVERVIEW.RECONCILIATIONS.UNDO'), click: () => void this.undo(row) });
     }
     items.push({ label: this.translate.instant('COMMON.DELETE'), danger: true, click: () => void this.confirmDelete(row) });
@@ -225,7 +234,7 @@ export class ReconciliationsComponent implements OnInit {
   }
 
   private isMostRecent(row: ReconciliationListRow): boolean {
-    return this.currentPage() === 1 && this.latestPeriod()?.id === row.id;
+    return this.latestPeriod()?.id === row.id;
   }
 
   edit(row: ReconciliationListRow): void {
@@ -257,6 +266,7 @@ export class ReconciliationsComponent implements OnInit {
       const ok = await this.service.undo(row.id);
       if (ok) {
         this.toast.success('MESSAGE.SUCCESSFULLY_UNDO');
+        this.latestPeriod.set(null);
         this.listPage?.refresh();
       } else {
         this.toast.error('COMMON.SAVE_FAILED');
@@ -285,6 +295,7 @@ export class ReconciliationsComponent implements OnInit {
       const ok = await this.service.delete(row.id);
       if (ok) {
         this.toast.success('COMMON.DELETED_OK');
+        this.latestPeriod.set(null);
         this.listPage?.refresh();
       } else {
         this.toast.error('COMMON.DELETE_FAILED');

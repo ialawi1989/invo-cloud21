@@ -107,7 +107,10 @@ import { EmployeeAiOverrideComponent } from '../../../ai/employee-ai-override/em
             </div>
 
             <!-- Name -->
-            <span class="co-name">{{ company.name }}</span>
+            <span class="co-name">
+              <span class="co-title">{{ company.name }}</span>
+              @if (company.slug) { <small class="co-slug" dir="ltr">{{ company.slug }}</small> }
+            </span>
 
             <!-- Right indicator -->
             <span class="co-right">
@@ -209,9 +212,10 @@ import { EmployeeAiOverrideComponent } from '../../../ai/employee-ai-override/em
     .co-placeholder { font-size: 15px; font-weight: 700; color: #94a3b8; }
 
     .co-name {
-      flex: 1; font-size: 13px; font-weight: 500; color: #1e293b;
-      text-align: start; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; text-align: start;
     }
+    .co-title { font-size: 13px; font-weight: 500; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .co-slug { font-size: 11.5px; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .co-right { width: 18px; flex-shrink: 0; display: flex; justify-content: center; }
 
     /* LTR company row (explicit reset) */

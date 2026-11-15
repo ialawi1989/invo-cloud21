@@ -64,7 +64,9 @@
     </ng-template>
 
     <ng-template listRowActions let-row>
-      <app-dropdown-menu-btn [items]="rowMenuItems(row)" align="end"/>
+      @if (rowMenuItems(row); as menu) {
+        @if (menu.length) { <app-dropdown-menu-btn [items]="menu" align="end"/> }
+      }
     </ng-template>
   </app-list-page>
 </div>

@@ -17,13 +17,11 @@
     <div class="rf-fields">
       <label class="rf-field">
         <span>{{ 'BANKING_OVERVIEW.FORM.FROM_DATE' | translate }}</span>
-        <input type="date" [ngModel]="fromDate()" (ngModelChange)="onFromDateChange($event)"
-               [disabled]="status() === 'reconciled'"/>
+        <app-date-picker [value]="fromValue()" [max]="today" [clearable]="false" [disabled]="status() === 'reconciled'" (valueChange)="onFromPicked($event)"/>
       </label>
       <label class="rf-field">
         <span>{{ 'BANKING_OVERVIEW.FORM.TO_DATE' | translate }}</span>
-        <input type="date" [ngModel]="toDate()" (ngModelChange)="onToDateChange($event)"
-               [min]="fromDate()" [disabled]="status() === 'reconciled'"/>
+        <app-date-picker [value]="toValue()" [min]="fromValue()" [max]="today" [clearable]="false" [disabled]="status() === 'reconciled'" (valueChange)="onToPicked($event)"/>
       </label>
       <label class="rf-field">
         <span>{{ 'BANKING_OVERVIEW.FORM.CLOSING_BALANCE' | translate }}</span>

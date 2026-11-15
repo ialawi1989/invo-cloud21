@@ -358,8 +358,13 @@ export const routes: Routes = [
           import('./features/inventory/transfer/transfer.routes').then(m => m.TRANSFER_ROUTES)
       },
       {
+        // Physical counts (sidebar → Inventory → Physical Counts). Declared before the generic `inventory` routes.
+        path: 'inventory/physical-counts',
+        loadChildren: () =>
+          import('./features/inventory/physical-count/physical-count.routes').then(m => m.PHYSICAL_COUNT_ROUTES)
+      },
+      {
         // Inventory locations + inventory requests (sidebar → Inventory group).
-        // Other `/inventory/*` screens (physical-counts) are not migrated yet.
         path: 'inventory',
         loadChildren: () =>
           import('./features/products/inventory.routes').then(m => m.INVENTORY_ROUTES)

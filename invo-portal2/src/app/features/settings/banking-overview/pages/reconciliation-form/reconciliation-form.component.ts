@@ -1,3 +1,4 @@
+import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -65,6 +66,7 @@ const PAGE_SIZE = 15;
     FormStickyFooterComponent,
     SegmentedToggleComponent,
     AccountHeaderComponent,
+    DatePickerComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './reconciliation-form.component.html',
@@ -149,7 +151,10 @@ export class ReconciliationFormComponent implements OnInit, CanLeaveComponent {
       const matchesSearch = !term ||
         (t.transactionDetails ?? '').toLowerCase().includes(term) ||
         (t.reference ?? '').toLowerCase().includes(term) ||
-        (t.referenceNumber ?? '').toLowerCase().includes(term);
+        (t.referenceNumber ?? '').toLowerCase().includes(term) ||
+        (t.Debit != null && String(t.Debit).toLowerCase().includes(term)) ||
+        (t.Credit != null && String(t.Credit).toLowerCase().includes(term)) ||
+        (t.date != null && String(t.date).toLowerCase().includes(term));
       return matchesFilter && matchesSearch;
     });
   });
@@ -285,6 +290,19 @@ export class ReconciliationFormComponent implements OnInit, CanLeaveComponent {
   }
   onFromDateChange(value: string): void { this.fromDate.set(value); this.dirty.set(true); }
   onToDateChange(value: string): void { this.toDate.set(value); this.dirty.set(true); }
+
+  // The shared date picker works with `Date`s; the sheet keeps `YYYY-MM-DD` strings.
+  fromValue = computed(() => this.asDate(this.fromDate()));
+  toValue   = computed(() => this.asDate(this.toDate()));
+  /** The period can't end in the future (legacy `maxDate: today`). */
+  readonly today = (() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; })();
+  onFromPicked(d: unknown): void { this.onFromDateChange(d instanceof Date ? this.toDateInput(d) : ''); }
+  onToPicked(d: unknown): void { this.onToDateChange(d instanceof Date ? this.toDateInput(d) : ''); }
+  private asDate(v: string): Date | null {
+    if (!v) return null;
+    const [y, m, d] = v.split('-').map(Number);
+    return y ? new Date(y, (m || 1) - 1, d || 1) : null;
+  }
 
   // ─── Grid interactions ───────────────────────────────────────────────
   onFilterChange(f: GridFilter): void { this.filter.set(f); this.page.set(1); }
