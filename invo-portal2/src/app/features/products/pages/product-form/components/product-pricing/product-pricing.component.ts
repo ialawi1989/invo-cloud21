@@ -298,6 +298,14 @@ export class ProductPricingComponent implements OnInit {
     info.taxId            = v.taxId ?? null;
     (info.priceModel as any)['model'] = v.priceModel ?? 'fixedPrice';
     info.priceModel.discount = Number(v.discount ?? 0);
+    // the discount can be set before the items are added: it is only capped once there is a total to cap it with
+    if (info.priceModel['model'] === 'totalPriceWithDiscount') {
+      const maxDiscount = info.totalPrice({ withDiscount: false }) ?? 0;
+      if (maxDiscount > 0 && info.priceModel.discount > maxDiscount) {
+        info.priceModel.discount = maxDiscount;
+        this.group.controls['discount'].setValue(maxDiscount, { emitEvent: false });
+      }
+    }
 
     // keep taxPercentage in sync with selected tax
     if (v.taxId) {
@@ -332,6 +340,11 @@ export class ProductPricingComponent implements OnInit {
 
   c(name: 'defaultPrice' | 'comparePriceAt' | 'unitCost' | 'taxId' | 'priceModel' | 'discount') {
     return this.group.controls[name];
+  }
+
+  /** cap for the discount: the total before discount (0 = no items yet, so no cap) */
+  discountMax(): number {
+    return this.productInfo().totalPrice({ withDiscount: false }) ?? 0;
   }
 
   totalPriceForDisplay(): number {

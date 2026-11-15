@@ -199,6 +199,7 @@
               class="pf-input"
               formControlName="discount"
               min="0"
+              [attr.max]="discountMax() > 0 ? discountMax() : null"
             />
           </div>
         }

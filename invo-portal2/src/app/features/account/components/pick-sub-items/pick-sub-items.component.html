@@ -37,7 +37,7 @@
                 @if (!isMenuSelection && hasOptions(item)) { <span class="psi__tag psi__tag--soft">{{ 'SUB_ITEMS.CUSTOMIZABLE' | translate }}</span> }
                 @if (item.selected && item.collapsed && itemIncomplete(item)) { <span class="psi__warn">!</span> }
                 @if (item.selected && hasOptions(item)) {
-                  <button type="button" class="psi__fold" [attr.aria-expanded]="!item.collapsed" (click)="toggleCollapse(item, $event)">{{ item.collapsed ? '▾' : '▴' }}</button>
+                  <button type="button" class="psi__fold" [attr.aria-expanded]="!item.collapsed" (click)="toggleCollapse(item, $event)"><svg class="psi__chev" [class.psi__chev--down]="item.collapsed" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg></button>
                 }
               </div>
             }
@@ -45,7 +45,7 @@
             @if (item.selected && (!item.collapsed || optionsOnly) && hasOptions(item)) {
               <div class="psi__panel" [class.psi__panel--bare]="optionsOnly">
                 @if (item.defaultOptions.length) {
-                  <div class="psi__sec">
+                  <div class="psi__sec psi__sec--defaults">
                     <p class="psi__sec-label">{{ 'SUB_ITEMS.OPTIONS' | translate }}</p>
                     @for (option of item.defaultOptions; track option.id) {
                       <div class="psi__def">
@@ -82,7 +82,7 @@
                       <span class="psi__rules">
                         @if (!groupComplete(item, group)) { <span class="psi__rule psi__rule--err">{{ 'SUB_ITEMS.MIN' | translate }} {{ group.min }}</span> }
                         @if (group.max) { <span class="psi__rule">{{ 'SUB_ITEMS.MAX_LABEL' | translate }} {{ group.max }}</span> }
-                        <span>{{ item.closedGroups[group.id] ? '▾' : '▴' }}</span>
+                        <svg class="psi__chev" [class.psi__chev--down]="item.closedGroups[group.id]" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>
                       </span>
                     </div>
                     @if (!item.closedGroups[group.id]) {
@@ -137,19 +137,21 @@
   }
 </div>
 
-<app-modal-footer>
-  @if (levels.length) {
-    <div class="psi__total"><span>{{ 'SUB_ITEMS.TOTAL' | translate }}</span><strong>{{ grandTotal | mycurrency }}</strong></div>
-  }
-  @if (levels.length && !optionsOnly) {
+<!-- own bar above the footer: the price is editable only once every required choice is made; total price models are calculated from the items, so they only get a note -->
+@if (levels.length && !optionsOnly) {
+  <div class="psi__price-bar">
     @if (isFixedModel) {
-      <div class="psi__price">
-        <label for="subItemsPrice">{{ 'SUB_ITEMS.PRICE' | translate }}</label>
-        <input id="subItemsPrice" type="number" min="0" [ngModel]="priceValue" [disabled]="!canConfirm" (ngModelChange)="onPriceChange($event)"/>
-      </div>
+      <label for="subItemsPrice">{{ 'SUB_ITEMS.PRICE' | translate }}</label>
+      <input id="subItemsPrice" type="number" min="0" [ngModel]="priceValue" [disabled]="!canConfirm" (ngModelChange)="onPriceChange($event)"/>
     } @else {
       <small class="psi__note">{{ 'SUB_ITEMS.PRICE_CALCULATED_NOTE' | translate }}</small>
     }
+  </div>
+}
+
+<app-modal-footer>
+  @if (levels.length) {
+    <div class="psi__total"><span>{{ 'SUB_ITEMS.TOTAL' | translate }}</span><strong>{{ grandTotal | mycurrency }}</strong></div>
   }
   <button type="button" class="psi__btn" (click)="cancel()">{{ 'SUB_ITEMS.CANCEL' | translate }}</button>
   <button type="button" class="psi__btn psi__btn--primary" [disabled]="!canConfirm" (click)="confirm()">{{ 'SUB_ITEMS.CONFIRM' | translate }}</button>
