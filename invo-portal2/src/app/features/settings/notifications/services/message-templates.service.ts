@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { ApiService } from '@core/http';
 import { MessageTemplate, TemplateEventsBundle } from './message-template.types';
+import { PreviewLang, preprocessDataTranslations, translateExpressions } from './template-translation';
 
 /**
  * Wraps the `templates/*` endpoints (InvoCloudBack `src/routes/v1/template`).
@@ -41,12 +42,15 @@ export class MessageTemplatesService {
   }
 
   /** Server-side render — avoids reimplementing the template engine client-side. */
-  async renderTemplate(template: string, templateData: unknown): Promise<string> {
+  async renderTemplate(template: string, templateData: unknown, lang: PreviewLang = 'en'): Promise<string> {
+    // The server currently ignores `lang` (legacy sent it too); the T() resolution runs around the render.
+    const prepared = preprocessDataTranslations(template, templateData, lang);
     const res = await this.api.request<string>(
-      this.api.post('templates/templates-render', { template, templateData }),
+      this.api.post('templates/templates-render', { template: prepared, templateData, lang }),
     );
     const body: any = res;
-    return typeof body === 'string' ? body : (body?.data ?? '');
+    const rendered: string = typeof body === 'string' ? body : (body?.data ?? '');
+    return translateExpressions(rendered, lang);
   }
 
   private fromBackend(raw: any): MessageTemplate {

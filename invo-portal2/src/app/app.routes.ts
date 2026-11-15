@@ -345,6 +345,14 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./features/products/products.routes').then(m => m.PRODUCTS_ROUTES)
       },
+      { path: 'price-management', loadChildren: () => import('./features/price-management/price-management.routes').then(m => m.PRICE_MANAGEMENT_ROUTES) },
+      { path: 'branch-payments', loadChildren: () => import('./features/branch-payments/branch-payments.routes').then(m => m.BRANCH_PAYMENTS_ROUTES) },
+      { path: 'accept-reject-order-cloud', loadChildren: () => import('./features/accept-reject-orders/accept-reject-orders.routes').then(m => m.ACCEPT_REJECT_ORDERS_ROUTES) },
+      { path: 'company-group-employees', loadChildren: () => import('./features/company-group-employees/company-group-employees.routes').then(m => m.COMPANY_GROUP_EMPLOYEES_ROUTES) },
+      { path: 'feedbacks', loadChildren: () => import('./features/feedbacks/feedbacks.routes').then(m => m.FEEDBACKS_ROUTES) },
+      // Service requests live at /paging (the sidebar's existing link).
+      { path: 'paging', loadChildren: () => import('./features/service-request/service-request.routes').then(m => m.SERVICE_REQUEST_ROUTES) },
+      { path: 'domain-settings', loadChildren: () => import('./features/domain-settings/domain-settings.routes').then(m => m.DOMAIN_SETTINGS_ROUTES) },
       {
         // Manual stock / unit-cost adjustments (sidebar → Inventory → Manual Adjustment).
         path: 'manual-adjustment',

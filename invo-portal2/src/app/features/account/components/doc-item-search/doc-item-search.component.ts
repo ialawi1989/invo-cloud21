@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
+import { ToastService } from '@shared/components/toast/toast.service';
 
 /** One page of product results; `hasNext` says whether another page can be loaded on scroll. */
 export interface ItemSearchPage { list: any[]; hasNext: boolean; }
@@ -22,6 +23,7 @@ export interface ItemSearchPage { list: any[]; hasNext: boolean; }
 })
 export class DocItemSearchComponent {
   private host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private toast = inject(ToastService);
 
   /** Product source: a search term and a 1-based page. */
   search = input.required<(term: string, page: number) => Promise<ItemSearchPage>>();
@@ -93,6 +95,8 @@ export class DocItemSearchComponent {
     if (!term) return;
     const hit = this.lookup() ? await this.lookup()!(term) : null;
     if (hit) this.pick(hit, el);
+    // Nothing found for a scanned / typed barcode: say so instead of a silent no-op (legacy "Product not found").
+    else if (this.lookup()) this.toast.error('DOC_LINES.PRODUCT_NOT_FOUND', `"${term}"`);
   }
 
   onScroll(ev: Event): void {

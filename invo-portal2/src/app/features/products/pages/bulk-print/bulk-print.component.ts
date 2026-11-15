@@ -497,6 +497,10 @@ export class BulkPrintComponent {
       }
     }
     if (product.price == null) product.price = Number(product.defaultPrice ?? 0);
+    // The spread above drops the `Product` class getters, so the label's "Price with tax" token (`getPriceWithTax`) would
+    // resolve blank - recompute it with the class's own formula (legacy wrapped the raw data back in a `Product`).
+    const base = Number(product.defaultPrice ?? 0);
+    product.getPriceWithTax = base + base * (Number(product.taxPercentage ?? 0) / 100);
     return product;
   }
 

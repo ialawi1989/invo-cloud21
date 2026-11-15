@@ -1,0 +1,71 @@
+<app-list-page
+  [pageTitle]="'FEEDBACKS.TITLE' | translate"
+  [breadcrumbs]="breadcrumbs"
+  [columns]="columns"
+  [dataSource]="load"
+  [pagination]="paginationConfig"
+  [search]="searchConfig"
+  [sorting]="sortingConfig"
+  [filters]="filters"
+  [headerActions]="[]"
+  [selectable]="false"
+  [fitContent]="true"
+  [showGridView]="false"
+  [emptyState]="emptyState"
+  [entityType]="'feedbacks'"
+  [mobileCardConfig]="mobileCardConfig">
+
+  <div listHeaderActions class="flex items-center gap-3">
+    <button type="button" (click)="openSettings()" [attr.aria-label]="'FEEDBACKS.SETTINGS_BTN' | translate" [title]="'FEEDBACKS.SETTINGS_BTN' | translate"
+      class="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium whitespace-nowrap border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 transition-all">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+      <span class="hidden sm:inline">{{ 'FEEDBACKS.SETTINGS_BTN' | translate }}</span>
+    </button>
+  </div>
+
+  <!-- Average + distribution of the rows on screen -->
+  <section listSubHeader class="fb-stats">
+    <div class="fb-stats__avg">
+      <div class="fb-stats__num">{{ stats().average }}</div>
+      <div class="fb-stars">
+        @for (s of stars(stats().average); track $index) { <span>{{ s }}</span> }
+      </div>
+      <p class="fb-stats__txt">{{ 'FEEDBACKS.AVERAGE_RATING_FOR' | translate }} <strong>{{ stats().total }}</strong> {{ 'FEEDBACKS.FEEDBACKS' | translate }}</p>
+    </div>
+    <div class="fb-stats__bars">
+      @for (r of ratings; track r) {
+        <div class="fb-bar">
+          <span class="fb-bar__label">{{ r }} ★</span>
+          <div class="fb-bar__track"><div class="fb-bar__fill" [class]="'fb-bar__fill--' + color(r)" [style.width.%]="stats().distribution[r]"></div></div>
+          <span class="fb-bar__pct">{{ stats().distribution[r] }}%</span>
+        </div>
+      }
+    </div>
+  </section>
+
+  <ng-template listCellTemplate="createdAt" let-row>
+    <div>{{ row.createdAt | date: 'dd/MM/yyyy' }}</div>
+    <small class="text-slate-500">{{ row.createdAt | date: 'hh:mm a' }}</small>
+  </ng-template>
+  <ng-template listCellTemplate="rating" let-row>
+    <div class="fb-stars">@for (s of stars(row.rating); track $index) { <span>{{ s }}</span> }</div>
+    <span class="fb-badge" [class]="'fb-badge--' + color(row.rating)">{{ row.rating }}/5</span>
+  </ng-template>
+  <ng-template listCellTemplate="comment" let-row>
+    @if (row.comment) {
+      <button type="button" class="fb-comment" (click)="openComment(row); $event.stopPropagation()">{{ row.comment }}</button>
+    } @else {
+      <span class="text-slate-400">-</span>
+    }
+  </ng-template>
+  <ng-template listCellTemplate="transactionNumber" let-row>
+    @if (row.transactionId) {
+      <a class="text-brand-600 hover:underline" [routerLink]="['/account/invoices/view', row.transactionId]" (click)="$event.stopPropagation()">
+        {{ row.transactionNumber || ('FEEDBACKS.VIEW_DETAILS' | translate) }}
+      </a>
+    }
+  </ng-template>
+</app-list-page>

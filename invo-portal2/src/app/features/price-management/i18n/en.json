@@ -1,0 +1,55 @@
+{
+  "PRICE_MANAGEMENT": {
+    "TITLE": "Price Management",
+    "DASHBOARD": "Dashboard",
+    "NEW": "New price management",
+    "FORM_NEW": "New price management",
+    "FORM_EDIT": "Edit price management",
+    "SEARCH": "Search by title, discount or surcharge",
+    "EMPTY": "No price management found",
+    "NOT_FOUND": "Price management not found",
+    "LOAD_FAILED": "Couldn't load price management",
+    "COL_TITLE": "Title",
+    "COL_FROM": "From",
+    "COL_TO": "To",
+    "COL_REPEAT": "Repeat",
+    "COL_DISCOUNT": "Discount",
+    "COL_SURCHARGE": "Surcharge",
+    "TITLE_FIELD": "Title",
+    "DATE": "Date",
+    "FROM": "From",
+    "TO": "To",
+    "FROM_TIME": "From time",
+    "TO_TIME": "To time",
+    "REPEAT": "Repeat",
+    "PRICE_LABEL": "Price label",
+    "SURCHARGE": "Surcharge",
+    "DISCOUNT": "Discount",
+    "BRANCHES": "Branches",
+    "ALL_BRANCHES": "All branches",
+    "SELECT": "Select",
+    "DETAILS": "Details",
+    "SCHEDULE": "Schedule",
+    "PRICING": "Pricing",
+    "REPEAT_OPTION": {
+      "Once": "Once",
+      "Daily": "Daily",
+      "Weekly": "Weekly"
+    },
+    "DAY": {
+      "sunday": "Sunday",
+      "monday": "Monday",
+      "tuesday": "Tuesday",
+      "wednesday": "Wednesday",
+      "thursday": "Thursday",
+      "friday": "Friday",
+      "saturday": "Saturday"
+    },
+    "ERR": {
+      "REQUIRED": "This value is required",
+      "TITLE_EXISTS": "The title you entered already exists.",
+      "TO_AFTER_FROM": "To date must be larger than from date",
+      "RANGE_EXISTS": "A price management already exists on the same interval of time selected"
+    }
+  }
+}

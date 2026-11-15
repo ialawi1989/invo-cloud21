@@ -1,0 +1,33 @@
+.srq-page { padding: 16px 20px 100px; display: flex; flex-direction: column; gap: 16px; }
+.page-header { display: flex; flex-direction: column; gap: 4px; }
+.page-title { margin: 0; font-size: 22px; font-weight: 700; color: #0f172a; }
+
+.card {
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; /* the icon panel overflows the card */
+  &__head { padding: 14px 16px; border-bottom: 1px solid #f1f5f9; }
+  &__title { margin: 0; font-size: 14px; font-weight: 700; color: #0f172a; }
+  &__body { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+}
+
+.field {
+  display: flex; flex-direction: column; gap: 6px;
+  &__label { font-size: 12px; font-weight: 600; color: #475569; }
+  &__err { font-size: 11px; color: #b91c1c; font-weight: 600; }
+  &__input {
+    appearance: none; width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; padding: 9px 12px; font-size: 13px; color: #0f172a; background: #fff;
+    &:focus { outline: 0; border-color: var(--color-brand-400, #7dd3fc); box-shadow: 0 0 0 2px var(--color-brand-100, #e0f2fe); }
+    &--err { border-color: #fecaca; }
+  }
+}
+.req { color: #dc2626; }
+
+.save-bar {
+  position: fixed; inset-inline: 0; bottom: 0; z-index: 60;
+  display: flex; justify-content: flex-end; align-items: center; gap: 8px; padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(8px); border-top: 1px solid #e2e8f0;
+}
+.spinner {
+  width: 14px; height: 14px; border: 2px solid rgba(255, 255, 255, 0.4); border-top-color: #fff; border-radius: 50%;
+  animation: srq-spin 0.7s linear infinite;
+}
+@keyframes srq-spin { to { transform: rotate(360deg); } }

@@ -1,0 +1,24 @@
+<app-list-page
+  [pageTitle]="'BRANCH_PAYMENTS.TITLE' | translate"
+  [breadcrumbs]="breadcrumbs"
+  [columns]="columns"
+  [dataSource]="load"
+  [pagination]="paginationConfig"
+  [search]="searchConfig"
+  [sorting]="sortingConfig"
+  [headerActions]="[]"
+  [selectable]="false"
+  [fitContent]="true"
+  [emptyState]="emptyState"
+  [entityType]="'branch-payments'"
+  [mobileCardConfig]="mobileCardConfig">
+
+  <ng-template listRowActions let-row>
+    <div class="inline-flex items-center justify-end gap-2" (click)="$event.stopPropagation()">
+      <button type="button" (click)="getPayments(row)" [disabled]="isBusy(row)"
+        class="px-4 h-9 inline-flex items-center rounded-full bg-brand-600 text-white text-sm font-medium shadow-sm hover:bg-brand-700 disabled:opacity-60">
+        {{ 'BRANCH_PAYMENTS.GET_PAYMENTS' | translate }}
+      </button>
+    </div>
+  </ng-template>
+</app-list-page>

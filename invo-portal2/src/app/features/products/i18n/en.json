@@ -1172,6 +1172,7 @@
       "BATCHES": "Batches",
       "BATCH": "Batch",
       "BATCH_NAME": "Batch name",
+      "SELLING_PRICE": "Selling price",
       "BATCH_DUPLICATE": "A batch with this name already exists.",
       "NO_BATCHES_YET": "No batches added for this branch yet.",
       "NO_BATCHES_MATCH": "No batches match your search.",

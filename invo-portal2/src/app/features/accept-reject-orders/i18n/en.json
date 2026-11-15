@@ -1,0 +1,41 @@
+{
+  "ACCEPT_REJECT_ORDERS": {
+    "TITLE": "Pending Order",
+    "SEARCH": "Search by invoice, customer, employee or branch",
+    "EMPTY": "No orders found",
+    "COL_INVOICE": "Invoice Number",
+    "COL_EMPLOYEE": "Employee",
+    "COL_CUSTOMER": "Customer",
+    "COL_TOTAL": "Total",
+    "COL_BRANCH": "Branch",
+    "COL_DATE": "Date",
+    "COL_STATUS": "Status",
+    "COL_ONLINE_STATUS": "Online Status",
+    "ISSUE_DATE": "Issue date",
+    "DUE_DATE": "Due date",
+    "CREATED_DATE": "Created",
+    "DRAFT": "Draft",
+    "FILTER_STATUS": "Status",
+    "FILTER_BRANCH": "Branch",
+    "STATUS": {
+      "Placed": "Pending",
+      "Accepted": "Accepted",
+      "Rejected": "Rejected"
+    },
+    "ACCEPT": "Accept",
+    "REJECT": "Reject",
+    "ACCEPTED": "Order accepted",
+    "REJECTED": "Order rejected",
+    "UPDATE_FAILED": "Could not update the order status",
+    "SELECT_TITLE": "Select serials and batches",
+    "SELECT_HINT": "Choose the serial number or batch to ship for each product before accepting the order.",
+    "PRODUCT": "Product",
+    "TYPE": "Type",
+    "SELECTION": "Selection",
+    "SELECT_SERIAL": "Select a serial",
+    "SELECT_BATCH": "Select a batch",
+    "SERIALIZED": "Serialized",
+    "BATCH": "Batch",
+    "CANCEL": "Cancel"
+  }
+}

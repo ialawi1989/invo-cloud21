@@ -158,6 +158,13 @@
               }
             </div>
 
+            @if (showSellingPrice()) {
+              <div class="bb__field">
+                <label class="bb__label">{{ 'PRODUCTS.FORM.SELLING_PRICE' | translate }}</label>
+                <input type="number" class="pf-input" formControlName="sellingPrice" min="0"/>
+              </div>
+            }
+
             <div class="bb__field">
               <label class="bb__label">{{ 'PRODUCTS.FORM.PROD_DATE_SHORT' | translate }}</label>
               <app-date-picker formControlName="prodDate" [placeholder]="'PRODUCTS.FORM.PICK_DATE' | translate"/>

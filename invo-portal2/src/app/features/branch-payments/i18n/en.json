@@ -1,0 +1,12 @@
+{
+  "BRANCH_PAYMENTS": {
+    "DASHBOARD": "Dashboard",
+    "TITLE": "Branches Payments List",
+    "SEARCH": "Search by branch name",
+    "EMPTY": "No branches found",
+    "COL_BRANCH": "Branch Name",
+    "GET_PAYMENTS": "Get Payments",
+    "SUCCESS": "Payments requested successfully",
+    "FAILED": "Could not get the payments from the branch"
+  }
+}

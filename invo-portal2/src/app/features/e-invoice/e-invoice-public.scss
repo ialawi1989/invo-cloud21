@@ -1,0 +1,34 @@
+// Styles shared by the two public e-invoice pages (payment + signature).
+:host { display: block; min-height: 100vh; background: #f8fafc; }
+.ei { max-width: 1100px; margin: 0 auto; padding: 24px 16px 96px; display: flex; flex-direction: column; gap: 16px; }
+.ei__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.ei__head-actions { display: flex; align-items: center; gap: 8px; }
+.ei__title { font-size: 20px; font-weight: 600; color: #0f172a; margin: 0; }
+.ei__muted { color: #64748b; font-size: 14px; margin: 0; }
+.ei__center { text-align: center; padding: 48px 0; }
+.ei__btn {
+  height: 40px; padding: 0 20px; border-radius: 999px; border: 1px solid #e2e8f0; background: #fff; color: #475569;
+  font-size: 14px; font-weight: 500; cursor: pointer;
+  &:disabled { opacity: .5; cursor: not-allowed; }
+  &--soft { background: #ecfdf5; border-color: #a7f3d0; color: #047857; }
+  &--primary { background: var(--color-brand-600, #2691a4); border-color: transparent; color: #fff; &:hover:not(:disabled) { background: var(--color-brand-700, #1f7889); } }
+}
+.ei__notice {
+  padding: 12px 16px; border-radius: 10px; font-size: 14px; background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0;
+  &--error { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+}
+.ei__card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.ei__card-title { font-size: 15px; font-weight: 600; color: #0f172a; margin: 0; }
+.ei__methods { display: flex; flex-wrap: wrap; gap: 12px; }
+.ei__method {
+  display: inline-flex; align-items: center; gap: 10px; padding: 10px 16px; border: 1px solid #e2e8f0; border-radius: 10px;
+  cursor: pointer; font-size: 14px; color: #0f172a; background: #fff;
+  &.is-on { border-color: var(--color-brand-600, #2691a4); background: var(--color-brand-50, #e8f6f9); }
+}
+.ei__radio { accent-color: var(--color-brand-600, #2691a4); }
+.ei__method-icon { height: 24px; max-width: 56px; object-fit: contain; }
+.ei__footer {
+  position: fixed; inset-inline: 0; bottom: 0; padding: 12px 16px; background: #fff; border-top: 1px solid #e2e8f0;
+  display: flex; justify-content: flex-end; z-index: 10;
+}
+.ei__field { display: flex; flex-direction: column; gap: 8px; label { font-size: 13px; font-weight: 500; color: #475569; } }

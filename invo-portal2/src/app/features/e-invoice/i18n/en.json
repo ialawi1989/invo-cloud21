@@ -1,0 +1,22 @@
+{
+  "EINVOICE": {
+    "TEXT": "Invoice",
+    "ZOOM": "Zoom",
+    "PAY": "Pay",
+    "PAY_INVOICE": "Pay invoice",
+    "PAID": "Payment received. Thank you!",
+    "PAYMENT_METHOD": "Payment method",
+    "NO_METHODS": "No payment methods are available for this invoice.",
+    "GATEWAY_UNAVAILABLE": "The payment page could not be loaded. Please try again.",
+    "INVALID_LINK_TITLE": "This link is not valid",
+    "INVALID_LINK_TEXT": "The link is incorrect or has expired. Ask the sender for a new one.",
+    "CLEAR": "Clear",
+    "SEND": "Send",
+    "SIGNED": "Signature saved"
+  },
+  "INVOICE_SIGNATURE": {
+    "TEXT": "Invoice signature",
+    "SIGN": "Sign",
+    "SIGNATURE": "Signature"
+  }
+}

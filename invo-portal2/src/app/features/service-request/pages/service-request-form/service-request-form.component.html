@@ -1,0 +1,42 @@
+<div class="srq-page">
+  <header class="page-header">
+    <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+    <h1 class="page-title">{{ (isNew() ? 'SERVICE_REQUEST.FORM_NEW' : 'SERVICE_REQUEST.FORM_EDIT') | translate }}</h1>
+  </header>
+
+  @if (notFound()) {
+    <app-empty-state icon="error" tone="error" [title]="'SERVICE_REQUEST.NOT_FOUND' | translate">
+      <button type="button" class="btn btn-primary" (click)="cancel()">{{ 'COMMON.BACK' | translate }}</button>
+    </app-empty-state>
+  } @else {
+    <section class="card">
+      <header class="card__head"><h2 class="card__title">{{ 'SERVICE_REQUEST.FORM_TITLE' | translate }}</h2></header>
+      <div class="card__body">
+        <label class="field">
+          <span class="field__label">{{ 'SERVICE_REQUEST.TEXT' | translate }} <span class="req">*</span></span>
+          <input class="field__input" type="text" [value]="doc().body" (input)="setBody($any($event.target).value)"
+            [class.field__input--err]="touched() && bodyMissing()" (keydown.enter)="$event.preventDefault()"/>
+          @if (touched() && bodyMissing()) {
+            <span class="field__err">{{ 'SERVICE_REQUEST.TEXT_REQUIRED' | translate: { min: bodyMin } }}</span>
+          }
+        </label>
+
+        <div class="field">
+          <span class="field__label">{{ 'SERVICE_REQUEST.ICON' | translate }} <span class="req">*</span></span>
+          <app-service-icon-picker [value]="doc().icon" [invalid]="touched() && !doc().icon" (valueChange)="setIcon($event)"/>
+          @if (touched() && !doc().icon) { <span class="field__err">{{ 'SERVICE_REQUEST.ICON_REQUIRED' | translate }}</span> }
+        </div>
+      </div>
+    </section>
+
+    <footer class="save-bar">
+      <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">{{ 'COMMON.CANCEL' | translate }}</button>
+      <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving()">
+        @if (saving()) { <span class="spinner" aria-hidden="true"></span> }
+        {{ saving() ? ('COMMON.SAVING' | translate) : ('COMMON.SAVE' | translate) }}
+      </button>
+    </footer>
+  }
+
+  <app-loading-overlay [show]="loading()"/>
+</div>

@@ -1,0 +1,47 @@
+<app-modal-header [title]="'FEEDBACKS.SETTINGS.TITLE' | translate" />
+
+<div class="fs-body">
+  <!-- Email notifications -->
+  <section class="fs-sec">
+    <h5>{{ 'FEEDBACKS.SETTINGS.EMAIL_NOTIFICATIONS' | translate }}</h5>
+    <p class="fs-desc">{{ 'FEEDBACKS.SETTINGS.EMAIL_NOTIFICATIONS_DESC' | translate }}</p>
+
+    <label class="fs-label">{{ 'FEEDBACKS.SETTINGS.NOTIFICATION_EMAILS' | translate }}</label>
+    <span class="fs-hint">{{ 'FEEDBACKS.SETTINGS.NOTIFICATION_EMAILS_HINT' | translate }}</span>
+    <app-email-chips [emails]="emails()" (emailsChange)="emails.set($event)"/>
+
+    <label class="fs-label">{{ 'FEEDBACKS.SETTINGS.NOTIFY_WHEN_RATING' | translate }}</label>
+    <div class="fs-chips">
+      @for (n of options; track n) {
+        <button type="button" class="fs-chip" [class]="'fs-chip fs-chip--' + color(n)" [class.is-on]="notifyOn().includes(n)"
+          [attr.aria-pressed]="notifyOn().includes(n)" (click)="toggle(notifyOn, n)">{{ label(n) }}</button>
+      }
+    </div>
+  </section>
+
+  <!-- Google rating -->
+  <section class="fs-sec">
+    <h5>{{ 'FEEDBACKS.SETTINGS.GOOGLE_RATING' | translate }}</h5>
+    <p class="fs-desc">{{ 'FEEDBACKS.SETTINGS.GOOGLE_RATING_DESC' | translate }}</p>
+
+    <label class="fs-label" for="fs-google">{{ 'FEEDBACKS.SETTINGS.GOOGLE_RATING_LINK' | translate }}</label>
+    <input id="fs-google" class="fs-input" type="url" dir="ltr" placeholder="https://"
+      [ngModel]="googleUrl()" (ngModelChange)="googleUrl.set($event)"/>
+    <span class="fs-hint">{{ 'FEEDBACKS.SETTINGS.GOOGLE_HELP' | translate }}</span>
+
+    <label class="fs-label">{{ 'FEEDBACKS.SETTINGS.SHOW_GOOGLE_LINK_WHEN' | translate }}</label>
+    <div class="fs-chips">
+      @for (n of options; track n) {
+        <button type="button" class="fs-chip" [class]="'fs-chip fs-chip--' + color(n)" [class.is-on]="linkOn().includes(n)"
+          [attr.aria-pressed]="linkOn().includes(n)" (click)="toggle(linkOn, n)">{{ label(n) }}</button>
+      }
+    </div>
+  </section>
+</div>
+
+<app-modal-footer>
+  <button type="button" class="btn-cancel" (click)="ref.dismiss()">{{ 'COMMON.CANCEL' | translate }}</button>
+  <button type="button" class="btn-save" [disabled]="saving()" (click)="save()">
+    {{ saving() ? ('COMMON.SAVING' | translate) : ('COMMON.SAVE' | translate) }}
+  </button>
+</app-modal-footer>

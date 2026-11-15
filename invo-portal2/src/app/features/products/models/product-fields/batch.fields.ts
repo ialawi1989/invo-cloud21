@@ -283,6 +283,11 @@ export const batchFields: Fields = {
         isDisabled: false,
         isRequired: true,
       },
+      sellingPrice: {
+        isVisible: true,
+        isDisabled: false,
+        isRequired: false,
+      },
       productDate: {
         isVisible: true,
         isDisabled: false,

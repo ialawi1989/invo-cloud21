@@ -1,0 +1,13 @@
+{
+  "COMPANY_GROUP_EMPLOYEES": {
+    "TITLE": "Company Group Employees",
+    "SEARCH": "Search by name or email",
+    "EMPTY": "No employees found in this company group",
+    "ERROR": "Could not load the group employees",
+    "ERROR_HINT": "Only a super admin can see the employees of the whole company group.",
+    "COL_EMPLOYEE": "Employee",
+    "COL_COMPANIES": "Companies",
+    "HAS_ACCESS": "Has access",
+    "NO_ACCESS": "No access"
+  }
+}

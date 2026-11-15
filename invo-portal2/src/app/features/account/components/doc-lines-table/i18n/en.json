@@ -40,6 +40,7 @@
     "CLICK_TO_SELECT": "Click the item names from the left pane to select them",
     "LOADING": "Loading…",
     "NO_ITEMS": "No items found",
+    "PRODUCT_NOT_FOUND": "Product not found",
     "UNDO": "Undo",
     "UNDO_REMOVE": "Restore this line",
     "REMOVE_LINE": "Remove line",

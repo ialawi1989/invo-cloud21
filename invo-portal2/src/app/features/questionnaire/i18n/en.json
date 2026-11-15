@@ -1,0 +1,23 @@
+{
+  "QUESTIONNAIRE": {
+    "TITLE": "Questionnaire",
+    "LIST_TITLE": "Questionnaire list",
+    "DASHBOARD": "Dashboard",
+    "NEW": "New question",
+    "FORM_NEW": "New questionnaire",
+    "FORM_EDIT": "Edit questionnaire",
+    "DETAILS": "Question details",
+    "SEARCH": "Search questions",
+    "EMPTY": "No questions found",
+    "COL_TEXT": "Text",
+    "TYPE": "Type",
+    "TEXT": "Text",
+    "SELECT_TYPE": "Select a type",
+    "TYPES": {
+      "rate": "Rate question",
+      "comment": "Comment question"
+    },
+    "ERR_TEXT_REQUIRED": "Enter the question text",
+    "NOT_AVAILABLE": "Saving questions is not available yet"
+  }
+}

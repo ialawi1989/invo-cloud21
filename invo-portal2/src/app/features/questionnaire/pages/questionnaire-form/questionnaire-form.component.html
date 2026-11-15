@@ -1,0 +1,31 @@
+<div class="qf-page">
+  <header class="qf-header">
+    <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+    <h1 class="qf-title">{{ title() }}</h1>
+  </header>
+
+  <section class="qf-card">
+    <h2 class="qf-card__title">{{ 'QUESTIONNAIRE.DETAILS' | translate }}</h2>
+    <div class="qf-grid">
+      <div class="qf-field">
+        <span class="qf-label">{{ 'QUESTIONNAIRE.TYPE' | translate }}</span>
+        <app-search-dropdown [items]="types()" [displayWith]="label" [compareWith]="byId" [clearable]="false"
+          [value]="selectedType()" (valueChange)="setType($any($event))"
+          [placeholder]="'QUESTIONNAIRE.SELECT_TYPE' | translate"/>
+      </div>
+      <label class="qf-field qf-field--wide">
+        <span class="qf-label">{{ 'QUESTIONNAIRE.TEXT' | translate }} <span class="qf-req">*</span></span>
+        <input class="qf-input" type="text" [class.qf-input--err]="showErrors() && !!textError()"
+          [ngModel]="question().text" (ngModelChange)="setText($event)"/>
+        @if (showErrors() && textError()) { <span class="qf-err">{{ textError() | translate }}</span> }
+      </label>
+    </div>
+  </section>
+
+  <footer class="qf-bar">
+    <button type="button" class="qf-btn qf-btn--ghost" (click)="cancel()" [disabled]="saving()">{{ 'COMMON.CANCEL' | translate }}</button>
+    <button type="button" class="qf-btn qf-btn--primary" (click)="save()" [disabled]="saving()">
+      {{ saving() ? ('COMMON.SAVING' | translate) : ('COMMON.SAVE' | translate) }}
+    </button>
+  </footer>
+</div>

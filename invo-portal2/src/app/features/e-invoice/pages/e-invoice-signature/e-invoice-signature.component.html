@@ -1,0 +1,39 @@
+<div class="ei">
+  @if (loading()) {
+    <p class="ei__muted ei__center">{{ 'COMMON.LOADING' | translate }}</p>
+  } @else if (invalid()) {
+    <app-empty-state icon="error" tone="error"
+      [title]="'EINVOICE.INVALID_LINK_TITLE' | translate" [body]="'EINVOICE.INVALID_LINK_TEXT' | translate"/>
+  } @else {
+    <header class="ei__head">
+      <h1 class="ei__title">{{ 'INVOICE_SIGNATURE.TEXT' | translate }}</h1>
+      <div class="ei__head-actions">
+        <app-segmented-toggle size="sm" [options]="langOptions" [value]="lang.current()" (valueChange)="setLanguage($event)"/>
+        @if (canSign()) {
+          <button type="button" class="ei__btn ei__btn--soft" (click)="scrollToSign()">{{ 'INVOICE_SIGNATURE.SIGN' | translate }}</button>
+        }
+      </div>
+    </header>
+
+    @if (notice(); as n) {
+      <div class="ei__notice" [class.ei__notice--error]="n.kind === 'error'" role="status">{{ n.text }}</div>
+    }
+
+    <app-e-invoice-paper [invoice]="invoice()!" [company]="company()!" [template]="template()!"/>
+
+    @if (canSign()) {
+      <section class="ei__card" #signBox>
+        <div class="ei__field">
+          <label>{{ 'INVOICE_SIGNATURE.SIGNATURE' | translate }}</label>
+          <app-signature-pad (changed)="signature.set($event)"/>
+        </div>
+      </section>
+
+      <footer class="ei__footer">
+        <button type="button" class="ei__btn ei__btn--primary" [disabled]="!signature() || sending()" (click)="send()">
+          {{ 'EINVOICE.SEND' | translate }}
+        </button>
+      </footer>
+    }
+  }
+</div>

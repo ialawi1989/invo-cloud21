@@ -1,0 +1,37 @@
+{
+  "FEEDBACKS": {
+    "TITLE": "Feedbacks",
+    "DASHBOARD": "Dashboard",
+    "SEARCH": "Search by customer or invoice",
+    "EMPTY": "No feedbacks found",
+    "SETTINGS_BTN": "Feedback settings",
+    "AVERAGE_RATING_FOR": "Average rating for",
+    "FEEDBACKS": "feedbacks",
+    "FILTER_BY_RATING": "Rating",
+    "COL_DATE": "Date",
+    "COL_RATING": "Rating",
+    "COL_CUSTOMER": "Customer name",
+    "COL_PHONE": "Phone",
+    "COL_COMMENT": "Comment",
+    "COL_INVOICE": "Invoice",
+    "VIEW_DETAILS": "View details",
+    "NO_COMMENT": "No comment provided",
+    "LOAD_FAILED": "Could not load feedbacks",
+    "SETTINGS": {
+      "TITLE": "Feedback settings",
+      "EMAIL_NOTIFICATIONS": "Email notifications",
+      "EMAIL_NOTIFICATIONS_DESC": "Get an email when a customer leaves a feedback with the selected ratings.",
+      "NOTIFICATION_EMAILS": "Notification emails",
+      "NOTIFICATION_EMAILS_HINT": "Type an email and press Enter to add it.",
+      "NOTIFY_WHEN_RATING": "Notify me when the rating is",
+      "GOOGLE_RATING": "Google rating",
+      "GOOGLE_RATING_DESC": "Invite happy customers to review you on Google.",
+      "GOOGLE_RATING_LINK": "Google review link",
+      "GOOGLE_HELP": "Find your link on Google Business Profile > Home > Get more reviews, or use g.page to claim or look up your short link.",
+      "SHOW_GOOGLE_LINK_WHEN": "Show the Google link when the rating is",
+      "STARS": "{{n}} Stars",
+      "STAR": "1 Star",
+      "LOAD_FAILED": "Could not load the feedback settings"
+    }
+  }
+}

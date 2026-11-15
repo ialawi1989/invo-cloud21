@@ -1,0 +1,63 @@
+<app-list-page
+  [pageTitle]="'ACCEPT_REJECT_ORDERS.TITLE' | translate"
+  [breadcrumbs]="breadcrumbs"
+  [columns]="columns"
+  [dataSource]="load"
+  [pagination]="paginationConfig"
+  [search]="searchConfig"
+  [sorting]="sortingConfig"
+  [filters]="filters"
+  [headerActions]="[]"
+  [selectable]="false"
+  [fitContent]="true"
+  [emptyState]="emptyState"
+  [entityType]="'accept-reject-orders'"
+  [mobileCardConfig]="mobileCardConfig"
+  (rowClicked)="onRowClick($event)">
+
+  <ng-template listCellTemplate="invoiceNumber" let-row>
+    <span class="font-medium text-slate-900 list-interactive-cell">{{ row.invoiceNumber }}</span>
+    @if (row.status === 'Draft') {
+      <span class="ms-2 text-xs font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">{{ 'ACCEPT_REJECT_ORDERS.DRAFT' | translate }}</span>
+    }
+  </ng-template>
+
+  <ng-template listCellTemplate="total" let-row>{{ row.total | mycurrency }}</ng-template>
+
+  <ng-template listCellTemplate="invoiceDate" let-row>
+    <div class="text-sm leading-5">
+      <div><span class="text-slate-500">{{ 'ACCEPT_REJECT_ORDERS.ISSUE_DATE' | translate }}:</span> {{ row.invoiceDate | date: 'dd/MM/yyyy' }}</div>
+      @if (row.dueDate) {
+        <div><span class="text-slate-500">{{ 'ACCEPT_REJECT_ORDERS.DUE_DATE' | translate }}:</span> {{ row.dueDate | date: 'dd/MM/yyyy' }}</div>
+      }
+      <div><span class="text-slate-500">{{ 'ACCEPT_REJECT_ORDERS.CREATED_DATE' | translate }}:</span> {{ row.createdAt | date: 'dd/MM/yyyy HH:mm' }}</div>
+    </div>
+  </ng-template>
+
+  <ng-template listCellTemplate="status" let-row>
+    @if (row.status) {
+      <span class="text-xs font-medium px-2.5 py-1 rounded-full" [ngClass]="statusClass(row.status)">{{ row.status }}</span>
+    }
+  </ng-template>
+
+  <ng-template listCellTemplate="onlineStatus" let-row>
+    @if (row.onlineStatus) {
+      <span class="text-xs font-medium px-2.5 py-1 rounded-full" [ngClass]="statusClass(row.onlineStatus === 'Placed' ? 'Pending' : row.onlineStatus)">{{ statusLabel(row.onlineStatus) }}</span>
+    }
+  </ng-template>
+
+  <ng-template listRowActions let-row>
+    <div class="inline-flex items-center justify-end gap-2" (click)="$event.stopPropagation()">
+      @if (isPending(row)) {
+        <button type="button" (click)="accept(row)" [disabled]="isBusy(row)"
+          class="px-4 h-9 inline-flex items-center rounded-full bg-emerald-600 text-white text-sm font-medium shadow-sm hover:bg-emerald-700 disabled:opacity-60">
+          {{ 'ACCEPT_REJECT_ORDERS.ACCEPT' | translate }}
+        </button>
+        <button type="button" (click)="reject(row)" [disabled]="isBusy(row)"
+          class="px-3 h-9 inline-flex items-center rounded-full border border-red-200 text-red-600 text-sm font-medium hover:bg-red-50 disabled:opacity-60">
+          {{ 'ACCEPT_REJECT_ORDERS.REJECT' | translate }}
+        </button>
+      }
+    </div>
+  </ng-template>
+</app-list-page>

@@ -136,6 +136,7 @@ export class BranchBatchesComponent {
         barcode:    [initialBarcode],
         onHand:     [null, [Validators.required, Validators.min(0)]],
         unitCost:   [0,    [Validators.min(0)]],
+        sellingPrice: [null as number | null, [Validators.min(0)]],
         prodDate:   [null as Date | null],
         expireDate: [null as Date | null],
       },
@@ -184,6 +185,11 @@ export class BranchBatchesComponent {
   isSaved(i: number): boolean {
     return !!this.rowVal(i, 'id');
   }
+
+  /** Legacy field config: the selling-price input only shows when enabled. */
+  showSellingPrice = computed<boolean>(() =>
+    !!this.fieldsOptions()?.branchProduct?.batches?.sellingPrice?.isVisible,
+  );
 
   /** Template helper — true when the unit-cost is zero (or empty) at this row. */
   isCostFree(i: number): boolean {

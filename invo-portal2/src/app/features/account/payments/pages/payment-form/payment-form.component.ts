@@ -400,7 +400,8 @@ export class PaymentFormComponent implements OnInit, CanLeaveComponent {
     const p = this.payment;
     const allLines = p.lines;
     const customerId = p.customerId;
-    p.lines = allLines.filter(l => l.amount > 0);
+    // A saved line edited down to 0 is kept (zeroed on the backend) instead of being dropped.
+    p.lines = allLines.filter(l => l.amount > 0 || (!!l.id && l.amount === 0));
     if (!p.lines.length) p.paidAmount = 0;
     if (p.customerId === 'WalkIn Customer') p.customerId = null;
 

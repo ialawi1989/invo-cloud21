@@ -79,6 +79,9 @@
         <div class="tf-preview">
           <div class="tf-preview__head">
             <h4>{{ 'NOTIFICATIONS_SETTINGS.TEMPLATE_FORM.PREVIEW' | translate }}</h4>
+            <app-segmented-toggle size="sm" [options]="previewLangOptions" [value]="previewLang()"
+              [attr.aria-label]="'NOTIFICATIONS_SETTINGS.TEMPLATE_FORM.PREVIEW_LANGUAGE' | translate"
+              (valueChange)="onPreviewLang($event)" />
             <button type="button" class="tf-btn" [disabled]="previewLoading()" (click)="preview()">
               {{ (previewLoading() ? 'NOTIFICATIONS_SETTINGS.TEMPLATE_FORM.RENDERING' : 'NOTIFICATIONS_SETTINGS.TEMPLATE_FORM.PREVIEW') | translate }}
             </button>

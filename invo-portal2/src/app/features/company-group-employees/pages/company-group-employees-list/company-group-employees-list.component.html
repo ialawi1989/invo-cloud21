@@ -1,0 +1,31 @@
+<app-list-page
+  [pageTitle]="'COMPANY_GROUP_EMPLOYEES.TITLE' | translate"
+  [breadcrumbs]="breadcrumbs"
+  [columns]="columns"
+  [dataSource]="load"
+  [pagination]="paginationConfig"
+  [search]="searchConfig"
+  [sorting]="sortingConfig"
+  [headerActions]="[]"
+  [selectable]="false"
+  [fitContent]="true"
+  [emptyState]="emptyState"
+  [entityType]="'company-group-employees'"
+  [mobileCardConfig]="mobileCardConfig">
+
+  <ng-template listCellTemplate="name" let-row>
+    <span class="font-medium text-slate-900">{{ row.name }}</span>
+  </ng-template>
+
+  <ng-template listCellTemplate="companyList" let-row>
+    <div class="flex flex-wrap gap-1.5">
+      @for (c of row.companyList; track c.companyId) {
+        <span class="text-xs font-medium px-2.5 py-1 rounded-full"
+          [class]="c.available ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500 line-through'"
+          [title]="(c.available ? 'COMPANY_GROUP_EMPLOYEES.HAS_ACCESS' : 'COMPANY_GROUP_EMPLOYEES.NO_ACCESS') | translate">
+          {{ c.companyName }}
+        </span>
+      }
+    </div>
+  </ng-template>
+</app-list-page>

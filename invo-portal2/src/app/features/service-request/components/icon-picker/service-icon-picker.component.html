@@ -1,0 +1,50 @@
+<div class="ip">
+  <button type="button" class="ip__trigger" [class.ip__trigger--err]="invalid()" (click)="toggle()" [attr.aria-expanded]="open()">
+    <span class="ip__current">{{ value() || '🛎️' }}</span>
+    <span class="ip__hint">{{ 'SERVICE_REQUEST.ICON_HINT' | translate }}</span>
+    <svg class="ip__chev" [class.ip__chev--up]="open()" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+  </button>
+
+  @if (open()) {
+    <div class="ip__panel">
+      <div class="ip__search">
+        <input type="text" [value]="query()" (input)="setQuery($any($event.target).value)" [placeholder]="'SERVICE_REQUEST.ICON_SEARCH' | translate"/>
+        @if (query()) { <button type="button" class="ip__clear" (click)="setQuery('')" aria-label="clear">&times;</button> }
+      </div>
+
+      <div class="ip__tabs">
+        @for (t of tabs(); track t.key) {
+          <button type="button" class="ip__tab" [class.ip__tab--on]="category() === t.key" (click)="setCategory(t.key)">{{ t.label | translate }}</button>
+        }
+      </div>
+
+      <div class="ip__grid">
+        @for (icon of paged(); track $index) {
+          <button type="button" class="ip__icon" [class.ip__icon--on]="icon === value()" (click)="pick(icon)">{{ icon }}</button>
+        } @empty {
+          <div class="ip__empty">
+            <p>{{ 'SERVICE_REQUEST.ICON_NONE' | translate }}</p>
+            <small>{{ 'SERVICE_REQUEST.ICON_NONE_HINT' | translate }}</small>
+          </div>
+        }
+      </div>
+
+      @if (totalPages() > 1) {
+        <div class="ip__pager">
+          <button type="button" class="ip__pbtn" [disabled]="page() === 1" (click)="goTo(page() - 1)">&lsaquo;</button>
+          @for (p of pages(); track $index) {
+            <button type="button" class="ip__pbtn" [class.ip__pbtn--on]="p === page()" [disabled]="p === '…'" (click)="goTo(p)">{{ p }}</button>
+          }
+          <button type="button" class="ip__pbtn" [disabled]="page() === totalPages()" (click)="goTo(page() + 1)">&rsaquo;</button>
+        </div>
+      }
+
+      <div class="ip__foot">
+        <span>{{ filtered().length }} {{ 'SERVICE_REQUEST.ICON_COUNT' | translate }}
+          @if (totalPages() > 1) { ({{ startIndex() + 1 }}-{{ shownTo() }}) }
+        </span>
+        <button type="button" class="ip__link" (click)="close()">{{ 'SERVICE_REQUEST.CLOSE' | translate }}</button>
+      </div>
+    </div>
+  }
+</div>

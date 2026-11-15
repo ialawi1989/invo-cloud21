@@ -1,0 +1,41 @@
+{
+  "ACCEPT_REJECT_ORDERS": {
+    "TITLE": "الطلبات المعلقة",
+    "SEARCH": "البحث برقم الفاتورة أو العميل أو الموظف أو الفرع",
+    "EMPTY": "لا توجد طلبات",
+    "COL_INVOICE": "رقم الفاتورة",
+    "COL_EMPLOYEE": "الموظف",
+    "COL_CUSTOMER": "العميل",
+    "COL_TOTAL": "الإجمالي",
+    "COL_BRANCH": "الفرع",
+    "COL_DATE": "التاريخ",
+    "COL_STATUS": "الحالة",
+    "COL_ONLINE_STATUS": "حالة الطلب الإلكتروني",
+    "ISSUE_DATE": "تاريخ الإصدار",
+    "DUE_DATE": "تاريخ الاستحقاق",
+    "CREATED_DATE": "تاريخ الإنشاء",
+    "DRAFT": "مسودة",
+    "FILTER_STATUS": "الحالة",
+    "FILTER_BRANCH": "الفرع",
+    "STATUS": {
+      "Placed": "معلق",
+      "Accepted": "مقبول",
+      "Rejected": "مرفوض"
+    },
+    "ACCEPT": "قبول",
+    "REJECT": "رفض",
+    "ACCEPTED": "تم قبول الطلب",
+    "REJECTED": "تم رفض الطلب",
+    "UPDATE_FAILED": "تعذر تحديث حالة الطلب",
+    "SELECT_TITLE": "اختيار الأرقام التسلسلية والدفعات",
+    "SELECT_HINT": "اختر الرقم التسلسلي أو الدفعة لكل منتج قبل قبول الطلب.",
+    "PRODUCT": "المنتج",
+    "TYPE": "النوع",
+    "SELECTION": "الاختيار",
+    "SELECT_SERIAL": "اختر رقماً تسلسلياً",
+    "SELECT_BATCH": "اختر دفعة",
+    "SERIALIZED": "رقم تسلسلي",
+    "BATCH": "دفعة",
+    "CANCEL": "إلغاء"
+  }
+}

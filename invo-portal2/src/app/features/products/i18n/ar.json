@@ -1172,6 +1172,7 @@
       "BATCHES": "الدفعات",
       "BATCH": "الدفعة",
       "BATCH_NAME": "اسم الدفعة",
+      "SELLING_PRICE": "سعر البيع",
       "BATCH_DUPLICATE": "اسم الدفعة موجود مسبقًا.",
       "NO_BATCHES_YET": "لم تتم إضافة دفعات لهذا الفرع بعد.",
       "NO_BATCHES_MATCH": "لا توجد دفعات تطابق بحثك.",

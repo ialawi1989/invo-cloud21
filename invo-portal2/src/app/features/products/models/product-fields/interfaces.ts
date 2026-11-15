@@ -212,6 +212,7 @@ export interface BatchDetailsFields {
   batch: FieldTemplate;
   onHand: FieldTemplate;
   unitCost: FieldTemplate;
+  sellingPrice?: FieldTemplate;
   productDate: FieldTemplate;
   expireDate: FieldTemplate;
 }

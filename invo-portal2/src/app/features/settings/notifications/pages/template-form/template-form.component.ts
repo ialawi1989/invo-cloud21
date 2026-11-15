@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ToastService } from '@shared/components/toast/toast.service';
+import { SegmentedToggleComponent } from '@shared/components/segmented-toggle/segmented-toggle.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { MessageTemplatesService } from '../../services/message-templates.service';
 import { MessageTemplate, TemplateEventType, TemplateOutputType, TemplateVariable } from '../../services/message-template.types';
@@ -28,7 +29,7 @@ function emptyTemplate(): MessageTemplate {
 @Component({
   selector: 'app-template-form',
   standalone: true,
-  imports: [FormsModule, TranslateModule, SearchDropdownComponent],
+  imports: [FormsModule, TranslateModule, SearchDropdownComponent, SegmentedToggleComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './template-form.component.html',
   styleUrl: './template-form.component.scss',
@@ -56,6 +57,12 @@ export class TemplateFormComponent implements OnInit {
   variableSearch = signal('');
 
   previewLoading = signal(false);
+  /** Language the preview is rendered in (resolves T() per-language values). */
+  previewLang = signal<'en' | 'ar'>('en');
+  readonly previewLangOptions = [
+    { value: 'en' as const, label: 'English', translate: false },
+    { value: 'ar' as const, label: 'العربية', translate: false },
+  ];
   previewOutput = signal('');
   previewError = signal<string | null>(null);
 
@@ -201,6 +208,11 @@ export class TemplateFormComponent implements OnInit {
     return Array.from(groups.entries()).map(([category, items]) => ({ category, items }));
   });
 
+  onPreviewLang(lang: 'en' | 'ar'): void {
+    this.previewLang.set(lang);
+    void this.preview();
+  }
+
   async preview(): Promise<void> {
     this.sampleDataError.set(null);
     this.previewError.set(null);
@@ -215,7 +227,7 @@ export class TemplateFormComponent implements OnInit {
 
     this.previewLoading.set(true);
     try {
-      this.previewOutput.set(await this.templatesSvc.renderTemplate(this.body, data));
+      this.previewOutput.set(await this.templatesSvc.renderTemplate(this.body, data, this.previewLang()));
     } catch {
       this.previewError.set(this.translate.instant('NOTIFICATIONS_SETTINGS.TEMPLATE_FORM.PREVIEW_ERROR'));
     } finally {

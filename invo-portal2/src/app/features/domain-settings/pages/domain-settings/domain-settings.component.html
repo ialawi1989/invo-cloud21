@@ -1,0 +1,242 @@
+<div class="dom-page">
+  <header class="page-header">
+    <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+    <h1 class="page-title">{{ 'DOMAIN_SETTINGS.PAGE_TITLE' | translate }}</h1>
+  </header>
+
+  @if (loadFailed() && isInitial() && !loading()) {
+    <app-empty-state icon="error" tone="error" [title]="'DOMAIN_SETTINGS.LOAD_FAILED' | translate">
+      <button type="button" class="btn btn-primary" (click)="loadData()">{{ 'COMMON.REFRESH' | translate }}</button>
+    </app-empty-state>
+  } @else {
+    <!-- Step indicator -->
+    <ol class="steps">
+      @for (s of [{ n: 1, k: 'STEP_REGISTER' }, { n: 2, k: 'STEP_VERIFY_DNS' }, { n: 3, k: 'STEP_CONNECT' }]; track s.n) {
+        <li class="steps__item" [class.steps__item--on]="step() === s.n" [class.steps__item--done]="step() > s.n">
+          <span class="steps__num">{{ s.n }}</span>
+          <span class="steps__txt">{{ 'DOMAIN_SETTINGS.' + s.k | translate }}</span>
+        </li>
+      }
+    </ol>
+
+    <!-- ============== STEP 1: Register ============== -->
+    @if (isInitial()) {
+      <section class="card">
+        <h2 class="card__title">{{ 'DOMAIN_SETTINGS.CONNECT_YOUR_DOMAIN' | translate }}</h2>
+        <p class="muted" [innerHTML]="'DOMAIN_SETTINGS.CONNECT_INTRO' | translate"></p>
+
+        <div class="mode-picker">
+          <button type="button" class="mode-picker__opt" [class.mode-picker__opt--on]="mode() === 'subdomain'" (click)="mode.set('subdomain')">
+            <strong>{{ 'DOMAIN_SETTINGS.USE_SUBDOMAIN' | translate }}</strong>
+            <span>{{ 'DOMAIN_SETTINGS.USE_SUBDOMAIN_HINT' | translate }}</span>
+          </button>
+          <button type="button" class="mode-picker__opt" [class.mode-picker__opt--on]="mode() === 'custom'" (click)="mode.set('custom')">
+            <strong>{{ 'DOMAIN_SETTINGS.USE_ROOT_DOMAIN' | translate }}</strong>
+            <span>{{ 'DOMAIN_SETTINGS.USE_ROOT_DOMAIN_HINT' | translate }}</span>
+          </button>
+        </div>
+
+        @if (mode() === 'subdomain') {
+          <div class="sub-row">
+            <label class="field">
+              <span class="field__label">{{ 'DOMAIN_SETTINGS.SUBDOMAIN' | translate }}</span>
+              <input class="field__input" dir="ltr" type="text" maxlength="63" placeholder="shop"
+                [ngModel]="subdomainInput()" (ngModelChange)="subdomainInput.set($event)"
+                [class.field__input--err]="subdomainInput() && !subdomainValid()"/>
+            </label>
+            <span class="sub-row__dot">.</span>
+            <label class="field sub-row__grow">
+              <span class="field__label">{{ 'DOMAIN_SETTINGS.YOUR_DOMAIN' | translate }}</span>
+              <input class="field__input" dir="ltr" type="text" placeholder="yourcompany.com"
+                [ngModel]="rootDomainInput()" (ngModelChange)="rootDomainInput.set($event)"
+                [class.field__input--err]="rootDomainInput() && !rootValid()"/>
+            </label>
+          </div>
+          <p class="muted small">{{ 'DOMAIN_SETTINGS.PREVIEW' | translate }} <strong dir="ltr">https://{{ fullSubdomainPreview() }}</strong></p>
+          @if (subdomainInput() && !subdomainValid()) { <p class="err" [innerHTML]="'DOMAIN_SETTINGS.SUBDOMAIN_INVALID' | translate"></p> }
+          @if (rootDomainInput() && !rootValid()) { <p class="err" [innerHTML]="'DOMAIN_SETTINGS.DOMAIN_INVALID' | translate"></p> }
+        } @else {
+          <label class="field">
+            <span class="field__label">{{ 'DOMAIN_SETTINGS.YOUR_DOMAIN' | translate }}</span>
+            <input class="field__input" dir="ltr" type="text" placeholder="yourcompany.com"
+              [ngModel]="customDomainInput()" (ngModelChange)="customDomainInput.set($event)"
+              [class.field__input--err]="customDomainInput() && !customValid()"/>
+          </label>
+          @if (customDomainInput() && !customValid()) { <p class="err" [innerHTML]="'DOMAIN_SETTINGS.DOMAIN_INVALID' | translate"></p> }
+          <div class="note note--info" [innerHTML]="'DOMAIN_SETTINGS.APEX_NOTICE' | translate: { domain: customDomainInput() || 'yourcompany.com' }"></div>
+        }
+      </section>
+    }
+
+    <!-- ============== STEP 2: DNS validation (custom domain only) ============== -->
+    @if (isPendingValidation()) {
+      <section class="card">
+        <h2 class="card__title">{{ 'DOMAIN_SETTINGS.VERIFY_OWNERSHIP' | translate }}</h2>
+        <p>{{ 'DOMAIN_SETTINGS.DOMAIN_LABEL' | translate }} <strong dir="ltr">{{ finalHost() }}</strong></p>
+        <div class="note note--warn">{{ 'DOMAIN_SETTINGS.VERIFY_INTRO' | translate }}</div>
+
+        @if (data().validationCNAMEs.length) {
+          <div class="rec rec--4">
+            <div class="rec__row rec__row--head">
+              <div>{{ 'DOMAIN_SETTINGS.COL_DOMAIN' | translate }}</div>
+              <div>{{ 'DOMAIN_SETTINGS.COL_STATUS' | translate }}</div>
+              <div>{{ 'DOMAIN_SETTINGS.COL_NAME_TO_ADD' | translate }}</div>
+              <div>{{ 'DOMAIN_SETTINGS.COL_VALUE' | translate }}</div>
+            </div>
+            @for (c of data().validationCNAMEs; track c.Name) {
+              <div class="rec__row">
+                <div class="brk" dir="ltr"><strong>{{ c.Domain }}</strong></div>
+                <div>
+                  <span class="badge" [class.badge--ok]="c.Status === 'SUCCESS'" [class.badge--warn]="c.Status === 'PENDING_VALIDATION'">
+                    @switch (c.Status) {
+                      @case ('SUCCESS') { {{ 'DOMAIN_SETTINGS.BADGE_SUCCESS' | translate }} }
+                      @case ('PENDING_VALIDATION') { {{ 'DOMAIN_SETTINGS.BADGE_PENDING' | translate }} }
+                      @default { {{ c.Status }} }
+                    }
+                  </span>
+                </div>
+                <div>
+                  <div class="copy"><input readonly dir="ltr" [value]="c.Name"/><button type="button" (click)="copy(c.Name)" [attr.aria-label]="'DOMAIN_SETTINGS.COPY' | translate">{{ 'DOMAIN_SETTINGS.COPY' | translate }}</button></div>
+                  <small class="muted">{{ 'DOMAIN_SETTINGS.HOST_PART' | translate }} <code dir="ltr">{{ cnameHostPart(c.Name) }}</code>
+                    <button type="button" class="link" (click)="copy(cnameHostPart(c.Name))">{{ 'DOMAIN_SETTINGS.COPY' | translate }}</button></small>
+                </div>
+                <div>
+                  <div class="copy"><input readonly dir="ltr" [value]="c.Value"/><button type="button" (click)="copy(c.Value)">{{ 'DOMAIN_SETTINGS.COPY' | translate }}</button></div>
+                </div>
+              </div>
+            }
+          </div>
+          @if (data().validationCNAMEs.length > 1) {
+            <p class="muted small" [innerHTML]="'DOMAIN_SETTINGS.ADD_ALL_N' | translate: { count: data().validationCNAMEs.length }"></p>
+          } @else {
+            <p class="muted small">{{ 'DOMAIN_SETTINGS.KEEP_TRAILING_DOT' | translate }}</p>
+          }
+        } @else {
+          <div class="note note--info" [innerHTML]="'DOMAIN_SETTINGS.CNAME_LOADING' | translate"></div>
+        }
+
+        <div class="status-row">
+          <h3 class="status-row__label">{{ 'DOMAIN_SETTINGS.STATUS_LABEL' | translate }}</h3>
+          <span class="badge" [class.badge--ok]="isCertIssued()" [class.badge--bad]="isCertFailed()" [class.badge--warn]="!isCertIssued() && !isCertFailed()">
+            @switch (data().certStatus) {
+              @case ('PENDING_VALIDATION') { {{ 'DOMAIN_SETTINGS.CERT_WAITING' | translate }} }
+              @case ('ISSUED') { {{ 'DOMAIN_SETTINGS.CERT_ISSUED' | translate }} }
+              @case ('FAILED') { {{ 'DOMAIN_SETTINGS.CERT_FAILED' | translate }} }
+              @case ('EXPIRED') { {{ 'DOMAIN_SETTINGS.CERT_EXPIRED' | translate }} }
+              @case ('REVOKED') { {{ 'DOMAIN_SETTINGS.CERT_REVOKED' | translate }} }
+              @case ('INACTIVE') { {{ 'DOMAIN_SETTINGS.CERT_INACTIVE' | translate }} }
+              @default { {{ data().certStatus || ('DOMAIN_SETTINGS.CERT_PENDING' | translate) }} }
+            }
+          </span>
+          @if (polling()) { <span class="muted small">{{ 'DOMAIN_SETTINGS.AUTO_CHECKING' | translate }}</span> }
+          @if (pollExpired() && !isCertIssued() && !isCertFailed()) { <span class="muted small">{{ 'DOMAIN_SETTINGS.AUTO_CHECK_STOPPED' | translate }}</span> }
+          <button type="button" class="btn btn-ghost btn-sm status-row__refresh" [disabled]="refreshing()" (click)="refreshStatus()">
+            {{ refreshing() ? ('DOMAIN_SETTINGS.CHECKING' | translate) : ('DOMAIN_SETTINGS.REFRESH_STATUS' | translate) }}
+          </button>
+        </div>
+
+        @if (isCertFailed()) { <div class="note note--bad">{{ 'DOMAIN_SETTINGS.VALIDATION_FAILED' | translate }}</div> }
+
+        <hr/>
+        <h3 class="sub-title">{{ 'DOMAIN_SETTINGS.HOW_TO_ADD_CNAME' | translate }}</h3>
+        <p class="muted">{{ 'DOMAIN_SETTINGS.PICK_PROVIDER' | translate }}</p>
+        <div class="providers">
+          @for (p of providers; track p.id) {
+            <div class="provider">
+              <button type="button" class="provider__head" (click)="toggleProvider(p.id)" [attr.aria-expanded]="openProvider() === p.id">
+                <span class="provider__name"><span class="provider__chev" [class.provider__chev--open]="openProvider() === p.id">&rsaquo;</span> {{ p.name }}</span>
+                @if (p.url) {
+                  <a [href]="p.url" target="_blank" rel="noopener" class="provider__link" (click)="$event.stopPropagation()">{{ 'DOMAIN_SETTINGS.OPEN_DASHBOARD' | translate }} &#8599;</a>
+                }
+              </button>
+              @if (openProvider() === p.id) {
+                <div class="provider__body" dir="ltr">
+                  <ol>@for (step of p.steps; track $index) { <li>{{ step }}</li> }</ol>
+                  <div class="note note--info" [innerHTML]="'DOMAIN_SETTINGS.PROVIDER_HINT' | translate: { domain: data().domain }"></div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+    <!-- ============== STEP 3: Approved ============== -->
+    @if (isApproved()) {
+      <section class="card">
+        <h2 class="card__title card__title--ok">{{ 'DOMAIN_SETTINGS.ALMOST_DONE' | translate }}</h2>
+        <p [innerHTML]="(showWwwRow() ? 'DOMAIN_SETTINGS.APPROVED_INTRO_WWW' : 'DOMAIN_SETTINGS.APPROVED_INTRO') | translate: { host: finalHost(), www: wwwHost() }"></p>
+        <p><a [href]="finalUrl()" target="_blank" rel="noopener" dir="ltr">{{ finalUrl() }}</a></p>
+
+        @if (data().cloudfrontDomain) {
+          <div class="rec rec--3">
+            <div class="rec__row rec__row--head">
+              <div>{{ 'DOMAIN_SETTINGS.COL_TYPE' | translate }}</div>
+              <div>{{ 'DOMAIN_SETTINGS.COL_NAME' | translate }}</div>
+              <div>{{ 'DOMAIN_SETTINGS.COL_VALUE' | translate }}</div>
+            </div>
+            <div class="rec__row">
+              <div><code>{{ data().isSubdomain ? 'CNAME' : ('DOMAIN_SETTINGS.RECORD_TYPE_ALIAS' | translate) }}</code></div>
+              <div>
+                <div class="copy"><input readonly dir="ltr" [value]="finalHost()"/><button type="button" (click)="copy(finalHost())">{{ 'DOMAIN_SETTINGS.COPY' | translate }}</button></div>
+                <small class="muted">{{ 'DOMAIN_SETTINGS.HOST_PART' | translate }} <code dir="ltr">{{ dnsRecordHost(finalHost()) }}</code>
+                  <button type="button" class="link" (click)="copy(dnsRecordHost(finalHost()))">{{ 'DOMAIN_SETTINGS.COPY' | translate }}</button></small>
+              </div>
+              <div><div class="copy"><input readonly dir="ltr" [value]="data().cloudfrontDomain"/><button type="button" (click)="copy(data().cloudfrontDomain)">{{ 'DOMAIN_SETTINGS.COPY' | translate }}</button></div></div>
+            </div>
+            @if (showWwwRow()) {
+              <div class="rec__row">
+                <div><code>CNAME</code></div>
+                <div>
+                  <div class="copy"><input readonly dir="ltr" [value]="wwwHost()"/><button type="button" (click)="copy(wwwHost())">{{ 'DOMAIN_SETTINGS.COPY' | translate }}</button></div>
+                  <small class="muted">{{ 'DOMAIN_SETTINGS.HOST_PART' | translate }} <code>www</code> <span class="badge badge--ok">{{ 'DOMAIN_SETTINGS.ALSO_SUPPORTED' | translate }}</span></small>
+                </div>
+                <div><div class="copy"><input readonly dir="ltr" [value]="data().cloudfrontDomain"/><button type="button" (click)="copy(data().cloudfrontDomain)">{{ 'DOMAIN_SETTINGS.COPY' | translate }}</button></div></div>
+              </div>
+            }
+          </div>
+        }
+
+        @if (!data().isSubdomain) {
+          <div class="note note--warn">
+            <h4>{{ 'DOMAIN_SETTINGS.APEX_IMPORTANT' | translate }}</h4>
+            <p class="small" [innerHTML]="'DOMAIN_SETTINGS.APEX_P1' | translate"></p>
+            <p class="small"><strong>{{ 'DOMAIN_SETTINGS.THREE_WORKAROUNDS' | translate }}</strong></p>
+            <ol class="small">
+              <li>
+                <span [innerHTML]="'DOMAIN_SETTINGS.APEX_A' | translate: { domain: data().domain }"></span>
+                <ol>
+                  <li [innerHTML]="'DOMAIN_SETTINGS.APEX_A1' | translate: { domain: data().domain }"></li>
+                  <li [innerHTML]="'DOMAIN_SETTINGS.APEX_A2' | translate: { domain: data().domain }"></li>
+                  <li [innerHTML]="'DOMAIN_SETTINGS.APEX_A3' | translate"></li>
+                  <li [innerHTML]="'DOMAIN_SETTINGS.APEX_A4' | translate"></li>
+                  <li>{{ 'DOMAIN_SETTINGS.APEX_A5' | translate }}</li>
+                </ol>
+              </li>
+              <li [innerHTML]="'DOMAIN_SETTINGS.APEX_B' | translate: { cname: data().cloudfrontDomain }"></li>
+              <li [innerHTML]="'DOMAIN_SETTINGS.APEX_C' | translate: { domain: data().domain }"></li>
+            </ol>
+            <p class="small muted" [innerHTML]="'DOMAIN_SETTINGS.APEX_FOOT' | translate"></p>
+          </div>
+        }
+      </section>
+    }
+
+    <footer class="save-bar">
+      @if (isApproved() || isPendingValidation()) {
+        <button type="button" class="btn btn-danger" (click)="removeDomain()" [disabled]="busy()">
+          {{ (isApproved() ? 'DOMAIN_SETTINGS.REMOVE_DOMAIN' : 'DOMAIN_SETTINGS.CANCEL_REMOVE') | translate }}
+        </button>
+      }
+      <span class="save-bar__spacer"></span>
+      @if (isInitial()) {
+        <button type="button" class="btn btn-primary" [disabled]="!canSubmitRegister()" (click)="register()">{{ 'DOMAIN_SETTINGS.REGISTER_DOMAIN' | translate }}</button>
+      }
+      @if (isPendingValidation()) {
+        <button type="button" class="btn btn-primary" [disabled]="!isCertIssued() || busy()" (click)="approve()">{{ 'DOMAIN_SETTINGS.CONTINUE' | translate }}</button>
+      }
+    </footer>
+  }
+
+  <app-loading-overlay [show]="loading()"/>
+</div>

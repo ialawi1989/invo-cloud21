@@ -107,6 +107,7 @@ import { recentUpdatesSecurity } from './recentUpdatesSecurity';
 import { recieptBuilderSecurity } from './recieptBuilderSecurity';
 import { recipeSecurity } from './recipeSecurity';
 import { reconciliationSecurity } from './reconciliationSecurity';
+import { feedbacksSecurity } from './feedbacksSecurity';
 import { recurringBillSecurity } from './recurringBillSecurity';
 import { recurringExpenseSecurity } from './recurringExpenseSecurity';
 import { recurringInvoiceSecurity } from './recurringInvoiceSecurity';
@@ -280,6 +281,7 @@ export const SECURITY_DEFINITIONS = {
   expenseSecurity,
   supplierCredit,
   reconciliationSecurity,
+  feedbacksSecurity,
   businessSettingsSecurity,
   dineInSecurity,
   deliverySecurity,

@@ -1,0 +1,125 @@
+<div class="pmf-page">
+  <header class="page-header">
+    <app-breadcrumbs [items]="breadcrumbs" separator="chevron"/>
+    <h1 class="page-title">{{ (isNew ? 'PRICE_MANAGEMENT.FORM_NEW' : 'PRICE_MANAGEMENT.FORM_EDIT') | translate }}</h1>
+  </header>
+
+  @if (loadFailed) {
+    <app-empty-state icon="error" tone="error"
+      [title]="(isNew ? 'PRICE_MANAGEMENT.LOAD_FAILED' : 'PRICE_MANAGEMENT.NOT_FOUND') | translate">
+      <button type="button" class="btn btn-ghost" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+    </app-empty-state>
+  } @else if (!loading) {
+    <!-- Details -->
+    <section class="card">
+      <header class="card__head"><h2 class="card__title">{{ 'PRICE_MANAGEMENT.DETAILS' | translate }}</h2></header>
+      <div class="card__body">
+        <div class="field">
+          <label class="field__label" for="pm-title">{{ 'PRICE_MANAGEMENT.TITLE_FIELD' | translate }} <span class="req">*</span></label>
+          <input id="pm-title" class="field__input" type="text" [value]="pm.title" (input)="onTitle($any($event.target).value)"
+            [class.field__input--err]="titleExists || (showErrors && titleEmpty)"/>
+          @if (titleExists) { <span class="field__err">{{ 'PRICE_MANAGEMENT.ERR.TITLE_EXISTS' | translate }}</span> }
+          @else if (showErrors && titleEmpty) { <span class="field__err">{{ 'PRICE_MANAGEMENT.ERR.REQUIRED' | translate }}</span> }
+        </div>
+
+        <div class="field">
+          <span class="field__label">{{ 'PRICE_MANAGEMENT.PRICE_LABEL' | translate }} <span class="req">*</span></span>
+          <app-search-dropdown [items]="priceLabels" [displayWith]="label" [compareWith]="byId" [clearable]="false"
+            [value]="choice(priceLabels, pm.priceLabelId)" (valueChange)="setPriceLabel($any($event))"
+            [placeholder]="'PRICE_MANAGEMENT.SELECT' | translate"/>
+          @if (showErrors && labelEmpty) { <span class="field__err">{{ 'PRICE_MANAGEMENT.ERR.REQUIRED' | translate }}</span> }
+        </div>
+
+        <div class="field">
+          <span class="field__label">{{ 'PRICE_MANAGEMENT.SURCHARGE' | translate }}</span>
+          <app-search-dropdown [items]="surcharges" [displayWith]="label" [compareWith]="byId" [clearable]="true"
+            [value]="choice(surcharges, pm.chargeId)" (valueChange)="setSurcharge($any($event))"
+            [placeholder]="'PRICE_MANAGEMENT.SELECT' | translate"/>
+        </div>
+
+        <div class="field">
+          <span class="field__label">{{ 'PRICE_MANAGEMENT.DISCOUNT' | translate }}</span>
+          <app-search-dropdown [items]="discounts" [displayWith]="label" [compareWith]="byId" [clearable]="true"
+            [value]="choice(discounts, pm.discountId)" (valueChange)="setDiscount($any($event))"
+            [placeholder]="'PRICE_MANAGEMENT.SELECT' | translate"/>
+        </div>
+      </div>
+    </section>
+
+    <!-- Schedule -->
+    <section class="card">
+      <header class="card__head"><h2 class="card__title">{{ 'PRICE_MANAGEMENT.SCHEDULE' | translate }}</h2></header>
+      <div class="card__body">
+        <div class="field">
+          <span class="field__label">{{ 'PRICE_MANAGEMENT.REPEAT' | translate }} <span class="req">*</span></span>
+          <app-search-dropdown [items]="repeatOptions" [displayWith]="label" [compareWith]="byId" [clearable]="false" [searchable]="false"
+            [value]="choice(repeatOptions, pm.repeat)" (valueChange)="onRepeat($any($event))"
+            [placeholder]="'PRICE_MANAGEMENT.SELECT' | translate"/>
+          @if (showErrors && repeatEmpty) { <span class="field__err">{{ 'PRICE_MANAGEMENT.ERR.REQUIRED' | translate }}</span> }
+        </div>
+
+        @if (isWeekly) {
+          <div class="days">
+            @for (d of weekDays; track d) {
+              <app-toggle [checked]="pm.repeatDays[d]" (checkedChange)="setDay(d, $event)" [label]="('PRICE_MANAGEMENT.DAY.' + d) | translate"/>
+            }
+          </div>
+        }
+
+        <div class="grid2">
+          <div class="field">
+            <span class="field__label">{{ (isOnce ? 'PRICE_MANAGEMENT.DATE' : 'PRICE_MANAGEMENT.FROM') | translate }}</span>
+            <app-date-picker [value]="pm.fromDate" [clearable]="false" (valueChange)="onFrom($event)"/>
+          </div>
+          @if (!isOnce) {
+            <div class="field">
+              <span class="field__label">{{ 'PRICE_MANAGEMENT.TO' | translate }}</span>
+              <app-date-picker [value]="pm.toDate" [clearable]="false" [min]="pm.fromDate" (valueChange)="onTo($event)"/>
+              @if (!dateOrderOk && (datesTouched || showErrors)) { <span class="field__err">{{ 'PRICE_MANAGEMENT.ERR.TO_AFTER_FROM' | translate }}</span> }
+            </div>
+          }
+        </div>
+        @if (!rangeFree) { <span class="field__err">{{ 'PRICE_MANAGEMENT.ERR.RANGE_EXISTS' | translate }}</span> }
+
+        <div class="grid2">
+          <div class="field">
+            <span class="field__label">{{ 'PRICE_MANAGEMENT.FROM_TIME' | translate }}</span>
+            <app-time-picker [ngModel]="timeOf(pm.fromTime)" (ngModelChange)="setTime('fromTime', $event)"/>
+          </div>
+          <div class="field">
+            <span class="field__label">{{ 'PRICE_MANAGEMENT.TO_TIME' | translate }}</span>
+            <app-time-picker [ngModel]="timeOf(pm.toTime)" (ngModelChange)="setTime('toTime', $event)"/>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Branches -->
+    <section class="card">
+      <header class="card__head"><h2 class="card__title">{{ 'PRICE_MANAGEMENT.BRANCHES' | translate }}</h2></header>
+      <div class="card__body">
+        <div class="branches">
+          <label class="check">
+            <input type="checkbox" [checked]="allBranches" (change)="toggleAllBranches($any($event.target).checked)"/>
+            <span>{{ 'PRICE_MANAGEMENT.ALL_BRANCHES' | translate }}</span>
+          </label>
+          @for (b of branches; track b.id) {
+            <label class="check">
+              <input type="checkbox" [checked]="selectedBranchIds.has(b.id)" (change)="toggleBranch(b.id, $any($event.target).checked)"/>
+              <span>{{ b.name }}</span>
+            </label>
+          }
+        </div>
+      </div>
+    </section>
+
+    <app-form-sticky-footer>
+      <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving">{{ 'COMMON.CANCEL' | translate }}</button>
+      <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving">
+        {{ saving ? ('COMMON.SAVING' | translate) : ('COMMON.SAVE' | translate) }}
+      </button>
+    </app-form-sticky-footer>
+  }
+
+  <app-loading-overlay [show]="loading"/>
+</div>

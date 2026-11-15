@@ -1,0 +1,190 @@
+<div class="cq">
+  <header class="cq__head">
+    <div>
+      <h1 class="cq__title">{{ title }}</h1>
+    </div>
+    <div class="cq__head-actions">
+      <button type="button" class="cq__btn" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+      <button type="button" class="cq__btn cq__btn--primary" [disabled]="saving || loading || notFound" (click)="save()">
+        {{ 'CHEQUE_BUILDER.SAVE' | translate }}
+      </button>
+    </div>
+  </header>
+
+  @if (loading) {
+    <p class="cq__muted">{{ 'COMMON.LOADING' | translate }}</p>
+  } @else if (notFound) {
+    <app-empty-state icon="error" tone="error" [title]="'CHEQUE_BUILDER.NOT_FOUND' | translate"/>
+  } @else {
+    <div class="cq__layout">
+      <!-- Canvas -->
+      <section class="cq__stage">
+        <div class="cq__zoom">
+          <label>{{ 'CHEQUE_BUILDER.ZOOM' | translate }}</label>
+          <div class="cq__zoom-slider">
+            <app-range-slider [range]="false" [floor]="20" [ceiling]="100" [step]="1" unit="%" [(value)]="zoom"/>
+          </div>
+        </div>
+        <div class="cq__scroll" (click)="selected = null">
+          <div class="cq__sizer" [style.width.px]="canvasW * zoom / 100" [style.height.px]="canvasH * zoom / 100">
+            <div class="cq__cheque" [style.width.px]="canvasW" [style.height.px]="canvasH" [style.zoom]="zoom / 100">
+              @for (el of tpl.template; track el) {
+                <div class="cq__el" [class.is-selected]="selected === el" [class.is-hidden]="isHidden(el)"
+                  [style.left.px]="el.position.x" [style.top.px]="el.position.y" [style.width.px]="el.width"
+                  [style.font-size.px]="el.fontSize" [style.font-weight]="el.fontWeight" [style.text-decoration]="el.textDecoration"
+                  [style.line-height]="el.lineheight" [attr.dir]="c(el).direction ?? null"
+                  (click)="select(el, $event)" (pointerdown)="startDrag(el, $event)">
+                  {{ preview(el) }}
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Side panel -->
+      <aside class="cq__panel">
+        @if (!selected) {
+          <section class="cq__card">
+            <h2 class="cq__card-title">{{ 'CHEQUE_BUILDER.SETTINGS' | translate }}</h2>
+            <div class="cq__field">
+              <label>{{ 'CHEQUE_BUILDER.NAME' | translate }} <span class="cq__req">*</span></label>
+              <input class="cq__input" type="text" [(ngModel)]="tpl.name" (ngModelChange)="touch()"/>
+              @if (showErrors && !tpl.name.trim()) { <p class="cq__error">{{ 'CHEQUE_BUILDER.MISSING_NAME' | translate }}</p> }
+            </div>
+            <div class="cq__field">
+              <label>{{ 'CHEQUE_BUILDER.BANK' | translate }}</label>
+              <input class="cq__input" type="text" [(ngModel)]="tpl.bank" (ngModelChange)="touch()"/>
+            </div>
+            <div class="cq__field">
+              <label>{{ 'CHEQUE_BUILDER.LANGUAGE' | translate }}</label>
+              <app-search-dropdown [items]="languages" [displayWith]="langLabel" [clearable]="false" [searchable]="false"
+                [value]="tpl.language" (valueChange)="tpl.language = $any($event); touch()"/>
+            </div>
+            <div class="cq__row">
+              <div class="cq__field">
+                <label>{{ 'CHEQUE_BUILDER.HEIGHT' | translate }}</label>
+                <input class="cq__input" type="number" min="0" step="0.05" [(ngModel)]="tpl.chequeHeight" (ngModelChange)="touch()"/>
+              </div>
+              <div class="cq__field">
+                <label>{{ 'CHEQUE_BUILDER.WIDTH' | translate }}</label>
+                <input class="cq__input" type="number" min="0" step="0.05" [(ngModel)]="tpl.chequeWidth" (ngModelChange)="touch()"/>
+              </div>
+            </div>
+            <div class="cq__field">
+              <label>{{ 'CHEQUE_BUILDER.DPI' | translate }}</label>
+              <app-search-dropdown [items]="dpis" [displayWith]="dpiLabel" [clearable]="false" [searchable]="false"
+                [value]="tpl.dpi" (valueChange)="tpl.dpi = $any($event); touch()"/>
+            </div>
+          </section>
+
+          <section class="cq__card">
+            <h2 class="cq__card-title">{{ 'CHEQUE_BUILDER.FIELDS' | translate }}</h2>
+            <p class="cq__muted">{{ 'CHEQUE_BUILDER.ADD_FIELD' | translate }}</p>
+            <div class="cq__palette">
+              @for (t of fieldTypes; track t) {
+                <button type="button" class="cq__chip" (click)="add(t)">+ {{ fieldLabel(t) }}</button>
+              }
+            </div>
+            @if (!tpl.template.length) { <p class="cq__muted">{{ 'CHEQUE_BUILDER.NO_SELECTION' | translate }}</p> }
+          </section>
+        } @else {
+          <section class="cq__card">
+            <h2 class="cq__card-title">{{ 'CHEQUE_BUILDER.ELEMENT' | translate }}: {{ fieldLabel(c(selected).type) }}</h2>
+
+            @switch (c(selected).type) {
+              @case ('Date') {
+                <div class="cq__field">
+                  <label>{{ 'CHEQUE_BUILDER.DIRECTION' | translate }}</label>
+                  <app-segmented-toggle [options]="directionOptions" [value]="c(selected).direction"
+                    (valueChange)="c(selected).direction = $event; touch()"/>
+                </div>
+                <app-toggle [label]="'CHEQUE_BUILDER.USE_HINDI_NUMBERS' | translate" [checked]="c(selected).useHindiNumbers"
+                  (checkedChange)="c(selected).useHindiNumbers = $event; touch()"/>
+              }
+              @case ('Payee') {
+                <div class="cq__field"><label>{{ 'CHEQUE_BUILDER.PAYEE_NAME' | translate }}</label>
+                  <input class="cq__input" type="text" [(ngModel)]="c(selected).payeeName" (ngModelChange)="touch()"/></div>
+                <div class="cq__field"><label>{{ 'CHEQUE_BUILDER.PHRASE_BEFORE' | translate }}</label>
+                  <input class="cq__input" type="text" [(ngModel)]="c(selected).phraseBefore" (ngModelChange)="touch()"/></div>
+                <div class="cq__field"><label>{{ 'CHEQUE_BUILDER.PHRASE_AFTER' | translate }}</label>
+                  <input class="cq__input" type="text" [(ngModel)]="c(selected).phraseAfter" (ngModelChange)="touch()"/></div>
+              }
+              @case ('AmountAndCurrency') {
+                <div class="cq__row">
+                  <div class="cq__field"><label>{{ 'CHEQUE_BUILDER.AMOUNT' | translate }}</label>
+                    <input class="cq__input" type="number" [(ngModel)]="c(selected).amount" (ngModelChange)="touch()"/></div>
+                  <div class="cq__field"><label>{{ 'CHEQUE_BUILDER.CURRENCY' | translate }}</label>
+                    <input class="cq__input" type="text" [(ngModel)]="c(selected).currency" (ngModelChange)="touch()"/></div>
+                </div>
+                <div class="cq__field"><label>{{ 'CHEQUE_BUILDER.SURROUND_AMOUNT_BY' | translate }}</label>
+                  <input class="cq__input" type="text" [(ngModel)]="c(selected).surroundAmountBy" (ngModelChange)="touch()"/></div>
+                <div class="cq__field"><label>{{ 'CHEQUE_BUILDER.START_TEXT_ONLY' | translate }}</label>
+                  <input class="cq__input" type="text" [(ngModel)]="c(selected).startTextOnly" (ngModelChange)="touch()"/></div>
+                <div class="cq__field"><label>{{ 'CHEQUE_BUILDER.END_TEXT_ONLY' | translate }}</label>
+                  <input class="cq__input" type="text" [(ngModel)]="c(selected).endTextOnly" (ngModelChange)="touch()"/></div>
+                <div class="cq__field"><label>{{ 'CHEQUE_BUILDER.SURROUND_ONLY_BY' | translate }}</label>
+                  <input class="cq__input" type="text" [(ngModel)]="c(selected).surroundOnlyBy" (ngModelChange)="touch()"/></div>
+                <div class="cq__toggles">
+                  <app-toggle [label]="'CHEQUE_BUILDER.USE_HINDI_NUMBERS' | translate" [checked]="c(selected).useHindiNumbers" (checkedChange)="c(selected).useHindiNumbers = $event; touch()"/>
+                  <app-toggle [label]="'CHEQUE_BUILDER.AUTO_FILL_DECIMALS' | translate" [checked]="c(selected).autoFillDecimalPoints" (checkedChange)="c(selected).autoFillDecimalPoints = $event; touch()"/>
+                  <app-toggle [label]="'CHEQUE_BUILDER.HIDE_THOUSAND_COMMA' | translate" [checked]="c(selected).hideThousandComa" (checkedChange)="c(selected).hideThousandComa = $event; touch()"/>
+                  <app-toggle [label]="'CHEQUE_BUILDER.USE_SHORT_CURRENCY' | translate" [checked]="c(selected).useShortCurrencyName" (checkedChange)="c(selected).useShortCurrencyName = $event; touch()"/>
+                  <app-toggle [label]="'CHEQUE_BUILDER.ADD_DECIMAL_TO_ONLY' | translate" [checked]="c(selected).addDecimalToOnly" (checkedChange)="c(selected).addDecimalToOnly = $event; touch()"/>
+                  <app-toggle [label]="'CHEQUE_BUILDER.HIDE_COUNTRY_NAME' | translate" [checked]="c(selected).hideCountryName" (checkedChange)="c(selected).hideCountryName = $event; touch()"/>
+                  <app-toggle [label]="'CHEQUE_BUILDER.HIDE_CURRENCY_NAME' | translate" [checked]="c(selected).hideCurrencyName" (checkedChange)="c(selected).hideCurrencyName = $event; touch()"/>
+                </div>
+              }
+              @case ('Statement') {
+                <div class="cq__field"><label>{{ 'CHEQUE_BUILDER.STATEMENT' | translate }}</label>
+                  <textarea class="cq__input" rows="3" [(ngModel)]="c(selected).checkStatement" (ngModelChange)="touch()"></textarea></div>
+              }
+              @case ('Crossing') {
+                <div class="cq__field"><label>{{ 'CHEQUE_BUILDER.CROSSING_TEXT' | translate }}</label>
+                  <input class="cq__input" type="text" [(ngModel)]="c(selected).text" (ngModelChange)="touch()"/></div>
+                <app-toggle [label]="'CHEQUE_BUILDER.ADD_LINES' | translate" [checked]="c(selected).addLines" (checkedChange)="c(selected).addLines = $event; touch()"/>
+              }
+              @case ('ChequeNumber') {
+                <div class="cq__field"><label>{{ 'CHEQUE_BUILDER.CHEQUE_NUMBER_TEXT' | translate }}</label>
+                  <input class="cq__input" type="text" [(ngModel)]="c(selected).text" (ngModelChange)="touch()"/></div>
+              }
+            }
+
+            @if (c(selected).isVisible !== undefined) {
+              <app-toggle [label]="'CHEQUE_BUILDER.VISIBLE' | translate" [checked]="c(selected).isVisible" (checkedChange)="c(selected).isVisible = $event; touch()"/>
+            }
+          </section>
+
+          <section class="cq__card">
+            <h2 class="cq__card-title">{{ 'CHEQUE_BUILDER.TEXT_STYLE' | translate }}</h2>
+            <div class="cq__field">
+              <label>{{ 'CHEQUE_BUILDER.FONT_SIZE' | translate }}</label>
+              <app-range-slider [range]="false" [floor]="8" [ceiling]="60" [step]="1" unit="px"
+                [value]="selected.fontSize" (valueChange)="selected.fontSize = +$any($event); touch()"/>
+            </div>
+            <div class="cq__field">
+              <label>{{ 'CHEQUE_BUILDER.FIELD_WIDTH' | translate }}</label>
+              <app-range-slider [range]="false" [floor]="20" [ceiling]="canvasW" [step]="1" unit="px"
+                [value]="selected.width" (valueChange)="selected.width = +$any($event); touch()"/>
+            </div>
+            <div class="cq__field">
+              <app-segmented-toggle [options]="weightOptions" [value]="selected.fontWeight"
+                (valueChange)="selected.fontWeight = $event; touch()"/>
+            </div>
+            <div class="cq__row">
+              <div class="cq__field"><label>{{ 'CHEQUE_BUILDER.POSITION_X' | translate }}</label>
+                <input class="cq__input" type="number" [(ngModel)]="selected.position.x" (ngModelChange)="touch()"/></div>
+              <div class="cq__field"><label>{{ 'CHEQUE_BUILDER.POSITION_Y' | translate }}</label>
+                <input class="cq__input" type="number" [(ngModel)]="selected.position.y" (ngModelChange)="touch()"/></div>
+            </div>
+          </section>
+
+          <div class="cq__actions">
+            <button type="button" class="cq__btn" (click)="selected = null">{{ 'COMMON.DONE' | translate }}</button>
+            <button type="button" class="cq__btn cq__btn--danger" (click)="remove(selected)">{{ 'CHEQUE_BUILDER.DELETE_ELEMENT' | translate }}</button>
+          </div>
+        }
+      </aside>
+    </div>
+  }
+</div>

@@ -110,6 +110,7 @@
       "SAMPLE_DATA": "Sample data (JSON)",
       "SAMPLE_DATA_HINT": "Used to render the preview below — shape should match what the real event provides.",
       "PREVIEW": "Preview",
+      "PREVIEW_LANGUAGE": "Preview language",
       "RENDERING": "Rendering…",
       "PREVIEW_ERROR": "Couldn't render this template — check the body and sample data.",
       "INVALID_JSON": "Sample data isn't valid JSON.",

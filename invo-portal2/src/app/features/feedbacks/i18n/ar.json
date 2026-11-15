@@ -1,0 +1,37 @@
+{
+  "FEEDBACKS": {
+    "TITLE": "آراء العملاء",
+    "DASHBOARD": "لوحة التحكم",
+    "SEARCH": "بحث باسم العميل أو الفاتورة",
+    "EMPTY": "لا توجد آراء",
+    "SETTINGS_BTN": "إعدادات آراء العملاء",
+    "AVERAGE_RATING_FOR": "متوسط التقييم لعدد",
+    "FEEDBACKS": "رأي",
+    "FILTER_BY_RATING": "التقييم",
+    "COL_DATE": "التاريخ",
+    "COL_RATING": "التقييم",
+    "COL_CUSTOMER": "اسم العميل",
+    "COL_PHONE": "الهاتف",
+    "COL_COMMENT": "التعليق",
+    "COL_INVOICE": "الفاتورة",
+    "VIEW_DETAILS": "عرض التفاصيل",
+    "NO_COMMENT": "لا يوجد تعليق",
+    "LOAD_FAILED": "تعذر تحميل الآراء",
+    "SETTINGS": {
+      "TITLE": "إعدادات آراء العملاء",
+      "EMAIL_NOTIFICATIONS": "إشعارات البريد الإلكتروني",
+      "EMAIL_NOTIFICATIONS_DESC": "استلم بريدًا إلكترونيًا عندما يترك العميل رأيًا بالتقييمات المحددة.",
+      "NOTIFICATION_EMAILS": "بريد الإشعارات",
+      "NOTIFICATION_EMAILS_HINT": "اكتب البريد الإلكتروني واضغط Enter للإضافة.",
+      "NOTIFY_WHEN_RATING": "أبلغني عندما يكون التقييم",
+      "GOOGLE_RATING": "تقييم Google",
+      "GOOGLE_RATING_DESC": "ادعُ العملاء الراضين لتقييمك على Google.",
+      "GOOGLE_RATING_LINK": "رابط تقييم Google",
+      "GOOGLE_HELP": "ستجد رابطك في ملف نشاطك التجاري على Google > الرئيسية > الحصول على المزيد من المراجعات، أو استخدم g.page للحصول على رابطك المختصر.",
+      "SHOW_GOOGLE_LINK_WHEN": "أظهر رابط Google عندما يكون التقييم",
+      "STARS": "{{n}} نجوم",
+      "STAR": "نجمة واحدة",
+      "LOAD_FAILED": "تعذر تحميل إعدادات الآراء"
+    }
+  }
+}

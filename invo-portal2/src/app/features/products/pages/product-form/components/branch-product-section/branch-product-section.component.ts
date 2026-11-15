@@ -837,6 +837,7 @@ export class BranchProductSectionComponent implements OnInit {
       barcode:    [bt.barcode || fallbackBarcode],
       onHand:     [bt.onHand ?? null, [Validators.required, Validators.min(0)]],
       unitCost:   [bt.unitCost ?? 0,  [Validators.min(0)]],
+      sellingPrice: [bt.sellingPrice ?? null as number | null, [Validators.min(0)]],
       prodDate:   [bt.prodDate   ? new Date(bt.prodDate)   : null],
       expireDate: [bt.expireDate ? new Date(bt.expireDate) : null],
     });
@@ -937,6 +938,7 @@ export class BranchProductSectionComponent implements OnInit {
         barcode:    b.barcode ?? '',
         onHand:     b.onHand ?? null,
         unitCost:   b.unitCost ?? 0,
+        sellingPrice: b.sellingPrice ?? null,
         prodDate:   b.prodDate   ? this.toIsoDate(b.prodDate)   : null,
         expireDate: b.expireDate ? this.toIsoDate(b.expireDate) : null,
       }));

@@ -1,0 +1,40 @@
+{
+  "SERVICE_REQUEST": {
+    "TITLE": "Paging",
+    "NEW": "New Request",
+    "FORM_NEW": "New service request",
+    "FORM_EDIT": "Edit service request",
+    "FORM_TITLE": "Paging form",
+    "SEARCH": "Search requests",
+    "EMPTY": "No service requests yet",
+    "EMPTY_HINT": "Create the requests guests can send, like calling a waiter or asking for the bill.",
+    "NOT_FOUND": "Service request not found",
+    "COL_ICON": "Icon",
+    "COL_TEXT": "Text",
+    "TEXT": "Text",
+    "TEXT_REQUIRED": "Enter at least {{min}} characters.",
+    "ICON": "Icon",
+    "ICON_REQUIRED": "This value is required",
+    "ICON_HINT": "Click to select service icon",
+    "ICON_SEARCH": "Search service icons...",
+    "ICON_NONE": "No service icons found",
+    "ICON_NONE_HINT": "Try a different search term or category",
+    "ICON_COUNT": "service icons",
+    "CLOSE": "Close",
+    "ICONS": {
+      "ALL": "All Icons",
+      "SERVICE": "Service Requests",
+      "WATER_DRINKS": "Water & Beverages",
+      "BBQ_GRILL": "BBQ & Grilling",
+      "ASSISTANCE": "Help & Assistance",
+      "PAYMENT": "Payment & Bill",
+      "UTENSILS": "Utensils & Tableware"
+    },
+    "SAVED": "Service request saved",
+    "SAVE_FAILED": "Could not save the service request.",
+    "DELETE_TITLE": "Delete service request",
+    "DELETE_TEXT": "Are you sure you want to delete this service request?",
+    "DELETED": "Service request deleted",
+    "DELETE_FAILED": "Could not delete the service request."
+  }
+}

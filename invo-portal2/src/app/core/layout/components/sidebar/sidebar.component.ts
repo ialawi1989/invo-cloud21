@@ -271,6 +271,7 @@ export const SIDE_MENU: SideMenuItem[] = [
       { id: 133, label: 'MENU.SUB.WEBSITE_SETTINGS', link: '/website-settings', requiredPermission: 'websiteSettingsSecurity.actions.view.access' },
       { id: 134, label: 'MENU.SUB.DOMAIN_SETTINGS', link: '/domain-settings', requiredPermission: 'DomainSettingsSecurity.actions.view.access' },
       { id: 135, label: 'MENU.SUB.PAGING_SYSTEM', link: '/paging', requiredPermission: 'pagingSecurity.actions.view.access' },
+      { id: 137, label: 'Feedbacks', link: '/feedbacks', requiredPermission: 'feedbacksSecurity.actions.view.access' },
     ],
   },
   // ── Blog ───────────────────────────────────────────────────────────
