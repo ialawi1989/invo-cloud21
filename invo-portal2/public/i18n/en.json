@@ -563,6 +563,17 @@
     "NO_OTHER_COMPANIES": "No other companies found",
     "LOADING": "Loading…"
   },
+  "GLOBAL_SEARCH": {
+    "PLACEHOLDER": "Search pages & settings",
+    "INPUT_PLACEHOLDER": "Search pages, settings, or anything inside them…",
+    "RESULTS": "Results",
+    "QUICK_ACCESS": "Quick access",
+    "NO_RESULTS": "No pages or settings match",
+    "FOUND_IN_PAGE": "Found in page",
+    "HINT_NAV": "to navigate",
+    "HINT_OPEN": "to open",
+    "HINT_CLOSE": "to close"
+  },
   "TOPBAR": {
     "TOGGLE_SIDEBAR": "Toggle sidebar",
     "NOTIFICATIONS": "Notifications",

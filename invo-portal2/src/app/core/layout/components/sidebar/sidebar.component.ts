@@ -25,7 +25,7 @@ import { EmployeeOptionsService } from '../../services/employee-options.service'
 import { FavoritesService } from '../../services/favorites.service';
 
 /* ── Menu definition (matches original menu.ts structure with icons) ─ */
-interface SideMenuItem {
+export interface SideMenuItem {
   id: number;
   label: string;
   icon?: string;
@@ -55,6 +55,24 @@ interface SideMenuItem {
    *  sub-item. Used to visually group a run of related sub-items (e.g. all
    *  bulk-operation pages under Products). Only honoured inside a submenu. */
   section?: string;
+}
+
+/**
+ * The feature / HR-grant / earnings gate shared by the sidebar and the top-bar global
+ * search, so the two can never disagree about which pages a user may see.
+ */
+export function sideMenuGateOk(
+  item: SideMenuItem,
+  d: { features: FeatureService; company: CompanyService; privileges: PrivilegeService; auth: AuthService },
+): boolean {
+  if (item.requiredHrFeature && !d.features.isEnabled(item.requiredHrFeature)) return false;
+  if (item.requiredEarningsFeature && !isEmployeeEarningsEnabled(d.company.settings(), item.requiredEarningsFeature)) return false;
+  // Sub-items are not filtered by `requiredPermission` elsewhere; these two are (the feature is opt-in and the privilege is new).
+  if (item.requiredEarningsFeature && item.requiredPermission && !d.privileges.check(item.requiredPermission)) return false;
+  if (item.requiredHrGrant && !hrGrantFor(d.privileges, d.auth, item.requiredHrGrant.group, item.requiredHrGrant.action)) {
+    return false;
+  }
+  return true;
 }
 
 export const SIDE_MENU: SideMenuItem[] = [
@@ -828,15 +846,10 @@ export class SidebarComponent implements OnInit {
 
   /** The HR gate: module feature on AND explicit grant held. Absent fields pass. */
   private hrGateOk(item: SideMenuItem): boolean {
-    if (item.requiredHrFeature && !this.featureService.isEnabled(item.requiredHrFeature)) return false;
-    if (item.requiredEarningsFeature && !isEmployeeEarningsEnabled(this.companyService.settings(), item.requiredEarningsFeature)) return false;
-    // Sub-items are not filtered by `requiredPermission` elsewhere; these two are (the feature is opt-in and the privilege is new).
-    if (item.requiredEarningsFeature && item.requiredPermission && !this.privilegeService.check(item.requiredPermission)) return false;
-    if (item.requiredHrGrant
-        && !hrGrantFor(this.privilegeService, this.authService, item.requiredHrGrant.group, item.requiredHrGrant.action)) {
-      return false;
-    }
-    return true;
+    return sideMenuGateOk(item, {
+      features: this.featureService, company: this.companyService,
+      privileges: this.privilegeService, auth: this.authService,
+    });
   }
 
   /**

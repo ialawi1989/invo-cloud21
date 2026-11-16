@@ -8,8 +8,10 @@ import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 import { CustomerPointsSummary, PointsService, PointsSettings } from '../../services/points.service';
 
 /**
- * "Pay with loyalty points" block of a sales payment (legacy `PointsPaymentComponent`). Starts at the
- * most points the customer can spend without exceeding the balance. The host reads `isValid()` /
+ * "Pay with loyalty points" block of a sales payment (legacy `PointsPaymentComponent`). The user types a
+ * money amount; it is converted to whole points (rounded down) and `pointsValue()` is the exact money
+ * those points are worth (what the payment is saved for). Starts at the most the customer can spend
+ * without exceeding the balance. The host reads `isValid()` /
  * `pointsValue()` and, after saving the payment, calls `spend()` to burn the points against it.
  */
 @Component({
@@ -23,17 +25,24 @@ import { CustomerPointsSummary, PointsService, PointsSettings } from '../../serv
           {{ 'PROMOTIONS.PROMOTIONS_POINTS.INVOICE_BALANCE' | translate }} ({{ balance() | mycurrency }})
         </div>
 
-        <label class="pp__label">{{ 'PROMOTIONS.PROMOTIONS_POINTS.POINTS' | translate }}</label>
+        <label class="pp__label">{{ 'PROMOTIONS.PROMOTIONS_POINTS.CURRENCY_VALUE' | translate }}</label>
         <div class="pp__points">
-          <input class="pp__input" type="number" min="1" [max]="maxPoints()"
-            [ngModel]="pointAmount()" (ngModelChange)="pointAmount.set(+$event || 0)"/>
-          <span>/ {{ summary()!.activePoints }}</span>
+          <input class="pp__input" type="number" min="0" step="any" [max]="maxMoney()"
+            [ngModel]="moneyAmount()" (ngModelChange)="moneyAmount.set(+$event || 0)"/>
+          <span>/ {{ maxMoney() | mycurrency }}</span>
         </div>
 
         @if (errorKey(); as key) { <div class="pp__error">{{ key | translate }}</div> }
 
-        <label class="pp__label">{{ 'PROMOTIONS.PROMOTIONS_POINTS.CURRENCY_VALUE' | translate }}</label>
-        <input class="pp__input" type="number" disabled [ngModel]="pointsValue()"/>
+        <label class="pp__label">{{ 'PROMOTIONS.PROMOTIONS_POINTS.POINTS' | translate }}</label>
+        <div class="pp__points">
+          <input class="pp__input" type="number" disabled [ngModel]="pointAmount()"/>
+          <span>/ {{ summary()!.activePoints }}</span>
+        </div>
+
+        @if (pointAmount() > 0 && pointsValue() !== moneyAmount()) {
+          <small class="pp__hint">{{ pointsValue() | mycurrency }}</small>
+        }
       </div>
     }
   `,
@@ -44,6 +53,7 @@ import { CustomerPointsSummary, PointsService, PointsSettings } from '../../serv
     .pp__points { display: flex; align-items: center; gap: 8px; }
     .pp__input { flex: 1; border: 1px solid #d0d5dd; border-radius: 8px; padding: 9px 12px; font: inherit; }
     .pp__input:disabled { background: #f8fafc; }
+    .pp__hint { color: #64748b; }
     .pp__error { color: #dc2626; font-size: 13px; }
   `],
 })
@@ -56,8 +66,10 @@ export class PointsPaymentComponent implements OnInit {
 
   summary = signal<CustomerPointsSummary | null>(null);
   settings = signal<PointsSettings | null>(null);
-  pointAmount = signal(0);
-  maxPoints = signal(0);
+  /** Money typed by the user. */
+  moneyAmount = signal(0);
+  /** Most money the active points can cover, capped by the balance. */
+  maxMoney = signal(0);
   readonly paymentDate = new Date();
 
   private rate = computed(() => {
@@ -65,6 +77,9 @@ export class PointsPaymentComponent implements OnInit {
     return s && s.pointsValue ? s.currencyValue / s.pointsValue : 0;
   });
 
+  /** Whole points needed to cover the typed money (rounded down). */
+  pointAmount = computed(() => this.toPoints(this.moneyAmount()));
+  /** Exact money value of `pointAmount()`; the host uses it as the paid amount. */
   pointsValue = computed(() => this.toAmount(this.pointAmount()));
 
   /** i18n key of the current validation problem, '' when the amount is fine. */
@@ -84,10 +99,18 @@ export class PointsPaymentComponent implements OnInit {
     this.settings.set(settings);
     this.summary.set(summary);
 
-    let points = summary.activePoints + 1;
-    do { points--; } while (points > 0 && this.toAmount(points) > this.balance());
-    this.pointAmount.set(points);
-    this.maxPoints.set(points);
+    // largest whole number of points whose value does not exceed the balance
+    const maxPoints = Math.min(summary.activePoints, this.toPoints(Number(this.balance())));
+    const max = this.toAmount(maxPoints);
+    this.maxMoney.set(max);
+    this.moneyAmount.set(max);
+  }
+
+  private toPoints(amount: number): number {
+    const rate = this.rate();
+    if (!rate || amount <= 0) return 0;
+    // epsilon guards float error, e.g. 0.3 / 0.1 = 2.9999...
+    return Math.floor(amount / rate + 1e-9);
   }
 
   private toAmount(points: number): number {
@@ -109,6 +132,7 @@ export class PointsPaymentComponent implements OnInit {
       spentOrderNumber: orderNumber,
       spentOrderId: invoiceId,
       paymentLineId,
+      paidAmount: this.pointsValue(),
     });
   }
 }

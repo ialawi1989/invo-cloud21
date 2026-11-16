@@ -22,6 +22,7 @@ import { BranchConnectionService } from '../../services/branch.service';
 import { BranchesPanelComponent } from './branches-panel.component';
 import { RecentUpdatesPanelComponent } from './recent-updates-panel.component';
 import { NotificationsPanelComponent } from './notifications-panel.component';
+import { GlobalSearchComponent } from '../global-search/global-search.component';
 import { PendingOrdersService } from '../../services/pending-orders.service';
 
 import type { FavPage as FavTab } from '../../services/favorites.service';
@@ -29,7 +30,7 @@ import type { FavPage as FavTab } from '../../services/favorites.service';
 @Component({
   selector: 'app-topbar',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslateModule, LanguageSwitcherComponent, QuickActionsComponent, TooltipDirective],
+  imports: [CommonModule, FormsModule, RouterModule, TranslateModule, GlobalSearchComponent, LanguageSwitcherComponent, QuickActionsComponent, TooltipDirective],
   template: `
     <!-- ── Main topbar ── -->
     <header class="topbar">
@@ -101,6 +102,8 @@ import type { FavPage as FavTab } from '../../services/favorites.service';
 
 
       <div class="topbar-right">
+        <app-global-search></app-global-search>
+        <div class="topbar-divider"></div>
         <app-language-switcher></app-language-switcher>
         <div class="topbar-divider"></div>
 

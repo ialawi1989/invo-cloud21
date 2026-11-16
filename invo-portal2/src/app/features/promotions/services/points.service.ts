@@ -26,6 +26,7 @@ export interface CustomerPointsSpend {
   spentOrderNumber: string;
   spentOrderId: string;
   paymentLineId: string;
+  paidAmount?: number;
 }
 
 /**

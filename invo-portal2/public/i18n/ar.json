@@ -563,6 +563,17 @@
     "NO_OTHER_COMPANIES": "لا توجد شركات أخرى",
     "LOADING": "جاري التحميل…"
   },
+  "GLOBAL_SEARCH": {
+    "PLACEHOLDER": "ابحث في الصفحات والإعدادات",
+    "INPUT_PLACEHOLDER": "ابحث في الصفحات والإعدادات أو أي شيء بداخلها…",
+    "RESULTS": "النتائج",
+    "QUICK_ACCESS": "وصول سريع",
+    "NO_RESULTS": "لا توجد صفحات أو إعدادات مطابقة لـ",
+    "FOUND_IN_PAGE": "موجود في الصفحة",
+    "HINT_NAV": "للتنقل",
+    "HINT_OPEN": "للفتح",
+    "HINT_CLOSE": "للإغلاق"
+  },
   "TOPBAR": {
     "TOGGLE_SIDEBAR": "تبديل الشريط الجانبي",
     "NOTIFICATIONS": "الإشعارات",
