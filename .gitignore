@@ -13,3 +13,6 @@ backend/
 # Build output
 dist/
 out-tsc/
+
+# Playwright MCP session artifacts
+.playwright-mcp/
