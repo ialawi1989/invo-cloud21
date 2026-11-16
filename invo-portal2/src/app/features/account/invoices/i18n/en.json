@@ -251,6 +251,7 @@
       "SIGNATURE_HINT": "Share the signing link, or email it to the customer for their signature.",
       "COPY": "Copy",
       "COPIED": "Copied",
+      "COPY_FAILED": "Could not copy — select the link and copy it manually",
       "DELIVERY_NOTE_NEEDS_CUSTOMER": "A customer is required to print a delivery note.",
       "SORT_BY": "Sort by",
       "EXPORT_INVOICES": "Export Invoices",

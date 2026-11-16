@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, viewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, inject, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
@@ -7,6 +7,8 @@ import { ModalRef } from '@shared/modal/modal.service';
 import { MODAL_DATA, MODAL_REF } from '@shared/modal/modal.tokens';
 import { ModalHeaderComponent } from '@shared/modal/modal-header.component';
 import { ToastService } from '@shared/components/toast/toast.service';
+import { copyToClipboard } from '@shared/utils/copy-to-clipboard';
+import { TranslateService } from '@ngx-translate/core';
 
 import { EmailChipsComponent } from '../../../components/email-chips/email-chips.component';
 import { InvoicesService } from '../../services/invoices.service';
@@ -30,7 +32,7 @@ export interface InvoiceLinkModalData {
   imports: [CommonModule, FormsModule, TranslateModule, ModalHeaderComponent, EmailChipsComponent],
   template: `
     <app-modal-header [title]="(data.mode === 'link' ? 'INVOICES.VIEW.CREATE_LINK' : 'INVOICES.VIEW.SEND_FOR_SIGNATURE') | translate"/>
-    <div class="il">
+    <div class="il" #host>
       <p class="il__hint">{{ (data.mode === 'link' ? 'INVOICES.VIEW.LINK_HINT' : 'INVOICES.VIEW.SIGNATURE_HINT') | translate }}</p>
       <div class="il__copy">
         <input class="il__input" type="text" readonly dir="ltr" [value]="loading() ? '…' : link()" (focus)="$any($event.target).select()"/>
@@ -69,6 +71,8 @@ export class InvoiceLinkModalComponent implements OnInit {
   ref = inject<ModalRef<void>>(MODAL_REF);
   private invoices = inject(InvoicesService);
   private toast = inject(ToastService);
+  private translate = inject(TranslateService);
+  private host = viewChild<ElementRef<HTMLElement>>('host');
 
   link = signal('');
   loading = signal(true);
@@ -83,7 +87,7 @@ export class InvoiceLinkModalComponent implements OnInit {
       const res: any = this.data.mode === 'link'
         ? await this.invoices.createInvoiceLink({ invoiceId: this.data.invoiceId })
         : await this.invoices.sendInvoiceForSignature({ invoiceId: this.data.invoiceId });
-      this.link.set(res?.data?.url ?? '');
+      this.link.set(this.withCurrentOrigin(res?.data?.url ?? ''));
       if (!res?.data?.url) this.toast.error('COMMON.OPS', res?.msg ?? '');
     } catch (e: any) {
       this.toast.error('COMMON.OPS', e?.error?.msg ?? e?.message ?? '');
@@ -92,12 +96,29 @@ export class InvoiceLinkModalComponent implements OnInit {
     }
   }
 
-  async copy(): Promise<void> {
+  /**
+   * The backend builds the public link with a host from its own environment (a hardcoded
+   * `localhost:4200` locally), which is wrong whenever the portal runs elsewhere (e.g. port 4700).
+   * These public pages are served by this same app, so keep the backend's path and use the origin
+   * the portal is actually running on.
+   */
+  private withCurrentOrigin(url: string): string {
+    if (!url) return url;
     try {
-      await navigator.clipboard.writeText(this.link());
+      const u = new URL(url);
+      return window.location.origin + u.pathname + u.search + u.hash;
+    } catch {
+      return url;
+    }
+  }
+
+  async copy(): Promise<void> {
+    if (await copyToClipboard(this.link(), this.host()?.nativeElement)) {
       this.copied.set(true);
       setTimeout(() => this.copied.set(false), 1500);
-    } catch { /* clipboard unavailable — the field is selectable as a fallback */ }
+    } else {
+      this.toast.error(this.translate.instant('INVOICES.VIEW.COPY_FAILED'), undefined, 2500);
+    }
   }
 
   async send(): Promise<void> {
