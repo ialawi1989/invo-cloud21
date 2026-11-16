@@ -179,8 +179,12 @@
   flex: 0 0 auto; align-self: center; margin-inline-start: 4px; display: inline-flex; padding: 6px; border: 0; border-radius: 8px; background: transparent; color: #94a3b8; cursor: pointer;
   transition: color .15s, background .15s;
   svg { width: 18px; height: 18px; }
+  position: relative;
   &:hover { color: var(--accent, #0f766e); background: #f0fdfa; }
   &:focus-visible { outline: 2px solid #0f766e; outline-offset: 1px; }
+  /* a schedule already exists for this report */
+  &.on { color: #16a34a; background: #f0fdf4; }
+  &.on::after { content: ''; position: absolute; inset-block-start: 4px; inset-inline-end: 4px; width: 7px; height: 7px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 2px #fff; }
 }
 a.rc-tab { text-decoration: none; }
 

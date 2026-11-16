@@ -24,6 +24,13 @@ export class ReportScheduleService {
     };
   }
 
+  /** The report types that have at least one saved schedule (`getScheduledReportTypes`, as the legacy catalog). */
+  async scheduledTypes(): Promise<Set<string>> {
+    const res = await this.api.request<any>(this.api.get('accounts/scheduledReports/getScheduledReportTypes'));
+    const data = res?.data ?? [];
+    return new Set((Array.isArray(data) ? data : []).map((r: any) => r?.reportType).filter(Boolean));
+  }
+
   /** The schedules of one report type. */
   async listByType(type: string): Promise<ScheduledReport[]> {
     const res = await this.api.request<any>(this.api.get(`accounts/scheduledReports/getScheduledReportByType/${encodeURIComponent(type)}`));

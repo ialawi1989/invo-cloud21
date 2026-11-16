@@ -445,6 +445,7 @@
     },
     "SCHEDULE": {
       "BUTTON": "Schedule report",
+      "SCHEDULED": "Scheduled — add another",
       "NEW": "New Schedule Report",
       "TITLE": "Schedule Report",
       "REPORT_NAME": "Report",

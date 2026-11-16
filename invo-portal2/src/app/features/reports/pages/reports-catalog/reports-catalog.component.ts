@@ -16,6 +16,7 @@ import { ReportsFavoritesService } from '../../services/reports-favorites.servic
 import { ReportsRecentService } from '../../services/reports-recent.service';
 import { groupAccent } from '../../models/report-accents';
 import { scheduleCapsFor, scheduleTypeFor } from '../../models/report-schedule';
+import { ReportScheduleService } from '../../services/report-schedule.service';
 import { ApiService } from '@core/http/api.service';
 import { ModalService } from '@shared/modal/modal.service';
 import {
@@ -23,13 +24,14 @@ import {
 } from '../../components/report-schedule-modal/report-schedule-modal.component';
 import { SegmentedToggleComponent, SegmentedToggleOption } from '@shared/components/segmented-toggle/segmented-toggle.component';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /** Meta-tabs shown before the business categories. */
 type MetaTab = 'all' | 'favorites' | 'new';
 
 @Component({
   selector: 'app-reports-catalog',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, TranslateModule, SegmentedToggleComponent],
+  imports: [TooltipDirective, CommonModule, FormsModule, RouterLink, TranslateModule, SegmentedToggleComponent],
   templateUrl: './reports-catalog.component.html',
   styleUrl: './reports-catalog.component.scss',
 })
@@ -41,6 +43,7 @@ export class ReportsCatalogComponent implements OnInit {
   private privileges = inject(PrivilegeService);
   private company = inject(CompanyService);
   private favs = inject(ReportsFavoritesService);
+  private scheduleSvc = inject(ReportScheduleService);
   private sanitizer = inject(DomSanitizer);
   private recent = inject(ReportsRecentService);
 
@@ -130,6 +133,7 @@ export class ReportsCatalogComponent implements OnInit {
   ngOnInit(): void {
     // the saved copy of the company settings can predate the Commission / Tips switches: refresh it so those reports show
     void this.company.loadSettings(true);
+    void this.loadScheduled();
     this.favs.seedDefaults(ALL_REPORTS.filter(r => r.starredByDefault).map(r => r.slug));
   }
 
@@ -149,6 +153,16 @@ export class ReportsCatalogComponent implements OnInit {
   /** What a report can do, as small chips on its card. */
   /** True when the backend scheduler can run this report (the row then offers a quick "Schedule" button). */
   canSchedule = (r: ReportMeta): boolean => !!scheduleTypeFor(r.slug);
+
+  /** Report types that already have a saved schedule — marks their calendar button. */
+  private scheduledTypes = signal<Set<string>>(new Set());
+  isScheduled = (r: ReportMeta): boolean => {
+    const t = scheduleTypeFor(r.slug);
+    return !!t && this.scheduledTypes().has(t);
+  };
+  private async loadScheduled(): Promise<void> {
+    try { this.scheduledTypes.set(await this.scheduleSvc.scheduledTypes()); } catch { /* the marks are optional */ }
+  }
 
   private branchList: { value: string; label: string }[] | null = null;
   private async branches(): Promise<{ value: string; label: string }[]> {
@@ -172,6 +186,7 @@ export class ReportsCatalogComponent implements OnInit {
         data: { type, titleKey: r.titleKey, caps: scheduleCapsFor(r.slug), branches, schedule: null },
       });
     await ref.afterClosed();
+    void this.loadScheduled();
   }
 
   caps(r: ReportMeta): string[] {
