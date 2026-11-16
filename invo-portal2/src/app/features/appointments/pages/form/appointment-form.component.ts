@@ -21,6 +21,7 @@ import { DURATION_OPTIONS, TIME_SLOTS, addMinutes, dateAtTime, formatTime, forma
 import { unwrapOptionValue } from '../../utils/option-compare';
 import { CancelReasonModalComponent, CancelReasonResult } from '../../components/cancel-reason-modal/cancel-reason-modal.component';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 interface ServiceRow {
   rowId: string;
   /** Set when editing an existing line. */
@@ -56,7 +57,7 @@ let rowSeq = 0;
 @Component({
   selector: 'app-appointment-form',
   standalone: true,
-  imports: [FormsModule, TranslateModule, SearchDropdownComponent, DatePickerComponent, MycurrencyPipe, FormStickyFooterComponent],
+  imports: [TooltipDirective, FormsModule, TranslateModule, SearchDropdownComponent, DatePickerComponent, MycurrencyPipe, FormStickyFooterComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './appointment-form.component.html',
   styleUrl: './appointment-form.component.scss',

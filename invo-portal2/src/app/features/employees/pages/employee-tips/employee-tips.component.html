@@ -75,7 +75,7 @@
                 }
                 <div class="ep-chips">
                   @for (e of picked; track e.id; let i = $index) {
-                    <button type="button" class="ep-chip" (click)="unpick(e)" [title]="'COMMON.REMOVE' | translate">{{ i + 1 }}. {{ e.name }} ✕</button>
+                    <button type="button" class="ep-chip" (click)="unpick(e)" [appTooltip]="'COMMON.REMOVE' | translate">{{ i + 1 }}. {{ e.name }} ✕</button>
                   }
                 </div>
                 <p class="ep-hint">{{ 'TIPS.EMPLOYEE_ORDER_HINT' | translate }}</p>

@@ -25,6 +25,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { TimePickerComponent } from '@shared/components/time-picker/time-picker.component';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /** One day of opening hours with zero or more time-slots. */
 export interface DayHours {
   day:      string;                      // canonical key — 'Sunday'…'Saturday'
@@ -92,7 +93,7 @@ export const overlappingPeriodsValidator: ValidatorFn = (group: AbstractControl)
 @Component({
   selector: 'app-working-hours-editor',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, TimePickerComponent],
+  imports: [TooltipDirective, CommonModule, ReactiveFormsModule, TranslateModule, TimePickerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './working-hours-editor.component.html',
   styleUrl: './working-hours-editor.component.scss',

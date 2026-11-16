@@ -122,7 +122,7 @@
                         [value]="priceOf(row, b.id) ?? ''" [placeholder]="row.defaultPrice ?? ''"
                         (input)="onPriceInput(row, b.id, $any($event.target).value)"/>
                     } @else {
-                      <span class="pc__na" [title]="'PRODUCTS.PRICE_CHANGE.NOT_STOCKED' | translate">&mdash;</span>
+                      <span class="pc__na" [appTooltip]="'PRODUCTS.PRICE_CHANGE.NOT_STOCKED' | translate">&mdash;</span>
                     }
                   </td>
                 }

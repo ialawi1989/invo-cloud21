@@ -99,7 +99,7 @@
           <tr>
             <th class="emp-col">{{ 'EMPLOYEES.SCHEDULE.TEAM_MEMBER' | translate }}</th>
             @for (date of currentWeek(); track date; let i = $index) {
-              <th [title]="dayTooltip(i)" [class.holiday-col]="!!holidayName(date)">
+              <th [appTooltip]="dayTooltip(i)" [class.holiday-col]="!!holidayName(date)">
                 <div class="day-head">
                   <span class="day-name">{{ date | date: 'EEE, MMM d' }}</span>
                   @if (holidayName(date); as hName) {
@@ -167,7 +167,7 @@
                           {{ off.type }}
                           @if (off.status === 'Pending') {
                             <span class="chip-badge"
-                                  [title]="'EMPLOYEES.SCHEDULE.PENDING_HR_HINT' | translate">
+                                  [appTooltip]="'EMPLOYEES.SCHEDULE.PENDING_HR_HINT' | translate">
                               {{ 'EMPLOYEES.SCHEDULE.PENDING_SHORT' | translate }}
                             </span>
                           }

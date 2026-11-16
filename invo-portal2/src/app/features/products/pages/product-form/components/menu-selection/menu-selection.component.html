@@ -92,7 +92,7 @@
                       />
                     </label>
                     @if (!(levelAt(i).controls['noOfSelection'].value > 0)) {
-                      <span class="pf-ms-card__unlimited" [title]="'PRODUCTS.FORM.UNLIMITED_WARNING' | translate">
+                      <span class="pf-ms-card__unlimited" [appTooltip]="'PRODUCTS.FORM.UNLIMITED_WARNING' | translate">
                         · {{ 'PRODUCTS.FORM.UNLIMITED' | translate }}
                       </span>
                     }

@@ -17,6 +17,7 @@ import {
   ListSort, VoidedItemRecord, VoidedSalesData, VoidedSalesRecord, VoidedSalesService, VoidedSalesTotal,
 } from './voided-sales.service';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 const SORTABLE = ['invoiceNumber', 'invoiceDate', 'voidDate', 'customerName', 'itemsCount', 'voidedQty', 'saleAmount',
   'voidAmount', 'employeeName'] as const;
 
@@ -36,7 +37,7 @@ interface RowDetails { loading: boolean; error: string | null; rows: ItemRow[]; 
 @Component({
   selector: 'app-voided-sales',
   standalone: true,
-  imports: [ReportSkeletonComponent, ReportEmptyComponent, ReportErrorComponent, TranslateModule, DatePipe, RouterLink, MycurrencyPipe, PaginationComponent, BoTableShellComponent],
+  imports: [TooltipDirective, ReportSkeletonComponent, ReportEmptyComponent, ReportErrorComponent, TranslateModule, DatePipe, RouterLink, MycurrencyPipe, PaginationComponent, BoTableShellComponent],
   templateUrl: './voided-sales.component.html',
   styleUrl: './voided-sales.component.scss',
 })

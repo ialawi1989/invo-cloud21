@@ -15,6 +15,7 @@ import {
   DocAdditionalDetailsConfig, DocAdditionalDetailsTabKey, DocBillOfEntryRow, DocExtraJournal, DocLineRow, DocMovementRow, DocPaymentRow, DocWastageRow,
 } from './doc-additional-details.types';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 const TAB_LABEL_KEY: Record<DocAdditionalDetailsTabKey, string> = {
   journal: 'DOC_VIEW.JOURNAL',
   payments: 'DOC_VIEW.PAYMENTS',
@@ -36,7 +37,7 @@ const TAB_LABEL_KEY: Record<DocAdditionalDetailsTabKey, string> = {
 @Component({
   selector: 'app-doc-additional-details',
   standalone: true,
-  imports: [StatusBadgeComponent, CommonModule, RouterLink, TranslateModule, MycurrencyPipe, DocJournalTabComponent, SpinnerComponent, DropdownMenuBtnComponent],
+  imports: [TooltipDirective, StatusBadgeComponent, CommonModule, RouterLink, TranslateModule, MycurrencyPipe, DocJournalTabComponent, SpinnerComponent, DropdownMenuBtnComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './doc-additional-details.component.scss',
   template: `
@@ -74,7 +75,7 @@ const TAB_LABEL_KEY: Record<DocAdditionalDetailsTabKey, string> = {
                     <td class="end">{{ p.amount | mycurrency }}</td>
                     <td class="end">
                       @for (a of attachmentsOf(p); track $index) {
-                        <button type="button" class="add__btn" [attr.title]="a.mediaName || ''" (click)="config().onPaymentAttachment?.(p, a)">{{ 'DOC_VIEW.PREVIEW' | translate }}</button>
+                        <button type="button" class="add__btn" [appTooltip]="a.mediaName || ''" (click)="config().onPaymentAttachment?.(p, a)">{{ 'DOC_VIEW.PREVIEW' | translate }}</button>
                       }
                     </td>
                     <td class="end">

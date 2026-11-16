@@ -26,6 +26,7 @@ import { Media } from '@features/settings/media/models/media.model';
 
 import { ProductsService } from '../../services/products.service';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /** Same cap as the product form's gallery (and the legacy page). */
 const MAX_IMAGES = 5;
 
@@ -47,7 +48,7 @@ export interface AssignedImage {
 @Component({
   selector: 'app-bulk-image',
   standalone: true,
-  imports: [CommonModule, TranslateModule, ListPageComponent, ListCellTemplateDirective],
+  imports: [TooltipDirective, CommonModule, TranslateModule, ListPageComponent, ListCellTemplateDirective],
   templateUrl: './bulk-image.component.html',
   styleUrl: './bulk-image.component.scss',
 })

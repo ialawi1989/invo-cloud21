@@ -15,6 +15,7 @@ import { ModalFooterComponent } from '@shared/modal/modal-footer.component';
 
 import { applySubItemsPricing, isMenuSelectionDefinition, SubItemsDefinition } from '../../services/sub-items-pricing';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 interface VmOption { id: string; name: string; price: number; mediaUrl: string | null; imgFailed?: boolean; }
 
 /** an option that comes with the item: the quantity can be lowered (down to 0), never raised above `maxQty` */
@@ -85,7 +86,7 @@ export interface PickSubItemsResult {
 @Component({
   selector: 'app-pick-sub-items',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, MycurrencyPipe, ModalHeaderComponent, ModalFooterComponent, EmptyStateComponent],
+  imports: [TooltipDirective, CommonModule, FormsModule, TranslateModule, MycurrencyPipe, ModalHeaderComponent, ModalFooterComponent, EmptyStateComponent],
   templateUrl: './pick-sub-items.component.html',
   styleUrl: './pick-sub-items.component.scss',
 })

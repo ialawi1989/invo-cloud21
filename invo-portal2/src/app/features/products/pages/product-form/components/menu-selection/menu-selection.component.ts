@@ -51,6 +51,7 @@ import {
   PickProductResult,
 } from '../pick-product-modal/pick-product-modal.component';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /**
  * menu-selection
  * ──────────────
@@ -72,7 +73,7 @@ import {
 @Component({
   selector: 'app-pf-menu-selection',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, DragDropModule],
+  imports: [TooltipDirective, CommonModule, ReactiveFormsModule, TranslateModule, DragDropModule],
   templateUrl: './menu-selection.component.html',
   styleUrl: './menu-selection.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -83,6 +83,7 @@ import { BranchSerialsComponent }    from './branch-serials/branch-serials.compo
 import { BranchBatchesComponent }    from './branch-batches/branch-batches.component';
 import { ActivatedRoute } from '@angular/router';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 type PricingType = '' | 'buyDownPrice' | 'priceBoundary' | 'priceByQty' | 'openPrice';
 
 interface PricingTypeOption { value: PricingType; labelKey: string; }
@@ -147,7 +148,7 @@ const FIELD_LABELS: Record<string, string> = {
 @Component({
   selector: 'app-pf-branch-product-section',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, 
     CommonModule,
     ReactiveFormsModule,
     TranslateModule,

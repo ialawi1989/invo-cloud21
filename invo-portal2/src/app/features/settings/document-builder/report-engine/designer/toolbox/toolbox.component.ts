@@ -7,6 +7,7 @@ import { DesignerStateService } from '../../services/designer-state.service';
 import { Block, BlockType } from '../../core/types/block.types';
 import { Section } from '../../core/types/template.types';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 type ToolboxTab = 'blocks' | 'layers';
 
 /**
@@ -46,7 +47,7 @@ const BLOCK_ICONS: Partial<Record<BlockType, string>> = {
   selector: 'app-designer-toolbox',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, CdkDrag, CdkDropList, TranslateModule],
+  imports: [TooltipDirective, CommonModule, CdkDrag, CdkDropList, TranslateModule],
   templateUrl: './toolbox.component.html',
   styleUrls: ['./toolbox.component.scss'],
 })

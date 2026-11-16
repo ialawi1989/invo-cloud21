@@ -200,7 +200,7 @@
                         [class.is-on]="openSettings() === w.def.slug"
                         [attr.aria-expanded]="openSettings() === w.def.slug"
                         [attr.aria-label]="'DASHBOARD.WIDGET_SETTINGS' | translate"
-                        [title]="'DASHBOARD.WIDGET_SETTINGS' | translate"
+                        [appTooltip]="'DASHBOARD.WIDGET_SETTINGS' | translate"
                         (click)="toggleSettings(w.def.slug)">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
@@ -226,7 +226,7 @@
                             <button type="button" class="cm__view"
                                     [class.is-on]="viewOf(w) === v"
                                     [attr.aria-pressed]="viewOf(w) === v"
-                                    [title]="VIEW_LABELS[v] | translate"
+                                    [appTooltip]="VIEW_LABELS[v] | translate"
                                     [attr.aria-label]="VIEW_LABELS[v] | translate"
                                     (click)="setView(w.def.slug, v)">
                               @switch (v) {

@@ -7,6 +7,7 @@ import { ReportApiFilter } from '../../models/report.model';
 import { AttendanceService, TrendsData } from '../attendance.service';
 import { ReportSkeletonComponent } from '../../components/report-skeleton/report-skeleton.component';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /** Day statuses in legend order. */
 const STATUSES = ['present', 'late', 'adjusted', 'absent', 'leave', 'off', 'not_employed'] as const;
 
@@ -17,7 +18,7 @@ const STATUSES = ['present', 'late', 'adjusted', 'absent', 'leave', 'off', 'not_
 @Component({
   selector: 'app-attendance-trends',
   standalone: true,
-  imports: [ReportSkeletonComponent, TranslateModule, ReportEmptyComponent, ReportErrorComponent],
+  imports: [TooltipDirective, ReportSkeletonComponent, TranslateModule, ReportEmptyComponent, ReportErrorComponent],
   templateUrl: './attendance-trends.component.html',
   styleUrl: './attendance-trends.component.scss',
 })

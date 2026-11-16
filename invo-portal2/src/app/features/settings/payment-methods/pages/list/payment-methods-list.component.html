@@ -83,7 +83,7 @@
         <li class="row" cdkDrag [cdkDragDisabled]="!canManage" (click)="edit(row)">
           <button type="button" class="row__handle" cdkDragHandle
             [attr.aria-label]="'COMMON.DRAG_TO_REORDER' | translate"
-            [title]="'COMMON.DRAG_TO_REORDER' | translate"
+            [appTooltip]="'COMMON.DRAG_TO_REORDER' | translate"
             (click)="$event.stopPropagation()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="9"  cy="6"  r="1"/>

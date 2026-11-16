@@ -11,6 +11,7 @@ import {
   FlatField,
 } from '../../shared/models/custom-report.model';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 interface CalcFieldView {
   id: string;
   name: string;
@@ -34,7 +35,7 @@ const mathOperatorOptions: { value: CalcOperator; label: string }[] = [
 @Component({
   selector: 'app-calculated-fields',
   standalone: true,
-  imports: [TranslateModule, CommonModule, FormsModule, NgSelectModule],
+  imports: [TooltipDirective, TranslateModule, CommonModule, FormsModule, NgSelectModule],
   templateUrl: './calculated-fields.component.html',
   styleUrls: ['./calculated-fields.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

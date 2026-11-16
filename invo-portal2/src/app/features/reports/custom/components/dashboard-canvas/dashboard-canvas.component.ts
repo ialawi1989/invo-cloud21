@@ -13,10 +13,11 @@ import {
 import { ChartPreviewComponent } from '../chart-preview/chart-preview.component';
 
 import { TranslateModule } from '@ngx-translate/core';
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 @Component({
   selector: 'app-dashboard-canvas',
   standalone: true,
-  imports: [TranslateModule, CommonModule, FormsModule, NgSelectModule, ChartPreviewComponent],
+  imports: [TooltipDirective, TranslateModule, CommonModule, FormsModule, NgSelectModule, ChartPreviewComponent],
   templateUrl: './dashboard-canvas.component.html',
   styleUrls: ['./dashboard-canvas.component.scss'],
 })

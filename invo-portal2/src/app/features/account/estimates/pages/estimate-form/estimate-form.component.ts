@@ -23,6 +23,7 @@ import { DocFormShellComponent } from '../../../components/doc-form-shell/doc-fo
 import { DocPartySectionComponent } from '../../../components/doc-party-section/doc-party-section.component';
 import { DocTotalsComponent } from '../../../components/doc-totals/doc-totals.component';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /**
  * Estimates → create / edit / clone page (`/account/estimate/:id`, `0` = new, `?cloned=yes`).
  * Built on the shared document-form base: what is specific here is the expiry date and the
@@ -31,7 +32,7 @@ import { DocTotalsComponent } from '../../../components/doc-totals/doc-totals.co
 @Component({
   selector: 'app-estimate-form',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, 
     CommonModule, FormsModule, ReactiveFormsModule, RouterLink, TranslateModule,
     DocFormShellComponent, DocPartySectionComponent, SearchDropdownComponent, DatePickerComponent,
     DocLinesTableComponent, DocAttachmentsCardComponent, DocTotalsComponent, EntityCustomFieldsComponent,

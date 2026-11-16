@@ -32,6 +32,7 @@ import { SearchDropdownComponent } from '@shared/components/dropdown/search-drop
 import { GosiService } from '../../services/gosi.service';
 import { GosiCountryRule, GosiSettingsRow, GosiSuggestion, GosiTier3PolicyRow, RetirementAges, WageBasis } from '../../services/gosi.types';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /** Wage-basis dropdown option. */
 interface WageBasisOption {
   value: WageBasis;
@@ -104,7 +105,7 @@ const TIER3_DECISION_OPTIONS: readonly Tier3DecisionOption[] = [
 @Component({
   selector: 'app-gosi-settings',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, 
     ReactiveFormsModule,
     TranslateModule,
     BreadcrumbsComponent,

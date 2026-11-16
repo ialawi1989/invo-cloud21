@@ -33,6 +33,7 @@ import {
 import { ProductSheetExportComponent } from './components/product-sheet-export/product-sheet-export.component';
 import { ProductSheetReportComponent } from './components/product-sheet-report/product-sheet-report.component';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 type Tab = 'import' | 'export';
 type Step = 'file' | 'preview' | 'importing' | 'done';
 interface Item { label: string; value: any; group?: string; }
@@ -55,7 +56,7 @@ const POLL_INTERVAL_MS = 1500;
 @Component({
   selector: 'app-product-sheet',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, 
     TranslateModule,
     SearchDropdownComponent,
     SegmentedToggleComponent,

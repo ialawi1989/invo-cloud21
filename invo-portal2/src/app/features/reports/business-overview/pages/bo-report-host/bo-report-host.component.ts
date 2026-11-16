@@ -33,6 +33,7 @@ import { TrialBalanceComponent } from '../../components/trial-balance/trial-bala
 import { ReportsRecentService } from '../../../services/reports-recent.service';
 import { ReportScheduleButtonComponent } from '../../../components/report-schedule-button/report-schedule-button.component';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /**
  * Host for the Business Overview reports (`/reports/view/:slug` for the five
  * statements, `/reports/view/:slug/account-journals` for the drill-down).
@@ -43,7 +44,7 @@ import { ReportScheduleButtonComponent } from '../../../components/report-schedu
 @Component({
   selector: 'app-bo-report-host',
   standalone: true,
-  imports: [ReportScheduleButtonComponent, 
+  imports: [TooltipDirective, ReportScheduleButtonComponent, 
     TranslateModule, ReportPageShellComponent, ReportExportButtonComponent, BoFilterBarComponent, ProfitAndLossComponent, BalanceSheetComponent,
     TrialBalanceComponent, GeneralLedgerComponent, JournalEntriesComponent, AccountJournalsComponent,
   ],

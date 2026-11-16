@@ -69,13 +69,13 @@
           @for (line of visibleLines(); track trackLine($index, line)) {
             @let err = errorsFor(line);
             <tr cdkDrag [cdkDragData]="line" [class.dl__row--voided]="line.isVoided" [class.dl__row--removed]="isRemoved(line)">
-              <td class="dl__handle-col"><span class="dl__handle" cdkDragHandle title="drag"><svg viewBox="0 0 512 512" width="12" height="12" fill="currentColor" aria-hidden="true"><circle cx="153.6" cy="451" r="61"/><circle cx="153.6" cy="256" r="61"/><circle cx="153.6" cy="61" r="61"/><circle cx="358.4" cy="256" r="61"/><circle cx="358.4" cy="61" r="61"/><circle cx="358.4" cy="451" r="61"/></svg></span></td>
+              <td class="dl__handle-col"><span class="dl__handle" cdkDragHandle appTooltip="drag"><svg viewBox="0 0 512 512" width="12" height="12" fill="currentColor" aria-hidden="true"><circle cx="153.6" cy="451" r="61"/><circle cx="153.6" cy="256" r="61"/><circle cx="153.6" cy="61" r="61"/><circle cx="358.4" cy="256" r="61"/><circle cx="358.4" cy="61" r="61"/><circle cx="358.4" cy="451" r="61"/></svg></span></td>
               @if (bulkMode()) {
                 <td class="dl__check-col"><input type="checkbox" [checked]="isSelected(line)" (change)="toggleSelect(line)"/></td>
               }
 
               @for (c of columns(); track c.key) {
-                <td [attr.data-label]="c.label | translate" [attr.data-type]="c.type" [class.end]="c.type !== 'item'" [class.dl__col-item]="c.type === 'item'" [class.dl__cell--err]="err[c.key]" [attr.title]="err[c.key] ? (err[c.key] | translate) : null">
+                <td [attr.data-label]="c.label | translate" [attr.data-type]="c.type" [class.end]="c.type !== 'item'" [class.dl__col-item]="c.type === 'item'" [class.dl__cell--err]="err[c.key]" [appTooltip]="err[c.key] ? (err[c.key] | translate) : null">
                   @switch (c.type) {
                     @case ('item') {
                       <div class="dl__item" [class.dl__cell--err]="err['item']">
@@ -180,7 +180,7 @@
               <td class="dl__act-col">
                 <div class="dl__acts">
                   @if (isRemoved(line)) {
-                    <button type="button" class="dl__undo" (click)="undoRemove(line)" [title]="'DOC_LINES.UNDO_REMOVE' | translate">
+                    <button type="button" class="dl__undo" (click)="undoRemove(line)" [appTooltip]="'DOC_LINES.UNDO_REMOVE' | translate">
                       <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-15-6.7L3 13"/></svg>
                       {{ 'DOC_LINES.UNDO' | translate }}
                     </button>

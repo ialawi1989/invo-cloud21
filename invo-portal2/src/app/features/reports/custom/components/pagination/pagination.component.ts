@@ -4,10 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 
 import { TranslateModule } from '@ngx-translate/core';
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 @Component({
   selector: 'app-report-pagination',
   standalone: true,
-  imports: [TranslateModule, FormsModule, NgSelectModule],
+  imports: [TooltipDirective, TranslateModule, FormsModule, NgSelectModule],
   templateUrl: './pagination.component.html',
   styleUrls: ['./pagination.component.scss'],
 })

@@ -4,6 +4,7 @@ import { Media } from '../../models/media.model';
 import { ModalService } from '../../../../../shared/modal/modal.service';
 import { ConfirmModalComponent, ConfirmModalData } from '../../../../../shared/modal/demo/confirm-modal.component';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /**
  * Media Gallery Component - Final version matching exact Media model
  * Displays media in grid or list view with individual action buttons
@@ -11,7 +12,7 @@ import { ConfirmModalComponent, ConfirmModalData } from '../../../../../shared/m
 @Component({
   selector: 'app-media-gallery',
   standalone: true,
-  imports: [CommonModule],
+  imports: [TooltipDirective, CommonModule],
   templateUrl: './media-gallery.component.html',
   styleUrls: ['./media-gallery.component.scss']
 })

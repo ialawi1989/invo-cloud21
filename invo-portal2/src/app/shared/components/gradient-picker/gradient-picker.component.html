@@ -33,7 +33,7 @@
         (touchstart)="onThumbDown(i, $event)"
         (click)="$event.stopPropagation(); selectStop(i)"
         [attr.aria-label]="s.color + ' at ' + s.position + '%'"
-        [attr.title]="s.color + ' @ ' + s.position + '%'">
+        [appTooltip]="s.color + ' @ ' + s.position + '%'">
       </button>
     }
   </div>

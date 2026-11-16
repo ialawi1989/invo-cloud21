@@ -25,6 +25,7 @@ import {
   QuickAdjustResult,
 } from './components/attendance-quick-adjust-modal.component';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /** The two adjustable columns. */
 type AdjField = 'adjClockedIn' | 'adjClockedOut';
 
@@ -36,7 +37,7 @@ type AdjField = 'adjClockedIn' | 'adjClockedOut';
 @Component({
   selector: 'app-attendance-list',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, 
     CommonModule,
     TranslateModule,
     ListPageComponent,

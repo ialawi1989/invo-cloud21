@@ -70,23 +70,23 @@
             <p class="crl-meta">{{ 'CUSTOM_REPORTS.LIST.UPDATED_ON' | translate }}: {{ report.updated }}</p>
             @if (report.legacy) {
               <!-- Saved by the previous builder; moved to v2 when next saved. -->
-              <span class="crl-tag" [title]="'CUSTOM_REPORTS.LIST.PREVIOUS_BUILDER_TIP' | translate">
+              <span class="crl-tag" [appTooltip]="'CUSTOM_REPORTS.LIST.PREVIOUS_BUILDER_TIP' | translate">
                 {{ 'CUSTOM_REPORTS.LIST.PREVIOUS_BUILDER' | translate }}
               </span>
             }
           </div>
           <div class="crl-actions">
             <button type="button" class="crl-icon-btn crl-star" [class.on]="isStarred(report)"
-                    [title]="'CUSTOM_REPORTS.LIST.FAVOURITES' | translate" [attr.aria-label]="'CUSTOM_REPORTS.LIST.FAVOURITES' | translate"
+                    [appTooltip]="'CUSTOM_REPORTS.LIST.FAVOURITES' | translate" [attr.aria-label]="'CUSTOM_REPORTS.LIST.FAVOURITES' | translate"
                     [attr.aria-pressed]="isStarred(report)" (click)="toggleStar(report, $event)">
               <svg viewBox="0 0 24 24" width="20" height="20" [attr.fill]="isStarred(report) ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
             </button>
             @if (canEdit) {
-              <button type="button" class="crl-icon-btn" [title]="'CUSTOM_REPORTS.LIST.EDIT_REPORT' | translate"
+              <button type="button" class="crl-icon-btn" [appTooltip]="'CUSTOM_REPORTS.LIST.EDIT_REPORT' | translate"
                       [attr.aria-label]="'CUSTOM_REPORTS.LIST.EDIT_REPORT' | translate" (click)="edit(report, $event)">
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
               </button>
-              <button type="button" class="crl-icon-btn crl-del" [title]="'CUSTOM_REPORTS.LIST.DELETE_REPORT' | translate"
+              <button type="button" class="crl-icon-btn crl-del" [appTooltip]="'CUSTOM_REPORTS.LIST.DELETE_REPORT' | translate"
                       [attr.aria-label]="'CUSTOM_REPORTS.LIST.DELETE_REPORT' | translate" (click)="deleteReport(report, $event)">
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>

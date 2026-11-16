@@ -26,6 +26,7 @@ import { getProductTypeBadgeStyle } from '../../../../products/utils/product-typ
 
 import { ProductsService } from '../../../../products/services/products.service';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 export interface PriceLabelPickedProduct {
   productId:    string;
   productName:  string;
@@ -97,7 +98,7 @@ const PRODUCT_TYPES: { value: string; labelKey: string }[] = [
 @Component({
   selector: 'app-pick-product-pl-modal',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, 
     CommonModule,
     FormsModule,
     TranslateModule,

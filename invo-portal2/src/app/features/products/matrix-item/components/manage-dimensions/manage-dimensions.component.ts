@@ -62,10 +62,11 @@ const MAX_DIMENSIONS = 3;
  */
 import { TranslateLinkComponent } from '@shared/components/translate-link/translate-link.component';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 @Component({
   selector: 'app-manage-dimensions',
   standalone: true,
-  imports: [CommonModule, TranslateModule, SegmentedToggleComponent, TranslateLinkComponent],
+  imports: [TooltipDirective, CommonModule, TranslateModule, SegmentedToggleComponent, TranslateLinkComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './manage-dimensions.component.html',
   styleUrl: './manage-dimensions.component.scss',

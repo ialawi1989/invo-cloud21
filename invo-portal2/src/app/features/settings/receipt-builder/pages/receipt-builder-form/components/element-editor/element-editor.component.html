@@ -47,7 +47,7 @@
                           [class.seg__btn--on]="t.alignment === a"
                           (click)="emit('alignment', a)"
                           [attr.aria-label]="('RECEIPT_BUILDER.EDITOR.ALIGN_' + a.toUpperCase()) | translate"
-                          [title]="('RECEIPT_BUILDER.EDITOR.ALIGN_' + a.toUpperCase()) | translate"
+                          [appTooltip]="('RECEIPT_BUILDER.EDITOR.ALIGN_' + a.toUpperCase()) | translate"
                         ><app-align-icon [value]="a"/></button>
                       }
                     </div>
@@ -73,19 +73,19 @@
                           <button type="button" class="seg__btn"
                             [class.seg__btn--on]="t.fontWeight === 'bold'"
                             (click)="emit('fontWeight', t.fontWeight === 'bold' ? 'normal' : 'bold')"
-                            [title]="'RECEIPT_BUILDER.EDITOR.FONT_WEIGHT' | translate">
+                            [appTooltip]="'RECEIPT_BUILDER.EDITOR.FONT_WEIGHT' | translate">
                             <strong>B</strong>
                           </button>
                           <button type="button" class="seg__btn"
                             [class.seg__btn--on]="t.fontStyle === 'italic'"
                             (click)="emit('fontStyle', t.fontStyle === 'italic' ? 'normal' : 'italic')"
-                            [title]="'RECEIPT_BUILDER.EDITOR.FONT_STYLE' | translate">
+                            [appTooltip]="'RECEIPT_BUILDER.EDITOR.FONT_STYLE' | translate">
                             <em>I</em>
                           </button>
                           <button type="button" class="seg__btn"
                             [class.seg__btn--on]="t.textDecoration === 'underline'"
                             (click)="emit('textDecoration', t.textDecoration === 'underline' ? 'none' : 'underline')"
-                            [title]="'RECEIPT_BUILDER.EDITOR.DECORATION' | translate">
+                            [appTooltip]="'RECEIPT_BUILDER.EDITOR.DECORATION' | translate">
                             <u>U</u>
                           </button>
                         </div>
@@ -158,7 +158,7 @@
                                   [class.seg__btn--on]="st.leftTextAlign === a"
                                   (click)="emit('leftTextAlign', a)"
                                   [attr.aria-label]="('RECEIPT_BUILDER.EDITOR.ALIGN_' + a.toUpperCase()) | translate"
-                                  [title]="('RECEIPT_BUILDER.EDITOR.ALIGN_' + a.toUpperCase()) | translate"
+                                  [appTooltip]="('RECEIPT_BUILDER.EDITOR.ALIGN_' + a.toUpperCase()) | translate"
                           ><app-align-icon [value]="a"/></button>
                         }
                       </div>
@@ -180,7 +180,7 @@
                                   [class.seg__btn--on]="st.rightTextAlign === a"
                                   (click)="emit('rightTextAlign', a)"
                                   [attr.aria-label]="('RECEIPT_BUILDER.EDITOR.ALIGN_' + a.toUpperCase()) | translate"
-                                  [title]="('RECEIPT_BUILDER.EDITOR.ALIGN_' + a.toUpperCase()) | translate"
+                                  [appTooltip]="('RECEIPT_BUILDER.EDITOR.ALIGN_' + a.toUpperCase()) | translate"
                           ><app-align-icon [value]="a"/></button>
                         }
                       </div>
@@ -203,19 +203,19 @@
                           <button type="button" class="seg__btn"
                             [class.seg__btn--on]="st.fontWeight === 'bold'"
                             (click)="emit('fontWeight', st.fontWeight === 'bold' ? 'normal' : 'bold')"
-                            [title]="'RECEIPT_BUILDER.EDITOR.FONT_WEIGHT' | translate">
+                            [appTooltip]="'RECEIPT_BUILDER.EDITOR.FONT_WEIGHT' | translate">
                             <strong>B</strong>
                           </button>
                           <button type="button" class="seg__btn"
                             [class.seg__btn--on]="st.fontStyle === 'italic'"
                             (click)="emit('fontStyle', st.fontStyle === 'italic' ? 'normal' : 'italic')"
-                            [title]="'RECEIPT_BUILDER.EDITOR.FONT_STYLE' | translate">
+                            [appTooltip]="'RECEIPT_BUILDER.EDITOR.FONT_STYLE' | translate">
                             <em>I</em>
                           </button>
                           <button type="button" class="seg__btn"
                             [class.seg__btn--on]="st.textDecoration === 'underline'"
                             (click)="emit('textDecoration', st.textDecoration === 'underline' ? 'none' : 'underline')"
-                            [title]="'RECEIPT_BUILDER.EDITOR.DECORATION' | translate">
+                            [appTooltip]="'RECEIPT_BUILDER.EDITOR.DECORATION' | translate">
                             <u>U</u>
                           </button>
                         </div>
@@ -377,7 +377,7 @@
                                 [class.seg__btn--on]="lg.alignment === a"
                                 (click)="emit('alignment', a)"
                                 [attr.aria-label]="('RECEIPT_BUILDER.EDITOR.ALIGN_' + a.toUpperCase()) | translate"
-                                [title]="('RECEIPT_BUILDER.EDITOR.ALIGN_' + a.toUpperCase()) | translate"
+                                [appTooltip]="('RECEIPT_BUILDER.EDITOR.ALIGN_' + a.toUpperCase()) | translate"
                         ><app-align-icon [value]="a"/></button>
                       }
                     </div>
@@ -433,7 +433,7 @@
                                 [class.seg__btn--on]="im.alignment === a"
                                 (click)="emit('alignment', a)"
                                 [attr.aria-label]="('RECEIPT_BUILDER.EDITOR.ALIGN_' + a.toUpperCase()) | translate"
-                                [title]="('RECEIPT_BUILDER.EDITOR.ALIGN_' + a.toUpperCase()) | translate"
+                                [appTooltip]="('RECEIPT_BUILDER.EDITOR.ALIGN_' + a.toUpperCase()) | translate"
                         ><app-align-icon [value]="a"/></button>
                       }
                     </div>

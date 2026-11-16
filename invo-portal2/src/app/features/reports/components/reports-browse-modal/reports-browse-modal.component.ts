@@ -14,6 +14,7 @@ import { reportIcon } from '../../models/report-icons';
 import { ReportGroup } from '../../models/report.model';
 import { ReportsFavoritesService } from '../../services/reports-favorites.service';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 export interface ReportsBrowseData { currentSlug: string; }
 
 /**
@@ -24,7 +25,7 @@ export interface ReportsBrowseData { currentSlug: string; }
 @Component({
   selector: 'app-reports-browse-modal',
   standalone: true,
-  imports: [TranslateModule, SegmentedToggleComponent],
+  imports: [TooltipDirective, TranslateModule, SegmentedToggleComponent],
   templateUrl: './reports-browse-modal.component.html',
   styles: [`:host { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; height: 100%; }`],
 })

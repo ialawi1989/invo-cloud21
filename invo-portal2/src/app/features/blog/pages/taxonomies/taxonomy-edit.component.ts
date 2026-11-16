@@ -23,6 +23,7 @@ import { BLOG_API } from '../../services/blog-api';
 import { BlogTaxonomy, TaxonomyLocale, TaxonomyType } from '../../services/blog.types';
 import { generateSlug } from '../../utils/blog-utils';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /**
  * Full-page category / tag editor with the Wix-style SEO panel (URL slug
  * + Google preview). Routed at `/blog/categories/new` and
@@ -32,7 +33,7 @@ import { generateSlug } from '../../utils/blog-utils';
 @Component({
   selector: 'app-blog-taxonomy-edit',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslateModule],
+  imports: [TooltipDirective, CommonModule, FormsModule, RouterModule, TranslateModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './taxonomy-edit.component.html',
   styleUrl: './taxonomy-edit.component.scss',

@@ -23,6 +23,7 @@ import {
   ReportSpecV2,
 } from '../../shared/v2/report-v2.model';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 interface ChatTurn {
   role: 'user' | 'assistant' | 'error';
   text: string;
@@ -46,7 +47,7 @@ const MAX_MESSAGE = 4000;
 @Component({
   selector: 'app-ask-ai-panel',
   standalone: true,
-  imports: [FormsModule, TranslateModule],
+  imports: [TooltipDirective, FormsModule, TranslateModule],
   templateUrl: './ask-ai-panel.component.html',
   styleUrls: ['./ask-ai-panel.component.scss'],
 })

@@ -25,10 +25,11 @@ import { AssignTaxModalComponent } from '@shared/components/assign-tax-modal/ass
 
 import { TaxSettingsService } from '../../services/tax-settings.service';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 @Component({
   selector: 'app-tax-settings',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, 
     CommonModule,
     RouterModule,
     FormsModule,

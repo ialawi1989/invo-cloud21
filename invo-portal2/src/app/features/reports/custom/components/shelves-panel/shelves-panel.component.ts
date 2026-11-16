@@ -13,10 +13,11 @@ import {
   operatorsForType,
 } from '../../shared/models/custom-report.model';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 @Component({
   selector: 'app-shelves-panel',
   standalone: true,
-  imports: [TranslateModule, CommonModule, FormsModule, NgSelectModule],
+  imports: [TooltipDirective, TranslateModule, CommonModule, FormsModule, NgSelectModule],
   templateUrl: './shelves-panel.component.html',
   styleUrls: ['./shelves-panel.component.scss'],
 })

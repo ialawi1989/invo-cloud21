@@ -44,10 +44,11 @@ import {
   LogsDrawerData,
 } from '@shared/components/logs-drawer/logs-drawer.component';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 @Component({
   selector: 'app-products-list',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, 
     CommonModule,
     OverlayModule,
     ListPageComponent,

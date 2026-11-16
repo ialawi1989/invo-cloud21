@@ -163,7 +163,7 @@
                              (change)="updateSpecField(i, { required: $any($event.target).checked })"/>
                       {{ 'TAB_BUILDER.REQUIRED' | translate }}
                     </label>
-                    <label class="check" [title]="'TAB_BUILDER.FILTERABLE_HINT' | translate">
+                    <label class="check" [appTooltip]="'TAB_BUILDER.FILTERABLE_HINT' | translate">
                       <input type="checkbox" [checked]="f.filterable"
                              (change)="updateSpecField(i, { filterable: $any($event.target).checked })"/>
                       {{ 'TAB_BUILDER.FILTERABLE' | translate }}
@@ -242,7 +242,7 @@
                              (change)="updateRecordField(i, { required: $any($event.target).checked })"/>
                       {{ 'TAB_BUILDER.REQUIRED' | translate }}
                     </label>
-                    <label class="check" [title]="'TAB_BUILDER.FILTERABLE_HINT' | translate">
+                    <label class="check" [appTooltip]="'TAB_BUILDER.FILTERABLE_HINT' | translate">
                       <input type="checkbox" [checked]="f.filterable"
                              (change)="updateRecordField(i, { filterable: $any($event.target).checked })"/>
                       {{ 'TAB_BUILDER.FILTERABLE' | translate }}

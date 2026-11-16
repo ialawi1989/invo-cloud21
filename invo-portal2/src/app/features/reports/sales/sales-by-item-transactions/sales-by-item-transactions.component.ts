@@ -18,6 +18,7 @@ import {
   ItemTransactionRecord, ItemTransactionsData, ListSort, SalesByItemTransactionsService,
 } from './sales-by-item-transactions.service';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 const SORTABLE = ['transactionNumber', 'transactionType', 'transactionDate', 'customerName', 'branchName', 'employeeName',
   'netQty', 'salesAmount', 'total'] as const;
 
@@ -34,7 +35,7 @@ const toNum = (v: unknown): number => {
 @Component({
   selector: 'app-sales-by-item-transactions',
   standalone: true,
-  imports: [ReportSelectPromptComponent, ReportSkeletonComponent, ReportEmptyComponent, ReportErrorComponent, TranslateModule, DatePipe, RouterLink, MycurrencyPipe, PaginationComponent, BoTableShellComponent],
+  imports: [TooltipDirective, ReportSelectPromptComponent, ReportSkeletonComponent, ReportEmptyComponent, ReportErrorComponent, TranslateModule, DatePipe, RouterLink, MycurrencyPipe, PaginationComponent, BoTableShellComponent],
   templateUrl: './sales-by-item-transactions.component.html',
   styleUrl: './sales-by-item-transactions.component.scss',
 })

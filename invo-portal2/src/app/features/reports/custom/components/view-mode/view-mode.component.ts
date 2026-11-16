@@ -14,10 +14,11 @@ import { ChartPreviewComponent } from '../chart-preview/chart-preview.component'
 import { PaginationComponent } from '../pagination/pagination.component';
 
 import { TranslateModule } from '@ngx-translate/core';
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 @Component({
   selector: 'app-view-mode',
   standalone: true,
-  imports: [TranslateModule, CommonModule, FormsModule, NgSelectModule, ChartPreviewComponent, PaginationComponent],
+  imports: [TooltipDirective, TranslateModule, CommonModule, FormsModule, NgSelectModule, ChartPreviewComponent, PaginationComponent],
   templateUrl: './view-mode.component.html',
   styleUrls: ['./view-mode.component.scss'],
 })

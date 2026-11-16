@@ -171,7 +171,7 @@
                     class="bs__icon-btn bs__icon-btn--primary"
                     (click)="onBarcode(idx)"
                     [attr.aria-label]="'PRODUCTS.FORM.GENERATE_BARCODE' | translate"
-                    [title]="'PRODUCTS.FORM.GENERATE_BARCODE' | translate"
+                    [appTooltip]="'PRODUCTS.FORM.GENERATE_BARCODE' | translate"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <rect x="3" y="5" width="1" height="14"/>
@@ -188,7 +188,7 @@
                       type="button"
                       class="bs__icon-btn bs__icon-btn--info"
                       (click)="openInvoice(rowAt(idx).value['invoiceId'])"
-                      [title]="'PRODUCTS.FORM.SHOW_INVOICE' | translate"
+                      [appTooltip]="'PRODUCTS.FORM.SHOW_INVOICE' | translate"
                     >
                       {{ 'COMMON.ACTIONS.VIEW' | translate }}
                     </button>
@@ -198,7 +198,7 @@
                       class="bs__icon-btn bs__icon-btn--danger"
                       (click)="removeAt(idx)"
                       [attr.aria-label]="'COMMON.ACTIONS.DELETE' | translate"
-                      [title]="'COMMON.ACTIONS.DELETE' | translate"
+                      [appTooltip]="'COMMON.ACTIONS.DELETE' | translate"
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="3 6 5 6 21 6"/>

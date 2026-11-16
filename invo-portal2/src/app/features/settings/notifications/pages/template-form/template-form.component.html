@@ -111,7 +111,7 @@
             <div class="tf-var-group">
               <div class="tf-var-group__title">{{ group.group }}</div>
               @for (v of group.items; track v.token) {
-                <button type="button" class="tf-var" (click)="insertVariable(v)" [title]="v.description ?? ''">
+                <button type="button" class="tf-var" (click)="insertVariable(v)" [appTooltip]="v.description ?? ''">
                   <span class="tf-var__token">{{ '{{' + v.token + '}}' }}</span>
                   <span class="tf-var__label">{{ v.label }}</span>
                 </button>

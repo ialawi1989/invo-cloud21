@@ -3,6 +3,7 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import type { BranchServiceModel } from '../../services/service.types';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 type BranchFilter = 'all' | 'enabled' | 'disabled';
 
 /**
@@ -14,7 +15,7 @@ type BranchFilter = 'all' | 'enabled' | 'disabled';
 @Component({
   selector: 'app-service-branch-section',
   standalone: true,
-  imports: [TranslateModule],
+  imports: [TooltipDirective, TranslateModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './service-branch-section.component.html',
   styleUrl: './service-branch-section.component.scss',

@@ -164,7 +164,7 @@
                         @if (!prod.id) {
                           <tr>
                             <td class="pv-sticky pv-variant-cell">
-                              <button type="button" class="variant-img-btn" (click)="openVariantImages(prod)" [title]="'MATRIX.FORM.VARIANT_IMAGES' | translate">
+                              <button type="button" class="variant-img-btn" (click)="openVariantImages(prod)" [appTooltip]="'MATRIX.FORM.VARIANT_IMAGES' | translate">
                                 @if (variantImageCount(prod) > 0) {
                                   <img class="variant-img-thumb" [src]="variantThumb(prod)" alt="" />
                                   <span class="variant-img-count">{{ variantImageCount(prod) }}</span>
@@ -226,7 +226,7 @@
                         @if (prod.id) {
                           <tr>
                             <td class="pv-sticky pv-variant-cell">
-                              <button type="button" class="variant-img-btn" (click)="openVariantImages(prod)" [title]="'MATRIX.FORM.VARIANT_IMAGES' | translate">
+                              <button type="button" class="variant-img-btn" (click)="openVariantImages(prod)" [appTooltip]="'MATRIX.FORM.VARIANT_IMAGES' | translate">
                                 @if (variantImageCount(prod) > 0) {
                                   <img class="variant-img-thumb" [src]="variantThumb(prod)" alt="" />
                                   <span class="variant-img-count">{{ variantImageCount(prod) }}</span>
@@ -237,7 +237,7 @@
                                 }
                               </button>
                               <div class="pv-variant-meta">
-                                <button type="button" class="pname-link" (click)="openProduct(prod, branches()[0].id)" [title]="'MATRIX.FORM.OPEN_PRODUCT' | translate">{{ prod.name }}</button>
+                                <button type="button" class="pname-link" (click)="openProduct(prod, branches()[0].id)" [appTooltip]="'MATRIX.FORM.OPEN_PRODUCT' | translate">{{ prod.name }}</button>
                                 <span class="pv-variant-sub"><span class="pv-sub-label">{{ 'MATRIX.FORM.COL_BARCODE' | translate }}</span><span class="mono">{{ prod.barcode }}</span></span>
                                 <span class="pv-variant-sub"><span class="pv-sub-label">{{ 'MATRIX.FORM.COL_SKU' | translate }}</span><span class="mono">{{ prod.sku }}</span></span>
                                 <div class="pv-variant-actions">
@@ -309,7 +309,7 @@
                               <td>
                                 <button type="button" class="variant-img-btn"
                                   (click)="openVariantImages(prod)"
-                                  [title]="'MATRIX.FORM.VARIANT_IMAGES' | translate">
+                                  [appTooltip]="'MATRIX.FORM.VARIANT_IMAGES' | translate">
                                   @if (variantImageCount(prod) > 0) {
                                     <img class="variant-img-thumb" [src]="variantThumb(prod)" alt="" />
                                     <span class="variant-img-count">{{ variantImageCount(prod) }}</span>
@@ -352,7 +352,7 @@
                               <td>
                                 <button type="button" class="pname-link"
                                   (click)="openProduct(prod, branch.id)"
-                                  [title]="'MATRIX.FORM.OPEN_PRODUCT' | translate">
+                                  [appTooltip]="'MATRIX.FORM.OPEN_PRODUCT' | translate">
                                   {{ prod.name }}
                                 </button>
                               </td>
@@ -372,7 +372,7 @@
                               <td>
                                 <button type="button" class="variant-img-btn"
                                   (click)="openVariantImages(prod)"
-                                  [title]="'MATRIX.FORM.VARIANT_IMAGES' | translate">
+                                  [appTooltip]="'MATRIX.FORM.VARIANT_IMAGES' | translate">
                                   @if (variantImageCount(prod) > 0) {
                                     <img class="variant-img-thumb" [src]="variantThumb(prod)" alt="" />
                                     <span class="variant-img-count">{{ variantImageCount(prod) }}</span>

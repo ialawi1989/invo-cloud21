@@ -27,7 +27,7 @@
           <label for="invoiceNumber">{{ 'INVOICES.LIST.INVOICE_NUMBER' | translate }} <span class="req">*</span></label>
           <div class="df-num" [class.is-invalid]="fieldError('invoiceNumber')">
             <input id="invoiceNumber" type="text" [(ngModel)]="inv.invoiceNumber" (ngModelChange)="markDirty()"/>
-            <button type="button" class="df-gear" (click)="openNumberPrefs()" [attr.title]="'INVOICES.FORM.INVOICE_NUMBER_HELP' | translate" aria-label="settings">⚙</button>
+            <button type="button" class="df-gear" (click)="openNumberPrefs()" [appTooltip]="'INVOICES.FORM.INVOICE_NUMBER_HELP' | translate" aria-label="settings">⚙</button>
           </div>
           @if (fieldError('invoiceNumber'); as e) { <p class="df-error">{{ e }}</p> }
         </div>

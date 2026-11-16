@@ -16,6 +16,7 @@ import { FeedbacksService } from '../../services/feedbacks.service';
 import { FeedbackCommentModalComponent } from '../../components/feedback-comment-modal/feedback-comment-modal.component';
 import { FeedbackSettingsModalComponent } from '../../components/feedback-settings-modal/feedback-settings-modal.component';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /**
  * Feedbacks -> list (`/feedbacks`). Legacy `FeedbacksComponent`: average + per-rating distribution of the loaded
  * page, rating filter, search, sort (date / rating / customer / phone / comment), comment popup, invoice link and the
@@ -24,7 +25,7 @@ import { FeedbackSettingsModalComponent } from '../../components/feedback-settin
 @Component({
   selector: 'app-feedbacks-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslateModule, ListPageComponent, ListCellTemplateDirective],
+  imports: [TooltipDirective, CommonModule, RouterLink, TranslateModule, ListPageComponent, ListCellTemplateDirective],
   templateUrl: './feedbacks-list.component.html',
   styleUrl: './feedbacks-list.component.scss',
 })

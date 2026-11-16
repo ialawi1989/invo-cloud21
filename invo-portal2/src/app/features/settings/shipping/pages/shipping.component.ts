@@ -50,6 +50,7 @@ import {
   CountryPickerModalResult,
 } from '../components/country-picker-modal/country-picker-modal.component';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /**
  * Shipping settings page (`/settings/shipping`).
  *
@@ -66,7 +67,7 @@ import {
 @Component({
   selector: 'app-shipping',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, 
     CommonModule,
     FormsModule,
     TranslateModule,

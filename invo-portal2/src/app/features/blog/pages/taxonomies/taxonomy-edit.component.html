@@ -48,7 +48,7 @@
           <label class="te__label">{{ 'BLOG.TAXONOMIES.FIELD_IMAGE' | translate }}</label>
           @if (image()) {
             <div class="te__image">
-              <img [src]="image()" alt="" (click)="pickImage()" [title]="'BLOG.COMPOSER.REPLACE' | translate"/>
+              <img [src]="image()" alt="" (click)="pickImage()" [appTooltip]="'BLOG.COMPOSER.REPLACE' | translate"/>
               <button type="button" class="te__imageRemove" (click)="removeImage()" aria-label="Remove">×</button>
             </div>
           } @else {

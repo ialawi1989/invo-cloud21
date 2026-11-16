@@ -26,6 +26,7 @@ import { PurchaseOrderActions } from '../../services/purchase-order-actions';
 import { PurchaseOrdersService } from '../../services/purchase-orders.service';
 import { PURCHASE_ORDER_RULES } from '../../services/purchase-order-validation';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /**
  * Purchase orders -> create / edit page (`/account/purchase-order/:id`, `0` / `new` = new). Built on the shared
  * document-form base (legacy `PurchaseOrderFormComponent`): supplier + branch + number / dates, the tax type
@@ -35,7 +36,7 @@ import { PURCHASE_ORDER_RULES } from '../../services/purchase-order-validation';
 @Component({
   selector: 'app-purchase-order-form',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, 
     CommonModule, FormsModule, ReactiveFormsModule, TranslateModule,
     DocFormShellComponent, DocSupplierSectionComponent, SearchDropdownComponent, DatePickerComponent, SegmentedToggleComponent,
     DocLinesTableComponent, DocTotalsComponent, EntityCustomFieldsComponent,

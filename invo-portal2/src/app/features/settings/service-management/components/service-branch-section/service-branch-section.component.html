@@ -55,7 +55,7 @@
                 (click)="open(row.index)" (keydown.enter)="open(row.index)" (keydown.space)="open(row.index); $event.preventDefault()">
                 <span class="sbs__row-name">{{ row.name }}</span>
                 <span class="sbs__dot" [class.sbs__dot--on]="row.enabled"
-                  [attr.title]="(row.enabled ? 'SERVICE_MANAGEMENT.FORM.ENABLED' : 'SERVICE_MANAGEMENT.FORM.DISABLED') | translate"></span>
+                  [appTooltip]="(row.enabled ? 'SERVICE_MANAGEMENT.FORM.ENABLED' : 'SERVICE_MANAGEMENT.FORM.DISABLED') | translate"></span>
               </div>
             } @empty {
               <div class="sbs__empty">

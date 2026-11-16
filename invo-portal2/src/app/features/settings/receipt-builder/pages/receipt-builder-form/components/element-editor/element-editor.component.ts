@@ -39,6 +39,7 @@ import { BindableInputComponent } from '../bindable-input/bindable-input.compone
 import { AlignIconComponent } from '../align-icon/align-icon.component';
 import { RbfWidgetComponent } from '../rbf-widget/rbf-widget.component';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 interface Option { value: string; label: string }
 
 /**
@@ -61,7 +62,7 @@ interface Option { value: string; label: string }
 @Component({
   selector: 'app-element-editor',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, 
     CommonModule,
     FormsModule,
     TranslateModule,

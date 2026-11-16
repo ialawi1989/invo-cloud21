@@ -69,6 +69,7 @@ import {
   PendingLeaveModalData,
 } from './components/pending-leave-modal/pending-leave-modal.component';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 interface BranchOption { id: string; name: string; }
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -107,7 +108,7 @@ const SORT_OPTIONS: SortOption[] = [
 @Component({
   selector: 'app-employee-schedule',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, 
     CommonModule,
     TranslateModule,
     BreadcrumbsComponent,

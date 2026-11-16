@@ -20,7 +20,7 @@
         class="head-btn"
         (click)="clear()"
         [disabled]="pending"
-        [title]="'CUSTOM_REPORTS.AI.CLEAR' | translate"
+        [appTooltip]="'CUSTOM_REPORTS.AI.CLEAR' | translate"
       >
         <svg
           width="14"
@@ -40,7 +40,7 @@
       type="button"
       class="head-btn"
       (click)="close.emit()"
-      [title]="'CUSTOM_REPORTS.COMMON.CLOSE' | translate"
+      [appTooltip]="'CUSTOM_REPORTS.COMMON.CLOSE' | translate"
     >
       ×
     </button>
@@ -169,7 +169,7 @@
         type="submit"
         class="send-btn"
         [disabled]="!canSend"
-        [title]="'CUSTOM_REPORTS.AI.SEND' | translate"
+        [appTooltip]="'CUSTOM_REPORTS.AI.SEND' | translate"
       >
         <svg
           width="16"

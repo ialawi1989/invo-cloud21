@@ -111,6 +111,7 @@ import { DashboardRow, DashboardWidgets } from '../../models/dashboard-layout.mo
 import { LayoutEditorComponent } from '../layout-editor/layout-editor.component';
 
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /**
  * Pre-seed parameters passed from a fixed report's "Customise Report" button
  * via query params. `dataset` scopes the first sheet; the optional
@@ -130,7 +131,7 @@ interface SeedConfig {
 @Component({
   selector: 'app-report-builder',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, 
     TranslateModule,
     FormsModule,
     NgSelectModule,

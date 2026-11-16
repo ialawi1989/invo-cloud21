@@ -232,13 +232,13 @@ import type { FavPage as FavTab } from '../../services/favorites.service';
                   <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
                 </svg>
                 <a [routerLink]="fav.link" class="fav-item-label" (click)="favOpen.set(false)">{{ fav.labelKey ? (fav.labelKey | translate) : fav.label }}</a>
-                <button class="fav-item-edit" (click)="startEdit(fav)" title="Rename">
+                <button class="fav-item-edit" (click)="startEdit(fav)" appTooltip="Rename">
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                   </svg>
                 </button>
-                <button class="fav-item-remove" (click)="removeFav(fav.link)" title="Remove">
+                <button class="fav-item-remove" (click)="removeFav(fav.link)" appTooltip="Remove">
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                     <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                   </svg>

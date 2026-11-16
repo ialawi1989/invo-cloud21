@@ -41,6 +41,7 @@ import { BankingOverviewService } from '../../services/banking-overview.service'
 import { ReconciliationListRow } from '../../services/banking-overview.types';
 import { AccountHeaderComponent } from '../../components/account-header/account-header.component';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 interface BranchOption {
   id: string;
   name: string;
@@ -59,7 +60,7 @@ type StatusFilter = '' | 'in-progress' | 'reconciled';
 @Component({
   selector: 'app-banking-reconciliations',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, 
     CommonModule,
     FormsModule,
     RouterModule,

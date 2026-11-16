@@ -14,6 +14,7 @@ import { BindingPickerService } from '../../services/binding-picker.service';
 import { DesignerStateService } from '../../services/designer-state.service';
 import { flattenPaths } from '../../utils/binding-paths.utils';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 type CategoryId = 'patterns' | 'fields' | 'filters' | 'operators';
 
 interface DialogItem {
@@ -49,7 +50,7 @@ interface DialogItem {
   selector: 'app-binding-dialog',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [TooltipDirective, CommonModule, FormsModule],
   templateUrl: './binding-dialog.component.html',
   styleUrls: ['./binding-dialog.component.scss'],
 })

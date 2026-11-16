@@ -25,6 +25,7 @@ import { ProductCrudService } from '../../../../../services/product-crud.service
 import { Fields } from '../../../../../models/product-fields.model';
 import { Product } from '../../../../../models/product-form.model';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /**
  * branch-batches
  * ──────────────
@@ -39,7 +40,7 @@ import { Product } from '../../../../../models/product-form.model';
 @Component({
   selector: 'app-pf-branch-batches',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, DatePickerComponent],
+  imports: [TooltipDirective, CommonModule, ReactiveFormsModule, TranslateModule, DatePickerComponent],
   templateUrl: './branch-batches.component.html',
   styleUrl: './branch-batches.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

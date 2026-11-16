@@ -69,7 +69,7 @@
         <div class="att__strip" role="img" [style.grid-template-columns]="'repeat(' + days().length + ', 1fr)'"
              [attr.aria-label]="'EMPLOYEES.ATTENDANCE_SUMMARY.STRIP' | translate">
           @for (c of days(); track c.date) {
-            <button type="button" class="att__day" [attr.data-status]="c.status" [title]="c.tip"
+            <button type="button" class="att__day" [attr.data-status]="c.status" [appTooltip]="c.tip"
                     [class.att__day--sel]="selectedDate() === c.date" (click)="toggleDay(c.date)"></button>
           }
         </div>

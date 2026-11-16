@@ -91,7 +91,7 @@
                         type="button"
                         class="colspan-btn"
                         [class.active]="widget.colSpan === opt.value"
-                        [title]="opt.desc"
+                        [appTooltip]="opt.desc"
                         (click)="setWidgetColSpan(widget, opt.value); $event.stopPropagation()"
                       >
                         {{ opt.label }}
@@ -103,7 +103,7 @@
                       type="button"
                       class="btn-widget-gear"
                       (click)="openSettings.emit(widget); $event.stopPropagation()"
-                      title="Widget settings"
+                      appTooltip="Widget settings"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"

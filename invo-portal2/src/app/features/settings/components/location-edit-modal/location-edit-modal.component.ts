@@ -24,6 +24,7 @@ import { ModalHeaderComponent } from '@shared/modal/modal-header.component';
 import { MODAL_DATA, MODAL_REF } from '@shared/modal/modal.tokens';
 import type { ModalRef } from '@shared/modal/modal.service';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 export interface LocationEditModalData {
   address: string;
   lat:     string | number;
@@ -109,7 +110,7 @@ const PIN_ICON = L.divIcon({
 @Component({
   selector: 'app-location-edit-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, ModalHeaderComponent],
+  imports: [TooltipDirective, CommonModule, ReactiveFormsModule, TranslateModule, ModalHeaderComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './location-edit-modal.component.html',
   styleUrl: './location-edit-modal.component.scss',

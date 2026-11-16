@@ -71,7 +71,7 @@
                 <button
                   (click)="downloadSelected()"
                   class="p-2 text-slate-600 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"
-                  title="Download selected">
+                  appTooltip="Download selected">
                   <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
                   </svg>
@@ -80,7 +80,7 @@
                   (click)="deleteSelected()"
                   [disabled]="deleting()"
                   class="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  title="Delete selected">
+                  appTooltip="Delete selected">
                   @if (deleting()) {
                     <app-spinner size="sm" />
                   } @else {
@@ -94,7 +94,7 @@
                 <button
                   (click)="clearSelection()"
                   class="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
-                  title="Clear selection">
+                  appTooltip="Clear selection">
                   <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                   </svg>
@@ -108,7 +108,7 @@
               (click)="toggleFilters()"
               [class]="'relative p-2 rounded-lg transition-colors ' +
                 (showFilters() || hasActiveFilters() ? 'text-brand-600 bg-brand-50' : 'text-slate-600 hover:text-brand-600 hover:bg-brand-50')"
-              title="Filters">
+              appTooltip="Filters">
               <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
               </svg>
@@ -123,7 +123,7 @@
               (click)="refresh()"
               [disabled]="loading()"
               class="p-2 rounded-lg text-slate-600 hover:text-brand-600 hover:bg-brand-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Refresh">
+              appTooltip="Refresh">
               @if (loading()) {
                 <app-spinner [size]="18" class="text-brand-600" />
               } @else {
@@ -190,7 +190,7 @@
                       type="button"
                       (click)="setSort(sortField())"
                       class="shrink-0 w-9 flex items-center justify-center border border-slate-300 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-brand-600 transition-colors"
-                      [title]="sortDirection() === 'ASC' ? 'Ascending' : 'Descending'">
+                      [appTooltip]="sortDirection() === 'ASC' ? 'Ascending' : 'Descending'">
                       <svg
                         [class]="'w-4 h-4 transition-transform duration-200 ' + (sortDirection() === 'ASC' ? 'rotate-180' : '')"
                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">

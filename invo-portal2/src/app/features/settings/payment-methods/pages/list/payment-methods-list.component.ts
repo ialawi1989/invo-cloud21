@@ -44,6 +44,7 @@ import {
 import { PaymentMethod } from '../../services/payment-method.types';
 import { findProviderByName } from '../../utils/provider-registry';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /**
  * Payment methods list page (`/settings/payment-methods`).
  *
@@ -64,7 +65,7 @@ import { findProviderByName } from '../../utils/provider-registry';
 @Component({
   selector: 'app-payment-methods-list',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, 
     CommonModule,
     RouterModule,
     FormsModule,

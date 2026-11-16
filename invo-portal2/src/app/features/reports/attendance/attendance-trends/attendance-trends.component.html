@@ -14,7 +14,7 @@
         <thead>
           <tr>
             <th class="at-name">{{ 'REPORTS.ATTENDANCE.EMPLOYEE' | translate }}</th>
-            @for (dt of d.dates; track dt) { <th class="at-day" [attr.title]="dt"><span>{{ label(dt) }}</span></th> }
+            @for (dt of d.dates; track dt) { <th class="at-day" [appTooltip]="dt"><span>{{ label(dt) }}</span></th> }
           </tr>
         </thead>
         <tbody>
@@ -22,7 +22,7 @@
             <tr>
               <th class="at-name" scope="row">{{ e.name }}</th>
               @for (s of e.statuses; track $index) {
-                <td class="at-cell"><span [class]="'at-chip st-' + s" [attr.title]="title(d.dates[$index], s)" [attr.aria-label]="title(d.dates[$index], s)">{{ letter(s) }}</span></td>
+                <td class="at-cell"><span [class]="'at-chip st-' + s" [appTooltip]="title(d.dates[$index], s)" [attr.aria-label]="title(d.dates[$index], s)">{{ letter(s) }}</span></td>
               }
             </tr>
           }

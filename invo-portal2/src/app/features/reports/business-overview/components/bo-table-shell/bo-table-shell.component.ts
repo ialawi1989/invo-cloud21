@@ -4,6 +4,7 @@ import {
 import { TranslateModule } from '@ngx-translate/core';
 import { periodChipLabel } from '../../shared/accounting.utils';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /** 1..10 colour slot for a comparison column (legacy `getPeriodIndex`). */
 export const periodSlot = (i: number): number => (i % 10) + 1;
 
@@ -16,7 +17,7 @@ export const periodSlot = (i: number): number => (i % 10) + 1;
 @Component({
   selector: 'app-bo-table-shell',
   standalone: true,
-  imports: [TranslateModule],
+  imports: [TooltipDirective, TranslateModule],
   templateUrl: './bo-table-shell.component.html',
   styleUrl: './bo-table-shell.component.scss',
 })

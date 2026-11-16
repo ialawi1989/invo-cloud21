@@ -7,6 +7,7 @@ import { FlatField, DataSourceTable } from '../../shared/models/custom-report.mo
 import { RelationOption } from '../../shared/v2/catalog-fields';
 
 import { TranslateModule } from '@ngx-translate/core';
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 interface FieldGroup {
   tableId: string;
   fields: FlatField[];
@@ -21,7 +22,7 @@ type FieldTypeFilter = 'all' | 'text' | 'number' | 'date';
 @Component({
   selector: 'app-field-list',
   standalone: true,
-  imports: [TranslateModule, CommonModule, FormsModule, NgSelectModule, SearchDropdownComponent],
+  imports: [TooltipDirective, TranslateModule, CommonModule, FormsModule, NgSelectModule, SearchDropdownComponent],
   templateUrl: './field-list.component.html',
   styleUrls: ['./field-list.component.scss'],
 })

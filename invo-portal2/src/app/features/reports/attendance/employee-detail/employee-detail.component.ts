@@ -11,6 +11,7 @@ import { ReportKpiRowComponent } from '../../components/report-kpi-row/report-kp
 import { AttendanceService, EmployeeDetailData } from '../attendance.service';
 import { ReportSkeletonComponent } from '../../components/report-skeleton/report-skeleton.component';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /**
  * Employee Attendance Detail: one employee over a period — their totals, each day with its shifts, and every adjustment made to
  * their punches. Needs an employee (chosen in Filters); asks for one until then.
@@ -18,7 +19,7 @@ import { ReportSkeletonComponent } from '../../components/report-skeleton/report
 @Component({
   selector: 'app-employee-attendance-detail',
   standalone: true,
-  imports: [ReportSkeletonComponent, TranslateModule, RouterLink, DatePipe, ReportEmptyComponent, ReportErrorComponent, ReportSelectPromptComponent, ReportKpiRowComponent],
+  imports: [TooltipDirective, ReportSkeletonComponent, TranslateModule, RouterLink, DatePipe, ReportEmptyComponent, ReportErrorComponent, ReportSelectPromptComponent, ReportKpiRowComponent],
   templateUrl: './employee-detail.component.html',
   styleUrl: './employee-detail.component.scss',
 })

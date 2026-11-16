@@ -4,7 +4,7 @@
       <input class="ec__input ec__input--edit" type="text" [ngModel]="editing()!.value" (ngModelChange)="editValue($event)"
         (keydown)="onEditKey($event)" (blur)="commitEdit(true)"/>
     } @else {
-      <span class="ec__chip" (contextmenu)="openMenu($event, e)" (dblclick)="startEdit(e)" [title]="'DOC_SEND.CHIP_HINT' | translate">{{ e }}
+      <span class="ec__chip" (contextmenu)="openMenu($event, e)" (dblclick)="startEdit(e)" [appTooltip]="'DOC_SEND.CHIP_HINT' | translate">{{ e }}
         <button type="button" [disabled]="disabled()" (click)="remove(e)" aria-label="remove">✕</button></span>
     }
   }

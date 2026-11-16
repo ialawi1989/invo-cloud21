@@ -115,16 +115,16 @@
                   @switch (rowStatus(row.index)) {
                     @case ('error') {
                       <span class="pf-bp-pill pf-bp-pill--error"
-                            [attr.title]="'PRODUCTS.FORM.FILTER_NEEDS_ATTENTION' | translate">!</span>
+                            [appTooltip]="'PRODUCTS.FORM.FILTER_NEEDS_ATTENTION' | translate">!</span>
                     }
                     @case ('low') {
-                      <span class="pf-bp-dot pf-bp-dot--warn" [attr.title]="'PRODUCTS.FORM.LOW_STOCK' | translate"></span>
+                      <span class="pf-bp-dot pf-bp-dot--warn" [appTooltip]="'PRODUCTS.FORM.LOW_STOCK' | translate"></span>
                     }
                     @case ('on') {
-                      <span class="pf-bp-dot pf-bp-dot--good" [attr.title]="'PRODUCTS.FORM.AVAILABLE' | translate"></span>
+                      <span class="pf-bp-dot pf-bp-dot--good" [appTooltip]="'PRODUCTS.FORM.AVAILABLE' | translate"></span>
                     }
                     @default {
-                      <span class="pf-bp-dot pf-bp-dot--off" [attr.title]="'PRODUCTS.FORM.NOT_AVAILABLE' | translate"></span>
+                      <span class="pf-bp-dot pf-bp-dot--off" [appTooltip]="'PRODUCTS.FORM.NOT_AVAILABLE' | translate"></span>
                     }
                   }
                 </div>

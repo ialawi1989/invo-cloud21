@@ -99,10 +99,11 @@ import {
  */
 import { TranslateLinkComponent } from '@shared/components/translate-link/translate-link.component';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 @Component({
   selector: 'app-matrix-form',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, 
     CommonModule,
     RouterModule,
     ReactiveFormsModule,

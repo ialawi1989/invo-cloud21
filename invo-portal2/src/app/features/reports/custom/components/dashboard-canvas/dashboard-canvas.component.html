@@ -77,7 +77,7 @@
                     class="card-tool"
                     [class.is-active]="ds.width === w.value"
                     (click)="setWidth(ds, w.value)"
-                    [title]="
+                    [appTooltip]="
                       'CUSTOM_REPORTS.DASHBOARD.WIDTH' | translate: { size: (w.label | translate) }
                     "
                   >
@@ -90,7 +90,7 @@
                 class="card-tool card-move"
                 (click)="moveCard(i, -1)"
                 [disabled]="i === 0"
-                [title]="'CUSTOM_REPORTS.DASHBOARD.MOVE_EARLIER' | translate"
+                [appTooltip]="'CUSTOM_REPORTS.DASHBOARD.MOVE_EARLIER' | translate"
               >
                 ‹
               </button>
@@ -99,7 +99,7 @@
                 class="card-tool card-move"
                 (click)="moveCard(i, 1)"
                 [disabled]="i === dashboard.sheets.length - 1"
-                [title]="'CUSTOM_REPORTS.DASHBOARD.MOVE_LATER' | translate"
+                [appTooltip]="'CUSTOM_REPORTS.DASHBOARD.MOVE_LATER' | translate"
               >
                 ›
               </button>

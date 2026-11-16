@@ -158,12 +158,12 @@
   }
   @if (status() === 'Draft' || status() === '') {
     <button type="button" class="btn btn-ghost" [disabled]="saveDraftDisabled()"
-      [title]="missingTooltip()" (click)="save('Draft')">
+      [appTooltip]="missingTooltip()" (click)="save('Draft')">
       {{ 'COMMON.SAVE_DRAFT' | translate }}
     </button>
   }
   <button type="button" class="btn btn-primary" [disabled]="saveDisabled()"
-    [title]="missingTooltip()" (click)="save('Open')">
+    [appTooltip]="missingTooltip()" (click)="save('Open')">
     {{ 'COMMON.SAVE' | translate }}
   </button>
 </app-form-sticky-footer>

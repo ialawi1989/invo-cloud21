@@ -29,6 +29,7 @@ import { SupplierCreditLineEditor } from '../../services/supplier-credit-line-ed
 import { SupplierCreditsService } from '../../services/supplier-credits.service';
 import { SUPPLIER_CREDIT_RULES } from '../../services/supplier-credit-validation';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 const ALL = 'all';
 
 /**
@@ -42,7 +43,7 @@ const ALL = 'all';
 @Component({
   selector: 'app-supplier-credit-form',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, 
     CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, MycurrencyPipe,
     DocFormShellComponent, DocSupplierSectionComponent, SearchDropdownComponent, DatePickerComponent, SegmentedToggleComponent,
     DocLinesTableComponent, DocAttachmentsCardComponent, EntityCustomFieldsComponent,

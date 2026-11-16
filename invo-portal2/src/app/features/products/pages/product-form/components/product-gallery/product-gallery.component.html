@@ -63,7 +63,7 @@
                 class="pf-gallery-btn"
                 (click)="promoteToMain(m.id)"
                 [attr.aria-label]="'PRODUCTS.FORM.SET_AS_MAIN' | translate"
-                [title]="'PRODUCTS.FORM.SET_AS_MAIN' | translate"
+                [appTooltip]="'PRODUCTS.FORM.SET_AS_MAIN' | translate"
               >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
@@ -88,7 +88,7 @@
               (click)="moveLeft(m.id)"
               [disabled]="first"
               [attr.aria-label]="'PRODUCTS.FORM.MOVE_LEFT' | translate"
-              [title]="'PRODUCTS.FORM.MOVE_LEFT' | translate"
+              [appTooltip]="'PRODUCTS.FORM.MOVE_LEFT' | translate"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="rtl:rotate-180">
                 <polyline points="15 18 9 12 15 6"/>
@@ -100,7 +100,7 @@
               (click)="moveRight(m.id)"
               [disabled]="last"
               [attr.aria-label]="'PRODUCTS.FORM.MOVE_RIGHT' | translate"
-              [title]="'PRODUCTS.FORM.MOVE_RIGHT' | translate"
+              [appTooltip]="'PRODUCTS.FORM.MOVE_RIGHT' | translate"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="rtl:rotate-180">
                 <polyline points="9 18 15 12 9 6"/>

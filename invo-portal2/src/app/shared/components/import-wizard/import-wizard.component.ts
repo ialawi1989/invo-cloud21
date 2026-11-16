@@ -29,6 +29,7 @@ import {
   ImportWizardConfig,
 } from './import-wizard.types';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 type WizardStep = 'upload' | 'preview' | 'options' | 'importing' | 'complete';
 
 /**
@@ -49,7 +50,7 @@ type WizardStep = 'upload' | 'preview' | 'options' | 'importing' | 'complete';
 @Component({
   selector: 'app-import-wizard',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, 
     CommonModule,
     FormsModule,
     TranslateModule,

@@ -20,6 +20,7 @@ import {
   customReportsViewPrivilegeFullKey,
 } from '../../custom-reports.privileges';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /** One saved custom report in the list (a v2 spec or an old-builder module). */
 export interface CustomReportRow {
   /** Spec UUID, or the old module's id. Also the favourites key and the route id. */
@@ -40,7 +41,7 @@ export interface CustomReportRow {
 @Component({
   selector: 'app-custom-reports-list',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, 
     RouterLink,
     TranslateModule,
     ReportEmptyComponent,

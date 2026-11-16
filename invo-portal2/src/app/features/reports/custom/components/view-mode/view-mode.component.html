@@ -53,7 +53,7 @@
               class="filter-pill"
               [class.pill-formula]="r.isFormula"
               [ngClass]="'pill-type-' + (r.type || 'text')"
-              [title]="r.field"
+              [appTooltip]="r.field"
             >
               <span class="pill-type-icon">{{ r.isFormula ? 'ƒ' : typeIconFor(r.type) }}</span>
               <span class="filter-field">{{ getFieldLabel(r.field) }}</span>

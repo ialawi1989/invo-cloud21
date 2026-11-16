@@ -18,6 +18,7 @@ import { FlatData, FlatRecord, FlatReportService } from './flat-report.service';
 import { ReportEmptyComponent } from '../components/report-empty/report-empty.component';
 import { ReportSkeletonComponent } from '../components/report-skeleton/report-skeleton.component';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 const toNum = (v: unknown): number => { const n = typeof v === 'number' ? v : parseFloat(String(v ?? '')); return Number.isFinite(n) ? n : 0; };
 
 interface Row { kind: 'data' | 'subtotal'; rec: FlatRecord; first: boolean; group?: string; /** rows the group's merged cell covers (on its first row) */ span?: number; /** the second merged cell starts here, covering `span2` rows */ first2?: boolean; span2?: number }
@@ -29,7 +30,7 @@ interface Row { kind: 'data' | 'subtotal'; rec: FlatRecord; first: boolean; grou
 @Component({
   selector: 'app-flat-report',
   standalone: true,
-  imports: [ReportSkeletonComponent, RouterLink, ReportEmptyComponent, ReportErrorComponent, TranslateModule, DatePipe, MynumberPipe, MycurrencyPipe, PaginationComponent, BoTableShellComponent, ReportKpiRowComponent],
+  imports: [TooltipDirective, ReportSkeletonComponent, RouterLink, ReportEmptyComponent, ReportErrorComponent, TranslateModule, DatePipe, MynumberPipe, MycurrencyPipe, PaginationComponent, BoTableShellComponent, ReportKpiRowComponent],
   templateUrl: './flat-report.component.html',
   styleUrl: './flat-report.component.scss',
 })

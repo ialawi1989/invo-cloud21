@@ -15,6 +15,7 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import { BindingDef, BindingGroup } from '../../services/bindings.catalog';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /**
  * BindableInputComponent
  * ──────────────────────
@@ -39,7 +40,7 @@ import { BindingDef, BindingGroup } from '../../services/bindings.catalog';
 @Component({
   selector: 'app-bindable-input',
   standalone: true,
-  imports: [CommonModule, FormsModule, OverlayModule, TranslateModule],
+  imports: [TooltipDirective, CommonModule, FormsModule, OverlayModule, TranslateModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './bindable-input.component.html',
   styleUrl: './bindable-input.component.scss',

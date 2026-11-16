@@ -34,6 +34,7 @@ import {
   parseGradient,
 } from '../gradient-picker/gradient-picker.types';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 type PanelMode = 'color' | 'gradient';
 
 /**
@@ -62,7 +63,7 @@ type PanelMode = 'color' | 'gradient';
 @Component({
   selector: 'app-colors-panel',
   standalone: true,
-  imports: [CommonModule, FormsModule, OverlayModule],
+  imports: [TooltipDirective, CommonModule, FormsModule, OverlayModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './colors-panel.component.html',
   styleUrl: './colors-panel.component.scss',

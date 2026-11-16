@@ -28,6 +28,7 @@ import {
   duplicateDates,
 } from '../../services/holiday-calendar.types';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /**
  * Holiday calendars — the last piece of Leave.
  *
@@ -59,7 +60,7 @@ import {
 @Component({
   selector: 'app-holiday-calendars',
   standalone: true,
-  imports: [TranslateModule, BreadcrumbsComponent, LoadingOverlayComponent, SearchDropdownComponent, DateFieldComponent],
+  imports: [TooltipDirective, TranslateModule, BreadcrumbsComponent, LoadingOverlayComponent, SearchDropdownComponent, DateFieldComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './holiday-calendars.component.html',
   styleUrl: './holiday-calendars.component.scss',

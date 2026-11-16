@@ -63,7 +63,7 @@
         <div class="sa__rtSparkLbl">{{ 'ANALYTICS.LAST_30_MIN' | translate }}</div>
         <div class="sa__rtBars">
           @for (b of realtimeBars(); track $index) {
-            <span class="sa__rtBar" [style.height.%]="b.h" [title]="b.users"></span>
+            <span class="sa__rtBar" [style.height.%]="b.h" [appTooltip]="b.users"></span>
           }
         </div>
       </div>
@@ -133,7 +133,7 @@
               <tbody>
                 @for (p of tr.topPages; track p.path) {
                   <tr>
-                    <td><span class="sa__pagePath" [title]="p.title || p.path">{{ p.title || p.path }}</span></td>
+                    <td><span class="sa__pagePath" [appTooltip]="p.title || p.path">{{ p.title || p.path }}</span></td>
                     <td class="sa__num">{{ num(p.views) }}</td>
                   </tr>
                 }

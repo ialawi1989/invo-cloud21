@@ -28,6 +28,7 @@ import { ProductCrudService } from '../../../../../services/product-crud.service
 import { Fields } from '../../../../../models/product-fields.model';
 import { Product } from '../../../../../models/product-form.model';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 type StatusFilter = 'All' | 'Available' | 'Sold';
 interface StatusOption { value: StatusFilter; labelKey: string; }
 
@@ -49,7 +50,7 @@ interface StatusOption { value: StatusFilter; labelKey: string; }
 @Component({
   selector: 'app-pf-branch-serials',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, 
     CommonModule,
     ReactiveFormsModule,
     TranslateModule,

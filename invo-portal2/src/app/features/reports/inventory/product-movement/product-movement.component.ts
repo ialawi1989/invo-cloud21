@@ -15,13 +15,14 @@ import { ProductMovementData, ProductMovementRecord, ProductMovementService } fr
 import { ReportEmptyComponent } from '../../components/report-empty/report-empty.component';
 import { ReportSkeletonComponent } from '../../components/report-skeleton/report-skeleton.component';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 const toNum = (v: unknown): number => { const n = typeof v === 'number' ? v : parseFloat(String(v ?? '')); return Number.isFinite(n) ? n : 0; };
 
 /** Product Movement — one product's stock card: every movement in the period with the running quantity and cost balance. */
 @Component({
   selector: 'app-product-movement',
   standalone: true,
-  imports: [ReportSkeletonComponent, ReportEmptyComponent, ReportErrorComponent, TranslateModule, DatePipe, RouterLink, MynumberPipe, PaginationComponent, BoTableShellComponent],
+  imports: [TooltipDirective, ReportSkeletonComponent, ReportEmptyComponent, ReportErrorComponent, TranslateModule, DatePipe, RouterLink, MynumberPipe, PaginationComponent, BoTableShellComponent],
   templateUrl: './product-movement.component.html',
   styleUrl: './product-movement.component.scss',
 })

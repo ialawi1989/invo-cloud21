@@ -3,7 +3,7 @@
 
     <header class="bd__head">
       <h3 class="bd__title">Expression</h3>
-      <button type="button" class="bd__close" title="Cancel" (click)="cancel()">
+      <button type="button" class="bd__close" appTooltip="Cancel" (click)="cancel()">
         <i class="mdi mdi-close"></i>
       </button>
     </header>
@@ -53,7 +53,7 @@
                   type="button" class="bd__item"
                   [class.is-active]="selectedItem()?.id === item.id"
                   [style.padding-left.px]="8 + (item.depth ?? 0) * 12"
-                  [title]="'Click to add ' + item.label + ' to the expression'"
+                  [appTooltip]="'Click to add ' + item.label + ' to the expression'"
                   (click)="insertItem(item)">
             <span class="bd__item-label">{{ item.label }}</span>
           </button>

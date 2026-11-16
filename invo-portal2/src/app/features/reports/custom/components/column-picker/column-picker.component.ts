@@ -7,6 +7,7 @@ import type { ModalRef } from '@shared/modal/modal.service';
 import { FlatField, ReportColumn } from '../../shared/models/custom-report.model';
 
 import { TranslateModule } from '@ngx-translate/core';
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /** Data passed to the column picker when opened via ModalService. */
 export interface ColumnPickerData {
   allFields: FlatField[];
@@ -16,7 +17,7 @@ export interface ColumnPickerData {
 @Component({
   selector: 'app-column-picker',
   standalone: true,
-  imports: [TranslateModule, FormsModule, NgSelectModule],
+  imports: [TooltipDirective, TranslateModule, FormsModule, NgSelectModule],
   templateUrl: './column-picker.component.html',
   styleUrls: ['./column-picker.component.scss'],
 })

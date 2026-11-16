@@ -43,6 +43,7 @@ import {
   toDateInput,
 } from '../../services/manual-journals.types';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 interface BranchOption {
   id: string;
   name: string;
@@ -70,7 +71,7 @@ interface BranchOption {
 @Component({
   selector: 'app-manual-journal-form',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, 
     CommonModule,
     FormsModule,
     RouterModule,

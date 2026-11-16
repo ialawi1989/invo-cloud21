@@ -157,7 +157,7 @@
                                     <th class="text-end">{{ 'REPORTS.VOIDED_SALES.COLUMNS.UNIT_PRICE' | translate }}</th>
                                     <th class="text-end">{{ 'REPORTS.VOIDED_SALES.COLUMNS.DISCOUNT' | translate }}</th>
                                     <th class="text-end">{{ 'REPORTS.VOIDED_SALES.COLUMNS.TAX' | translate }}</th>
-                                    <th class="text-end" [attr.title]="'REPORTS.VOIDED_SALES.COLUMNS.LINE_TOTAL_HINT' | translate">{{ 'REPORTS.VOIDED_SALES.COLUMNS.LINE_TOTAL' | translate }}</th>
+                                    <th class="text-end" [appTooltip]="'REPORTS.VOIDED_SALES.COLUMNS.LINE_TOTAL_HINT' | translate">{{ 'REPORTS.VOIDED_SALES.COLUMNS.LINE_TOTAL' | translate }}</th>
                                     <th class="text-end">{{ 'REPORTS.VOIDED_SALES.COLUMNS.VOID_AMOUNT' | translate }}</th>
                                   </tr>
                                 </thead>
@@ -167,7 +167,7 @@
                                       <td [style.padding-inline-start.px]="12 + row.depth * 20">
                                         @if (row.depth > 0) { <span class="ls-muted" aria-hidden="true">↳ </span> }
                                         {{ row.item.productName }}
-                                        @if (row.item.waste) { <span class="ls-badge ls-badge-void" [attr.title]="'REPORTS.VOIDED_SALES.DETAILS.WASTE_HINT' | translate">{{ 'REPORTS.VOIDED_SALES.DETAILS.WASTE' | translate }}</span> }
+                                        @if (row.item.waste) { <span class="ls-badge ls-badge-void" [appTooltip]="'REPORTS.VOIDED_SALES.DETAILS.WASTE_HINT' | translate">{{ 'REPORTS.VOIDED_SALES.DETAILS.WASTE' | translate }}</span> }
                                       </td>
                                       <td class="ls-muted">{{ row.item.barcode || '—' }}</td>
                                       <td class="text-end">{{ num(row.item.voidedQty) }}</td>

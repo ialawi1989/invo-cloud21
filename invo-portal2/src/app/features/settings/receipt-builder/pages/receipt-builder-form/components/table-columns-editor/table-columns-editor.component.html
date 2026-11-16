@@ -26,7 +26,7 @@
             class="tce-group__remove"
             (click)="removeGroup(gi)"
             [attr.aria-label]="'COMMON.DELETE' | translate"
-            [title]="'COMMON.DELETE' | translate"
+            [appTooltip]="'COMMON.DELETE' | translate"
           >
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -79,7 +79,7 @@
                      narrow rail. The user-facing label (cell.value)
                      is editable in the expanded detail panel where
                      it has full row width to breathe. -->
-                <span class="tce-cell__key-summary" [title]="cell.key">{{ cell.key || ('RECEIPT_BUILDER.TABLE_EDITOR.EMPTY_COLUMN' | translate) }}</span>
+                <span class="tce-cell__key-summary" [appTooltip]="cell.key">{{ cell.key || ('RECEIPT_BUILDER.TABLE_EDITOR.EMPTY_COLUMN' | translate) }}</span>
 
                 <input
                   type="number"
@@ -102,7 +102,7 @@
                   [attr.aria-label]="(cell.isVisible
                     ? 'RECEIPT_BUILDER.TABLE_EDITOR.HIDE'
                     : 'RECEIPT_BUILDER.TABLE_EDITOR.SHOW') | translate"
-                  [title]="(cell.isVisible
+                  [appTooltip]="(cell.isVisible
                     ? 'RECEIPT_BUILDER.TABLE_EDITOR.HIDE'
                     : 'RECEIPT_BUILDER.TABLE_EDITOR.SHOW') | translate"
                 >
@@ -125,7 +125,7 @@
                     class="tce-cell__btn tce-cell__btn--danger"
                     (click)="removeCell(gi, ri, ci); $event.stopPropagation()"
                     [attr.aria-label]="'COMMON.DELETE' | translate"
-                    [title]="'COMMON.DELETE' | translate"
+                    [appTooltip]="'COMMON.DELETE' | translate"
                   >
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                       <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -148,7 +148,7 @@
                    the row. -->
               @if (isExpanded(cell.__key)) {
                 <div class="tce-detail" (click)="$event.stopPropagation()">
-                  <span class="tce-detail__key-chip" [title]="cell.key">{{ cell.key || '—' }}</span>
+                  <span class="tce-detail__key-chip" [appTooltip]="cell.key">{{ cell.key || '—' }}</span>
 
                   <div class="tce-detail__field">
                     <label>{{ 'RECEIPT_BUILDER.EDITOR.VALUE' | translate }}</label>
@@ -188,7 +188,7 @@
                             [class.tce-detail__seg-btn--on]="isAlignmentOn(cell, a)"
                             (click)="patchCell(gi, ri, ci, 'alignment', a)"
                             [attr.aria-label]="('RECEIPT_BUILDER.EDITOR.ALIGN_' + (a | uppercase)) | translate"
-                            [title]="('RECEIPT_BUILDER.EDITOR.ALIGN_' + (a | uppercase)) | translate"
+                            [appTooltip]="('RECEIPT_BUILDER.EDITOR.ALIGN_' + (a | uppercase)) | translate"
                           ><app-align-icon [value]="a"/></button>
                         }
                       </div>

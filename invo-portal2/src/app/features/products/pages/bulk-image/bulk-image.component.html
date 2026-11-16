@@ -36,7 +36,7 @@
     <div class="bi-slots" [class.bi-slots--edited]="isEdited(row)">
       @for (img of images(row); track img.id; let i = $index) {
         <button type="button" class="bi-slot bi-slot--filled"
-          [title]="'PRODUCTS.BULK_IMAGE_PAGE.REMOVE' | translate"
+          [appTooltip]="'PRODUCTS.BULK_IMAGE_PAGE.REMOVE' | translate"
           [attr.aria-label]="'PRODUCTS.BULK_IMAGE_PAGE.REMOVE' | translate"
           (click)="removeImage(row, i)">
           <img [src]="img.thumbnailUrl || img.defaultUrl" alt="" (error)="hideBroken($event)" />
@@ -47,7 +47,7 @@
       }
       @if (images(row).length < maxImages) {
         <button type="button" class="bi-slot bi-slot--add"
-          [title]="'PRODUCTS.BULK_IMAGE_PAGE.ADD' | translate"
+          [appTooltip]="'PRODUCTS.BULK_IMAGE_PAGE.ADD' | translate"
           [attr.aria-label]="'PRODUCTS.BULK_IMAGE_PAGE.ADD' | translate"
           (click)="addImages(row)">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>

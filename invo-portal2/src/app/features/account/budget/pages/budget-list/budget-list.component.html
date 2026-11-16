@@ -28,7 +28,7 @@
 
   <ng-template listRowActions let-row>
     <div class="inline-flex items-center justify-end gap-2" (click)="$event.stopPropagation()">
-      <button type="button" (click)="report(row)" [title]="'BUDGET.LIST.REPORT' | translate"
+      <button type="button" (click)="report(row)" [appTooltip]="'BUDGET.LIST.REPORT' | translate"
         class="px-3 h-9 inline-flex items-center rounded-full border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50">
         {{ 'BUDGET.LIST.REPORT_SHORT' | translate }}
       </button>

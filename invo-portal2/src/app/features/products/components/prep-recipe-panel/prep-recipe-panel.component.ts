@@ -34,6 +34,7 @@ import {
   PickedProduct,
 } from '../../pages/product-form/components/pick-product-modal/pick-product-modal.component';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /**
  * Prep-recipe editor for one owner (a menu-item product or an option): the
  * recipe lines with editable usage, per-line revert / save / delete, and an
@@ -48,7 +49,7 @@ import {
 @Component({
   selector: 'app-prep-recipe-panel',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, MycurrencyPipe, ExactToggleComponent],
+  imports: [TooltipDirective, CommonModule, FormsModule, TranslateModule, MycurrencyPipe, ExactToggleComponent],
   templateUrl: './prep-recipe-panel.component.html',
   styleUrl: './prep-recipe-panel.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

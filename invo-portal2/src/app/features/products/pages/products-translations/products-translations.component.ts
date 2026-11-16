@@ -44,6 +44,7 @@ import {
   findTranslationEntity,
 } from './translation-entities';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /** Product types that live in the Products table. Matrix parents are edited on
  *  the Matrixes tab — their list id is the matrix id, so saving them here would
  *  update zero rows silently. */
@@ -68,7 +69,7 @@ type TranslationMap = Record<string, Record<string, string>>;
 @Component({
   selector: 'app-products-translations',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, 
     CommonModule,
     TranslateModule,
     ListPageComponent,

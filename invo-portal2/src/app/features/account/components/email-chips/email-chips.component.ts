@@ -5,6 +5,7 @@ import { TemplatePortal } from '@angular/cdk/portal';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
@@ -16,7 +17,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 @Component({
   selector: 'app-email-chips',
   standalone: true,
-  imports: [FormsModule, TranslateModule],
+  imports: [TooltipDirective, FormsModule, TranslateModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './email-chips.component.html',
   styleUrl: './email-chips.component.scss',

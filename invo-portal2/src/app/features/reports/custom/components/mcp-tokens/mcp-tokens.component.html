@@ -5,7 +5,7 @@
       class="btn-back"
       type="button"
       (click)="goBackToReports()"
-      [title]="'CUSTOM_REPORTS.BUILDER.BACK_TO_REPORTS' | translate"
+      [appTooltip]="'CUSTOM_REPORTS.BUILDER.BACK_TO_REPORTS' | translate"
     >
       <svg
         width="16"
@@ -252,7 +252,7 @@
           <label
             class="radio"
             [class.radio--disabled]="!canWrite"
-            [title]="canWrite ? '' : ('CUSTOM_REPORTS.MCP_TOKENS.ACCESS_WRITE_DENIED' | translate)"
+            [appTooltip]="canWrite ? '' : ('CUSTOM_REPORTS.MCP_TOKENS.ACCESS_WRITE_DENIED' | translate)"
           >
             <input
               type="radio"

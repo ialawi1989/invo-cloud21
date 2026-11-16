@@ -82,7 +82,7 @@
               <div class="af__static">{{ productRowTotal(p) | mycurrency }}</div>
             </div>
             <button type="button" class="af__row-remove" (click)="removeProduct(p)" [disabled]="readOnly()"
-              [title]="'APPOINTMENTS.FORM.REMOVE' | translate">&#10005;</button>
+              [appTooltip]="'APPOINTMENTS.FORM.REMOVE' | translate">&#10005;</button>
           </div>
         }
       </div>
@@ -197,7 +197,7 @@
             }
 
             <button type="button" class="af__row-remove" (click)="removeRow(row)" [disabled]="rowLocked(row)"
-              [title]="'APPOINTMENTS.FORM.REMOVE' | translate">✕</button>
+              [appTooltip]="'APPOINTMENTS.FORM.REMOVE' | translate">✕</button>
           </div>
         }
       </div>

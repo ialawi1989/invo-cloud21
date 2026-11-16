@@ -64,7 +64,7 @@
       class="chip"
       [class.is-active]="showHidden"
       (click)="toggleShowHidden()"
-      [title]="'CUSTOM_REPORTS.FIELDS.SHOW_HIDDEN_HINT' | translate"
+      [appTooltip]="'CUSTOM_REPORTS.FIELDS.SHOW_HIDDEN_HINT' | translate"
     >
       {{ 'CUSTOM_REPORTS.FIELDS.SHOW_HIDDEN' | translate }}
     </button>
@@ -95,7 +95,7 @@
               type="button"
               class="relation-close"
               (click)="onCloseRelation($event, group.tableId)"
-              [title]="'CUSTOM_REPORTS.COMMON.CLOSE' | translate"
+              [appTooltip]="'CUSTOM_REPORTS.COMMON.CLOSE' | translate"
             >
               ×
             </button>
@@ -135,28 +135,28 @@
                 <div class="field-actions">
                   <button
                     class="field-add-btn"
-                    [title]="'CUSTOM_REPORTS.FIELDS.ADD_TO_COLUMNS' | translate"
+                    [appTooltip]="'CUSTOM_REPORTS.FIELDS.ADD_TO_COLUMNS' | translate"
                     (click)="onAddTo($event, f, 'columns')"
                   >
                     C
                   </button>
                   <button
                     class="field-add-btn"
-                    [title]="'CUSTOM_REPORTS.FIELDS.ADD_TO_ROWS' | translate"
+                    [appTooltip]="'CUSTOM_REPORTS.FIELDS.ADD_TO_ROWS' | translate"
                     (click)="onAddTo($event, f, 'rows')"
                   >
                     R
                   </button>
                   <button
                     class="field-add-btn field-add-btn--filter"
-                    [title]="'CUSTOM_REPORTS.FIELDS.ADD_TO_FILTERS' | translate"
+                    [appTooltip]="'CUSTOM_REPORTS.FIELDS.ADD_TO_FILTERS' | translate"
                     (click)="onAddTo($event, f, 'filters')"
                   >
                     F
                   </button>
                   <button
                     class="field-add-btn field-add-btn--group"
-                    [title]="'CUSTOM_REPORTS.FIELDS.GROUP_BY' | translate"
+                    [appTooltip]="'CUSTOM_REPORTS.FIELDS.GROUP_BY' | translate"
                     (click)="onAddTo($event, f, 'group')"
                   >
                     G
@@ -169,7 +169,7 @@
               <div
                 class="relation-item"
                 (click)="onOpenRelation(rel.nodeId)"
-                [title]="
+                [appTooltip]="
                   rel.entityLabel +
                   (rel.many ? ' — ' + ('CUSTOM_REPORTS.FIELDS.ROWS_REPEAT' | translate) : '')
                 "
@@ -214,28 +214,28 @@
               draggable="true"
               (dragstart)="onDragStart($event, f)"
               (dblclick)="onDoubleClick(f)"
-              [title]="'CUSTOM_REPORTS.FIELDS.PREDEFINED_FORMULA' | translate"
+              [appTooltip]="'CUSTOM_REPORTS.FIELDS.PREDEFINED_FORMULA' | translate"
             >
               <span class="field-type-chip type-formula">ƒ</span>
               <span class="field-label">{{ f.label }}</span>
               <div class="field-actions">
                 <button
                   class="field-add-btn"
-                  [title]="'CUSTOM_REPORTS.FIELDS.ADD_TO_COLUMNS' | translate"
+                  [appTooltip]="'CUSTOM_REPORTS.FIELDS.ADD_TO_COLUMNS' | translate"
                   (click)="onAddTo($event, f, 'columns')"
                 >
                   C
                 </button>
                 <button
                   class="field-add-btn"
-                  [title]="'CUSTOM_REPORTS.FIELDS.ADD_TO_ROWS' | translate"
+                  [appTooltip]="'CUSTOM_REPORTS.FIELDS.ADD_TO_ROWS' | translate"
                   (click)="onAddTo($event, f, 'rows')"
                 >
                   R
                 </button>
                 <button
                   class="field-add-btn field-add-btn--filter"
-                  [title]="'CUSTOM_REPORTS.FIELDS.ADD_TO_FILTERS' | translate"
+                  [appTooltip]="'CUSTOM_REPORTS.FIELDS.ADD_TO_FILTERS' | translate"
                   (click)="onAddTo($event, f, 'filters')"
                 >
                   F
@@ -267,7 +267,7 @@
       <button
         class="calc-add"
         (click)="onCreateCalc($event)"
-        [title]="'CUSTOM_REPORTS.FIELDS.NEW_CALC_FIELD' | translate"
+        [appTooltip]="'CUSTOM_REPORTS.FIELDS.NEW_CALC_FIELD' | translate"
       >
         +
       </button>

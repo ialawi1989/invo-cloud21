@@ -14,6 +14,7 @@ import { GeneralInventoryData, GeneralInventoryRecord, GeneralInventoryService, 
 import { ReportEmptyComponent } from '../../components/report-empty/report-empty.component';
 import { ReportSkeletonComponent } from '../../components/report-skeleton/report-skeleton.component';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 type K = keyof GeneralInventoryTotal;
 /** Column sections — each has its own colour so the four stages (beginning, receiving, usage, ending) read apart. */
 type Sec = 'beg' | 'rec' | 'use' | 'end';
@@ -29,7 +30,7 @@ const toNum = (v: unknown): number => { const n = typeof v === 'number' ? v : pa
 @Component({
   selector: 'app-general-inventory',
   standalone: true,
-  imports: [ReportSkeletonComponent, ReportEmptyComponent, ReportErrorComponent, TranslateModule, RouterLink, MynumberPipe, MycurrencyPipe, PaginationComponent, BoTableShellComponent],
+  imports: [TooltipDirective, ReportSkeletonComponent, ReportEmptyComponent, ReportErrorComponent, TranslateModule, RouterLink, MynumberPipe, MycurrencyPipe, PaginationComponent, BoTableShellComponent],
   templateUrl: './general-inventory.component.html',
   styleUrl: './general-inventory.component.scss',
 })

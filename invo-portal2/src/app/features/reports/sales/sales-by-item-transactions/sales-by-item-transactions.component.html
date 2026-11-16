@@ -123,7 +123,7 @@
                     {{ (isCreditNote(r) ? 'REPORTS.ITEM_TRANSACTIONS.TYPES.RETURN' : 'REPORTS.ITEM_TRANSACTIONS.TYPES.INVOICE') | translate }}
                   </span>
                   @if (isVoidOnly(r)) {
-                    <span class="ls-badge ls-badge-void" [attr.title]="'REPORTS.ITEM_TRANSACTIONS.TYPES.VOIDED_HINT' | translate">{{ 'REPORTS.ITEM_TRANSACTIONS.TYPES.VOIDED' | translate }}</span>
+                    <span class="ls-badge ls-badge-void" [appTooltip]="'REPORTS.ITEM_TRANSACTIONS.TYPES.VOIDED_HINT' | translate">{{ 'REPORTS.ITEM_TRANSACTIONS.TYPES.VOIDED' | translate }}</span>
                   }
                 </td>
                 <td>{{ r.transactionDate | date: 'dd/MM/yyyy HH:mm' }}</td>

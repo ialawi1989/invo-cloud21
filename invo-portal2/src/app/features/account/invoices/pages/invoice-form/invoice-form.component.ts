@@ -27,6 +27,7 @@ import { DocPartySectionComponent } from '../../../components/doc-party-section/
 import { DocTotalsComponent } from '../../../components/doc-totals/doc-totals.component';
 import { WastePopupComponent, WastePopupData, WastePopupResult } from '../../components/waste-popup/waste-popup.component';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 interface Term { value: string; label: string; days?: number; }
 
 const TERMS: Term[] = [
@@ -51,7 +52,7 @@ const dayDiff = (a: Date, b: Date) => Math.abs(Math.round((new Date(ymd(b)).getT
 @Component({
   selector: 'app-invoice-form',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, 
     CommonModule, FormsModule, ReactiveFormsModule, TranslateModule,
     DocFormShellComponent, DocPartySectionComponent, SearchDropdownComponent, DatePickerComponent,
     DocLinesTableComponent, DocAttachmentsCardComponent, DocTotalsComponent, EntityCustomFieldsComponent,

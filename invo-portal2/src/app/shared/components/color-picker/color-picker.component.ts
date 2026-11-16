@@ -36,6 +36,7 @@ import {
   type WcagLevel,
 } from './color-conversions';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /**
  * ColorPickerComponent
  * ────────────────────
@@ -58,7 +59,7 @@ import {
 @Component({
   selector: 'app-color-picker',
   standalone: true,
-  imports: [CommonModule, OverlayModule, TranslateModule],
+  imports: [TooltipDirective, CommonModule, OverlayModule, TranslateModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './color-picker.component.html',
   styleUrl: './color-picker.component.scss',

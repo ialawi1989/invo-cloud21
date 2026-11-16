@@ -20,6 +20,7 @@ import { AlignmentButtonsComponent } from '../style-controls/alignment-buttons.c
 import { FontStyleButtonsComponent } from '../style-controls/font-style-buttons.component';
 import { NgSelectModule } from '@ng-select/ng-select';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 type VisibleEval = { kind: 'ok'; truthy: boolean; display: string } | { kind: 'error'; message: string };
 
 type RowVisibleEval = { kind: 'ok'; matched: number; total: number } | { kind: 'error'; message: string };
@@ -43,7 +44,7 @@ type WatermarkKind = 'none' | 'text' | 'image';
   selector: 'app-designer-property-panel',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
+  imports: [TooltipDirective, 
     CommonModule,
     FormsModule,
     NgSelectModule,

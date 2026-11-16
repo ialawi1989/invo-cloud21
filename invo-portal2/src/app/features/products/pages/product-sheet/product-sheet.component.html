@@ -186,7 +186,7 @@
             <div class="flex flex-col gap-2">
               @for (header of mappableHeaders(); track header) {
                 <div class="grid grid-cols-1 sm:grid-cols-5 gap-2 items-center">
-                  <div class="sm:col-span-2 text-sm font-medium text-slate-700 truncate" [title]="header">{{ header }}</div>
+                  <div class="sm:col-span-2 text-sm font-medium text-slate-700 truncate" [appTooltip]="header">{{ header }}</div>
                   <div class="sm:col-span-3">
                     <app-search-dropdown
                       [items]="mappingItems()"

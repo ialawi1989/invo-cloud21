@@ -43,6 +43,7 @@ import {
   ZonesMapModalData,
 } from '../components/zones-map-modal/zones-map-modal.component';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 interface BulkFields {
   deliveryCharge:   number | null;
   minimumCharge:    number | null;
@@ -65,7 +66,7 @@ interface BulkFields {
 @Component({
   selector: 'app-covered-zone',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, 
     CommonModule,
     FormsModule,
     TranslateModule,

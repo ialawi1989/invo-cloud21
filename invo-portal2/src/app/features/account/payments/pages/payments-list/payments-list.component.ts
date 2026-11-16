@@ -23,6 +23,7 @@ import { PaymentsService } from '../../services/payments.service';
 import { PaymentActions } from '../../services/payment-actions';
 import { GatewayCheckModalComponent, GatewayCheckData } from '../../components/gateway-check-modal/gateway-check-modal.component';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 type PaymentsTab = 'success' | 'failed';
 
 /** `tab` — which list is shown; omitted for the default (successful) one, like legacy's `?tab=failed`. */
@@ -49,7 +50,7 @@ const arr = (v: any): any[] => (v == null || v === '' ? [] : Array.isArray(v) ? 
 @Component({
   selector: 'app-payments-list',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, 
     CommonModule, TranslateModule, ListPageComponent, ListCellTemplateDirective,
     ListRowActionsDirective, DropdownMenuBtnComponent, MycurrencyPipe, SegmentedToggleComponent,
   ],

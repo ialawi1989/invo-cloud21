@@ -30,6 +30,7 @@ import { BranchFilterModalComponent, BranchFilterData } from '../../components/b
 import { StaffFilterModalComponent, StaffFilterData } from '../../components/staff-filter-modal/staff-filter-modal.component';
 import { QueryParamsService, enumCodec, ParamDef, StringCodec } from '@shared/services/query-params.service';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 type CalendarView = 'day' | 'week' | 'month';
 
 const VIEW_PARAM: ParamDef<CalendarView> = { key: 'view', codec: enumCodec(['day', 'week', 'month'] as const, 'day') };
@@ -43,7 +44,7 @@ const SEARCH_PARAM: ParamDef<string> = { key: 'q', codec: StringCodec };
 @Component({
   selector: 'app-appointment-calendar',
   standalone: true,
-  imports: [FormsModule, SearchDropdownComponent, TranslateModule, DatePickerComponent, DayViewComponent, WeekViewComponent, MonthViewComponent, EmployeesViewComponent, ServiceTeamComponent, EmployeeServicesComponent],
+  imports: [TooltipDirective, FormsModule, SearchDropdownComponent, TranslateModule, DatePickerComponent, DayViewComponent, WeekViewComponent, MonthViewComponent, EmployeesViewComponent, ServiceTeamComponent, EmployeeServicesComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './appointment-calendar.component.html',
   styleUrl: './appointment-calendar.component.scss',

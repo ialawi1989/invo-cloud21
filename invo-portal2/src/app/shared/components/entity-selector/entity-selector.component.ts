@@ -28,6 +28,7 @@ import {
   progressCounts,
 } from './entity-selector.util';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 export type { SelectorMode, EntityCompletion, CompletionMap } from './entity-selector.util';
 
 const VISIBLE_TABS = 5;
@@ -49,7 +50,7 @@ export type StatusContextKind = 'tab' | 'dropdown' | 'sidebar-row' | 'popover-ro
 @Component({
   selector: 'app-entity-selector',
   standalone: true,
-  imports: [CommonModule, OverlayModule, TranslateModule, FindEntityPopoverComponent, EntityStatusIconComponent],
+  imports: [TooltipDirective, CommonModule, OverlayModule, TranslateModule, FindEntityPopoverComponent, EntityStatusIconComponent],
   templateUrl: './entity-selector.component.html',
   styleUrl: './entity-selector.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

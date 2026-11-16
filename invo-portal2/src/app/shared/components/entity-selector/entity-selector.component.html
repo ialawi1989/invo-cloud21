@@ -153,7 +153,7 @@
         class="es__tab"
         [class.es__tab--active]="isActive(tab.id)"
         [attr.aria-selected]="isActive(tab.id)"
-        [title]="tab.label"
+        [appTooltip]="tab.label"
         (click)="selectTab(tab.id)"
       >
         @if (statusTpl) {

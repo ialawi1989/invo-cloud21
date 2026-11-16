@@ -20,6 +20,7 @@ import { LogsDrawerComponent, LogsDrawerData } from '@shared/components/logs-dra
 import { VatPaymentService } from '../../services/vat-payment.service';
 import { VatPaymentActions, vatStatusClass } from '../../services/vat-payment-actions';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 const STATUSES = ['Initiated', 'Partially Paid', 'Paid'];
 const ymd = (v: any): string | null => {
   if (!v) return null;
@@ -37,7 +38,7 @@ const arr = (v: any): any[] => (v == null || v === '' ? [] : Array.isArray(v) ? 
 @Component({
   selector: 'app-vat-payment-list',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, 
     CommonModule, TranslateModule, ListPageComponent, ListCellTemplateDirective,
     ListRowActionsDirective, DropdownMenuBtnComponent, MycurrencyPipe,
   ],

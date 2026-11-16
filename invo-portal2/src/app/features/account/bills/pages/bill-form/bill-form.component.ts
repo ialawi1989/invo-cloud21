@@ -31,6 +31,7 @@ import { BillLineEditor } from '../../services/bill-line-editor';
 import { BillsService } from '../../services/bills.service';
 import { BILL_RULES } from '../../services/bill-validation';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 const TERM_DAYS: Record<string, number> = { net7: 7, net10: 10, net15: 15, net30: 30, net45: 45, net60: 60, net90: 90 };
 const TERMS = ['net7', 'net10', 'net15', 'net30', 'net45', 'net60', 'net90', 'endOfTheMonth', 'onReceiptDue', 'custom'];
 
@@ -58,7 +59,7 @@ function mapCustomFieldValues(values: Record<string, any> | null | undefined, fr
 @Component({
   selector: 'app-bill-form',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, 
     CommonModule, FormsModule, ReactiveFormsModule, TranslateModule,
     DocFormShellComponent, DocSupplierSectionComponent, SearchDropdownComponent, DatePickerComponent, SegmentedToggleComponent, BillTotalsComponent,
     DocLinesTableComponent, DocAttachmentsCardComponent, EntityCustomFieldsComponent,

@@ -5,7 +5,7 @@
       <div class="ts-nav-chips" role="group" [attr.aria-label]="'REPORTS.BO.JUMP_TO' | translate">
         @for (p of periods(); track p; let i = $index) {
           <button type="button" class="ts-chip" [class.active]="activePeriod() === i"
-                  [attr.aria-pressed]="activePeriod() === i" [attr.title]="p" (click)="jumpTo(i)">
+                  [attr.aria-pressed]="activePeriod() === i" [appTooltip]="p" (click)="jumpTo(i)">
             <i class="ts-dot" [class]="'ts-dot bo-p' + slot(i)"></i>{{ chipLabel(p) }}
           </button>
         }

@@ -8,6 +8,7 @@ import { SearchDropdownComponent } from '@shared/components/dropdown/search-drop
 import { MessageTemplatesService } from '../../services/message-templates.service';
 import { MessageTemplate, TemplateEventType, TemplateOutputType, TemplateVariable } from '../../services/message-template.types';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 interface FilterOption<T> {
   value: T;
   label: string;
@@ -29,7 +30,7 @@ function emptyTemplate(): MessageTemplate {
 @Component({
   selector: 'app-template-form',
   standalone: true,
-  imports: [FormsModule, TranslateModule, SearchDropdownComponent, SegmentedToggleComponent],
+  imports: [TooltipDirective, FormsModule, TranslateModule, SearchDropdownComponent, SegmentedToggleComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './template-form.component.html',
   styleUrl: './template-form.component.scss',

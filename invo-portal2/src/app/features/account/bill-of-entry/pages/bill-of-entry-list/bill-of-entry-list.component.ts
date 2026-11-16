@@ -11,6 +11,7 @@ import { DocumentListBase, DocListMeta } from '../../../services/document-list-b
 import { BillOfEntryService } from '../../services/bill-of-entry.service';
 import { BillOfEntryActions } from '../../services/bill-of-entry-actions';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /**
  * Bill of entry -> list. Legacy `BillOfEntryComponent`: same columns, server-side search / sort / paging
  * and the same filter payload (branches, dates). Row actions follow the shared {@link BillOfEntryActions} rules.
@@ -18,7 +19,7 @@ import { BillOfEntryActions } from '../../services/bill-of-entry-actions';
 @Component({
   selector: 'app-bill-of-entry-list',
   standalone: true,
-  imports: [CommonModule, TranslateModule, ListPageComponent, ListCellTemplateDirective, ListRowActionsDirective, DropdownMenuBtnComponent, MycurrencyPipe],
+  imports: [TooltipDirective, CommonModule, TranslateModule, ListPageComponent, ListCellTemplateDirective, ListRowActionsDirective, DropdownMenuBtnComponent, MycurrencyPipe],
   templateUrl: './bill-of-entry-list.component.html',
 })
 export class BillOfEntryListComponent extends DocumentListBase implements OnInit {

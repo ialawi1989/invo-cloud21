@@ -5,7 +5,8 @@ import { Directive, Input, HostListener, OnDestroy, ElementRef } from '@angular/
   standalone: true,
 })
 export class TooltipDirective implements OnDestroy {
-  @Input('appTooltip') text = '';
+  /** Accepts anything a native `title` could (null / undefined / numbers) so templates can bind it directly. */
+  @Input({ alias: 'appTooltip', transform: (v: unknown): string => (v == null ? '' : String(v)) }) text = '';
 
   private el: HTMLElement | null = null;
   private showTimer: any;

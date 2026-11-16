@@ -15,6 +15,7 @@ import type { ModalRef } from '@shared/modal/modal.service';
 
 import { WIDGETS, WidgetDef, WidgetGroup, WidgetView } from '../../models/widget-registry';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /** A row of placed widgets, mirroring the saved layout's `rowId` grouping. */
 export interface EditorRow {
   id: string;
@@ -93,7 +94,7 @@ type SourceTab = 'all' | 'standard' | 'custom';
 @Component({
   selector: 'app-dashboard-customize-modal',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, 
     CommonModule, TranslateModule, DragDropModule,
     ModalHeaderComponent, ModalFooterComponent,
   ],

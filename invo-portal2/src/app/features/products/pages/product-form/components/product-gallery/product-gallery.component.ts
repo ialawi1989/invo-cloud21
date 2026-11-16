@@ -25,6 +25,7 @@ import type { Media } from '../../../../../settings/media/models/media.model';
 import { Product, ProductMedia } from '../../../../models/product-form.model';
 import { Fields } from '../../../../models/product-fields.model';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /**
  * product-gallery
  * ───────────────
@@ -36,7 +37,7 @@ import { Fields } from '../../../../models/product-fields.model';
 @Component({
   selector: 'app-pf-product-gallery',
   standalone: true,
-  imports: [CommonModule, TranslateModule, DragDropModule],
+  imports: [TooltipDirective, CommonModule, TranslateModule, DragDropModule],
   templateUrl: './product-gallery.component.html',
   styleUrl: './product-gallery.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

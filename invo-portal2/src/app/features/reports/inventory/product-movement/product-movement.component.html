@@ -35,7 +35,7 @@
                 <td class="text-end"><strong>{{ num(r.qtyBalance) | mynumber }}</strong></td>
                 <td class="text-end" [class.neg]="num(r.cost) < 0">
                   {{ num(r.cost) | mynumber }}
-                  <span class="pm-unit" [attr.title]="'REPORTS.PRODUCT_MOVEMENT.UNIT_COST' | translate">{{ unitCost(r) | mynumber }}</span>
+                  <span class="pm-unit" [appTooltip]="'REPORTS.PRODUCT_MOVEMENT.UNIT_COST' | translate">{{ unitCost(r) | mynumber }}</span>
                 </td>
                 <td class="text-end"><strong>{{ num(r.costBalance) | mynumber }}</strong></td>
               </tr>

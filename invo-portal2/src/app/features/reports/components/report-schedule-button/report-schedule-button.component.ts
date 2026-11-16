@@ -8,6 +8,7 @@ import {
   ReportScheduleModalComponent, ReportScheduleModalData, ReportScheduleModalResult,
 } from '../report-schedule-modal/report-schedule-modal.component';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /**
  * The calendar button in a report's action bar: lists the report's saved schedules (frequency, active / inactive,
  * previous and next run) and opens the schedule dialog to create or edit one. Shown only for the reports the backend
@@ -16,7 +17,7 @@ import {
 @Component({
   selector: 'app-report-schedule-button',
   standalone: true,
-  imports: [TranslateModule, DatePipe],
+  imports: [TooltipDirective, TranslateModule, DatePipe],
   templateUrl: './report-schedule-button.component.html',
   styleUrl: './report-schedule-button.component.scss',
 })

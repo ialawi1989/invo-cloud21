@@ -35,7 +35,7 @@
           @for (day of d.days; track day.date) {
             <tr>
               <td class="nowrap"><strong>{{ day.date | date: 'dd/MM/yyyy' }}</strong></td>
-              <td class="muted">{{ day.weekday }}@if (day.shiftCount > 1) { <span class="ed-split" [attr.title]="day.shiftCount + ' shifts'">×{{ day.shiftCount }}</span> }</td>
+              <td class="muted">{{ day.weekday }}@if (day.shiftCount > 1) { <span class="ed-split" [appTooltip]="day.shiftCount + ' shifts'">×{{ day.shiftCount }}</span> }</td>
               <td class="nowrap">@if (day.expectedStartLocal) { {{ day.expectedStartLocal }} – {{ day.expectedEndLocal }} } @else { <span class="muted">—</span> }</td>
               <td class="in">
                 @for (sh of day.shifts; track sh.id; let i = $index) {
@@ -73,7 +73,7 @@
                           <svg class="ph-ico on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                         </a>
                       } @else {
-                        <svg class="ph-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [attr.title]="lbl" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                        <svg class="ph-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [appTooltip]="lbl" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                       }
                     }
                   </div>

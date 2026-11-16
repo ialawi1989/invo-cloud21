@@ -22,6 +22,7 @@ import {
   productTypeKey,
 } from '../../utils/bulk-scope';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 interface PriceRow {
   productId: string;
   name: string;
@@ -42,7 +43,7 @@ const round3 = (n: number) => Number(n.toFixed(3));
 @Component({
   selector: 'app-price-change',
   standalone: true,
-  imports: [FormsModule, TranslateModule, BreadcrumbsComponent, SearchDropdownComponent],
+  imports: [TooltipDirective, FormsModule, TranslateModule, BreadcrumbsComponent, SearchDropdownComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './price-change.component.html',
   styleUrl: './price-change.component.scss',

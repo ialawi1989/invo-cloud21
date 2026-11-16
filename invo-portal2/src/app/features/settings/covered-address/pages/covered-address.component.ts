@@ -49,6 +49,7 @@ import {
   TranslationLang as ModalTranslationLang,
 } from '@shared/components/translation-modal/translation-modal.component';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 interface BranchOption { id: string; name: string; }
 interface TypeOption   { value: string; label: string; }
 
@@ -81,7 +82,7 @@ const PARENT_OF: Record<string, string> = {
 @Component({
   selector: 'app-covered-address',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, 
     CommonModule,
     FormsModule,
     TranslateModule,

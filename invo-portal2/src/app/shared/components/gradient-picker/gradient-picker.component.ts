@@ -23,6 +23,7 @@ import {
   parseGradient,
 } from './gradient-picker.types';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /**
  * GradientPickerComponent
  * ───────────────────────
@@ -49,7 +50,7 @@ import {
 @Component({
   selector: 'app-gradient-picker',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, ColorPickerComponent],
+  imports: [TooltipDirective, CommonModule, FormsModule, TranslateModule, ColorPickerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './gradient-picker.component.html',
   styleUrl: './gradient-picker.component.scss',

@@ -24,7 +24,7 @@
           <label for="estimateNumber">{{ 'ESTIMATES.FORM.ESTIMATE_NUMBER' | translate }} <span class="req">*</span></label>
           <div class="df-num" [class.is-invalid]="fieldError('estimateNumber')">
             <input id="estimateNumber" type="text" [(ngModel)]="e.estimateNumber" (ngModelChange)="markDirty()"/>
-            <button type="button" class="df-gear" (click)="openNumberPrefs()" [attr.title]="'ESTIMATES.FORM.NUMBER_HELP' | translate" aria-label="settings">⚙</button>
+            <button type="button" class="df-gear" (click)="openNumberPrefs()" [appTooltip]="'ESTIMATES.FORM.NUMBER_HELP' | translate" aria-label="settings">⚙</button>
           </div>
           @if (fieldError('estimateNumber'); as err) { <p class="df-error">{{ err }}</p> }
         </div>

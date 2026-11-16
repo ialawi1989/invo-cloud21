@@ -2,6 +2,7 @@ import { Component, ElementRef, input, output, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /**
  * The page frame EVERY report uses, so they all look and behave the same: a white action bar (Back, Browse Reports,
  * Refresh, favourite, Export), a white title strip (title, description, applied-filter chips) and a scrolling content
@@ -18,7 +19,7 @@ export interface ReportCrumb { label: string; url?: string; }
 @Component({
   selector: 'app-report-page-shell',
   standalone: true,
-  imports: [RouterLink, TranslateModule],
+  imports: [TooltipDirective, RouterLink, TranslateModule],
   templateUrl: './report-page-shell.component.html',
   styleUrl: './report-page-shell.component.scss',
 })

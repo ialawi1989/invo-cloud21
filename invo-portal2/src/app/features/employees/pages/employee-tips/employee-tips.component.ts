@@ -21,6 +21,7 @@ import { splitEvenly } from '../../models/employee-earnings.types';
 import { EmployeeService } from '../../services/employee.service';
 import { EmployeeTipsService } from '../../services/employee-tips.service';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 interface Option { id: string; name: string }
 
 const ymd = (d: Date) => {
@@ -35,7 +36,7 @@ const ymd = (d: Date) => {
 @Component({
   selector: 'app-employee-tips',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, 
     CommonModule, FormsModule, TranslateModule, MycurrencyPipe,
     BreadcrumbsComponent, SearchDropdownComponent, DateFieldComponent, LoadingOverlayComponent,
   ],

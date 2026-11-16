@@ -9,6 +9,7 @@ import {
 } from '@angular/cdk/drag-drop';
 import { DashboardRow, DashboardWidgets } from '../../models/dashboard-layout.model';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 export interface ColSpanOption {
   value: number;
   label: string;
@@ -36,7 +37,7 @@ const DEFAULT_COLSPAN_OPTIONS: ColSpanOption[] = [
 @Component({
   selector: 'app-layout-editor',
   standalone: true,
-  imports: [TranslateModule, DragDropModule],
+  imports: [TooltipDirective, TranslateModule, DragDropModule],
   templateUrl: './layout-editor.component.html',
   styleUrls: ['./layout-editor.component.scss'],
 })

@@ -9,6 +9,7 @@ import {
   SegmentedToggleOption,
 } from '@shared/components/segmented-toggle/segmented-toggle.component';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 type DayStatus = 'on_time' | 'late' | 'missing_out' | 'adjusted' | 'absent' | 'leave' | 'none';
 type Period = '7' | '30' | '90' | 'month';
 
@@ -36,7 +37,7 @@ const ymd = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.ge
 @Component({
   selector: 'app-employee-attendance-summary',
   standalone: true,
-  imports: [TranslateModule, RouterLink, SegmentedToggleComponent],
+  imports: [TooltipDirective, TranslateModule, RouterLink, SegmentedToggleComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './employee-attendance-summary.component.html',
   styleUrl: './employee-attendance-summary.component.scss',

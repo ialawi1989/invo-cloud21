@@ -17,6 +17,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { BLOG_API } from '../services/blog-api';
 import { estimateReadingTime } from '../utils/blog-utils';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /**
  * Minimal-but-functional rich text editor backed by the browser's
  * `contenteditable` API and `document.execCommand`. Chosen over a
@@ -37,25 +38,25 @@ import { estimateReadingTime } from '../utils/blog-utils';
 @Component({
   selector: 'app-blog-rich-text-editor',
   standalone: true,
-  imports: [CommonModule, TranslateModule],
+  imports: [TooltipDirective, CommonModule, TranslateModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="rte" [class.is-rtl]="rtl()">
       <div class="rte__toolbar">
-        <button type="button" class="rte__btn" title="Heading 2" (click)="cmd('formatBlock', 'h2')">H2</button>
-        <button type="button" class="rte__btn" title="Heading 3" (click)="cmd('formatBlock', 'h3')">H3</button>
+        <button type="button" class="rte__btn" appTooltip="Heading 2" (click)="cmd('formatBlock', 'h2')">H2</button>
+        <button type="button" class="rte__btn" appTooltip="Heading 3" (click)="cmd('formatBlock', 'h3')">H3</button>
         <span class="rte__sep"></span>
-        <button type="button" class="rte__btn rte__btn--icon" title="Bold"   (click)="cmd('bold')"><b>B</b></button>
-        <button type="button" class="rte__btn rte__btn--icon" title="Italic" (click)="cmd('italic')"><i>I</i></button>
+        <button type="button" class="rte__btn rte__btn--icon" appTooltip="Bold"   (click)="cmd('bold')"><b>B</b></button>
+        <button type="button" class="rte__btn rte__btn--icon" appTooltip="Italic" (click)="cmd('italic')"><i>I</i></button>
         <span class="rte__sep"></span>
-        <button type="button" class="rte__btn rte__btn--icon" title="Bullet list"  (click)="cmd('insertUnorderedList')">•</button>
-        <button type="button" class="rte__btn rte__btn--icon" title="Numbered list"(click)="cmd('insertOrderedList')">1.</button>
-        <button type="button" class="rte__btn rte__btn--icon" title="Quote" (click)="cmd('formatBlock', 'blockquote')">"</button>
-        <button type="button" class="rte__btn rte__btn--icon" title="Code"  (click)="wrapCode()">&lt;/&gt;</button>
+        <button type="button" class="rte__btn rte__btn--icon" appTooltip="Bullet list"  (click)="cmd('insertUnorderedList')">•</button>
+        <button type="button" class="rte__btn rte__btn--icon" appTooltip="Numbered list"(click)="cmd('insertOrderedList')">1.</button>
+        <button type="button" class="rte__btn rte__btn--icon" appTooltip="Quote" (click)="cmd('formatBlock', 'blockquote')">"</button>
+        <button type="button" class="rte__btn rte__btn--icon" appTooltip="Code"  (click)="wrapCode()">&lt;/&gt;</button>
         <span class="rte__sep"></span>
-        <button type="button" class="rte__btn" title="Link"    (click)="promptLink()">Link</button>
-        <button type="button" class="rte__btn" title="Image"   (click)="filePicker.click()">Image</button>
-        <button type="button" class="rte__btn" title="Divider" (click)="cmd('insertHorizontalRule')">—</button>
+        <button type="button" class="rte__btn" appTooltip="Link"    (click)="promptLink()">Link</button>
+        <button type="button" class="rte__btn" appTooltip="Image"   (click)="filePicker.click()">Image</button>
+        <button type="button" class="rte__btn" appTooltip="Divider" (click)="cmd('insertHorizontalRule')">—</button>
         <input #filePicker type="file" accept="image/*" hidden (change)="onImageFile($any($event.target).files)"/>
       </div>
 

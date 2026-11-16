@@ -48,7 +48,7 @@
         </div>
         <button type="button" class="icon-btn icon-btn--danger" (click)="deleteZone(zone.id)"
           [attr.aria-label]="'SHIPPING.ZONE.DELETE' | translate"
-          [title]="'SHIPPING.ZONE.DELETE' | translate">
+          [appTooltip]="'SHIPPING.ZONE.DELETE' | translate">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="3 6 5 6 21 6"/>
             <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
@@ -154,7 +154,7 @@
               <header class="rg__head">
                 <button type="button" class="rg__handle" cdkDragHandle
                   [attr.aria-label]="'COMMON.DRAG_TO_REORDER' | translate"
-                  [title]="'COMMON.DRAG_TO_REORDER' | translate">
+                  [appTooltip]="'COMMON.DRAG_TO_REORDER' | translate">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="9"  cy="6"  r="1"/>
                     <circle cx="15" cy="6"  r="1"/>
@@ -175,7 +175,7 @@
                 </div>
                 <button type="button" class="icon-btn" (click)="startEditGroup(zone.id, group)"
                   [attr.aria-label]="'SHIPPING.RATES.EDIT_GROUP' | translate"
-                  [title]="'SHIPPING.RATES.EDIT_GROUP' | translate">
+                  [appTooltip]="'SHIPPING.RATES.EDIT_GROUP' | translate">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5"/>
                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
@@ -219,7 +219,7 @@
                   [class.is-overlap]="isOverlapping(group, r)">
                   <button type="button" class="rg__row-handle" cdkDragHandle
                     [attr.aria-label]="'COMMON.DRAG_TO_REORDER' | translate"
-                    [title]="'COMMON.DRAG_TO_REORDER' | translate">
+                    [appTooltip]="'COMMON.DRAG_TO_REORDER' | translate">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <circle cx="9"  cy="6"  r="1"/>
                       <circle cx="15" cy="6"  r="1"/>
@@ -244,7 +244,7 @@
                   <button type="button" class="icon-btn icon-btn--danger"
                     (click)="deleteRange(zone.id, r.id)"
                     [attr.aria-label]="'SHIPPING.RATES.DELETE_RANGE' | translate"
-                    [title]="'SHIPPING.RATES.DELETE_RANGE' | translate">
+                    [appTooltip]="'SHIPPING.RATES.DELETE_RANGE' | translate">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <polyline points="3 6 5 6 21 6"/>
                       <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>

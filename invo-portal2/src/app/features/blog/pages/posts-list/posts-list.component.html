@@ -92,7 +92,7 @@
       }
       <div class="bp-postCell__main">
         <span class="bp-title list-interactive-cell">
-          @if (row.isFeatured) { <span class="bp-feat" title="Featured">★</span> }
+          @if (row.isFeatured) { <span class="bp-feat" appTooltip="Featured">★</span> }
           {{ titleOf(row) }}
         </span>
         <span class="bp-badgeRow">
@@ -120,11 +120,11 @@
   <!-- Engagement: views + likes + comments inline (comment count links to comments). -->
   <ng-template listCellTemplate="engagement" let-row>
     <span class="bp-engage">
-      <span class="bp-metric" [title]="'BLOG.LIST.COL_VIEWS' | translate">
+      <span class="bp-metric" [appTooltip]="'BLOG.LIST.COL_VIEWS' | translate">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
         {{ row.views ?? 0 }}
       </span>
-      <span class="bp-metric" [title]="'BLOG.LIST.COL_LIKES' | translate">
+      <span class="bp-metric" [appTooltip]="'BLOG.LIST.COL_LIKES' | translate">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>
         {{ row.likesCount ?? 0 }}
       </span>
@@ -152,7 +152,7 @@
   </ng-template>
   <ng-template listMobileTitle let-row>
     <span class="bp-mtitle">
-      @if (row.isFeatured) { <span class="bp-feat" title="Featured">★</span> }
+      @if (row.isFeatured) { <span class="bp-feat" appTooltip="Featured">★</span> }
       {{ titleOf(row) }}
     </span>
     <app-blog-status-badge [status]="row.status"/>

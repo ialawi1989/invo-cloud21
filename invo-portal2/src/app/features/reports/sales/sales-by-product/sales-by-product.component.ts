@@ -14,6 +14,7 @@ import {
   SalesByProductData, SalesByProductRecord, SalesByProductService, SalesByProductSort,
 } from './sales-by-product.service';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /** Columns the API can sort by. */
 const SORTABLE = ['categoryName', 'productName', 'qty', 'salesAmount', 'discountTotal', 'taxTotal', 'total'] as const;
 
@@ -33,7 +34,7 @@ const toNum = (v: unknown): number => {
 @Component({
   selector: 'app-sales-by-product',
   standalone: true,
-  imports: [ReportEmptyComponent, ReportErrorComponent, TranslateModule, RouterLink, MycurrencyPipe, PaginationComponent, BoTableShellComponent],
+  imports: [TooltipDirective, ReportEmptyComponent, ReportErrorComponent, TranslateModule, RouterLink, MycurrencyPipe, PaginationComponent, BoTableShellComponent],
   templateUrl: './sales-by-product.component.html',
   styleUrl: './sales-by-product.component.scss',
 })

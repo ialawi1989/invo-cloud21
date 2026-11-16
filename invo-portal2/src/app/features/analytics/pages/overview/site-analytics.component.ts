@@ -22,6 +22,7 @@ import { SkeletonComponent } from '@shared/components/skeleton/skeleton.componen
 import { SiteAnalyticsService } from '../../services/site-analytics.service';
 import { SiteAnalytics, RealtimeAnalytics } from '../../services/site-analytics.types';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 type TrafficMetric = 'users' | 'sessions' | 'pageviews';
 
 /**
@@ -33,7 +34,7 @@ type TrafficMetric = 'users' | 'sessions' | 'pageviews';
 @Component({
   selector: 'app-site-analytics',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslateModule, DatePickerComponent, MycurrencyPipe, SkeletonComponent],
+  imports: [TooltipDirective, CommonModule, RouterModule, TranslateModule, DatePickerComponent, MycurrencyPipe, SkeletonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './site-analytics.component.html',
   styleUrl: './site-analytics.component.scss',

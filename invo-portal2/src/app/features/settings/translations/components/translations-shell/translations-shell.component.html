@@ -22,7 +22,7 @@
               } @else {
                 <li>
                   <span class="tm-item tm-item--disabled"
-                        [attr.title]="'TRANSLATIONS.COMING_SOON' | translate">
+                        [appTooltip]="'TRANSLATIONS.COMING_SOON' | translate">
                     <span class="tm-item__label">{{ entity.labelKey | translate }}</span>
                     <span class="tm-item__tag">{{ 'TRANSLATIONS.SOON' | translate }}</span>
                   </span>

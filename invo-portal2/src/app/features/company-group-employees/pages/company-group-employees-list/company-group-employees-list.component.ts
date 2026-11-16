@@ -10,6 +10,7 @@ import { ListQueryParams, MobileCardConfig, TableColumn } from '@shared/componen
 import '../../company-group-employees-i18n';
 import { CompanyGroupEmployeesService } from '../../services/company-group-employees.service';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /**
  * Company group employees -> list (`/company-group-employees`): every employee of the company group with the
  * companies of the group they can work in. Read-only; search by name / email, sort, paging.
@@ -17,7 +18,7 @@ import { CompanyGroupEmployeesService } from '../../services/company-group-emplo
 @Component({
   selector: 'app-company-group-employees-list',
   standalone: true,
-  imports: [CommonModule, TranslateModule, ListPageComponent, ListCellTemplateDirective],
+  imports: [TooltipDirective, CommonModule, TranslateModule, ListPageComponent, ListCellTemplateDirective],
   templateUrl: './company-group-employees-list.component.html',
 })
 export class CompanyGroupEmployeesListComponent implements OnInit {

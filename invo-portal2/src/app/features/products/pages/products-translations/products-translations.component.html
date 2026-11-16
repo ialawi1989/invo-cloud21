@@ -59,7 +59,7 @@
   <div class="tr-cell" [class.tr-cell--edited]="isEdited(row)">
     <div class="tr-chips">
       @for (e of entries(row, field); track e.code) {
-        <span class="tr-chip" [title]="e.value">
+        <span class="tr-chip" [appTooltip]="e.value">
           <b>{{ e.code }}</b><span class="tr-chip__text">{{ e.value }}</span>
         </span>
       } @empty {

@@ -36,6 +36,7 @@ import {
   TranslationStatusFilter,
 } from '../../services/translation-api';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 interface ItemOption {
   id: string;
   label: string;
@@ -52,7 +53,7 @@ interface ItemOption {
 @Component({
   selector: 'app-translations-shell',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, 
     CommonModule,
     RouterModule,
     FormsModule,

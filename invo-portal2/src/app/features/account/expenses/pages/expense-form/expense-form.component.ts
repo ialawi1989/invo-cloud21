@@ -26,6 +26,7 @@ import { ExpenseActions } from '../../services/expense-actions';
 import { ExpensesService } from '../../services/expenses.service';
 import { EXPENSE_RULES } from '../../services/expense-validation';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /** Line rules of an expense: a blank row has no account yet (the user picks one), everything else is the shared editor's. */
 class ExpenseLineEditor extends DocumentLineEditor {
   protected override newLine(): InvoiceLine { return new ExpenseLine(); }
@@ -50,7 +51,7 @@ class ExpenseLineEditor extends DocumentLineEditor {
 @Component({
   selector: 'app-expense-form',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, 
     CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, MycurrencyPipe,
     DocFormShellComponent, DocSupplierSectionComponent, SearchDropdownComponent, DatePickerComponent, CustomerPickerComponent,
     SegmentedToggleComponent, DocAttachmentsCardComponent, EntityCustomFieldsComponent, ExpenseLinesComponent,

@@ -19,6 +19,7 @@ import {
   OAuthConnection,
 } from '../../services/mcp-tokens.service';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 type TokenStatus = 'active' | 'expired' | 'revoked';
 
 /**
@@ -31,7 +32,7 @@ type TokenStatus = 'active' | 'expired' | 'revoked';
 @Component({
   selector: 'app-mcp-tokens',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, SearchDropdownComponent],
+  imports: [TooltipDirective, CommonModule, FormsModule, TranslateModule, SearchDropdownComponent],
   templateUrl: './mcp-tokens.component.html',
   styleUrls: ['./mcp-tokens.component.scss'],
 })

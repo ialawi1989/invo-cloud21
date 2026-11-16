@@ -24,6 +24,7 @@ import {
 import { TableCell, TableGroup, TableRow } from '../../../../services/receipt-builder.types';
 import { AlignIconComponent } from '../align-icon/align-icon.component';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /** One row in the "+ Add column" menu. `key` is the binding path the
  *  POS reads off each line ('' for a blank scratch column); `label`
  *  is the seeded column header the user can rename right after. */
@@ -56,7 +57,7 @@ export interface ColumnSuggestion {
 @Component({
   selector: 'app-table-columns-editor',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, 
     CommonModule,
     FormsModule,
     TranslateModule,

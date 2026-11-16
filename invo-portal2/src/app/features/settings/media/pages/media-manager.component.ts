@@ -29,6 +29,7 @@ import {
   NumberCodec,
 } from '../../../../shared/services/query-params.service';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 type MediaTab = 'all' | 'images' | 'documents' | 'videos' | 'audio' | 'models';
 type SortField = 'createdAt' | 'name' | 'size';
 type SortDirection = 'ASC' | 'DESC';
@@ -90,7 +91,7 @@ const TAB_META: Record<MediaTab, { label: string; icon: string }> = {
 @Component({
   selector: 'app-media-manager',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, 
     CommonModule,
     FormsModule,
     MediaGalleryComponent,

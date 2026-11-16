@@ -24,6 +24,7 @@ import { BillOfEntryActions } from '../../services/bill-of-entry-actions';
 import { BillOfEntryService } from '../../services/bill-of-entry.service';
 import { BILL_OF_ENTRY_RULES } from '../../services/bill-of-entry-validation';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /**
  * Bill of entry -> create (`/account/bill-of-entry/0/:billId`, from the imported bill) and edit
  * (`/account/bill-of-entry/:id`). Built on the shared document-form base (legacy `BillOfEntryFormComponent`):
@@ -34,7 +35,7 @@ import { BILL_OF_ENTRY_RULES } from '../../services/bill-of-entry-validation';
 @Component({
   selector: 'app-bill-of-entry-form',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, 
     CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, MycurrencyPipe,
     DocFormShellComponent, DocSupplierSectionComponent, DocLinesTableComponent, SearchDropdownComponent, DatePickerComponent,
     DocAttachmentsCardComponent, EntityCustomFieldsComponent,

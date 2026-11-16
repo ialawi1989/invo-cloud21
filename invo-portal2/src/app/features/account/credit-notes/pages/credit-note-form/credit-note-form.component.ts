@@ -21,6 +21,7 @@ import { CreditNoteActions } from '../../services/credit-note-actions';
 import { CreditNotesService } from '../../services/credit-notes.service';
 import { CREDIT_NOTE_RULES } from '../../services/credit-note-validation';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /**
  * Credit notes → create page (`/account/credit-notes/:id`, `new` / `0` = create, or
  * `/:id/forInvoice/:invoiceId` from "Create Credit Note" on an invoice). Legacy `CreditNotesFormComponent`:
@@ -32,7 +33,7 @@ import { CREDIT_NOTE_RULES } from '../../services/credit-note-validation';
 @Component({
   selector: 'app-credit-note-form',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, 
     CommonModule, FormsModule, ReactiveFormsModule, TranslateModule,
     DocFormShellComponent, DocPartySectionComponent, SearchDropdownComponent, DatePickerComponent,
     DocLinesTableComponent, DocAttachmentsCardComponent, DocTotalsComponent, EntityCustomFieldsComponent,

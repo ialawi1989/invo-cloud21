@@ -22,7 +22,7 @@
       @for (c of row.companyList; track c.companyId) {
         <span class="text-xs font-medium px-2.5 py-1 rounded-full"
           [class]="c.available ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500 line-through'"
-          [title]="(c.available ? 'COMPANY_GROUP_EMPLOYEES.HAS_ACCESS' : 'COMPANY_GROUP_EMPLOYEES.NO_ACCESS') | translate">
+          [appTooltip]="(c.available ? 'COMPANY_GROUP_EMPLOYEES.HAS_ACCESS' : 'COMPANY_GROUP_EMPLOYEES.NO_ACCESS') | translate">
           {{ c.companyName }}
         </span>
       }

@@ -8,6 +8,7 @@ import { MODAL_REF, MODAL_DATA } from '../../../../../shared/modal/modal.tokens'
 import { ModalRef, ModalService } from '../../../../../shared/modal/modal.service';
 import { ImageEditorModalComponent, ImageEditorModalData } from '../../../../../shared/components/image-editor';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 interface PreviewModalData {
   media: Media;
   mediaList?: Media[];
@@ -22,7 +23,7 @@ interface PreviewModalData {
 @Component({
   selector: 'app-media-preview',
   standalone: true,
-  imports: [CommonModule],
+  imports: [TooltipDirective, CommonModule],
   templateUrl: './media-preview.component.html',
   styleUrls: ['./media-preview.component.scss']
 })

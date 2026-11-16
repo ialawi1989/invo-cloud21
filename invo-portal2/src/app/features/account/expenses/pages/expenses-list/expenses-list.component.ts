@@ -11,6 +11,7 @@ import { DocumentListBase, DocListMeta } from '../../../services/document-list-b
 import { ExpensesService } from '../../services/expenses.service';
 import { ExpenseActions } from '../../services/expense-actions';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /**
  * Expenses -> list. Legacy `ExpenseComponent`: same columns, server-side search / sort / paging and the same
  * filter payload (branches, dates). Row actions follow the shared {@link ExpenseActions} rules: View + Edit outside,
@@ -19,7 +20,7 @@ import { ExpenseActions } from '../../services/expense-actions';
 @Component({
   selector: 'app-expenses-list',
   standalone: true,
-  imports: [CommonModule, TranslateModule, ListPageComponent, ListCellTemplateDirective, ListRowActionsDirective, DropdownMenuBtnComponent, MycurrencyPipe],
+  imports: [TooltipDirective, CommonModule, TranslateModule, ListPageComponent, ListCellTemplateDirective, ListRowActionsDirective, DropdownMenuBtnComponent, MycurrencyPipe],
   templateUrl: './expenses-list.component.html',
 })
 export class ExpensesListComponent extends DocumentListBase implements OnInit {

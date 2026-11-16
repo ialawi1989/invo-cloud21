@@ -4,10 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { SheetConfig } from '../../shared/models/custom-report.model';
 
 import { TranslateModule } from '@ngx-translate/core';
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 @Component({
   selector: 'app-sheet-tabs',
   standalone: true,
-  imports: [TranslateModule, FormsModule],
+  imports: [TooltipDirective, TranslateModule, FormsModule],
   templateUrl: './sheet-tabs.component.html',
   styleUrls: ['./sheet-tabs.component.scss'],
 })

@@ -15,6 +15,7 @@ import { Budget } from '../../models/budget.model';
 import { BudgetService } from '../../services/budget.service';
 import { BudgetActions } from '../../services/budget-actions';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /**
  * Budgets -> list (`/account/budget`). Legacy `BudgetComponent`: name / branch / created / periodicity (plus the year,
  * which the search also matches), server-side search, sort and paging, and per row the Budget vs Actual report,
@@ -23,7 +24,7 @@ import { BudgetActions } from '../../services/budget-actions';
 @Component({
   selector: 'app-budget-list',
   standalone: true,
-  imports: [CommonModule, TranslateModule, ListPageComponent, ListCellTemplateDirective, ListRowActionsDirective],
+  imports: [TooltipDirective, CommonModule, TranslateModule, ListPageComponent, ListCellTemplateDirective, ListRowActionsDirective],
   templateUrl: './budget-list.component.html',
 })
 export class BudgetListComponent implements OnInit {

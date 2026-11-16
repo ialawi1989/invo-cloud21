@@ -63,7 +63,7 @@
                               <span>{{ option.qty }}</span>
                               <button type="button" [disabled]="option.qty >= option.maxQty" (click)="increaseDefault(option)">+</button>
                             </div>
-                            <button type="button" class="psi__rm" [attr.title]="'SUB_ITEMS.REMOVE' | translate" (click)="removeDefault(option)">✕</button>
+                            <button type="button" class="psi__rm" [appTooltip]="'SUB_ITEMS.REMOVE' | translate" (click)="removeDefault(option)">✕</button>
                           } @else {
                             <button type="button" class="psi__add" (click)="increaseDefault(option)">+ {{ 'SUB_ITEMS.ADD' | translate }}</button>
                           }

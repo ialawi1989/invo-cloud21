@@ -42,6 +42,7 @@ import {
 } from '../../services/product-form-prefs.service';
 import { ProductFormRowLayout } from '@core/layout/services/employee-options.service';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 export interface AdvancedOptionsModalData {
   productType: string;
   productTypeLabel?: string;
@@ -89,7 +90,7 @@ interface WorkingRow {
 @Component({
   selector: 'app-advanced-options-modal',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, 
     CommonModule,
     FormsModule,
     TranslateModule,
