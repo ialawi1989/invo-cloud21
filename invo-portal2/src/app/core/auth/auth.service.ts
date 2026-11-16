@@ -138,11 +138,18 @@ export class AuthService {
       const res = await firstValueFrom(this.http.get<any>(`${this.baseUrl}employee/getMyPrivileges`));
       const privileges = res?.data?.privileges;
       this.privilegesLoadedAt = Date.now(); // answered: do not re-ask every navigation
+      // The login payload historically omitted these, so a session that was
+      // already open (or an older backend) learns them here. Only ever applied
+      // when the server actually sent them — absent must not demote anyone.
+      const flags: Record<string, boolean> = {};
+      if (typeof res?.data?.admin === 'boolean') flags['admin'] = res.data.admin;
+      if (typeof res?.data?.superAdmin === 'boolean') flags['superAdmin'] = res.data.superAdmin;
+      if (flags['superAdmin'] !== undefined) this.privilegeService.setSuperAdmin(flags['superAdmin']);
       if (!privileges) return false;
       this.privilegeService.setPrivileges(privileges);
       const stored = this.currentEmployee$.value;
       if (stored) {
-        const next = { ...stored, privileges } as Employee;
+        const next = { ...stored, ...flags, privileges } as Employee;
         setItemSync('employee', JSON.stringify(next), true);
         this.currentEmployee$.next(next);
       }
