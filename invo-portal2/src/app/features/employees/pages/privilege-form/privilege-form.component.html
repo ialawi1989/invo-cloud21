@@ -7,7 +7,7 @@
   </header>
 
   @if (loading()) {
-    <div class="loading"><span class="spinner spinner--lg"></span></div>
+    <app-form-skeleton />
   } @else {
     <!-- ═══ Name + description ═══ -->
     <section class="card">
@@ -81,6 +81,7 @@
         </div>
 
         <div class="tools">
+          <app-segmented-toggle size="sm" [options]="viewOptions" [value]="viewMode()" (valueChange)="setView($event)"/>
           <label class="tools__master">
             <span class="tools__master-label">{{ 'EMPLOYEES.PRIVILEGES.SELECT_ALL' | translate }}</span>
             <app-toggle
@@ -122,14 +123,159 @@
         </div>
       </header>
 
+      @if (viewMode() === 'matrix') {
+        <!-- Matrix view: one row per module / group, one column per action kind -->
+        @let mx = matrix();
+        <div class="card__body">
+          @if (!mx.rows.length) {
+            <p class="empty">{{ 'EMPLOYEES.PRIVILEGES.NO_MATCH' | translate }}</p>
+          } @else {
+            <div class="mx-wrap">
+              <table class="mx">
+                <thead>
+                  <tr>
+                    <th class="mx__name">{{ 'EMPLOYEES.PRIVILEGES.COL_MODULE' | translate }}</th>
+                    <th>{{ 'EMPLOYEES.PRIVILEGES.COL_ALL' | translate }}</th>
+                    @for (c of mx.cols; track c) {
+                      <th>{{ colLabel(c) }}</th>
+                    }
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (r of mx.rows; track r.id) {
+                    <tr class="mx__row mx__row--{{ r.kind }}">
+                      <td class="mx__name" [style.padding-inline-start.px]="12 + r.depth * 18">
+                        @if (r.collapsible) {
+                          <button type="button" class="mx__chev" [class.mx__chev--open]="r.open"
+                                  (click)="toggleRow(r)" [attr.aria-expanded]="r.open">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                 stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                              <polyline points="9 18 15 12 9 6"/>
+                            </svg>
+                          </button>
+                        }
+                        <span>{{ r.label }}</span>
+                      </td>
+                      <td>
+                        <input type="checkbox" class="mx__cb" [disabled]="lockedRole() || !r.all.items.length"
+                               [checked]="r.all.state === 'on'" [indeterminate]="r.all.state === 'mixed'"
+                               [attr.aria-label]="r.label"
+                               (change)="onCellToggle(r.all, $any($event.target).checked)"/>
+                      </td>
+                      @for (c of mx.cols; track c) {
+                        <td>
+                          @if (r.cells[c].items.length) {
+                            <input type="checkbox" class="mx__cb" [disabled]="lockedRole()"
+                                   [checked]="r.cells[c].state === 'on'" [indeterminate]="r.cells[c].state === 'mixed'"
+                                   [appTooltip]="r.cells[c].names" [attr.aria-label]="r.label + ' — ' + colLabel(c)"
+                                   (change)="onCellToggle(r.cells[c], $any($event.target).checked)"/>
+                          }
+                        </td>
+                      }
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+      } @else {
       <div class="card__body">
-        @if (noMatches()) {
-          <p class="empty">{{ 'EMPLOYEES.PRIVILEGES.NO_MATCH' | translate }}</p>
-        }
+        <!-- Browse by module — same pattern as the Reports page -->
+        <div class="topics-head">
+          <input
+            type="search"
+            class="input topics-search"
+            [value]="moduleSearch()"
+            (input)="onModuleSearch($any($event.target).value)"
+            [placeholder]="'EMPLOYEES.PRIVILEGES.SEARCH_MODULES' | translate"
+          />
+          <span class="topics-label">{{ 'EMPLOYEES.PRIVILEGES.BROWSE_BY_MODULE' | translate }}</span>
+        </div>
+        <div class="topics">
+          @for (m of modules(); track m.key) {
+            <button type="button" class="topic" [class.topic--active]="moduleKey() === m.key"
+                    [style.--c1]="moduleColors(m.key)[0]" [style.--c2]="moduleColors(m.key)[1]"
+                    [style.--tint]="moduleColors(m.key)[2]" (click)="selectModule(m.key)">
+              <span class="topic__icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path [attr.d]="moduleIcon(m.key)"/>
+                </svg>
+              </span>
+              <span class="topic__text">
+                <span class="topic__name">{{ m.label }}</span>
+                <span class="topic__meta">{{ m.count }} · {{ m.on }} / {{ m.all }}</span>
+              </span>
+            </button>
+          }
+        </div>
 
-        <div class="groups">
-          @for (g of groups(); track g.key) {
-            <div class="group" [class.group--open]="g.expanded">
+        <div class="topic-panel"
+             [style.--c1]="moduleColors(moduleKey())[0]" [style.--c2]="moduleColors(moduleKey())[1]"
+             [style.--tint]="moduleColors(moduleKey())[2]">
+          <div class="topic-panel__side">
+            <span class="topic__icon topic__icon--lg">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path [attr.d]="moduleIcon(moduleKey())"/>
+              </svg>
+            </span>
+            <h3 class="topic-panel__title">{{ currentModule()?.label }}</h3>
+            <p class="topic-panel__desc">
+              {{ currentModule()?.count }} {{ 'EMPLOYEES.PRIVILEGES.GROUPS' | translate }} ·
+              {{ currentModule()?.on }} / {{ currentModule()?.all }} {{ 'EMPLOYEES.PRIVILEGES.PERMISSIONS' | translate }}
+            </p>
+          </div>
+
+
+        <div class="perms">
+          @if (noMatches()) {
+            <p class="empty">{{ 'EMPLOYEES.PRIVILEGES.NO_MATCH' | translate }}</p>
+          }
+
+          <div class="groups" [class.groups--grid]="viewMode() === 'grid'">
+            @for (g of groups(); track g.key) {
+              <ng-container *ngTemplateOutlet="groupTpl; context: { $implicit: g, open: viewMode() === 'grid' }"/>
+
+              @if (g.hr; as hr) {
+                <!-- Inner HR group, nested inside Employee Security -->
+                <div class="group group--inner group--hr" [class.group--open]="hr.expanded" [class.group--wide]="true">
+                  <div class="group__head">
+                    <button type="button" class="group__toggle" [attr.aria-expanded]="hr.expanded"
+                            (click)="toggleExpand('__hr__')">
+                      <svg class="group__chevron" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                           stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <polyline points="9 18 15 12 9 6"/>
+                      </svg>
+                      <span class="group__name">{{ 'EMPLOYEES.PRIVILEGES.HR_GROUP' | translate }}</span>
+                      <span class="group__count">{{ hr.enabled }} / {{ hr.total }}</span>
+                    </button>
+                    <label class="group__select-all">
+                      <span class="group__select-all-label">{{ 'EMPLOYEES.PRIVILEGES.FULL_HR' | translate }}</span>
+                      <app-toggle size="sm" [checked]="hr.allOn" [disabled]="lockedRole()"
+                                  [ariaLabel]="'EMPLOYEES.PRIVILEGES.FULL_HR' | translate"
+                                  (checkedChange)="onSelectAllHr($event)"/>
+                    </label>
+                  </div>
+                  @if (hr.expanded) {
+                    <div class="group__children">
+                      @for (c of hr.children; track c.key) {
+                        <ng-container *ngTemplateOutlet="groupTpl; context: { $implicit: c, open: viewMode() === 'grid' }"/>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            }
+          </div>
+        </div>
+        </div>
+      </div>
+      }
+
+      <ng-template #groupTpl let-g let-open="open">
+            <div class="group" [class.group--open]="g.expanded || open">
               <div class="group__head">
                 <button
                   type="button"
@@ -176,7 +322,7 @@
                 }
               </div>
 
-              @if (g.expanded && g.hasActions) {
+              @if ((g.expanded || open) && g.hasActions) {
                 <div class="group__body">
                   @for (a of g.actions; track a.key) {
                     <div class="action" [class.action--on]="a.checked">
@@ -193,9 +339,7 @@
                 </div>
               }
             </div>
-          }
-        </div>
-      </div>
+      </ng-template>
     </section>
   }
 
