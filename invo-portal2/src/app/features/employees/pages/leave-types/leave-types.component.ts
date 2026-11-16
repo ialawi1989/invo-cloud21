@@ -25,6 +25,7 @@ import {
 } from '../../services/employee-leave.service';
 import { portalKey } from '../../hr-labels';
 
+import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton.component';
 interface Opt { value: string; label: string }
 
 /** One editable row. The entitlement is flattened so inputs can bind to it. */
@@ -65,7 +66,7 @@ interface Row {
 @Component({
   selector: 'app-leave-types',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, BreadcrumbsComponent, SearchDropdownComponent, ToggleComponent],
+  imports: [ListSkeletonComponent, CommonModule, FormsModule, TranslateModule, BreadcrumbsComponent, SearchDropdownComponent, ToggleComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './leave-types.component.html',
   styleUrls: ['./leave-types.component.scss'],

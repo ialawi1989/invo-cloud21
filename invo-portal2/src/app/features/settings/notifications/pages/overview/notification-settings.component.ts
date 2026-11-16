@@ -25,6 +25,8 @@ import { MessageTemplate } from '../../services/message-template.types';
 import { MessageTemplatesService } from '../../services/message-templates.service';
 import { NotificationLog, NotificationLogFilter, NotificationLogsService } from '../../services/notification-logs.service';
 
+import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton.component';
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 type Tab = 'events' | 'templates' | 'logs';
 type EventStatus = 'disabled' | 'active' | 'partial' | 'needs_setup';
 type StatusFilter = 'all' | 'enabled' | 'disabled' | 'issues';
@@ -39,7 +41,7 @@ const TAB_PARAM: ParamDef<Tab> = { key: 'tab', codec: enumCodec(['events', 'temp
 @Component({
   selector: 'app-notification-settings',
   standalone: true,
-  imports: [StatusBadgeComponent, FormsModule, TranslateModule, DatePipe, SearchDropdownComponent, DatePickerComponent],
+  imports: [TooltipDirective, ListSkeletonComponent, StatusBadgeComponent, FormsModule, TranslateModule, DatePipe, SearchDropdownComponent, DatePickerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './notification-settings.component.html',
   styleUrl: './notification-settings.component.scss',

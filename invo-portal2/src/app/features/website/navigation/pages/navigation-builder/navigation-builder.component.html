@@ -1,7 +1,7 @@
 <app-breadcrumbs [items]="breadcrumbs" navClass="mb-2" />
 
 @if (loading()) {
-  <div class="loading"><app-spinner size="sm" /> {{ 'COMMON.LOADING' | translate }}</div>
+  <app-list-skeleton [rows]="6" [lines]="2" />
 } @else {
   <!-- Header bar -->
   <div class="builder-head">
@@ -81,20 +81,20 @@
               <span class="row-name">{{ item.name }}</span>
 
               <span class="row-tools">
-                <button type="button" class="tool" [disabled]="item.depth === 0" (click)="moveLeft(item)" title="Outdent">⟨</button>
-                <button type="button" class="tool" [disabled]="!canMoveRight(item)" (click)="moveRight(item)" title="Indent">⟩</button>
+                <button type="button" class="tool" [disabled]="item.depth === 0" (click)="moveLeft(item)" appTooltip="Outdent">⟨</button>
+                <button type="button" class="tool" [disabled]="!canMoveRight(item)" (click)="moveRight(item)" appTooltip="Indent">⟩</button>
                 @if (!item.isMegaMenu) {
-                  <button type="button" class="tool" (click)="convertToMegaMenu(item)" [title]="'NAV.BUILDER.TO_MEGA' | translate">
+                  <button type="button" class="tool" (click)="convertToMegaMenu(item)" [appTooltip]="'NAV.BUILDER.TO_MEGA' | translate">
                     <span class="item-icon sm" [innerHTML]="itemIcon('mega')"></span>
                   </button>
-                  <button type="button" class="tool" (click)="editItem(item)" title="Edit">✎</button>
+                  <button type="button" class="tool" (click)="editItem(item)" appTooltip="Edit">✎</button>
                 } @else {
-                  <button type="button" class="tool" (click)="editMegaMenu(item)" title="Edit mega menu">✎</button>
+                  <button type="button" class="tool" (click)="editMegaMenu(item)" appTooltip="Edit mega menu">✎</button>
                 }
-                <button type="button" class="tool" (click)="translateItem(item)" title="Translate">
+                <button type="button" class="tool" (click)="translateItem(item)" appTooltip="Translate">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
                 </button>
-                <button type="button" class="tool danger" (click)="removeItem(item)" title="Remove">✕</button>
+                <button type="button" class="tool danger" (click)="removeItem(item)" appTooltip="Remove">✕</button>
               </span>
             </div>
 

@@ -12,7 +12,7 @@
   </header>
 
   @if (loading) {
-    <p class="cq__muted">{{ 'COMMON.LOADING' | translate }}</p>
+    <app-list-skeleton [rows]="4" [lines]="2" />
   } @else if (notFound) {
     <app-empty-state icon="error" tone="error" [title]="'CHEQUE_BUILDER.NOT_FOUND' | translate"/>
   } @else {

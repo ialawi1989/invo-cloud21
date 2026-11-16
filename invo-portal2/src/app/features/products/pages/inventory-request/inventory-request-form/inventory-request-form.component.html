@@ -6,7 +6,7 @@
   (save)="save()" (cancel)="cancel()" (view)="view()">
 
   @if (loading()) {
-    <div class="loading"><span class="spinner"></span></div>
+    <app-form-skeleton />
   } @else {
     @if (linkedPos().length) {
       <section class="df-card">

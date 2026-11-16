@@ -11,7 +11,7 @@
       type="button"
       class="btn btn-ghost btn-sm tour-btn"
       [attr.aria-label]="'EMPLOYEES.TOUR.START' | translate"
-      [attr.title]="'EMPLOYEES.TOUR.START' | translate"
+      [appTooltip]="'EMPLOYEES.TOUR.START' | translate"
       [disabled]="loading()"
       (click)="startTour()">
       <span aria-hidden="true">?</span>
@@ -21,7 +21,7 @@
   }
 
   @if (loading()) {
-    <div class="loading"><span class="spinner spinner--lg"></span></div>
+    <app-form-skeleton />
   } @else {
     @if (!editSection()) {
       <div class="form-tabs" data-tour="emp-tabs">
@@ -594,7 +594,7 @@
                       class="branch-list__star"
                       [class.branch-list__star--on]="b.id === primaryBranchId()"
                       [disabled]="isSuperAdmin()"
-                      [attr.title]="'EMPLOYEES.FORM.SET_AS_PRIMARY' | translate"
+                      [appTooltip]="'EMPLOYEES.FORM.SET_AS_PRIMARY' | translate"
                       (click)="setPrimaryBranch(b.id)">
                       {{ b.id === primaryBranchId() ? '★' : '☆' }}
                     </button>

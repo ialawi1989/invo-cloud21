@@ -56,6 +56,8 @@ import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer
 import { ToastService } from '@shared/components/toast/toast.service';
 import { ToggleComponent } from '@shared/components/toggle/toggle.component';
 
+import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton.component';
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /**
  * Settings → Branch form (edit only)
  *
@@ -70,7 +72,7 @@ import { ToggleComponent } from '@shared/components/toggle/toggle.component';
 @Component({
   selector: 'app-branch-form',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, FormSkeletonComponent, 
     CommonModule,
     RouterModule,
     ReactiveFormsModule,

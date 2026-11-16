@@ -20,6 +20,8 @@ import { EmployeePayoutPayload, PayoutLine, SavedPayoutLine, buildPayoutLines, p
 import { EmployeePayoutService } from '../../services/employee-payout.service';
 import { EmployeeService } from '../../services/employee.service';
 
+import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton.component';
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 interface Option { id: string; name: string }
 interface MethodOption extends Option {
   /** The method's account for the selected branch, shown for reference. */
@@ -42,7 +44,7 @@ const today = () => {
 @Component({
   selector: 'app-employee-payout-form',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, FormSkeletonComponent, 
     CommonModule, FormsModule, TranslateModule, MycurrencyPipe,
     BreadcrumbsComponent, SearchDropdownComponent, DateFieldComponent, FormStickyFooterComponent, LoadingOverlayComponent,
   ],

@@ -38,6 +38,8 @@ import {
   defaultBlogSettings,
 } from '../../services/blog-settings.types';
 
+import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton.component';
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /**
  * Settings → Blog
  *
@@ -52,7 +54,7 @@ import {
 @Component({
   selector: 'app-blog-settings',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, FormSkeletonComponent, 
     CommonModule,
     RouterModule,
     ReactiveFormsModule,

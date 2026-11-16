@@ -34,6 +34,7 @@ import { DocItemSearchComponent } from '../../../../account/components/doc-item-
 import { LanguageService } from '@core/i18n/language.service';
 import { InventoryRequestPaperComponent } from '../inventory-request-paper/inventory-request-paper.component';
 
+import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton.component';
 interface Option { id: string; name: string; translation?: any }
 interface Priority { value: string; labelKey: string }
 
@@ -67,7 +68,7 @@ const blankLine = (supplier: SupplierMini | null): FormLine => ({
 @Component({
   selector: 'app-inventory-request-form',
   standalone: true,
-  imports: [
+  imports: [FormSkeletonComponent, 
     CommonModule, RouterLink, FormsModule, TranslateModule, DocFormShellComponent, LoadingOverlayComponent,
     CdkDropList, CdkDrag, CdkDragHandle, DropdownMenuBtnComponent, SearchDropdownComponent, QtyInputComponent, MycurrencyPipe,
     InventoryRequestPaperComponent, DocItemSearchComponent,

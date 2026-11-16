@@ -14,7 +14,7 @@
   } @else {
     <div class="np__list">
       @if (loading()) {
-        <div class="np__loading"><span class="np__spin"></span></div>
+        <app-list-skeleton [rows]="6" [lines]="2" />
       } @else if (threaded().length === 0) {
         <div class="np__empty">
           <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>

@@ -19,6 +19,7 @@ import { MobileIconBarList, MobileIconBarItem } from '../../../models/mobileIcon
 import { Translation } from '@core/models/translation';
 import { iconsForSlug } from './mobile-icon-bar.icons';
 
+import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton.component';
 /** Default item set, mirroring the legacy `setItems()`. */
 const DEFAULT_ITEMS: Array<{ name: string; en: string; ar: string; slug: string; enabled: boolean }> = [
   { name: 'Search',     en: 'Search',     ar: 'بحث',          slug: 'search',           enabled: false },
@@ -37,12 +38,12 @@ const DEFAULT_ITEMS: Array<{ name: string; en: string; ar: string; slug: string;
 @Component({
   selector: 'app-mobile-icon-bar',
   standalone: true,
-  imports: [CommonModule, FormsModule, DragDropModule, TranslateModule, BreadcrumbsComponent, SpinnerComponent],
+  imports: [ListSkeletonComponent, CommonModule, FormsModule, DragDropModule, TranslateModule, BreadcrumbsComponent, SpinnerComponent],
   template: `
     <app-breadcrumbs [items]="breadcrumbs" navClass="mb-2" />
 
     @if (loading()) {
-      <div class="loading"><app-spinner size="sm" /> {{ 'COMMON.LOADING' | translate }}</div>
+      <app-list-skeleton [rows]="6" [lines]="2" />
     } @else {
       <div class="head">
         <div>

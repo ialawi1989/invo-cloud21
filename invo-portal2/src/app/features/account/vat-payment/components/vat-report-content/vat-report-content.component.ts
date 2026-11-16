@@ -7,6 +7,7 @@ import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 
 import { VatPaymentService } from '../../services/vat-payment.service';
 
+import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton.component';
 /** One numbered box of the GCC VAT return. */
 export interface VatReportRecord {
   boxNo: string;
@@ -51,7 +52,7 @@ function totalled(records: VatReportRecord[]): VatReportSection {
 @Component({
   selector: 'app-vat-report-content',
   standalone: true,
-  imports: [TranslateModule, MycurrencyPipe],
+  imports: [ListSkeletonComponent, TranslateModule, MycurrencyPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './vat-report-content.component.scss',
   templateUrl: './vat-report-content.component.html',

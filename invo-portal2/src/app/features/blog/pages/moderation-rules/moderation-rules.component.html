@@ -24,7 +24,7 @@
     <div class="mr__cardHead">{{ 'BLOG.MODERATION.RULES' | translate }}</div>
 
     @if (loading()) {
-      <div class="mr__state">{{ 'COMMON.LOADING' | translate }}…</div>
+      <app-list-skeleton [rows]="4" [lines]="2" />
     } @else if (rules().length === 0) {
       <div class="mr__state">{{ 'BLOG.MODERATION.EMPTY' | translate }}</div>
     } @else {

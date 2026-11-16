@@ -7,6 +7,8 @@ import { ModalRef } from '@shared/modal/modal.service';
 import { ToastService } from '@shared/components/toast/toast.service';
 import { PendingOrder, PendingOrdersService } from '../../services/pending-orders.service';
 
+import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton.component';
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /**
  * Topbar bell drawer — pending online orders (status 'Placed') with
  * Accept/Reject. Ported from the legacy portal's notifications dropdown;
@@ -17,7 +19,7 @@ import { PendingOrder, PendingOrdersService } from '../../services/pending-order
 @Component({
   selector: 'app-notifications-panel',
   standalone: true,
-  imports: [TranslateModule, DatePipe],
+  imports: [TooltipDirective, ListSkeletonComponent, TranslateModule, DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './notifications-panel.component.html',
   styleUrl: './notifications-panel.component.scss',

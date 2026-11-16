@@ -20,10 +20,11 @@ import { DropdownMenuBtnComponent, DropdownMenuBtnItem } from '@shared/component
 import { BLOG_API } from '../../services/blog-api';
 import { BlogModerationRule } from '../../services/blog.types';
 
+import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton.component';
 @Component({
   selector: 'app-blog-moderation-rules',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslateModule, ToggleComponent, DropdownMenuBtnComponent],
+  imports: [ListSkeletonComponent, CommonModule, FormsModule, RouterModule, TranslateModule, ToggleComponent, DropdownMenuBtnComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './moderation-rules.component.html',
   styleUrl: './moderation-rules.component.scss',

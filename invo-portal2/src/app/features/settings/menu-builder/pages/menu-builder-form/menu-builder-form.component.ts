@@ -48,6 +48,7 @@ import {
   ManageSectionProductsResult,
 } from './components/manage-section-products-modal/manage-section-products-modal.component';
 
+import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton.component';
 const tempId = (): string => 'tmp_' + Math.random().toString(36).slice(2, 10);
 
 const EMPTY_MENU = (): Menu => ({
@@ -88,7 +89,7 @@ const EMPTY_SECTION = (translation: TranslateService): MenuSection => ({
 @Component({
   selector: 'app-menu-builder-form',
   standalone: true,
-  imports: [
+  imports: [FormSkeletonComponent, 
     CommonModule,
     RouterModule,
     FormsModule,

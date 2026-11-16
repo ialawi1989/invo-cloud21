@@ -23,6 +23,7 @@ import {
 import { HrError, describeError } from '../../hr-error';
 import { portalKey } from '../../hr-labels';
 
+import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton.component';
 /**
  * The documents tab — identity documents and their attachments.
  *
@@ -44,7 +45,7 @@ import { portalKey } from '../../hr-labels';
 @Component({
   selector: 'app-employee-documents',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, SearchDropdownComponent, EmptyStateComponent, DateFieldComponent],
+  imports: [ListSkeletonComponent, CommonModule, ReactiveFormsModule, TranslateModule, SearchDropdownComponent, EmptyStateComponent, DateFieldComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './employee-documents.component.html',
   styleUrls: ['./employee-documents.component.scss'],

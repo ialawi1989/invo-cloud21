@@ -34,12 +34,13 @@ import { HashtagTextComponent } from '../../components/hashtag-text.component';
 import { EmptyStateComponent } from '../../components/empty-state.component';
 import { timeAgo } from '../../utils/blog-utils';
 
+import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton.component';
 type StatusTab = CommentStatus | 'all';
 
 @Component({
   selector: 'app-blog-comments',
   standalone: true,
-  imports: [
+  imports: [ListSkeletonComponent, 
     CommonModule,
     FormsModule,
     RouterModule,

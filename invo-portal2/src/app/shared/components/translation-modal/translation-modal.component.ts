@@ -17,6 +17,7 @@ import { ToastService } from '@shared/components/toast/toast.service';
 import { MultilingualSettingsService } from '@features/settings/translations/services/multilingual-settings.service';
 import { isRtlByDefault } from '@features/settings/translations/services/multilingual-settings.types';
 
+import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton.component';
 /**
  * Per-language value map for a single field — keyed by language code:
  * `{ en: 'Name', ar: 'الاسم', fr: 'Nom' }`. `en`/`ar` stay explicit so
@@ -68,7 +69,7 @@ interface LangField {
 @Component({
   selector: 'app-translation-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, RichEditorComponent],
+  imports: [FormSkeletonComponent, CommonModule, FormsModule, TranslateModule, RichEditorComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './translation-modal.component.html',
   styleUrl: './translation-modal.component.scss',

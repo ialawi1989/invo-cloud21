@@ -49,7 +49,7 @@
 
       @if (activeView() === 'pay') {
         @if (loading()) {
-          <div class="pay-loading">{{ 'COMMON.LOADING' | translate }}</div>
+          <app-list-skeleton [rows]="4" [lines]="2" />
         } @else if (!current() && !recording()) {
           <app-alert variant="warning">
             {{ 'EMPLOYEES.PAYROLL.NO_PAY_ALERT' | translate }}

@@ -8,7 +8,7 @@
   </header>
 
   @if (loading()) {
-    <div class="loading"><span class="spinner spinner--lg"></span></div>
+    <app-form-skeleton />
   } @else {
     <form [formGroup]="form">
       <!-- ═══ Default Content ═══ -->

@@ -70,7 +70,7 @@
 
     <div class="tg-card">
       @if (loading() && rows().length === 0) {
-        <div class="tg-loading"><span class="tg-spinner"></span></div>
+        <app-list-skeleton [rows]="6" [lines]="2" />
       } @else if (rows().length === 0) {
         <div class="tg-empty">
           <p>{{ 'TRANSLATIONS.EMPTY' | translate }}</p>

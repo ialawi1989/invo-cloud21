@@ -52,6 +52,7 @@ import {
   AccountsBulkEditResult,
 } from './components/accounts-bulk-edit-modal.component';
 
+import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton.component';
 type ViewMode = 'table' | 'tree';
 
 /** Tree node — accounts grouped first by parent-type then by type
@@ -82,7 +83,7 @@ interface TreeNode {
 @Component({
   selector: 'app-chart-of-accounts-list',
   standalone: true,
-  imports: [
+  imports: [ListSkeletonComponent, 
     CommonModule,
     RouterModule,
     TranslateModule,

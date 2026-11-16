@@ -54,6 +54,7 @@ import {
   ConfirmModalData,
 } from '@shared/modal/demo/confirm-modal.component';
 
+import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton.component';
 interface EditEntry {
   recordId: string;
   field: string;
@@ -73,7 +74,7 @@ interface EditEntry {
 @Component({
   selector: 'app-translation-group',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule],
+  imports: [ListSkeletonComponent, CommonModule, FormsModule, TranslateModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './translation-group.component.html',
   styleUrl: './translation-group.component.scss',

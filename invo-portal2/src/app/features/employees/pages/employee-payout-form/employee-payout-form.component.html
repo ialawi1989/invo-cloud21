@@ -7,7 +7,7 @@
   </header>
 
   @if (loading) {
-    <div class="ep-loading"><span class="ep-spinner"></span></div>
+    <app-form-skeleton />
   } @else {
     <section class="ep-card">
       <div class="ep-card__body">
@@ -63,7 +63,7 @@
         <header class="ep-card__head">
           <h2 class="ep-card__title">{{ 'EMPLOYEE_PAYOUT.ITEMS' | translate }}</h2>
           <button type="button" class="ep-btn" [disabled]="loadingPayables" (click)="loadPayables()"
-                  [title]="'EMPLOYEE_PAYOUT.REFRESH_HINT' | translate">{{ 'EMPLOYEE_PAYOUT.REFRESH' | translate }}</button>
+                  [appTooltip]="'EMPLOYEE_PAYOUT.REFRESH_HINT' | translate">{{ 'EMPLOYEE_PAYOUT.REFRESH' | translate }}</button>
         </header>
         <div class="ep-card__body">
           @if (payablesLoaded && !isEdit) {

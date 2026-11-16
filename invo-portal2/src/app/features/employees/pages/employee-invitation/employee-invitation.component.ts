@@ -30,6 +30,7 @@ import { ToastService } from '@shared/components/toast/toast.service';
 
 import { EmployeeService } from '../../services/employee.service';
 
+import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton.component';
 /** The InvoCloud user resolved from an email lookup (invite flow). */
 interface InvitedUser {
   employeeId: string;
@@ -59,7 +60,7 @@ interface InvitedUser {
 @Component({
   selector: 'app-employee-invitation',
   standalone: true,
-  imports: [
+  imports: [FormSkeletonComponent, 
     CommonModule,
     RouterModule,
     ReactiveFormsModule,

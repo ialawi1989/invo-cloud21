@@ -87,7 +87,7 @@
        list-page when the user picks the Tree view-mode button. -->
   <div listCustomView class="coa-tree-wrap">
     @if (treeLoading()) {
-      <div class="coa-tree-loading"><span class="coa-tree-spinner"></span></div>
+      <app-list-skeleton [rows]="6" [lines]="2" />
     } @else if (treeRoots().length === 0) {
       <div class="coa-tree-empty">
         <p>{{ 'CHART_OF_ACCOUNTS.LIST.EMPTY' | translate }}</p>

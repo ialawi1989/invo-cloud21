@@ -17,6 +17,7 @@ import {
   ImageEditorModalData,
 } from '../../../../../shared/components/image-editor';
 
+import { SkeletonComponent } from '@shared/components/skeleton/skeleton.component';
 export interface MediaPickerConfig {
   /** Filter to specific content types (e.g. ['image']). Empty = all. */
   contentTypes?: string[];
@@ -53,7 +54,7 @@ type PickerTab = 'library' | 'upload';
 @Component({
   selector: 'app-media-picker-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, ModalHeaderComponent, SpinnerComponent, MediaUploadComponent, UploadToastPanelComponent],
+  imports: [SkeletonComponent, CommonModule, FormsModule, ModalHeaderComponent, SpinnerComponent, MediaUploadComponent, UploadToastPanelComponent],
   template: `
     <!-- Header -->
     <app-modal-header [title]="config.title ?? 'Media Library'" />
@@ -111,10 +112,7 @@ type PickerTab = 'library' | 'upload';
           <!-- Grid -->
           <div class="grid-wrap">
             @if (loading()) {
-              <div class="loading">
-                <app-spinner size="md" class="text-brand-500" />
-                <span>Loading media…</span>
-              </div>
+              <div class="media-sk"><app-skeleton variant="block" height="110px" /><app-skeleton variant="block" height="110px" /><app-skeleton variant="block" height="110px" /><app-skeleton variant="block" height="110px" /><app-skeleton variant="block" height="110px" /><app-skeleton variant="block" height="110px" /><app-skeleton variant="block" height="110px" /><app-skeleton variant="block" height="110px" /></div>
             }
 
             @if (!loading() && mediaItems().length === 0) {
@@ -488,6 +486,7 @@ type PickerTab = 'library' | 'upload';
 
     /* Grid */
     .grid-wrap { min-height:200px; }
+    .media-sk { display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:12px; }
     .grid {
       display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr));
       gap:12px;

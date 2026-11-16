@@ -7,7 +7,7 @@
   </header>
 
   @if (loading()) {
-    <div class="loading"><span class="spinner spinner--lg"></span></div>
+    <app-form-skeleton />
   } @else {
     <!-- ═══ Identity ═══ -->
     <section class="card">
@@ -146,7 +146,7 @@
               style="border: 0;"
               loading="lazy"
               referrerpolicy="no-referrer-when-downgrade"
-              [title]="'SETTINGS.BRANCHES.MAP_LOCATION' | translate"
+              [appTooltip]="'SETTINGS.BRANCHES.MAP_LOCATION' | translate"
             ></iframe>
           </div>
         } @else {

@@ -25,6 +25,8 @@ import {
   PayrollRunSummary,
 } from '../../services/payroll-run.service';
 
+import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton.component';
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 type EditableKey =
   | 'basicSalary' | 'allowances' | 'attendanceDays' | 'overtimeHours'
   | 'bonus' | 'recurringDeductions' | 'loanDeduction' | 'gosiEmployee' | 'otherDeductions';
@@ -55,7 +57,7 @@ interface Col {
 @Component({
   selector: 'app-payroll-run',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, TranslateModule, MycurrencyPipe, BreadcrumbsComponent, DatePickerComponent, SegmentedToggleComponent],
+  imports: [TooltipDirective, ListSkeletonComponent, CommonModule, FormsModule, RouterLink, TranslateModule, MycurrencyPipe, BreadcrumbsComponent, DatePickerComponent, SegmentedToggleComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './payroll-run.component.html',
   styleUrls: ['./payroll-run.component.scss'],

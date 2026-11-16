@@ -76,7 +76,7 @@
     </div>
 
     @if (eventsLoading()) {
-      <div class="ns-loading">{{ 'NOTIFICATIONS_SETTINGS.LOADING_EVENTS' | translate }}</div>
+      <app-list-skeleton [rows]="4" [lines]="2" />
     } @else {
       @for (group of filteredGroups(); track group.category.id) {
         <div class="ns-group">
@@ -164,7 +164,7 @@
         </thead>
         <tbody>
           @if (templatesLoading()) {
-            <tr><td colspan="6" class="ns-table__empty">{{ 'NOTIFICATIONS_SETTINGS.LOADING_TEMPLATES' | translate }}</td></tr>
+            <tr><td colspan="6"><app-list-skeleton [rows]="5" /></td></tr>
           } @else if (filteredTemplates().length === 0) {
             <tr><td colspan="6" class="ns-table__empty">{{ 'NOTIFICATIONS_SETTINGS.NO_TEMPLATES' | translate }}</td></tr>
           } @else {
@@ -239,7 +239,7 @@
           </thead>
           <tbody>
             @if (logsLoading()) {
-              <tr><td colspan="7" class="ns-table__empty">{{ 'NOTIFICATIONS_SETTINGS.LOADING_LOGS' | translate }}</td></tr>
+              <tr><td colspan="7"><app-list-skeleton [rows]="5" /></td></tr>
             } @else if (logs().length === 0) {
               <tr><td colspan="7" class="ns-table__empty">{{ 'NOTIFICATIONS_SETTINGS.NO_LOGS' | translate }}</td></tr>
             } @else {
@@ -251,7 +251,7 @@
                   <td>{{ log.recipient }}</td>
                   <td class="ns-muted ns-nowrap">{{ logProviderLabel(log.provider) }}</td>
                   <td class="ns-nowrap"><app-status-badge [status]="log.status"/></td>
-                  <td class="ns-truncate" [title]="log.status === 'success' ? (log.messageId ?? '') : (log.error ?? '')">
+                  <td class="ns-truncate" [appTooltip]="log.status === 'success' ? (log.messageId ?? '') : (log.error ?? '')">
                     {{ log.status === 'success' ? (log.messageId || '—') : (log.error || 'unknown error') }}
                   </td>
                 </tr>

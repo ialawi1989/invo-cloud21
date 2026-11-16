@@ -93,6 +93,8 @@ import { FieldRendererComponent } from './components/field-renderer/field-render
 // so we reuse the (root-provided) BranchSettingsService here.
 import { BranchSettingsService } from '../../../settings/services/branch-settings.service';
 
+import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton.component';
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /** Tabs of the full employee form. */
 export type EmployeeFormTab = 'basic' | 'personal' | 'employment' | 'payment';
 
@@ -120,7 +122,7 @@ interface Option {
 @Component({
   selector: 'app-employee-form',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, FormSkeletonComponent, 
     CommonModule,
     RouterModule,
     ReactiveFormsModule,

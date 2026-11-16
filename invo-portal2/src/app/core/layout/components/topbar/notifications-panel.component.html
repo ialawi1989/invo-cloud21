@@ -10,7 +10,7 @@
         class="np-icon-btn"
         [class.is-on]="pending.soundEnabled()"
         (click)="pending.toggleSound()"
-        [title]="(pending.soundEnabled() ? 'NOTIFICATIONS_PANEL.SOUND_ON' : 'NOTIFICATIONS_PANEL.SOUND_OFF') | translate"
+        [appTooltip]="(pending.soundEnabled() ? 'NOTIFICATIONS_PANEL.SOUND_ON' : 'NOTIFICATIONS_PANEL.SOUND_OFF') | translate"
       >
         @if (pending.soundEnabled()) {
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -22,7 +22,7 @@
           </svg>
         }
       </button>
-      <button type="button" class="np-icon-btn" (click)="pending.load()" [title]="'NOTIFICATIONS_PANEL.REFRESH' | translate">
+      <button type="button" class="np-icon-btn" (click)="pending.load()" [appTooltip]="'NOTIFICATIONS_PANEL.REFRESH' | translate">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M23 4v6h-6"/><path d="M1 20v-6h6"/>
           <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
@@ -33,7 +33,7 @@
 
   <div class="np-body">
     @if (pending.loading() && !pending.loaded()) {
-      <div class="np-empty"><span class="np-spin"></span> {{ 'NOTIFICATIONS_PANEL.LOADING' | translate }}</div>
+      <app-list-skeleton [rows]="4" [lines]="2" [avatar]="true" />
     } @else if (pending.orders().length === 0) {
       <div class="np-empty">{{ 'NOTIFICATIONS_PANEL.EMPTY' | translate }}</div>
     } @else {

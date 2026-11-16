@@ -33,6 +33,7 @@ import { ModalService } from '@shared/modal/modal.service';
 import { BusinessSettingsService } from '../../services/business-settings.service';
 import type { MediaPickerModalComponent as MediaPickerType } from '../../media/components/media-picker/media-picker-modal.component';
 
+import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton.component';
 /**
  * Settings → Business Settings
  *
@@ -48,7 +49,7 @@ import type { MediaPickerModalComponent as MediaPickerType } from '../../media/c
 @Component({
   selector: 'app-business-settings',
   standalone: true,
-  imports: [
+  imports: [FormSkeletonComponent, 
     CommonModule,
     RouterModule,
     ReactiveFormsModule,

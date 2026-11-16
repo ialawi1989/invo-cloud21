@@ -29,6 +29,7 @@ import { ToastService } from '@shared/components/toast/toast.service';
 import { EmployeeAttendanceService } from '../../services/employee-attendance.service';
 import { AttendanceSummary } from '../../models/employee.types';
 
+import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton.component';
 /**
  * Attendance → adjust form (edit only)
  * ────────────────────────────────────
@@ -44,7 +45,7 @@ import { AttendanceSummary } from '../../models/employee.types';
 @Component({
   selector: 'app-attendance-form',
   standalone: true,
-  imports: [
+  imports: [FormSkeletonComponent, 
     CommonModule,
     RouterModule,
     ReactiveFormsModule,

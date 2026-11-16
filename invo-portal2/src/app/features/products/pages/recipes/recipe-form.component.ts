@@ -38,6 +38,7 @@ import {
 
 import { Recipe, RecipeItem, RecipeService } from '../../services/recipe.service';
 
+import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton.component';
 /**
  * Recipes → form (create + edit). Translatable Name + Description, plus a list
  * of ingredient products each with a usage quantity. Ported from the legacy
@@ -46,7 +47,7 @@ import { Recipe, RecipeItem, RecipeService } from '../../services/recipe.service
 @Component({
   selector: 'app-recipe-form',
   standalone: true,
-  imports: [
+  imports: [FormSkeletonComponent, 
     CommonModule,
     RouterModule,
     FormsModule,

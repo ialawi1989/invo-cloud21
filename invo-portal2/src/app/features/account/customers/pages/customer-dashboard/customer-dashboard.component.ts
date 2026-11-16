@@ -31,6 +31,7 @@ import { DOC_RAIL_ICONS, docSortMenu } from '../../../services/doc-rail-menu';
 import type { DocRailFilterOption } from '../../../components/doc-rail-filter/doc-rail-filter.component';
 import { CustomerStatementComponent } from '../../components/customer-statement/customer-statement.component';
 
+import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton.component';
 type Tab = 'overview' | 'transactions' | 'statementHistory' | 'notes';
 type TxKind = 'invoices' | 'estimates' | 'creditNotes' | 'payments';
 
@@ -64,7 +65,7 @@ const BUCKET_ORDER = ['1 - 15', '16 - 30', '31 - 45', '> 45', '< 0'];
 @Component({
   selector: 'app-customer-dashboard',
   standalone: true,
-  imports: [StatusBadgeComponent, 
+  imports: [ListSkeletonComponent, StatusBadgeComponent, 
     CommonModule, FormsModule, RouterLink, TranslateModule, MycurrencyPipe,
     PaginationComponent, SegmentedToggleComponent, DatePickerComponent, CustomerStatementComponent,
     DocViewShellComponent, DropdownMenuBtnComponent, SearchDropdownComponent,

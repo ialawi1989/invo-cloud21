@@ -43,7 +43,9 @@
       <li class="pcm__empty">{{ 'COMMON.NO_DATA' | translate }}</li>
     }
     <li #scrollSentinel class="pcm__sentinel" aria-hidden="true"></li>
-    @if (loading()) {
+    @if (loading() && rows().length === 0) {
+      <li class="pcm__skeleton"><app-list-skeleton [rows]="6" [lines]="2" /></li>
+    } @else if (loading()) {
       <li class="pcm__loading">
         <span class="spinner" aria-hidden="true"></span>
         {{ 'COMMON.LOADING' | translate }}

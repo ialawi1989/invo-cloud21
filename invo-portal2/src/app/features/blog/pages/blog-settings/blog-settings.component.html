@@ -8,7 +8,7 @@
   </header>
 
   @if (loading()) {
-    <div class="loading"><span class="spinner spinner--lg"></span></div>
+    <app-form-skeleton />
   } @else {
     <!-- ═══ Languages ═══ -->
     <section class="card">
@@ -53,7 +53,7 @@
                 </label>
                 <label class="lang-row__rtl"
                        [class.is-disabled]="!isSupported(l.code)"
-                       [title]="'BLOG.SETTINGS.RTL_HINT' | translate">
+                       [appTooltip]="'BLOG.SETTINGS.RTL_HINT' | translate">
                   <input type="checkbox"
                          [checked]="isRtl(l.code)"
                          [disabled]="!isSupported(l.code)"

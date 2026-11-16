@@ -33,6 +33,7 @@ import { Location } from '@angular/common';
 
 import { InvoiceOptionsService } from '../../services/invoice-options.service';
 
+import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton.component';
 /**
  * Settings → Invoice Options
  *
@@ -42,7 +43,7 @@ import { InvoiceOptionsService } from '../../services/invoice-options.service';
 @Component({
   selector: 'app-invoice-options',
   standalone: true,
-  imports: [
+  imports: [FormSkeletonComponent, 
     CommonModule,
     RouterModule,
     ReactiveFormsModule,

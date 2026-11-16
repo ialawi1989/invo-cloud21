@@ -39,6 +39,7 @@ import {
   OptionPickerResult,
 } from './components/option-picker-modal/option-picker-modal.component';
 
+import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton.component';
 /**
  * Option Groups → form (create + edit). Translatable Title + Display name
  * (alias), min/max selectable (with an "unlimited" toggle), and the list of
@@ -48,7 +49,7 @@ import {
 @Component({
   selector: 'app-option-group-form',
   standalone: true,
-  imports: [
+  imports: [FormSkeletonComponent, 
     CommonModule,
     RouterModule,
     FormsModule,

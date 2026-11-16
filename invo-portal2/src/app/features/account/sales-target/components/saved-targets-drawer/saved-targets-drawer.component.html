@@ -20,7 +20,7 @@
 
   <div class="std__list" (scroll)="onScroll($event)">
     @if (loading()) {
-      <p class="std__note">{{ 'SALES_TARGET.DRAWER.LOADING' | translate }}</p>
+      <app-list-skeleton [rows]="4" [lines]="2" />
     } @else if (failed()) {
       <p class="std__note std__note--bad">{{ 'SALES_TARGET.DRAWER.FAILED' | translate }}</p>
     } @else if (!rows().length) {
@@ -50,6 +50,6 @@
       </article>
     }
 
-    @if (loadingMore()) { <p class="std__note">{{ 'SALES_TARGET.DRAWER.LOADING' | translate }}</p> }
+    @if (loadingMore()) { <app-list-skeleton [rows]="4" [lines]="2" /> }
   </div>
 </div>

@@ -31,6 +31,7 @@ import { ToggleComponent } from '@shared/components/toggle/toggle.component';
 
 import { BusinessSettingsService } from '../../services/business-settings.service';
 
+import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton.component';
 /**
  * One toggle entry — drives the two grids of switches in the template
  * so we don't repeat the markup for every field.
@@ -89,7 +90,7 @@ const RECEIPT_COPIES_OPTIONS: { label: string; value: number }[] =
 @Component({
   selector: 'app-pos-options',
   standalone: true,
-  imports: [
+  imports: [FormSkeletonComponent, 
     CommonModule,
     RouterModule,
     ReactiveFormsModule,

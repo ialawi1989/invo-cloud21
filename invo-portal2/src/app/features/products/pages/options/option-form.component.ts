@@ -42,6 +42,7 @@ import {
 
 import { Option, OptionRecipeItem, OptionService } from '../../services/option.service';
 
+import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton.component';
 /**
  * Options → form (create + edit). Image, translatable Name + Display Name,
  * Kitchen name, price, "is multiple" / "is visible" toggles, shipping weight,
@@ -51,7 +52,7 @@ import { Option, OptionRecipeItem, OptionService } from '../../services/option.s
 @Component({
   selector: 'app-option-form',
   standalone: true,
-  imports: [
+  imports: [FormSkeletonComponent, 
     CommonModule,
     RouterModule,
     FormsModule,

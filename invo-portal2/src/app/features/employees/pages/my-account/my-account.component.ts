@@ -31,6 +31,7 @@ import { ToastService } from '@shared/components/toast/toast.service';
 import { EmployeeService } from '../../services/employee.service';
 import { EmployeeDetails } from '../../models/employee.types';
 
+import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton.component';
 /**
  * Employees → My Account (self-service)
  * ─────────────────────────────────────
@@ -52,7 +53,7 @@ import { EmployeeDetails } from '../../models/employee.types';
 @Component({
   selector: 'app-my-account',
   standalone: true,
-  imports: [
+  imports: [FormSkeletonComponent, 
     CommonModule,
     ReactiveFormsModule,
     TranslateModule,

@@ -22,6 +22,8 @@ import { NavigationService } from '../../services/navigation.service';
 import { Website } from '../../../models/website.model';
 import { NavigationList, NavigationListItem1, MegaMenuColumn } from '../../../models/navigation-list';
 
+import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton.component';
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /** A source group in the left "add to menu" picker. */
 interface LinkOptions {
   title: string;
@@ -35,7 +37,7 @@ interface LinkOptions {
 @Component({
   selector: 'app-navigation-builder',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, ListSkeletonComponent, 
     CommonModule, FormsModule, DragDropModule, TranslateModule,
     BreadcrumbsComponent, SpinnerComponent, SegmentedToggleComponent,
   ],

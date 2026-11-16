@@ -1,4 +1,4 @@
-@if (loading()) { <p class="vr-loading">{{ 'VAT_PAYMENT.REPORT.LOADING' | translate }}</p> }
+@if (loading()) { <app-list-skeleton [rows]="4" [lines]="2" /> }
 @for (s of [
   { title: 'VAT_PAYMENT.REPORT.ON_SALES', totalLabel: 'VAT_PAYMENT.REPORT.TOTAL_SALES', totalBox: '7', data: sales() },
   { title: 'VAT_PAYMENT.REPORT.ON_PURCHASES', totalLabel: 'VAT_PAYMENT.REPORT.TOTAL_PURCHASES', totalBox: '14', data: purchases() }

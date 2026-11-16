@@ -16,6 +16,7 @@ import { ModalHeaderComponent } from '@shared/modal/modal-header.component';
 import { ModalFooterComponent } from '@shared/modal/modal-footer.component';
 import { ApiService } from '@core/http/api.service';
 
+import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton.component';
 export interface AssignTaxModalData { taxId: string; }
 
 type TabId = 'All' | 'Product' | 'Department' | 'Category' | 'Brand' | 'Type';
@@ -37,7 +38,7 @@ const TYPES = [
   selector: 'app-assign-tax-modal',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, ModalHeaderComponent, ModalFooterComponent],
+  imports: [ListSkeletonComponent, CommonModule, FormsModule, ModalHeaderComponent, ModalFooterComponent],
   template: `
     <app-modal-header title="Assign To" />
 
@@ -97,7 +98,7 @@ const TYPES = [
         <!-- Product tab -->
         @if (activeTab() === 'Product') {
           @if (loading()) {
-            <div class="state-center"><span class="spinner"></span></div>
+            <app-list-skeleton [rows]="6" />
           } @else if (items().length === 0) {
             <div class="state-center">No products found</div>
           } @else {
@@ -134,7 +135,7 @@ const TYPES = [
         <!-- Department / Category / Brand tabs -->
         @if (activeTab() === 'Department' || activeTab() === 'Category' || activeTab() === 'Brand') {
           @if (loading()) {
-            <div class="state-center"><span class="spinner"></span></div>
+            <app-list-skeleton [rows]="6" />
           } @else if (items().length === 0) {
             <div class="state-center">No {{ activeTab().toLowerCase() }}s found</div>
           } @else {

@@ -22,6 +22,7 @@ import { MODAL_DATA, MODAL_REF } from '@shared/modal/modal.tokens';
 import { ModalRef } from '@shared/modal/modal.service';
 import { LogEntry, LogsService } from '@shared/services/logs.service';
 
+import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton.component';
 export interface LogsDrawerData {
   /** Entity key(s) the backend logs under, e.g. 'MenuRecipe'. */
   sourceTable: string | string[];
@@ -69,7 +70,7 @@ const PAGE_SIZE = 15;
 @Component({
   selector: 'app-logs-drawer',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, DatePipe, DatePickerComponent, SearchDropdownComponent],
+  imports: [ListSkeletonComponent, CommonModule, FormsModule, TranslateModule, DatePipe, DatePickerComponent, SearchDropdownComponent],
   templateUrl: './logs-drawer.component.html',
   styleUrl: './logs-drawer.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

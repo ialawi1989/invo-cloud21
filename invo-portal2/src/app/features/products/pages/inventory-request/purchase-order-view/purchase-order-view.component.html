@@ -17,7 +17,7 @@
   </header>
 
   @if (loading()) {
-    <div class="loading"><span class="spinner"></span></div>
+    <app-form-skeleton />
   } @else {
     @if (alreadyConverted()) {
       <p class="notice notice--info">{{ 'PRODUCTS.INVENTORY_REQUEST.ALREADY_CONVERTED' | translate }}</p>

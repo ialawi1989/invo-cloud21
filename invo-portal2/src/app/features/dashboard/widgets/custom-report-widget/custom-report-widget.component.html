@@ -2,7 +2,7 @@
   <div class="card-body">
     <!-- Header Row — matches the built-in dashboard widgets -->
     <div class="header-row">
-      <h4 class="card-title mb-0" [title]="reportName">{{ reportName || 'Custom report' }}</h4>
+      <h4 class="card-title mb-0" [appTooltip]="reportName">{{ reportName || 'Custom report' }}</h4>
 
       <div class="header-tools">
         <span class="cr-badge">Custom</span>
@@ -33,9 +33,7 @@
 
     <div class="cr-body">
       @if (loading) {
-        <div class="cr-state">
-          <div class="cr-spinner"></div>
-        </div>
+        <app-stats-skeleton [cards]="0" [chart]="true" chartHeight="180px" />
       }
 
       @if (!loading && error) {

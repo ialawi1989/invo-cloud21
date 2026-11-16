@@ -15,6 +15,7 @@ import { SalesLookupsService } from '../../../../account/services/sales-lookups.
 import { InventoryRequest, InventoryRequestService } from '../../../services/inventory-request.service';
 import { PoPreviewPaperComponent, SupplierGroup, groupBySupplier } from '../po-preview-paper/po-preview-paper.component';
 
+import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton.component';
 const ZOOM_KEY = 'inventoryRequestPurchaseOrderZoomLevel';
 
 /**
@@ -25,7 +26,7 @@ const ZOOM_KEY = 'inventoryRequestPurchaseOrderZoomLevel';
 @Component({
   selector: 'app-inventory-request-po-view',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, BreadcrumbsComponent, LoadingOverlayComponent, PoPreviewPaperComponent],
+  imports: [FormSkeletonComponent, CommonModule, FormsModule, TranslateModule, BreadcrumbsComponent, LoadingOverlayComponent, PoPreviewPaperComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './purchase-order-view.component.html',
   styleUrl: './purchase-order-view.component.scss',

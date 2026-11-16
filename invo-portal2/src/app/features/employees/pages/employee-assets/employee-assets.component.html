@@ -174,7 +174,7 @@
   }
 
   @if (loading()) {
-    <div class="asset-loading">{{ 'COMMON.LOADING' | translate }}</div>
+    <app-list-skeleton [rows]="4" [lines]="2" />
   } @else if (!assignments().length) {
     <app-empty-state icon="box"
       [title]="'EMPLOYEES.ASSETS.EMPTY_TITLE' | translate"

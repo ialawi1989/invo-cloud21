@@ -52,6 +52,7 @@ import { Media } from '@features/settings/media/models/media.model';
 import { Category, CategoryProduct, CategoryService } from '../../services/category.service';
 import { DepartmentService } from '../../services/department.service';
 
+import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton.component';
 interface DeptOption { id: string; name: string; }
 
 /**
@@ -62,7 +63,7 @@ interface DeptOption { id: string; name: string; }
 @Component({
   selector: 'app-category-form',
   standalone: true,
-  imports: [
+  imports: [FormSkeletonComponent, 
     CommonModule,
     RouterModule,
     ReactiveFormsModule,

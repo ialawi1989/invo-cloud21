@@ -22,6 +22,7 @@ import { EmployeeLeaveService, LeaveRequest } from '../../../../services/employe
 import { EmployeeService } from '../../../../services/employee.service';
 import { hrGrantFor } from '../../../../hr-privilege';
 
+import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton.component';
 export interface PendingLeaveModalData {
   employeeId: string;
   employeeName: string;
@@ -52,7 +53,7 @@ export interface PendingLeaveModalData {
 @Component({
   selector: 'app-pending-leave-modal',
   standalone: true,
-  imports: [
+  imports: [ListSkeletonComponent, 
     CommonModule,
     TranslateModule,
     ModalHeaderComponent,

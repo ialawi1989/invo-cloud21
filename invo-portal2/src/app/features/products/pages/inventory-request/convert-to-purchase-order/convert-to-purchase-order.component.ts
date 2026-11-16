@@ -15,6 +15,7 @@ import { SalesLookupsService } from '../../../../account/services/sales-lookups.
 import { InventoryRequest, InventoryRequestService } from '../../../services/inventory-request.service';
 import { PoPreviewPaperComponent, SupplierGroup, groupBySupplier } from '../po-preview-paper/po-preview-paper.component';
 
+import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton.component';
 const ZOOM_KEY = 'convertToPurchaseOrderZoomLevel';
 
 /**
@@ -26,7 +27,7 @@ const ZOOM_KEY = 'convertToPurchaseOrderZoomLevel';
 @Component({
   selector: 'app-convert-to-purchase-order',
   standalone: true,
-  imports: [
+  imports: [FormSkeletonComponent, 
     CommonModule, FormsModule, TranslateModule, BreadcrumbsComponent, LoadingOverlayComponent,
     FormStickyFooterComponent, PoPreviewPaperComponent,
   ],

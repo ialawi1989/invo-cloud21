@@ -1,5 +1,5 @@
 @if (loading()) {
-  <p class="benefits__loading">{{ 'COMMON.LOADING' | translate }}</p>
+  <app-list-skeleton [rows]="4" [lines]="2" />
 } @else {
 
   @if (error()) {

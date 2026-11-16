@@ -14,6 +14,7 @@ import { PeriodType, SavedTarget, TargetStatus } from '../../models/sales-target
 import { SalesTargetService } from '../../services/sales-target.service';
 import { anchorOfTarget, targetStatus } from '../../services/sales-target-calc';
 
+import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton.component';
 /** What the drawer hands back: which target, and whether to open it on the dashboard or edit it. */
 export interface SavedTargetPick { action: 'open' | 'edit'; target: SavedTarget; }
 
@@ -29,7 +30,7 @@ const PAGE = 15;
 @Component({
   selector: 'app-saved-targets-drawer',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, MycurrencyPipe, SegmentedToggleComponent, SearchDropdownComponent],
+  imports: [ListSkeletonComponent, CommonModule, FormsModule, TranslateModule, MycurrencyPipe, SegmentedToggleComponent, SearchDropdownComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './saved-targets-drawer.component.html',
   styleUrl: './saved-targets-drawer.component.scss',

@@ -44,7 +44,7 @@
 
 <div class="ld__body">
   @if (loading()) {
-    <div class="ld__state"><span class="ld__spinner"></span></div>
+    <app-list-skeleton [rows]="5" [lines]="2" [avatar]="true" />
   } @else if (logs().length === 0) {
     <div class="ld__state ld__state--empty">
       <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">

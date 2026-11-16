@@ -95,7 +95,7 @@
   }
 
   @if (loading()) {
-    <div class="lt-loading">{{ 'COMMON.LOADING' | translate }}</div>
+    <app-list-skeleton [rows]="4" [lines]="2" />
   } @else {
     <div class="lt-list">
       @for (r of rows(); track $index) {

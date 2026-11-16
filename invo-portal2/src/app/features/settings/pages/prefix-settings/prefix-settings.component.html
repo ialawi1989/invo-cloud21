@@ -8,7 +8,7 @@
   </header>
 
   @if (loading()) {
-    <div class="loading"><span class="spinner spinner--lg"></span></div>
+    <app-form-skeleton />
   } @else {
     <!-- Token-syntax hint banner — explains what {YYYY}/{YY}/{MM}/{DD}
          expand to so the user doesn't have to guess. -->
@@ -42,7 +42,7 @@
               type="button"
               class="ps-card__reset"
               (click)="revertRow(r.module)"
-              [title]="'SETTINGS.PREFIX.REVERT_HINT' | translate"
+              [appTooltip]="'SETTINGS.PREFIX.REVERT_HINT' | translate"
             >
               {{ 'SETTINGS.PREFIX.REVERT' | translate }}
             </button>

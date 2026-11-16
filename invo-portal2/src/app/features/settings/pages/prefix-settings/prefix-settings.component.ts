@@ -31,6 +31,8 @@ import {
   buildPreview,
 } from '../../services/prefix-settings.service';
 
+import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton.component';
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 interface PrefixRow {
   module:       PrefixModule;
   /** Translated display name (e.g. "Invoice"). */
@@ -60,7 +62,7 @@ interface PrefixRow {
 @Component({
   selector: 'app-prefix-settings',
   standalone: true,
-  imports: [
+  imports: [TooltipDirective, FormSkeletonComponent, 
     CommonModule,
     RouterModule,
     FormsModule,

@@ -36,6 +36,7 @@ import {
 
 import { Department, DepartmentService } from '../../services/department.service';
 
+import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton.component';
 /**
  * Departments → form (create + edit). A single translatable Name.
  * Ported from the legacy `department-form.component` in InvoCloudFront2.
@@ -43,7 +44,7 @@ import { Department, DepartmentService } from '../../services/department.service
 @Component({
   selector: 'app-department-form',
   standalone: true,
-  imports: [
+  imports: [FormSkeletonComponent, 
     CommonModule,
     RouterModule,
     ReactiveFormsModule,

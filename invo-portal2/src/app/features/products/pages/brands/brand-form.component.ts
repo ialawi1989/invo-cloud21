@@ -44,6 +44,7 @@ import {
 } from '../../components/pick-assigned-products-modal/pick-assigned-products-modal.component';
 import { Brand, BrandProduct, BrandService } from '../../services/brand.service';
 
+import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton.component';
 /**
  * Brands → form (create + edit). A single translatable Name.
  * Ported from the legacy `brands-form.component` in InvoCloudFront2.
@@ -52,7 +53,7 @@ import { Brand, BrandProduct, BrandService } from '../../services/brand.service'
 @Component({
   selector: 'app-brand-form',
   standalone: true,
-  imports: [
+  imports: [FormSkeletonComponent, 
     CommonModule,
     RouterModule,
     ReactiveFormsModule,

@@ -33,7 +33,7 @@
       </div>
     }
     @if (loading()) {
-      <div class="tm__loading"><span class="tm__spinner"></span></div>
+      <app-form-skeleton [cards]="1" [fields]="2" [columns]="1" />
     } @else if (useTabs()) {
       <!-- 3+ languages: tabs so the dialog doesn't grow into a long stack. -->
       <div class="tm__tabs" role="tablist">

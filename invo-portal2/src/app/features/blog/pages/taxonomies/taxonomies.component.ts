@@ -31,12 +31,13 @@ import { generateSlug } from '../../utils/blog-utils';
 import { BlogAiService } from '../../services/blog-ai.service';
 import { RICH_EDITOR_AI_PROVIDER } from '@shared/components/rich-editor/rich-editor-ai';
 
+import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton.component';
 type Tab = 'category' | 'tag' | 'hashtag';
 
 @Component({
   selector: 'app-blog-taxonomies',
   standalone: true,
-  imports: [
+  imports: [ListSkeletonComponent, 
     CommonModule,
     FormsModule,
     RouterModule,

@@ -20,6 +20,7 @@ import { SearchDropdownComponent } from '@shared/components/dropdown/search-drop
 import { BLOG_API } from '../../services/blog-api';
 import { BlogReport, BlogReportPost } from '../../services/blog.types';
 
+import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton.component';
 type MetricTab = 'views' | 'visitors' | 'engagement';
 
 /** Left-rail metric a post list can be broken down by. */
@@ -34,7 +35,7 @@ type PostsByKey = 'publishDate' | 'views' | 'clicks' | 'readingTime' | 'engageme
 @Component({
   selector: 'app-blog-analytics',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslateModule, DatePickerComponent, SearchDropdownComponent],
+  imports: [ListSkeletonComponent, CommonModule, RouterModule, TranslateModule, DatePickerComponent, SearchDropdownComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './analytics.component.html',
   styleUrl: './analytics.component.scss',

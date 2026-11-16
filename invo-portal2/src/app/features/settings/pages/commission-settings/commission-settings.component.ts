@@ -25,6 +25,7 @@ import {
   EmployeeTipOptions,
 } from '../../../employees/models/employee-earnings.types';
 
+import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton.component';
 interface Choice<T> { value: T; label: string; disabled?: boolean }
 
 /**
@@ -39,7 +40,7 @@ interface Choice<T> { value: T; label: string; disabled?: boolean }
 @Component({
   selector: 'app-commission-settings',
   standalone: true,
-  imports: [
+  imports: [FormSkeletonComponent, 
     CommonModule, FormsModule, TranslateModule,
     BreadcrumbsComponent, FormStickyFooterComponent, LoadingOverlayComponent,
     SearchDropdownComponent, DateFieldComponent, ToggleComponent,

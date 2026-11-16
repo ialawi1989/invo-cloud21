@@ -23,6 +23,7 @@ import { Account, AccountJournalsResult } from '../../services/account.types';
 import { accountNature, accountTypeKey } from '../../utils/account-types';
 import { journalLink } from '../../utils/journal-links';
 
+import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton.component';
 type Tab = 'overview' | 'journals';
 
 const ymd = (d: Date | null | undefined): string | null => {
@@ -39,7 +40,7 @@ const ymd = (d: Date | null | undefined): string | null => {
 @Component({
   selector: 'app-chart-of-accounts-view',
   standalone: true,
-  imports: [
+  imports: [ListSkeletonComponent, 
     CommonModule, RouterLink, TranslateModule, MycurrencyPipe, PaginationComponent, DatePickerComponent,
     SearchDropdownComponent, DropdownMenuBtnComponent, DocViewShellComponent,
   ],

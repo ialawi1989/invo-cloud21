@@ -53,6 +53,7 @@ import {
   CustomFieldTypeModalData,
 } from '../../components/custom-field-type-modal/custom-field-type-modal.component';
 
+import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton.component';
 /**
  * Settings → Custom Fields → :type
  *
@@ -68,7 +69,7 @@ import {
 @Component({
   selector: 'app-custom-fields-manager',
   standalone: true,
-  imports: [
+  imports: [FormSkeletonComponent, 
     CommonModule,
     RouterModule,
     FormsModule,

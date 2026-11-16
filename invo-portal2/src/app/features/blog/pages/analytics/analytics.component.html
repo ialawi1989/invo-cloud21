@@ -122,7 +122,7 @@
     <!-- Right panel -->
     <div class="an__pbBody">
       @if (loading()) {
-        <div class="an__pbState"><span>{{ 'COMMON.LOADING' | translate }}…</span></div>
+        <app-list-skeleton [rows]="4" [lines]="2" />
       } @else if (postsBy() === 'clicks') {
         <!-- Clicks needs click tracking enabled -->
         <div class="an__pbEmpty">

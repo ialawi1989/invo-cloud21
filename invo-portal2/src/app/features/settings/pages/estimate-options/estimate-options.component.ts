@@ -29,6 +29,7 @@ import { ErrorService } from '@core/http/error.service';
 
 import { EstimateOptionsService } from '../../services/estimate-options.service';
 
+import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton.component';
 /**
  * Settings → Estimate Options
  *
@@ -39,7 +40,7 @@ import { EstimateOptionsService } from '../../services/estimate-options.service'
 @Component({
   selector: 'app-estimate-options',
   standalone: true,
-  imports: [
+  imports: [FormSkeletonComponent, 
     CommonModule,
     RouterModule,
     ReactiveFormsModule,

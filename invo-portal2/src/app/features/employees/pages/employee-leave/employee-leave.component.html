@@ -559,7 +559,7 @@
   }
 
   @if (loading()) {
-    <div class="leave-loading">{{ 'COMMON.LOADING' | translate }}</div>
+    <app-list-skeleton [rows]="4" [lines]="2" />
   } @else if (!requests().length) {
     <app-empty-state icon="calendar"
       [title]="'EMPLOYEES.LEAVE.EMPTY_TITLE' | translate"

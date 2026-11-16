@@ -158,7 +158,7 @@
   }
 
   @if (loading()) {
-    <div class="disc-loading">{{ 'COMMON.LOADING' | translate }}</div>
+    <app-list-skeleton [rows]="4" [lines]="2" />
   } @else if (!records().length) {
     <app-empty-state icon="shield"
       [title]="'EMPLOYEES.DISCIPLINARY.EMPTY_TITLE' | translate"

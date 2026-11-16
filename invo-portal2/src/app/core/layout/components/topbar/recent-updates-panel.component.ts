@@ -6,6 +6,7 @@ import { MODAL_REF } from '../../../../shared/modal/modal.tokens';
 import { ModalRef } from '../../../../shared/modal/modal.service';
 import { environment } from '../../../../../environments/environment';
 
+import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton.component';
 export interface RecentUpdate {
   id:          string;
   title:       string;
@@ -18,7 +19,7 @@ export interface RecentUpdate {
 @Component({
   selector: 'app-recent-updates-panel',
   standalone: true,
-  imports: [CommonModule],
+  imports: [ListSkeletonComponent, CommonModule],
   template: `
     <div class="rup">
 
@@ -33,9 +34,7 @@ export interface RecentUpdate {
       <!-- Body -->
       <div class="rup-body">
         @if (loading()) {
-          <div class="rup-empty">
-            <span class="rup-spin"></span> Loading updates...
-          </div>
+          <app-list-skeleton [rows]="4" [lines]="2" />
         } @else if (updates().length === 0) {
           <div class="rup-empty">No updates available.</div>
         } @else {

@@ -25,6 +25,7 @@ import {
 } from '../../services/employee-asset.service';
 import { ReturnFieldsMode, isOpenStatus, returnFieldsMode } from './asset-return-rules';
 
+import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton.component';
 /**
  * The assets tab — company property issued to this employee.
  *
@@ -50,7 +51,7 @@ import { ReturnFieldsMode, isOpenStatus, returnFieldsMode } from './asset-return
 @Component({
   selector: 'app-employee-assets',
   standalone: true,
-  imports: [
+  imports: [ListSkeletonComponent, 
     CommonModule, ReactiveFormsModule, TranslateModule,
     SearchDropdownComponent, MycurrencyPipe, EmptyStateComponent, DateFieldComponent
   ],

@@ -22,6 +22,7 @@ import { ModalFooterComponent } from '@shared/modal/modal-footer.component';
 import { MODAL_DATA, MODAL_REF } from '@shared/modal/modal.tokens';
 import type { ModalRef } from '@shared/modal/modal.service';
 
+import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton.component';
 /** One selectable row. `id` is what callers persist; `name` is what they show. */
 export interface PickedListItem {
   id: string;
@@ -78,7 +79,7 @@ const PAGE_SIZE = 30;
 @Component({
   selector: 'app-pick-list-modal',
   standalone: true,
-  imports: [
+  imports: [ListSkeletonComponent, 
     CommonModule,
     FormsModule,
     TranslateModule,

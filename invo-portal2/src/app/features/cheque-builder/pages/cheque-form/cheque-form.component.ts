@@ -20,6 +20,7 @@ import {
 } from '../../models/cheque-template.model';
 import { ChequeBuilderService } from '../../services/cheque-builder.service';
 
+import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton.component';
 const HINDI = '٠١٢٣٤٥٦٧٨٩';
 const toHindi = (s: string) => s.replace(/\d/g, d => HINDI[+d]);
 
@@ -32,7 +33,7 @@ const toHindi = (s: string) => s.replace(/\d/g, d => HINDI[+d]);
 @Component({
   selector: 'app-cheque-form',
   standalone: true,
-  imports: [
+  imports: [ListSkeletonComponent, 
     CommonModule, FormsModule, TranslateModule, SearchDropdownComponent, EmptyStateComponent,
     RangeSliderComponent, SegmentedToggleComponent, ToggleComponent,
   ],

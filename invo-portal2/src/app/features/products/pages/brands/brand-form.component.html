@@ -7,7 +7,7 @@
   </header>
 
   @if (loading()) {
-    <div class="loading"><span class="spinner spinner--lg"></span></div>
+    <app-form-skeleton [cards]="1" [fields]="1" [columns]="1" />
   } @else {
     <section class="card">
       <header class="card__head">

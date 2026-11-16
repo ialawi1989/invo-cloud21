@@ -305,7 +305,7 @@
             <app-dropdown-menu-btn [items]="statementExportMenu()" [appendToBody]="true" align="end" triggerClass="cd-btn cd-btn--sm">{{ 'CUSTOMERS.DASHBOARD_PAGE.EXPORT' | translate }}</app-dropdown-menu-btn>
           </div>
           @if (stateLoading()) {
-            <div class="cd-empty">{{ 'COMMON.LOADING' | translate }}</div>
+            <app-list-skeleton [rows]="4" [lines]="2" />
           } @else if (stateRows() !== null) {
             <app-customer-statement
               [rows]="stateRows() ?? []" [customerName]="c.name" [from]="stateFrom" [to]="stateTo" [filterType]="filterType()"/>

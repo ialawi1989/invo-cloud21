@@ -20,6 +20,7 @@ import { BLOG_API } from '../services/blog-api';
 import { BlogPostNote, NoteStatus } from '../services/blog.types';
 import { timeAgo } from '../utils/blog-utils';
 
+import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton.component';
 /**
  * Wix-style editor notes for a post: a list of notes (author + time +
  * content) filtered by Open / Resolved, with resolve/re-open, edit, delete,
@@ -29,7 +30,7 @@ import { timeAgo } from '../utils/blog-utils';
 @Component({
   selector: 'app-blog-notes-panel',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, SegmentedToggleComponent, TooltipDirective],
+  imports: [ListSkeletonComponent, CommonModule, FormsModule, TranslateModule, SegmentedToggleComponent, TooltipDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './notes-panel.component.html',
   styleUrl: './notes-panel.component.scss',

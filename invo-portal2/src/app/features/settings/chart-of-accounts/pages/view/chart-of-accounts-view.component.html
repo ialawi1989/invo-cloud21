@@ -67,7 +67,7 @@
                 </div>
               </div>
             } @else {
-              <section class="ca-card"><div class="ca-empty">{{ 'COMMON.LOADING' | translate }}</div></section>
+              <section class="ca-card"><app-list-skeleton [rows]="4" [lines]="2" /></section>
             }
             <p class="ca-muted ca-period">
               {{ range().start | date: 'dd/MM/yyyy' }} – {{ range().end | date: 'dd/MM/yyyy' }}
@@ -151,7 +151,7 @@
               [page]="page()" [pageSize]="limit()" [count]="j.count || null" [pageCount]="j.pageCount"
               (pageChange)="setPage($event)" (pageSizeChange)="setLimit($event)"/>
           } @else if (journalsLoading()) {
-            <div class="ca-empty">{{ 'COMMON.LOADING' | translate }}</div>
+            <app-list-skeleton [rows]="4" [lines]="2" />
           }
         </section>
       }

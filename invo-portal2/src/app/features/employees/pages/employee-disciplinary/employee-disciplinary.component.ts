@@ -34,6 +34,7 @@ import {
   statementWindowClosed,
 } from './disciplinary-rules';
 
+import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton.component';
 /**
  * The disciplinary tab — the most restricted screen in the feature.
  *
@@ -60,7 +61,7 @@ import {
 @Component({
   selector: 'app-employee-disciplinary',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, SearchDropdownComponent, EmptyStateComponent, DateFieldComponent],
+  imports: [ListSkeletonComponent, CommonModule, ReactiveFormsModule, TranslateModule, SearchDropdownComponent, EmptyStateComponent, DateFieldComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './employee-disciplinary.component.html',
   styleUrls: ['./employee-disciplinary.component.scss'],

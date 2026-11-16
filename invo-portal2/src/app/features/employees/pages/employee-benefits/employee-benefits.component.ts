@@ -26,6 +26,7 @@ import {
   ratePercent,
 } from './benefit-rules';
 
+import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton.component';
 /**
  * The benefits tab — NON-CASH entitlements.
  *
@@ -51,7 +52,7 @@ import {
 @Component({
   selector: 'app-employee-benefits',
   standalone: true,
-  imports: [CommonModule, TranslateModule, RouterLink],
+  imports: [ListSkeletonComponent, CommonModule, TranslateModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './employee-benefits.component.html',
   styleUrls: ['./employee-benefits.component.scss'],

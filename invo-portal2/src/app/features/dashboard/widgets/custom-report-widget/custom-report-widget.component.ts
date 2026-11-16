@@ -23,6 +23,8 @@ import {
 } from '../../../reports/custom/shared/v2/catalog-fields';
 import { coerceByRunColumns, sheetToSpec } from '../../../reports/custom/shared/v2/spec-adapter';
 
+import { StatsSkeletonComponent } from '@shared/components/skeleton/stats-skeleton.component';
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /**
  * Renders a saved custom report (by module id) as a dashboard widget, using the
  * SAME rendering pipeline as the report builder/view: shared field metadata
@@ -34,7 +36,7 @@ import { coerceByRunColumns, sheetToSpec } from '../../../reports/custom/shared/
 @Component({
   selector: 'app-custom-report-widget',
   standalone: true,
-  imports: [ChartPreviewComponent, PaginationComponent],
+  imports: [TooltipDirective, StatsSkeletonComponent, ChartPreviewComponent, PaginationComponent],
   templateUrl: './custom-report-widget.component.html',
   styleUrls: ['./custom-report-widget.component.scss'],
 })

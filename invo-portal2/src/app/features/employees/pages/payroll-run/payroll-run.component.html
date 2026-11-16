@@ -2,7 +2,7 @@
   <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
 
   @if (loading()) {
-    <div class="pr-loading">{{ 'COMMON.LOADING' | translate }}</div>
+    <app-list-skeleton [rows]="4" [lines]="2" />
   } @else if (run(); as r) {
 
     <!-- ═════════ One run ═════════ -->
@@ -19,7 +19,7 @@
         <button type="button" class="btn btn-default" (click)="exportCsv()">{{ 'EMPLOYEES.PAYROLL_RUN.EXPORT' | translate }}</button>
         @if (isDraft()) {
           <button type="button" class="btn btn-default" [disabled]="busy()" (click)="recalculate()"
-                  [title]="'EMPLOYEES.PAYROLL_RUN.RECALC_HINT' | translate">
+                  [appTooltip]="'EMPLOYEES.PAYROLL_RUN.RECALC_HINT' | translate">
             {{ 'EMPLOYEES.PAYROLL_RUN.RECALC' | translate }}
           </button>
           <button type="button" class="btn btn-primary" [disabled]="busy()" (click)="finalize()">
@@ -186,7 +186,7 @@
                                    [attr.aria-label]="'EMPLOYEES.PAYROLL_RUN.COL_OVERRIDE' | translate"
                                    [disabled]="!isDraft()" (change)="onCell(l, c, $any($event.target).value)"/>
                             @if (isOverridden(l, c) && isDraft()) {
-                              <button type="button" class="pr-reset" [title]="'EMPLOYEES.PAYROLL_RUN.RESET' | translate" (click)="onCell(l, c, '')">×</button>
+                              <button type="button" class="pr-reset" [appTooltip]="'EMPLOYEES.PAYROLL_RUN.RESET' | translate" (click)="onCell(l, c, '')">×</button>
                             }
                           </div>
                         } @else {
@@ -195,7 +195,7 @@
                                    [value]="c.value(l)" [placeholder]="'' + c.computed(l)"
                                    [disabled]="!isDraft()" (change)="onCell(l, c, $any($event.target).value)"/>
                             @if (isOverridden(l, c) && isDraft()) {
-                              <button type="button" class="pr-reset" [title]="'EMPLOYEES.PAYROLL_RUN.RESET' | translate" (click)="onCell(l, c, '')">×</button>
+                              <button type="button" class="pr-reset" [appTooltip]="'EMPLOYEES.PAYROLL_RUN.RESET' | translate" (click)="onCell(l, c, '')">×</button>
                             }
                           </div>
                         }

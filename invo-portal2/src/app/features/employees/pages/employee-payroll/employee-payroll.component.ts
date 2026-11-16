@@ -38,6 +38,7 @@ import {
   splitsAreValid,
 } from './payroll-rules';
 
+import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton.component';
 /**
  * The payroll tab — salary, bank details and loans.
  *
@@ -64,7 +65,7 @@ type PayView = 'pay' | 'history' | 'loans' | 'bank';
 @Component({
   selector: 'app-employee-payroll',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, SearchDropdownComponent, AlertComponent, SegmentedToggleComponent, WizardStepsComponent, DateFieldComponent, GosiExemptionsComponent],
+  imports: [ListSkeletonComponent, CommonModule, ReactiveFormsModule, TranslateModule, SearchDropdownComponent, AlertComponent, SegmentedToggleComponent, WizardStepsComponent, DateFieldComponent, GosiExemptionsComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './employee-payroll.component.html',
   styleUrls: ['./employee-payroll.component.scss'],

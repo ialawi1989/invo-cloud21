@@ -25,6 +25,7 @@ import { WebsitePagesService } from '../pages/services/website-pages.service';
 import { SiteConfigSection, SiteConfigService } from './site-config.service';
 import { FALLBACK_SITE_CONFIG_SCHEMA, SiteConfigSchema } from './site-config.schema';
 
+import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton.component';
 /**
  * Website settings.
  *
@@ -44,7 +45,7 @@ import { FALLBACK_SITE_CONFIG_SCHEMA, SiteConfigSchema } from './site-config.sch
 @Component({
   selector: 'app-website-settings',
   standalone: true,
-  imports: [
+  imports: [FormSkeletonComponent, 
     CommonModule, TranslateModule,
     BreadcrumbsComponent, FormStickyFooterComponent, LoadingOverlayComponent,
     SettingsFieldsComponent,
@@ -58,7 +59,7 @@ import { FALLBACK_SITE_CONFIG_SCHEMA, SiteConfigSchema } from './site-config.sch
       </header>
 
       @if (loading()) {
-        <div class="ws-loading"><span class="spinner spinner--lg"></span></div>
+        <app-form-skeleton />
       } @else {
         @for (section of schema().sections; track section.key) {
           <section class="card">

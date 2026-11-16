@@ -46,6 +46,7 @@ import {
   KitchenSectionService,
 } from '../../services/kitchen-section.service';
 
+import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton.component';
 /**
  * Settings → Kitchen Section (form, create + edit)
  *
@@ -57,7 +58,7 @@ import {
 @Component({
   selector: 'app-kitchen-section-form',
   standalone: true,
-  imports: [
+  imports: [FormSkeletonComponent, 
     CommonModule,
     RouterModule,
     ReactiveFormsModule,

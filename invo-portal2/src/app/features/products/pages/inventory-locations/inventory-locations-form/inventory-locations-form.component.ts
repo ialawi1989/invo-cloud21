@@ -56,6 +56,7 @@ import {
   InventoryLocationService,
 } from '../../../services/inventory-location.service';
 
+import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton.component';
 interface BranchOption { id: string; name: string; }
 
 /**
@@ -66,7 +67,7 @@ interface BranchOption { id: string; name: string; }
 @Component({
   selector: 'app-inventory-locations-form',
   standalone: true,
-  imports: [
+  imports: [FormSkeletonComponent, 
     CommonModule,
     RouterModule,
     ReactiveFormsModule,

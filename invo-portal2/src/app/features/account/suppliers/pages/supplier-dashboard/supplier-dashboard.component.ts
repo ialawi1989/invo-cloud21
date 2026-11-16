@@ -26,6 +26,7 @@ import { DocViewShellComponent } from '../../../components/doc-view-shell/doc-vi
 import type { DocRailItem } from '../../../services/document-view-base';
 import { DOC_RAIL_ICONS, docSortMenu } from '../../../services/doc-rail-menu';
 
+import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton.component';
 type Tab = 'overview' | 'transactions' | 'supplierItem' | 'statementHistory';
 type TxKind = 'bills' | 'purchases' | 'credits' | 'payments';
 interface TxState { list: any[]; pageCount: number; count: number; page: number; limit: number; loaded: boolean }
@@ -60,7 +61,7 @@ const BUCKET_ORDER = ['1 - 15', '16 - 30', '31 - 45', '> 45', '< 0'];
 @Component({
   selector: 'app-supplier-dashboard',
   standalone: true,
-  imports: [StatusBadgeComponent, 
+  imports: [ListSkeletonComponent, StatusBadgeComponent, 
     CommonModule, RouterLink, TranslateModule, MycurrencyPipe, PaginationComponent,
     NgApexchartsModule, SegmentedToggleComponent, DatePickerComponent, DropdownMenuBtnComponent, SearchDropdownComponent, SupplierStatementComponent,
     DocViewShellComponent,

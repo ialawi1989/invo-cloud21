@@ -36,7 +36,7 @@
   </div>
 
   @if (loading()) {
-    <p class="pl-empty">{{ 'COMMON.LOADING' | translate }}</p>
+    <app-list-skeleton [rows]="4" [lines]="2" />
   } @else if (!rows().length) {
     <p class="pl-empty">
       {{ (filter() === 'Pending' && typeFilter() === 'All'

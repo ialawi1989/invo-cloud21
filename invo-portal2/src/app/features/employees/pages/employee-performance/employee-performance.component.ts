@@ -34,6 +34,7 @@ import {
   weightsAreValid,
 } from './review-rules';
 
+import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton.component';
 /**
  * The performance tab — reviews and trainings.
  *
@@ -57,7 +58,7 @@ import {
 @Component({
   selector: 'app-employee-performance',
   standalone: true,
-  imports: [
+  imports: [ListSkeletonComponent, 
     CommonModule, ReactiveFormsModule, TranslateModule,
     SearchDropdownComponent, MycurrencyPipe, EmptyStateComponent, DateFieldComponent
   ],

@@ -30,6 +30,7 @@ import {
   DEFAULT_IMAGE_DISPLAY,
 } from '../../services/media-settings.service';
 
+import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton.component';
 /**
  * Settings → Media → Image Display
  *
@@ -45,7 +46,7 @@ import {
 @Component({
   selector: 'app-image-display-settings',
   standalone: true,
-  imports: [
+  imports: [FormSkeletonComponent, 
     CommonModule,
     RouterModule,
     TranslateModule,

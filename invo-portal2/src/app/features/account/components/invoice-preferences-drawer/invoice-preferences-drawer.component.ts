@@ -15,6 +15,7 @@ import { CustomFieldsService } from '../../../settings/services/custom-fields.se
 import { CustomField, FIELD_TYPE_CARDS } from '../../../settings/models/custom-field.types';
 import { CustomFieldTypeModalComponent } from '../../../settings/components/custom-field-type-modal/custom-field-type-modal.component';
 
+import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton.component';
 interface InvoiceOptionsForm {
   note: string;
   term: string;
@@ -36,7 +37,7 @@ const slugify = (name: string) => name.trim().toLowerCase().replace(/\s+/g, '_')
 @Component({
   selector: 'app-invoice-preferences-drawer',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, ToggleComponent],
+  imports: [ListSkeletonComponent, CommonModule, FormsModule, TranslateModule, ToggleComponent],
   template: `
     <div class="ipd">
       <header class="ipd__head">
@@ -51,7 +52,7 @@ const slugify = (name: string) => name.trim().toLowerCase().replace(/\s+/g, '_')
       <div class="ipd__body">
         @if (tab() === 'preferences') {
           @if (loading()) {
-            <p class="ipd__hint">{{ 'DOC_LINES.LOADING' | translate }}</p>
+            <app-list-skeleton [rows]="4" [lines]="2" />
           } @else {
             <label class="ipd__check">
               <input type="checkbox" [(ngModel)]="form.enableWaste"/>
@@ -77,7 +78,7 @@ const slugify = (name: string) => name.trim().toLowerCase().replace(/\s+/g, '_')
           }
         } @else {
           @if (fieldsLoading()) {
-            <p class="ipd__hint">{{ 'DOC_LINES.LOADING' | translate }}</p>
+            <app-list-skeleton [rows]="4" [lines]="2" />
           } @else {
             <p class="ipd__fields-text">{{ 'INVOICES.PREFS.FIELDS_TEXT' | translate }}</p>
 

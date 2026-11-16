@@ -167,7 +167,7 @@
   }
 
   @if (loading()) {
-    <div class="perf-loading">{{ 'COMMON.LOADING' | translate }}</div>
+    <app-list-skeleton [rows]="4" [lines]="2" />
   } @else if (!reviews().length) {
     <app-empty-state icon="star"
       [title]="'EMPLOYEES.PERFORMANCE.EMPTY_REVIEWS_TITLE' | translate"

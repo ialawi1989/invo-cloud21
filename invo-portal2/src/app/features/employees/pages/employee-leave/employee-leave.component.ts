@@ -64,6 +64,7 @@ import {
   mayEditRequest,
 } from './leave-permissions';
 
+import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton.component';
 /**
  * The leave tab — entitlement, balance and requests.
  *
@@ -91,7 +92,7 @@ import {
 @Component({
   selector: 'app-employee-leave',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, TranslateModule, SearchDropdownComponent, AlertComponent, EmptyStateComponent, DateFieldComponent],
+  imports: [ListSkeletonComponent, CommonModule, ReactiveFormsModule, RouterLink, TranslateModule, SearchDropdownComponent, AlertComponent, EmptyStateComponent, DateFieldComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './employee-leave.component.html',
   styleUrls: ['./employee-leave.component.scss'],
