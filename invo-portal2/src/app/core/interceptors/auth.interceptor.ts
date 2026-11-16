@@ -4,9 +4,9 @@ import {
 } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, throwError, defer, of } from 'rxjs';
-import { catchError, finalize, switchMap, take, timeout } from 'rxjs/operators';
-import { AuthService } from '../auth/auth.service';
+import { Observable, throwError } from 'rxjs';
+import { catchError, switchMap } from 'rxjs/operators';
+import { AuthService, isTransientRefreshError } from '../auth/auth.service';
 import { AuthTabSyncService } from '../auth/auth-tab-sync.service';
 import { CrossTabRefreshLockService } from '../auth/cross-tab-refresh-lock.service';
 import { ModalService } from '../../shared/modal/modal.service';
@@ -16,7 +16,6 @@ import { SessionExpiredModalComponent } from '../auth/session-expired-modal.comp
 // Using module scope instead of service state keeps the functional interceptor
 // stateful without introducing an extra service.
 
-let refreshInFlight$: Observable<string> | null = null;
 let sessionExpiredShown = false;
 
 // Public paths that never need an access token
@@ -29,6 +28,13 @@ const PUBLIC_PATHS = [
 // so it is NOT in PUBLIC_PATHS. We let it fall through the normal token-attach
 // flow, but we never retry it on 401 (session is already gone).
 const LOGOUT_PATHS = ['/logout'];
+
+/**
+ * Pages that render without a session (shared e-invoice payment / signature links). A failed refresh
+ * there must not pop the "Session Expired" dialog over the invoice or redirect to /login. Read from
+ * location rather than router.url so it is answerable before the first navigation settles.
+ */
+const PUBLIC_PAGES = /^\/(einvoice|invoiceSign)\//i;
 
 function isPublicCall(url: string): boolean {
   return PUBLIC_PATHS.some(p => url.includes(p));
@@ -57,95 +63,92 @@ export const authInterceptor: HttpInterceptorFn = (
   const modal   = inject(ModalService);
 
   // Always send cookies for refresh-token flow
-  let request = req.clone({ withCredentials: true });
+  const request = req.clone({ withCredentials: true });
 
   // Pass through public endpoints and refresh calls without any token logic
   if (isPublicCall(request.url))       return next(request);
   if (request.headers.has('api-auth')) return next(request);
   if (isRefreshCall(request.url))      return next(request);
 
-  // Attach current access token to ALL authenticated calls (including logout)
-  const token = auth.getAccessToken();
-  if (token) request = withAuth(request, token);
-
   // Logout: send token + cookie but never retry on 401 — session is being torn down
-  if (isLogoutCall(request.url)) return next(request);
-
-  // Skip retry logic for any other call during logout flow
-  if (auth.isLoggingOut) return next(request);
-
-  return next(request).pipe(
-    catchError((err: unknown) => {
-      if (!(err instanceof HttpErrorResponse)) return throwError(() => err);
-      if (err.status !== 401)                  return throwError(() => err);
-      if (auth.isLoggingOut)                   return throwError(() => err);
-
-      // ── 401 → try to silently refresh ──────────────────────────────────
-      return getFreshToken(auth, tabSync, lock).pipe(
-        switchMap((newToken) => {
-          auth.setAccessToken(newToken);
-
-          const retried = withAuth(req.clone({ withCredentials: true }), newToken);
-          return next(retried);
-        }),
-        catchError((refreshErr) => {
-          if (auth.isLoggingOut) return throwError(() => refreshErr);
-          handleSessionExpired(auth, tabSync, lock, router, modal);
-          return throwError(() => refreshErr);
-        }),
-      );
-    }),
-  );
-};
-
-// ─── Cross-tab token refresh ──────────────────────────────────────────────────
-
-function getFreshToken(
-  auth:    AuthService,
-  tabSync: AuthTabSyncService,
-  lock:    CrossTabRefreshLockService,
-): Observable<string> {
-
-  if (auth.isLoggingOut) return throwError(() => new Error('Logging out'));
-
-  // Another call already started a refresh in this tab — share it
-  if (refreshInFlight$) return refreshInFlight$;
-
-  const isLeader = lock.tryAcquire(8000);
-
-  if (!isLeader) {
-    // This tab lost the election — wait for the leader tab to broadcast
-    return tabSync.accessUpdated$.pipe(
-      take(1),
-      timeout({ first: 8000 }),
-    );
+  if (isLogoutCall(request.url)) {
+    const t = auth.getAccessToken();
+    return next(t ? withAuth(request, t) : request);
   }
 
-  // This tab won the election — do the actual refresh
-  refreshInFlight$ = defer(() => {
-    if (auth.isLoggingOut) return throwError(() => new Error('Logging out'));
-    return auth.refresh();
-  }).pipe(
-    switchMap((r: any) => {
-      if (r?.success === false)
-        return throwError(() => new Error('Session expired'));
+  // Skip retry logic for any other call during logout flow
+  if (auth.isLoggingOut) {
+    const t = auth.getAccessToken();
+    return next(t ? withAuth(request, t) : request);
+  }
 
-      const newToken: string | undefined = r?.data?.accessToken;
-      if (!newToken)
-        return throwError(() => new Error('Refresh did not return accessToken'));
+  const onRefreshFailed = (err: unknown): void => {
+    if (auth.isLoggingOut) return;
+    // A lost connection / timeout / gateway fault says nothing about the session: fail this request only.
+    if (isTransientRefreshError(err)) return;
+    handleSessionExpired(auth, tabSync, lock, router, modal);
+  };
 
-      // Broadcast to every other open tab
-      tabSync.notifyAccessUpdated(newToken);
-      return of(newToken);
+  /** Dispatches one request with `token`; on a 401 it is retried AT MOST ONCE with a newer token. */
+  const send = (token: string | null): Observable<HttpEvent<any>> => {
+    const prepared = token ? withAuth(request, token) : request;
+
+    return next(prepared).pipe(
+      catchError((err: unknown) => {
+        if (!(err instanceof HttpErrorResponse) || err.status !== 401 || auth.isLoggingOut) {
+          return throwError(() => err);
+        }
+
+        // A FormData body cannot be replayed (the first attempt already consumed its stream, so the
+        // retry would reach the API empty and report success while saving nothing). Refresh the token
+        // so the session stays usable, then surface the original 401; the user repeats the upload.
+        if (request.body instanceof FormData) {
+          return auth.getValidAccessToken(token).pipe(
+            switchMap(() => throwError(() => err)),
+            catchError((refreshErr) => {
+              if (refreshErr === err) return throwError(() => err);
+              onRefreshFailed(refreshErr);
+              return throwError(() => refreshErr);
+            }),
+          );
+        }
+
+        // Returns an already-stored newer token without a second refresh, else joins the single
+        // shared refresh.
+        return auth.getValidAccessToken(token).pipe(
+          catchError((refreshErr) => {
+            onRefreshFailed(refreshErr);
+            return throwError(() => refreshErr);
+          }),
+          switchMap((newToken) =>
+            // The only retry. A 401 here means the session really is over.
+            next(withAuth(request, newToken)).pipe(
+              catchError((retryErr) => {
+                if (retryErr instanceof HttpErrorResponse && retryErr.status === 401 && !auth.isLoggingOut) {
+                  handleSessionExpired(auth, tabSync, lock, router, modal);
+                }
+                return throwError(() => retryErr);
+              }),
+            ),
+          ),
+        );
+      }),
+    );
+  };
+
+  // No stored session at all: send as-is (a 401 still gets one refresh attempt via the cookie).
+  if (!auth.hasStoredToken()) return send(null);
+
+  // Wait for a usable token BEFORE dispatching: if the stored one is expired or inside the refresh
+  // margin this performs (or joins) the single shared refresh, so a request never goes out stale.
+  return auth.getValidAccessToken().pipe(
+    catchError((refreshErr) => {
+      onRefreshFailed(refreshErr);
+      return throwError(() => refreshErr);
     }),
-    finalize(() => {
-      refreshInFlight$ = null;
-      lock.release();
-    }),
+    switchMap((token) => send(token)),
   );
-
-  return refreshInFlight$;
-}
+};
 
 // ─── Session-expired handler ──────────────────────────────────────────────────
 
@@ -157,8 +160,13 @@ function handleSessionExpired(
   modal:   ModalService,
 ): void {
   if (auth.isLoggingOut) return;
+  if (PUBLIC_PAGES.test(window.location.pathname)) return;
 
-  refreshInFlight$ = null;
+  // Latch first: every request waiting on the same failed refresh lands here, only the first may
+  // log out / show the dialog.
+  if (sessionExpiredShown) return;
+  sessionExpiredShown = true;
+
   lock.release();
 
   // Capture current path before clearing state
@@ -171,9 +179,6 @@ function handleSessionExpired(
   // Tell other tabs to also logout
   tabSync.notifyLogout();
   auth.logout();
-
-  if (sessionExpiredShown) return;
-  sessionExpiredShown = true;
 
   // Styled in-app modal (replaces the native browser alert). The modal
   // renders a single OK button — close handler routes to /login.

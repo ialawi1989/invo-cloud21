@@ -1,8 +1,13 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable, firstValueFrom, catchError, map, of, tap } from 'rxjs';
+import {
+  BehaviorSubject, Observable, Subscription, defer, firstValueFrom, catchError, finalize, map, of,
+  shareReplay, switchMap, take, tap, throwError, timeout,
+} from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { AuthTabSyncService } from './auth-tab-sync.service';
+import { CrossTabRefreshLockService } from './cross-tab-refresh-lock.service';
 import { isTokenExpired } from '../../features/login/utils/jwt.util';
 import { getItemSync, setItemSync, removeItems } from '../../features/login/utils/storage.util';
 import { getDeviceInfo } from '../../features/login/utils/device-info.util';
@@ -15,6 +20,31 @@ interface RefreshResponse {
   data: { accessToken: string };
 }
 
+/**
+ * An access token with less than this many seconds left is treated as stale and refreshed BEFORE a
+ * protected request is sent, so the request never goes out carrying a token that expires in flight.
+ */
+export const ACCESS_TOKEN_REFRESH_MARGIN_SECONDS = 30;
+
+/** Name of the cross-tab Web Lock that serialises refresh requests. */
+const REFRESH_WEB_LOCK_NAME = 'invo_auth_refresh';
+
+/** Upper bound for ONE refresh HTTP request; a hung leader would otherwise hold the lock forever. */
+const REFRESH_REQUEST_TIMEOUT_MS = 30000;
+
+/**
+ * True when a refresh failed for a reason that says nothing about the session: no connection, a
+ * timeout, rate limiting, or a gateway/server fault. The refresh cookie may still be valid, so the
+ * user must not be logged out for it. Anything else (401/403, success:false, malformed reply) means
+ * the session is over.
+ */
+export function isTransientRefreshError(err: unknown): boolean {
+  if (err instanceof HttpErrorResponse) {
+    return err.status === 0 || err.status === 408 || err.status === 429 || err.status >= 500;
+  }
+  return (err as any)?.name === 'TimeoutError';
+}
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private http              = inject(HttpClient);
@@ -22,6 +52,8 @@ export class AuthService {
   private permissionService = inject(PermissionService);
   private companyService    = inject(CompanyService);
   private privilegeService  = inject(PrivilegeService);
+  private tabSync          = inject(AuthTabSyncService);
+  private refreshLock       = inject(CrossTabRefreshLockService);
   private readonly baseUrl  = environment.backendUrl;
 
   private currentEmployee$ = new BehaviorSubject<Employee | null>(this.getStoredEmployee());
@@ -228,7 +260,194 @@ export class AuthService {
   refresh(): Observable<RefreshResponse> {
     return this.http
       .post<RefreshResponse>(`${this.baseUrl}refreshToken`, {}, { withCredentials: true })
-      .pipe(tap(r => this.setAccessToken(r.data.accessToken)));
+      .pipe(tap(r => { if (r?.data?.accessToken) this.setAccessToken(r.data.accessToken); }));
+  }
+
+  private refreshInFlight$: Observable<string> | null = null;
+
+  /** The last token this tab received from a refresh (see isUsable). */
+  private lastRefreshedToken: string | null = null;
+
+  /**
+   * True when `token` can be sent now: unexpired and outside the refresh margin. A token we were JUST
+   * issued is accepted while unexpired, otherwise a short-lived token (or a client clock ahead of the
+   * server) would look stale right after a refresh and every request would refresh again.
+   */
+  private isUsable(token: string | null): token is string {
+    if (!token) return false;
+    if (isTokenExpired(token)) return false;
+    if (token === this.lastRefreshedToken) return true;
+    return !isTokenExpired(token, ACCESS_TOKEN_REFRESH_MARGIN_SECONDS);
+  }
+
+  /**
+   * Re-reads the token from shared storage (another tab may have refreshed) and publishes it to
+   * in-memory consumers if it changed. Storage is the source of truth across tabs.
+   */
+  private syncTokenFromStorage(): string | null {
+    const stored = this.getStoredToken();
+    if (stored !== this.currentToken$.value) this.currentToken$.next(stored);
+    return stored;
+  }
+
+  /** Whether any access token is stored (re-read from shared storage). */
+  hasStoredToken(): boolean {
+    return !!this.syncTokenFromStorage();
+  }
+
+  /**
+   * Resolves with an access token that is safe to send NOW, refreshing first when needed. Every
+   * protected request goes through here: the HTTP interceptor and the route guard.
+   *
+   * `rejectedToken` is the token a request carried when the server answered 401. If storage already
+   * holds a different, usable token (another request's refresh finished meanwhile) it is returned
+   * and no second refresh is made.
+   */
+  getValidAccessToken(rejectedToken: string | null = null): Observable<string> {
+    if (this.isLoggingOut) return throwError(() => new Error('Logging out'));
+
+    const current = this.syncTokenFromStorage();
+    if (this.isUsable(current) && current !== rejectedToken) return of(current);
+
+    return this.getFreshAccessTokenCrossTab();
+  }
+
+  /**
+   * The single place a refresh is performed. Within this tab every caller shares ONE observable
+   * (one HTTP request however many callers arrive). Across tabs the refresh runs under an exclusive
+   * Web Lock, and a tab that gets the lock after another tab refreshed uses that tab's token.
+   */
+  getFreshAccessTokenCrossTab(): Observable<string> {
+    if (this.isLoggingOut) return throwError(() => new Error('Logging out'));
+    if (this.refreshInFlight$) return this.refreshInFlight$;
+
+    // What this tab held when it decided it needed a new token. If storage holds something else by
+    // the time we own the lock, another tab already refreshed and we must not refresh again.
+    const tokenBefore = this.currentToken$.value;
+
+    const shared$: Observable<string> = defer(() => {
+      if (this.isLoggingOut) return throwError(() => new Error('Logging out'));
+      return this.withCrossTabLock(tokenBefore);
+    }).pipe(
+      finalize(() => {
+        if (this.refreshInFlight$ === shared$) this.refreshInFlight$ = null;
+        this.refreshLock.release();
+      }),
+      shareReplay({ bufferSize: 1, refCount: false }),
+    );
+
+    this.refreshInFlight$ = shared$;
+    return shared$;
+  }
+
+  /**
+   * Runs the refresh as the only refresher across all tabs. Preferred: the Web Locks API, which the
+   * browser releases the moment the holding tab finishes, closes or crashes (no TTL to guess).
+   * Fallback (no Web Locks): the localStorage lease in CrossTabRefreshLockService.
+   */
+  private withCrossTabLock(tokenBefore: string | null): Observable<string> {
+    const locks: any = typeof navigator !== 'undefined' ? (navigator as any).locks : null;
+
+    if (!locks?.request) {
+      if (this.refreshLock.tryAcquire(8000)) return this.refreshAsLeader();
+      return this.waitForLeader();
+    }
+
+    return new Observable<string>((subscriber) => {
+      const abort = new AbortController();
+      let inner: Subscription | undefined;
+      let releaseLock!: () => void;
+      const held = new Promise<void>((resolve) => (releaseLock = resolve));
+
+      locks
+        .request(REFRESH_WEB_LOCK_NAME, { signal: abort.signal }, () => {
+          // We own the refresh now. Another tab may have completed one while we queued: re-read
+          // shared storage BEFORE touching the network.
+          inner = defer(() => {
+            if (this.isLoggingOut) return throwError(() => new Error('Logging out'));
+            const stored = this.syncTokenFromStorage();
+            if (stored && stored !== tokenBefore && this.isUsable(stored)) {
+              this.lastRefreshedToken = stored;
+              return of(stored);
+            }
+            return this.refreshAsLeader();
+          }).subscribe({
+            next: (v) => subscriber.next(v),
+            error: (e) => { subscriber.error(e); releaseLock(); },
+            complete: () => { subscriber.complete(); releaseLock(); },
+          });
+          return held;
+        })
+        .catch((e: any) => {
+          if (e?.name !== 'AbortError') subscriber.error(e);
+        });
+
+      return () => {
+        abort.abort();
+        inner?.unsubscribe();
+        releaseLock();
+      };
+    });
+  }
+
+  private refreshAsLeader(): Observable<string> {
+    return this.refresh().pipe(
+      timeout({ first: REFRESH_REQUEST_TIMEOUT_MS }),
+      switchMap((r: any) => {
+        if (r && r.success === false) return throwError(() => new Error('Session expired'));
+
+        const newToken: string | undefined = r?.data?.accessToken;
+        if (!newToken) return throwError(() => new Error('Refresh did not return accessToken'));
+
+        this.lastRefreshedToken = newToken;
+        this.tabSync.notifyAccessUpdated(newToken);
+        return of(newToken);
+      }),
+    );
+  }
+
+  /** Fallback only (no Web Locks): another tab is refreshing; take its result from shared storage. */
+  private waitForLeader(): Observable<string> {
+    // The leader writes storage, broadcasts, and only then releases the lock, so it may already be
+    // done: look before waiting for a broadcast that has already been sent.
+    const already = this.syncTokenFromStorage();
+    if (this.isUsable(already)) return of(already);
+
+    return this.tabSync.accessUpdated$.pipe(
+      take(1),
+      timeout({ first: 8000 }),
+      map((broadcastToken) => {
+        const stored = this.syncTokenFromStorage();
+        const token = this.isUsable(stored) ? stored : broadcastToken;
+        this.lastRefreshedToken = token;
+        return token;
+      }),
+      // The leader died or stalled and its lock expired: take over, unless a usable token appeared.
+      catchError((err) => {
+        const stored = this.syncTokenFromStorage();
+        if (this.isUsable(stored)) return of(stored);
+        if (this.refreshLock.tryAcquire(8000)) return this.refreshAsLeader();
+        return throwError(() => err);
+      }),
+    );
+  }
+
+  /**
+   * Guard-facing check: gives navigation the same chance as an API call to silently refresh first
+   * (guards make no API call themselves, so they would bounce to /login the moment the short-lived
+   * access token expired even though the refresh cookie was still valid).
+   */
+  async ensureValidSession(): Promise<boolean> {
+    if (!this.syncTokenFromStorage()) return false;
+    try {
+      return !!(await firstValueFrom(this.getValidAccessToken()));
+    } catch (err) {
+      // No connection / timeout / gateway fault says nothing about the session: let the navigation
+      // through rather than bouncing a signed-in user to /login.
+      if (isTransientRefreshError(err)) return true;
+      // Otherwise a failed refresh only ends the session if the token is really dead.
+      return this.isAuthenticated();
+    }
   }
 
   // ─── Session management ───────────────────────────────────────────────────
