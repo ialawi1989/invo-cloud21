@@ -30,6 +30,7 @@ import { bulkTagsSecurity } from './bulkTagsSecurity';
 import { promotionalVoucherPrivileges } from './promotionalVoucherPrivileges';
 import { customerTiersPrivileges } from './customerTiersPrivileges';
 import { couponsPrivileges } from './couponsPrivileges';
+import { campaignsPrivileges } from './campaignsPrivileges';
 import { promotionalPointsPrivileges } from './promotionalPointsPrivileges';
 import { businessSettingsSecurity } from './businessSettingsSecurity';
 import { callSecurity } from './callSecurity';
@@ -198,6 +199,7 @@ export const SECURITY_DEFINITIONS = {
   PromotionalVoucherPrivileges: promotionalVoucherPrivileges,
   customerTiersPrivileges,
   couponsPrivileges,
+  CampaignsPrivileges: campaignsPrivileges,
   PromotionalPointsPrivileges: promotionalPointsPrivileges,
   productRecipeSecurity,
   bankingOverview,

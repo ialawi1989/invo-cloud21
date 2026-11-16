@@ -22,6 +22,7 @@ const mapLine = (l: InvoiceLine): Record<string, unknown> => ({
   barcode: l.selectedItem?.barcode ?? '',
   note: l.selectedItem?.name && l.note ? l.note : '',
   options: (l.options ?? []).map(o => ({ name: o.optionName || o.note, price: o.price })),
+  discountedByCoupon: !!l.discountedByCoupon,
   voidedItems: (l.voidedItems ?? []).map(mapLine),
 });
 
@@ -57,6 +58,11 @@ export function invoiceToRenderData(inv: Invoice): DocumentRenderData {
       isInclusiveTax: inv.isInclusiveTax,
       status: inv.status,
       customerNote: inv.note,
+      // promotions: legacy document-builder config carried these into the paper
+      couponId: inv.couponId || '',
+      couponType: inv.couponType || '',
+      promoCoupon: inv.promoCoupon || '',
+      pointsDiscount: inv.pointsDiscount || 0,
     },
     invoicePayments: payments.map(p => ({
       paymentMethodName: p.paymentMethodName,

@@ -21,7 +21,7 @@ export type PromoActionKind = 'reason' | 'extend' | 'spend' | 'refund' | 'email'
 export interface PromoActionData {
   kind: PromoActionKind;
   /** Which i18n namespace / validation set applies; default is gift vouchers. */
-  domain?: 'vouchers' | 'points' | 'tiers' | 'coupons';
+  domain?: 'vouchers' | 'points' | 'tiers' | 'coupons' | 'campaigns';
   /** stamp / unstamp: highest stamp count allowed. */
   validateStampCount?: number;
   /** points spend: the customer's active points (upper limit). */
@@ -87,11 +87,13 @@ export class PromoActionModalComponent {
   today = (() => { const t = new Date(); t.setHours(0, 0, 0, 0); return t; })();
 
   get kind(): PromoActionKind { return this.data.kind; }
-  get domain(): 'vouchers' | 'points' | 'tiers' | 'coupons' { return this.data.domain ?? 'vouchers'; }
+  get domain(): 'vouchers' | 'points' | 'tiers' | 'coupons' | 'campaigns' { return this.data.domain ?? 'vouchers'; }
   /** i18n namespace of the labels/messages for the current domain. */
   get ns(): string {
     return this.domain === 'points'
       ? 'PROMOTIONS.PROMOTIONS_POINTS.'
+      : this.domain === 'campaigns'
+        ? 'PROMOTIONS.CAMPAIGNS.'
       : this.domain === 'coupons'
         ? 'PROMOTIONS.COUPONS.'
       : this.domain === 'tiers'

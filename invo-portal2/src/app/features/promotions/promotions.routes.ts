@@ -13,6 +13,7 @@ import { privilegeGuard } from '@core/guards/privilege.guard';
 // /promotions/promotions-vouchers/:id/edit    → edit a voucher
 // /promotions/customer-tiers               → tiers (view + edit in place), /history → change log
 // /promotions/promotional-points             → points (simple/advanced), /new, /settings, /history, /:id
+// /promotions/campaigns                      → campaigns, /new/:type, /:id, /:id/edit, /:id/clone
 // Static segments come before `:id` so they aren't swallowed as an id.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -26,6 +27,7 @@ const VOUCHERS = 'PromotionalVoucherPrivileges';
 const TIERS = 'customerTiersPrivileges';
 const POINTS = 'PromotionalPointsPrivileges';
 const COUPONS = 'couponsPrivileges';
+const CAMPAIGNS = 'CampaignsPrivileges';
 
 export const PROMOTIONS_ROUTES: Routes = [
   { path: '', redirectTo: 'promotions-vouchers', pathMatch: 'full' },
@@ -181,6 +183,47 @@ export const PROMOTIONS_ROUTES: Routes = [
         canActivate: [privilegeGuard],
         loadComponent: () =>
           import('./pages/coupons/coupon-set-form/coupon-set-form.component').then(m => m.CouponSetFormComponent),
+      },
+    ],
+  },
+  {
+    path: 'campaigns',
+    canActivate: [translationsLoaded, privilegeGuard],
+    data: { permissionPath: `${CAMPAIGNS}.access` },
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./pages/campaigns/campaigns-list/campaigns-list.component').then(m => m.CampaignsListComponent),
+      },
+      {
+        path: 'new/:type',
+        canDeactivate: [unsavedChangesGuard],
+        data: { permissionPath: `${CAMPAIGNS}.actions.AddCampaigns.access` },
+        canActivate: [privilegeGuard],
+        loadComponent: () =>
+          import('./pages/campaigns/campaign-form/campaign-form.component').then(m => m.CampaignFormComponent),
+      },
+      {
+        path: ':id',
+        loadComponent: () =>
+          import('./pages/campaigns/campaign-details/campaign-details.component').then(m => m.CampaignDetailsComponent),
+      },
+      {
+        path: ':id/edit',
+        canDeactivate: [unsavedChangesGuard],
+        data: { permissionPath: `${CAMPAIGNS}.actions.EditRate.access` },
+        canActivate: [privilegeGuard],
+        loadComponent: () =>
+          import('./pages/campaigns/campaign-form/campaign-form.component').then(m => m.CampaignFormComponent),
+      },
+      {
+        path: ':id/clone',
+        canDeactivate: [unsavedChangesGuard],
+        data: { permissionPath: `${CAMPAIGNS}.actions.SpendCampaigns.access` },
+        canActivate: [privilegeGuard],
+        loadComponent: () =>
+          import('./pages/campaigns/campaign-form/campaign-form.component').then(m => m.CampaignFormComponent),
       },
     ],
   },

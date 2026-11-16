@@ -736,6 +736,19 @@ export class DocumentPaperComponent {
     !!(this.data()['invoice'] as Record<string, unknown> | undefined)?.['isInclusiveTax'],
   );
 
+  /** Promotions: a discount-coupon invoice prints one "discounted by coupon" line above the totals
+   *  (legacy `data.couponId && data.couponType === 'DISCOUNT_COUPONS'`). */
+  discountedByCouponNote = computed<boolean>(() => {
+    const inv = this.data()['invoice'] as Record<string, unknown> | undefined;
+    return !!inv?.['couponId'] && inv?.['couponType'] === 'DISCOUNT_COUPONS';
+  });
+
+  /** Product / stamp-card coupons mark the discounted LINES instead (legacy `line.discountedByCoupon`). */
+  lineCouponNotes = computed<boolean>(() => {
+    const t = (this.data()['invoice'] as Record<string, unknown> | undefined)?.['couponType'];
+    return t === 'PRODUCTS_COUPONS' || t === 'STAMP_CARDS';
+  });
+
   /** Customer note — yellow band rendered between the payment table
    *  and the company note. Maps to `data.note` in legacy. */
   customerNote = computed<string>(() =>

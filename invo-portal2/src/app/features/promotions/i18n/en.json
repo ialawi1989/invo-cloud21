@@ -129,6 +129,7 @@
       "SETTINGS_SAVED": "Saved successfully",
       "OPTIONAL": "optionally",
       "AMOUNT_MUST_BE_MORE_THAN_0": "The count must be a whole number greater than 0",
+      "COUNT_MUST_BE_BETWEEN": "Count must be a whole number between 1 and {{max}}",
       "OPS": "Oops, something went wrong",
       "EMAIL_SEND_FAILED": "Error in sending email",
       "INVALID_VOUCHER": "Invalid voucher"
@@ -574,7 +575,10 @@
         "ENDED": "Ended",
         "ACTIVATED": "Activated",
         "DEACTIVATED": "Deactivated"
-      }
+      },
+      "EXPIRY_DATE": "End date",
+      "EXPIRY_DATE_REQUIRED": "Points end date is required.",
+      "CURRENCY_VALUE_CANNOT_BE_NEGATIVE": "Currency value cannot be negative"
     }
   }
 }

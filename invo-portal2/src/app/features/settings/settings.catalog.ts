@@ -229,6 +229,8 @@ export const SETTINGS_GROUPS: SettingGroup[] = [
         i18nPrefix: 'PROMOTIONS_POINTS' },
       { label: 'SETTINGS.ITEMS.COUPONS', description: 'SETTINGS.ITEMS.COUPONS_DESC', link: '/promotions/coupons', privilege: 'couponsPrivileges.access',
         i18nPrefix: 'COUPONS' },
+      { label: 'SETTINGS.ITEMS.CAMPAIGNS', description: 'SETTINGS.ITEMS.CAMPAIGNS_DESC', link: '/promotions/campaigns', privilege: 'CampaignsPrivileges.access',
+        i18nPrefix: 'CAMPAIGNS' },
     ],
   },
   {

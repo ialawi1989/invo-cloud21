@@ -1,0 +1,203 @@
+<div class="cf-page">
+  <header class="page-header">
+    <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+    <h1 class="page-header__title">{{ titleKey() | translate }} <small>· {{ typeKey() | translate }}</small></h1>
+  </header>
+
+  @if (campaign(); as c) {
+    <!-- name -->
+    <section class="cf-card">
+      <app-translated-string-input label="PROMOTIONS.CAMPAIGNS.CAMPAIGNS_NAME"
+        [value]="c.campaignsName" (valueChange)="onName($event)"/>
+      @if (nameError() === 'name is empty') {
+        <p class="cf-error">{{ 'PROMOTIONS.CAMPAIGNS.THE_NAME_IS_REQUIRED' | translate }}</p>
+      }
+      @if (nameError() === 'name is already used') {
+        <p class="cf-error">{{ 'PROMOTIONS.CAMPAIGNS.NAME_IS_ALREADY_USED' | translate }}</p>
+      }
+    </section>
+
+    <!-- dates -->
+    <section class="cf-card">
+      <h2 class="cf-h">{{ 'PROMOTIONS.CAMPAIGNS.CAMPAIGN_DATES' | translate }}</h2>
+      <div class="cf-row">
+        <div class="cf-field">
+          <label>{{ 'PROMOTIONS.CAMPAIGNS.START_DATE' | translate }}</label>
+          <app-date-picker mode="single" [min]="minStart()" [value]="startDate()" (valueChange)="setStart($event)"/>
+          @if (!startDate()) { <p class="cf-error">{{ 'PROMOTIONS.CAMPAIGNS.START_DATE_REQUIRED' | translate }}</p> }
+          @if (dateError() === 'start-past') {
+            <p class="cf-error">{{ 'PROMOTIONS.CAMPAIGNS.START_DATE_MUST_BE_TODAY_OR_IN_THE_FUTURE' | translate }}</p>
+          }
+        </div>
+        <div class="cf-field">
+          <label>{{ 'PROMOTIONS.CAMPAIGNS.END_DATE' | translate }}</label>
+          <app-date-picker mode="single" [min]="startDate()" [value]="endDate()" (valueChange)="setEnd($event)"/>
+          @if (!endDate()) { <p class="cf-error">{{ 'PROMOTIONS.CAMPAIGNS.END_DATE_REQUIRED' | translate }}</p> }
+          @if (dateError() === 'end-before') {
+            <p class="cf-error">{{ 'PROMOTIONS.CAMPAIGNS.END_DATE_MUST_BE_AFTER_START_DATE' | translate }}</p>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- spend equation -->
+    @if (cfg().spend) {
+      <section class="cf-card">
+        <h2 class="cf-h">{{ 'PROMOTIONS.CAMPAIGNS.EQUATION' | translate }}</h2>
+        <div class="cf-eq">
+          <span>{{ 'PROMOTIONS.CAMPAIGNS.SPEND' | translate }}</span>
+          <input type="number" class="cf-input cf-eq__input" min="1"
+            [ngModel]="c.spentAmount" (ngModelChange)="patch({ spentAmount: $event })"/>
+          <span>{{ 'PROMOTIONS.CAMPAIGNS.BHD' | translate }}</span>
+          <span class="cf-eq__eq">=</span>
+          @if (cfg().points) {
+            <span>{{ 'PROMOTIONS.CAMPAIGNS.GET' | translate }}</span>
+            <input type="number" class="cf-input cf-eq__input" min="1"
+              [ngModel]="c.awardedPoints" (ngModelChange)="patch({ awardedPoints: $event })"/>
+            <span>{{ 'PROMOTIONS.CAMPAIGNS.POINTS' | translate }}</span>
+          } @else {
+            <span>{{ 'PROMOTIONS.CAMPAIGNS.TO_GET_ONE_COUPON_FROM' | translate }}</span>
+          }
+        </div>
+        @switch (currencyError()) {
+          @case ('value less than 0') { <p class="cf-error">{{ 'PROMOTIONS.CAMPAIGNS.CURRENCY_VALUE_CANNOT_BE_NEGATIVE' | translate }}</p> }
+          @case ('value less than 1') { <p class="cf-error">{{ 'PROMOTIONS.CAMPAIGNS.CURRENCY_VALUE_MUST_BE_GREATER_THAN_0' | translate }}</p> }
+          @case ('REQUIRED') { <p class="cf-error">{{ 'PROMOTIONS.CAMPAIGNS.CURRENCY_VALUE_REQUIRED' | translate }}</p> }
+        }
+        @if (cfg().points) {
+          @switch (pointsError()) {
+            @case ('value less than 1') { <p class="cf-error">{{ 'PROMOTIONS.CAMPAIGNS.GIVEN_POINTS_MUST_BE_GREATER_THAN_0' | translate }}</p> }
+            @case ('REQUIRED') { <p class="cf-error">{{ 'PROMOTIONS.CAMPAIGNS.GIVEN_POINTS_REQUIRED' | translate }}</p> }
+          }
+        }
+      </section>
+    }
+
+    <!-- buy: points awarded -->
+    @if (cfg().buy && cfg().points) {
+      <section class="cf-card">
+        <h2 class="cf-h">{{ 'PROMOTIONS.CAMPAIGNS.POINTS' | translate }}</h2>
+        <input type="number" class="cf-input cf-narrow" min="1"
+          [ngModel]="c.awardedPoints" (ngModelChange)="patch({ awardedPoints: $event })"/>
+        @switch (pointsError()) {
+          @case ('value less than 1') { <p class="cf-error">{{ 'PROMOTIONS.CAMPAIGNS.GIVEN_POINTS_MUST_BE_GREATER_THAN_0' | translate }}</p> }
+          @case ('REQUIRED') { <p class="cf-error">{{ 'PROMOTIONS.CAMPAIGNS.GIVEN_POINTS_REQUIRED' | translate }}</p> }
+        }
+      </section>
+    }
+
+    <!-- coupon set / stamp card -->
+    @if (cfg().coupon) {
+      <section class="cf-card">
+        <h2 class="cf-h">{{ (cfg().stamp ? 'PROMOTIONS.COUPONS.STAMP_CARDS' : 'PROMOTIONS.CAMPAIGNS.COUPON_SET') | translate }}</h2>
+        <app-coupon-set-picker [value]="selectedCouponSet()" [stampCard]="cfg().stamp" (valueChange)="onCouponSet($event)"/>
+        @if (couponMissing()) {
+          <p class="cf-error">{{ (cfg().stamp ? 'PROMOTIONS.CAMPAIGNS.STAMP_CARDS_REQUIRED' : 'PROMOTIONS.CAMPAIGNS.COUPON_SET_REQUIRED') | translate }}</p>
+        }
+      </section>
+    }
+
+    <!-- buy: products -->
+    @if (cfg().buy) {
+      <section class="cf-card">
+        <div class="cf-head">
+          <h2 class="cf-h">{{ 'PROMOTIONS.CAMPAIGNS.PRODUCTS' | translate }}</h2>
+          <button type="button" class="cf-btn" (click)="addProduct()">+ {{ 'PROMOTIONS.CAMPAIGNS.ADD_PRODUCT' | translate }}</button>
+        </div>
+        @for (p of c.products; track $index) {
+          <div class="cf-product">
+            <app-promo-product-picker class="cf-grow" [value]="p.productsInfo" [excluded]="excludedFor($index)"
+              (valueChange)="setProduct($index, $event)"/>
+            <input type="number" min="1" class="cf-input cf-qty" placeholder="Qty"
+              [ngModel]="p.count" (ngModelChange)="setCount($index, $event)"/>
+            @if ($index > 0) {
+              <button type="button" class="cf-btn cf-btn--icon" (click)="removeProduct($index)" aria-label="Remove">&times;</button>
+            }
+          </div>
+        }
+        @if (productError(); as pe) { <p class="cf-error">{{ 'PROMOTIONS.CAMPAIGNS.' + pe | translate }}</p> }
+      </section>
+    }
+
+    <!-- edit: reason + note -->
+    @if (isEdit()) {
+      <section class="cf-card">
+        <app-translated-string-input label="PROMOTIONS.PROMOTIONS_POINTS.REASON" [required]="true"
+          [value]="reason()" (valueChange)="reason.set($event)"/>
+        @if (!reasonValid()) { <p class="cf-error">{{ 'PROMOTIONS.CAMPAIGNS.REASON_REQUIRED' | translate }}</p> }
+        <div class="cf-field">
+          <label>{{ 'PROMOTIONS.CAMPAIGNS.NOTE' | translate }}</label>
+          <textarea class="cf-input" rows="2" [ngModel]="note()" (ngModelChange)="note.set($event)"></textarea>
+        </div>
+      </section>
+    }
+
+    <!-- advanced -->
+    @if ((customerTierSettings()?.enabled && customerTiers().length > 0) || cfg().points || cfg().spend) {
+      <section class="cf-card">
+        <button type="button" class="cf-adv" (click)="advancedOpen.set(!advancedOpen())">
+          <span>{{ 'PROMOTIONS.CAMPAIGNS.ADVANCE_SETTINGS' | translate }}</span>
+          <span class="cf-chevron" [class.is-open]="advancedOpen()">&#9662;</span>
+        </button>
+
+        @if (advancedOpen()) {
+          @if (customerTierSettings()?.enabled && customerTiers().length > 0) {
+            <div class="cf-field">
+              <label>{{ 'PROMOTIONS.CAMPAIGNS.CUSTOMER_TIERS' | translate }}</label>
+              @if (selectedTierIds().length === 0) {
+                <p class="cf-error">{{ 'MESSAGE.THIS_VALUE_IS_REQUIRED' | translate }}</p>
+              }
+              <div class="cf-tiers">
+                @for (tier of customerTiers(); track tier.id) {
+                  <label class="cf-check">
+                    <input type="checkbox" [checked]="selectedTierIds().includes(tier.id!)"
+                      (change)="onTier(tier.id!, $any($event.target).checked)"/>
+                    {{ translate(tier.name, code()) }}
+                  </label>
+                }
+              </div>
+            </div>
+          }
+
+          @if (cfg().points) {
+            <div class="cf-row">
+              <div class="cf-field">
+                <label>{{ 'PROMOTIONS.CAMPAIGNS.START_PERIOD' | translate }}</label>
+                <app-day-span-control [value]="c.activePeriod" (valueChange)="patch({ activePeriod: $event })"/>
+                @if (activeNegative()) { <p class="cf-error">{{ 'PROMOTIONS.CAMPAIGNS.START_PERIOD_CANNOT_BE_NEGATIVE' | translate }}</p> }
+              </div>
+              <div class="cf-field">
+                <label>{{ 'PROMOTIONS.CAMPAIGNS.END_PERIOD' | translate }}</label>
+                <app-day-span-control [value]="c.expiryPeriod" (valueChange)="patch({ expiryPeriod: $event })"/>
+                @if (expiryNotPositive()) { <p class="cf-error">{{ 'PROMOTIONS.CAMPAIGNS.END_PERIOD_MUST_BE_GREATER_THAN_0' | translate }}</p> }
+              </div>
+            </div>
+          }
+          @if (periodError()) {
+            <p class="cf-error">{{ 'PROMOTIONS.CAMPAIGNS.END_PERIOD_MUST_BE_GREATER_THAN_START_PERIOD' | translate }}</p>
+          }
+
+          @if (cfg().spend) {
+            <div class="cf-field">
+              <label>{{ 'PROMOTIONS.CAMPAIGNS.START_FROM' | translate }}</label>
+              <div class="cf-inline">
+                <input type="number" class="cf-input cf-narrow" min="1"
+                  [ngModel]="c.startFrom" (ngModelChange)="patch({ startFrom: $event })"/>
+                <span class="cf-suffix">{{ 'PROMOTIONS.CAMPAIGNS.BHD' | translate }} {{ 'PROMOTIONS.CAMPAIGNS.SPEND' | translate }}</span>
+              </div>
+              @if (startFromError() === 'REQUIRED') { <p class="cf-error">{{ 'PROMOTIONS.CAMPAIGNS.START_FROM_IS_REQUIRED' | translate }}</p> }
+              @if (startFromError() === 'negative value') { <p class="cf-error">{{ 'PROMOTIONS.CAMPAIGNS.START_FROM_CANNOT_BE_NEGATIVE' | translate }}</p> }
+            </div>
+          }
+        }
+      </section>
+    }
+
+    <app-form-sticky-footer>
+      <button type="button" class="cf-btn" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+      <button type="button" class="cf-btn cf-btn--primary" [disabled]="!formValid() || saving()" (click)="save()">
+        {{ 'COMMON.SAVE' | translate }}
+      </button>
+    </app-form-sticky-footer>
+  }
+</div>

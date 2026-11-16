@@ -1,0 +1,163 @@
+<div class="sd-page">
+  <header class="page-header">
+    <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+    <div class="page-header__row">
+      <h1 class="page-header__title">
+        {{ 'PROMOTIONS.CAMPAIGNS.CUSTOMER_POINT_DETAILS' | translate }}
+        @if (campaign(); as c) { <app-campaign-status-badge [status]="c.status"/> }
+      </h1>
+      @if (campaign()) {
+        <div class="sd-actions">
+          @if (canStartNow()) {
+            <button type="button" class="sd-btn" (click)="startNow()">{{ 'PROMOTIONS.CAMPAIGNS.START_NOW' | translate }}</button>
+          }
+          @if (canStopNow()) {
+            <button type="button" class="sd-btn sd-btn--danger" (click)="stopNow()">{{ 'PROMOTIONS.CAMPAIGNS.STOP_NOW' | translate }}</button>
+          }
+          @if (canExtend) {
+            <button type="button" class="sd-btn" (click)="extend()">{{ 'PROMOTIONS.CAMPAIGNS.EXTEND_TITLE' | translate }}</button>
+          }
+          @if (canEdit) {
+            <button type="button" class="sd-btn sd-btn--primary" (click)="edit()">{{ 'PROMOTIONS.CAMPAIGNS.EDIT_CAMPAIGNS' | translate }}</button>
+          }
+          @if (canClone) {
+            <button type="button" class="sd-btn" (click)="clone()">{{ 'PROMOTIONS.CAMPAIGNS.CLONE_CAMPAIGNS' | translate }}</button>
+          }
+        </div>
+      }
+    </div>
+  </header>
+
+  @if (campaign(); as c) {
+    <section class="sd-tiles">
+      <div class="sd-tile">
+        <span class="sd-tile__label">{{ 'PROMOTIONS.CAMPAIGNS.CAMPAIGNS_NAME' | translate }}</span>
+        <span class="sd-tile__value">{{ translate(c.campaignsName, currentLang()) }}</span>
+      </div>
+      <div class="sd-tile">
+        <span class="sd-tile__label">{{ 'PROMOTIONS.CAMPAIGNS.GIVEN_DATE' | translate }}</span>
+        <span class="sd-tile__value">{{ c.createdDate | date: 'dd/MM/yyyy' }}</span>
+      </div>
+      <div class="sd-tile">
+        <span class="sd-tile__label">{{ 'PROMOTIONS.CAMPAIGNS.START_DATE' | translate }}</span>
+        <span class="sd-tile__value">{{ c.startDate | date: 'dd/MM/yyyy' }}</span>
+      </div>
+      <div class="sd-tile">
+        <span class="sd-tile__label">{{ 'PROMOTIONS.CAMPAIGNS.END_DATE' | translate }}</span>
+        <span class="sd-tile__value">{{ c.endDate | date: 'dd/MM/yyyy' }}</span>
+      </div>
+      <div class="sd-tile">
+        <span class="sd-tile__label">{{ 'PROMOTIONS.CAMPAIGNS.END_PERIOD' | translate }}</span>
+        <span class="sd-tile__value">{{ c.expiryPeriod.value }} {{ 'PROMOTIONS.CUSTOMER_TIERS.' + c.expiryPeriod.periodUnit | translate }}</span>
+      </div>
+      <div class="sd-tile">
+        <span class="sd-tile__label">{{ 'PROMOTIONS.CAMPAIGNS.START_PERIOD' | translate }}</span>
+        <span class="sd-tile__value">{{ c.activePeriod.value }} {{ 'PROMOTIONS.CUSTOMER_TIERS.' + c.activePeriod.periodUnit | translate }}</span>
+      </div>
+      @if (cfg().spend) {
+        <div class="sd-tile">
+          <span class="sd-tile__label">{{ 'PROMOTIONS.CAMPAIGNS.START_FROM' | translate }}</span>
+          <span class="sd-tile__value">
+            @if ((c.startFrom ?? 0) > 0) { {{ c.startFrom }} BD } @else { {{ 'PROMOTIONS.CAMPAIGNS.ANY_AMOUNT' | translate }} }
+          </span>
+        </div>
+      }
+      @if (cfg().stamp && couponSet(); as set) {
+        <div class="sd-tile">
+          <span class="sd-tile__label">{{ 'PROMOTIONS.CAMPAIGNS.COUPON_STATUE' | translate }}</span>
+          <span class="sd-tile__value">{{ 'PROMOTIONS.COUPONS.COUPON_STATUS.' + set.status | translate }}</span>
+        </div>
+        <div class="sd-tile">
+          <span class="sd-tile__label">{{ 'PROMOTIONS.CAMPAIGNS.ISSUED_COUPON' | translate }}</span>
+          <span class="sd-tile__value">{{ set.issued }}</span>
+        </div>
+        @if (set.max !== 0) {
+          <div class="sd-tile">
+            <span class="sd-tile__label">{{ 'PROMOTIONS.CAMPAIGNS.NOT_ISSUED_COUPON' | translate }}</span>
+            <span class="sd-tile__value">{{ set.max - set.issued }}</span>
+          </div>
+        }
+      }
+    </section>
+
+    @if (settings()?.enabled || (cfg().stamp && campaignTiers().length > 0)) {
+      @if (campaignTiers().length > 0) {
+        <section class="sd-card sd-card--pad">
+          <h2 class="sd-card__title">{{ 'PROMOTIONS.CAMPAIGNS.CUSTOMER_TIERS' | translate }}</h2>
+          <div class="sd-chips">
+            @for (t of campaignTiers(); track t.id) {
+              <span class="sd-chip">{{ translate(t.name, currentLang()) }}</span>
+            }
+          </div>
+        </section>
+      }
+    }
+
+    <!-- equation -->
+    @if (cfg().points || couponSet()) {
+      <section class="sd-card sd-card--pad">
+        <h2 class="sd-card__title">{{ 'PROMOTIONS.CAMPAIGNS.EQUATION' | translate }}</h2>
+        <p class="sd-equation">
+          @if (cfg().buy) {
+            <strong>{{ 'PROMOTIONS.CAMPAIGNS.FOR_EVERY' | translate }}</strong>
+            @for (p of c.products; track $index) {
+              <span class="sd-chip"><strong>{{ p.count }}</strong>
+                @if (p.productsInfo) { {{ translate(p.productsInfo.name, currentLang()) }} }
+              </span>
+            }
+          }
+          @if (cfg().spend) {
+            <strong>{{ 'PROMOTIONS.CAMPAIGNS.FOR_EVERY' | translate }}</strong>
+            <strong>{{ c.spentAmount }}</strong> {{ 'PROMOTIONS.CAMPAIGNS.BHD' | translate }}
+          }
+          @if (cfg().points) {
+            {{ 'PROMOTIONS.CAMPAIGNS.THE_CUSTOMER_RECEIVES' | translate }}
+            <strong>{{ c.awardedPoints }}</strong> {{ 'PROMOTIONS.CAMPAIGNS.POINTS' | translate }}
+          } @else if (couponSet(); as set) {
+            {{ 'PROMOTIONS.CAMPAIGNS.CUSTOMER_RECEIVES_COUPON_SET' | translate: { couponSet: translate(set.name, currentLang()) } }}
+          }
+        </p>
+      </section>
+    }
+
+    <!-- actions list -->
+    <section class="sd-card">
+      <button type="button" class="sd-card__head" (click)="toggleOpen()">
+        <span>{{ 'PROMOTIONS.CAMPAIGNS.ACTIONS_LIST' | translate }}</span>
+        <span class="sd-chevron" [class.is-open]="open()">&#9662;</span>
+      </button>
+      @if (open()) {
+        <div class="sd-table-wrap">
+          <table class="sd-table">
+            <thead><tr>
+              <th>{{ 'PROMOTIONS.CAMPAIGNS.ACTION_NAME' | translate }}</th>
+              <th>{{ 'PROMOTIONS.CAMPAIGNS.ACTION_DATE' | translate }}</th>
+              <th>{{ 'PROMOTIONS.CAMPAIGNS.USER' | translate }}</th>
+              <th>{{ 'PROMOTIONS.CAMPAIGNS.NOTE' | translate }}</th>
+              <th>{{ 'PROMOTIONS.CAMPAIGNS.REASON' | translate }}</th>
+            </tr></thead>
+            <tbody>
+              @for (a of actions(); track $index) {
+                <tr>
+                  <td>
+                    @if (isExtend(a)) {
+                      {{ 'PROMOTIONS.CAMPAIGNS.ACTIONS.EXTEND' | translate }} {{ extendSuffix(a) }} {{ a.changes?.new?.endDate }}
+                    } @else {
+                      {{ 'PROMOTIONS.CAMPAIGNS.ACTIONS.' + a.actionName | translate }}
+                    }
+                  </td>
+                  <td>{{ a.actionDate | date: 'dd/MM/yyyy HH:mm' }}</td>
+                  <td>{{ a.user }}</td>
+                  <td>{{ a.note || '—' }}</td>
+                  <td>{{ translate(a.reason, currentLang()) || '—' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <app-pagination [page]="page().page" [pageSize]="page().limit" [count]="page().count ?? null"
+          (pageChange)="onPage($event)" (pageSizeChange)="onSize($event)"/>
+      }
+    </section>
+  }
+</div>

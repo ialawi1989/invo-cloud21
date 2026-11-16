@@ -117,6 +117,8 @@
       "PROMOTIONAL_POINTS_DESC": "Loyalty points: earning rate, expiry and customer balances.",
       "COUPONS": "Coupons & Stamp Cards",
       "COUPONS_DESC": "Discount coupons, product coupons and stamp cards.",
+      "CAMPAIGNS": "Campaigns",
+      "CAMPAIGNS_DESC": "Automatic rewards: spend or buy to earn points, coupons or stamp cards.",
 
       "PAYMENT_METHODS":           "Payments Method",
       "PAYMENT_METHODS_DESC":      "Payment methods, currencies, and configuration for linking to POS and website.",

@@ -130,6 +130,7 @@
       "SETTINGS_SAVED": "تم الحفظ بنجاح",
       "OPTIONAL": "اختياري",
       "AMOUNT_MUST_BE_MORE_THAN_0": "يجب أن يكون العدد رقماً صحيحاً أكبر من 0",
+      "COUNT_MUST_BE_BETWEEN": "يجب أن يكون العدد رقماً صحيحاً بين 1 و {{max}}",
       "OPS": "عذراً، حدث خطأ ما",
       "EMAIL_SEND_FAILED": "خطأ في إرسال البريد الإلكتروني",
       "INVALID_VOUCHER": "قسيمة غير صالحة"
@@ -571,7 +572,10 @@
         "ENDED": "انتهاء",
         "ACTIVATED": "تفعيل",
         "DEACTIVATED": "الغاء التفعيل"
-      }
+      },
+      "EXPIRY_DATE": "تاريخ انتهاء النقاط",
+      "EXPIRY_DATE_REQUIRED": "تاريخ انتهاء النقاط مطلوب",
+      "CURRENCY_VALUE_CANNOT_BE_NEGATIVE": "قيمة المبلغ لا يمكن أن تكون سالبة"
     }
   }
 }

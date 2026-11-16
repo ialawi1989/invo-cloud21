@@ -1,0 +1,41 @@
+<ng-template #summary>
+  <section class="cl-card">
+    <div class="cl-bar">
+      <span class="cl-label">{{ 'PROMOTIONS.VIEW' | translate }}</span>
+      <app-segmented-toggle [options]="viewOptions" [value]="view()" (valueChange)="changeView($event)"/>
+    </div>
+  </section>
+</ng-template>
+
+<app-list-page
+  [pageTitle]="'PROMOTIONS.CAMPAIGNS.CAMPAIGNS_TITLE' | translate"
+  [breadcrumbs]="breadcrumbs"
+  [columns]="columns"
+  [dataSource]="loadCampaigns"
+  [pagination]="paginationConfig"
+  [search]="searchConfig"
+  [sorting]="sortingConfig"
+  [filters]="[]"
+  [headerActions]="[]"
+  [selectable]="false"
+  [fitContent]="true"
+  [emptyState]="emptyState"
+  (rowClicked)="onRowClick($event)">
+
+  <div listHeaderActions class="flex items-center gap-3">
+    @if (canAdd) {
+      <app-dropdown-menu-btn [items]="addItems" [appendToBody]="true" align="end" triggerClass="cl-btn cl-btn--primary">
+        {{ 'PROMOTIONS.CAMPAIGNS.ADD_CAMPAIGNS' | translate }}
+      </app-dropdown-menu-btn>
+    }
+  </div>
+
+  <div listSubHeader><ng-container *ngTemplateOutlet="summary"/></div>
+
+  <ng-template listCellTemplate="campaignsName" let-row>{{ translate(row.campaignsName, currentLang()) }}</ng-template>
+  <ng-template listCellTemplate="campaignsType" let-row>{{ 'PROMOTIONS.CAMPAIGNS.' + row.campaignsType | translate }}</ng-template>
+  <ng-template listCellTemplate="status" let-row><app-campaign-status-badge [status]="row.status"/></ng-template>
+  <ng-template listCellTemplate="givenDate" let-row>{{ row.createdDate | date: 'dd/MM/yyyy' }}</ng-template>
+  <ng-template listCellTemplate="startDate" let-row>{{ row.startDate | date: 'dd/MM/yyyy' }}</ng-template>
+  <ng-template listCellTemplate="endDate" let-row>{{ row.endDate | date: 'dd/MM/yyyy' }}</ng-template>
+</app-list-page>

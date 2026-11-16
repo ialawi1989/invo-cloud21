@@ -202,7 +202,7 @@ export const SIDE_MENU: SideMenuItem[] = [
     requiredPermission: '',
     badge: { text: 'BETA', variant: 'danger' },
     subItems: [
-      { id: 91, label: 'MENU.SUB.CAMPAIGNS', link: '/promotions/campaigns', requiredPermission: 'campaignsSecurity.access' },
+      { id: 91, label: 'MENU.SUB.CAMPAIGNS', link: '/promotions/campaigns', requiredPermission: 'CampaignsPrivileges.access' },
       { id: 92, label: 'MENU.SUB.CUSTOMER_TIERS', link: '/promotions/customer-tiers', requiredPermission: 'customerTiersPrivileges.access' },
       { id: 93, label: 'MENU.SUB.POINTS', link: '/promotions/promotional-points', requiredPermission: 'PromotionalPointsPrivileges.access' },
       { id: 94, label: 'MENU.SUB.COUPONS', link: '/promotions/coupons', requiredPermission: 'couponsPrivileges.access' },

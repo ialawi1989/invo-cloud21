@@ -548,6 +548,9 @@
                       @if (ln.note) {
                         <small class="app-product-note">{{ ln.note }}</small>
                       }
+                      @if (ln['discountedByCoupon'] && lineCouponNotes()) {
+                        <small class="app-product-note">discounted by coupon</small>
+                      }
                     </div>
                   } @else {
                     {{ cellFor(ln, col.id) }}
@@ -586,6 +589,9 @@
      can pull it in via *ngTemplateOutlet without re-doing the
      conditional logic for each block. -->
 <ng-template #classicLastPageTailTpl>
+    @if (discountedByCouponNote()) {
+      <div class="app-product-note">discounted by coupon</div>
+    }
     <!-- Totals + payments + balance, all driven by visibility flags. -->
     @if (template().totalSectionCustomization.totalTable.show && visibleTotalRows().length > 0) {
       <div class="dp__totals" [style.background]="template().totalSectionCustomization.totalTable.backgroundColor || 'transparent'">
