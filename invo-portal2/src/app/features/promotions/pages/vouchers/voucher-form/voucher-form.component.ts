@@ -164,10 +164,13 @@ export class VoucherFormComponent implements OnInit, CanLeaveComponent {
     return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
   });
 
+  /** Max vouchers issued in one go (legacy master: "voucher max issue to 10"). */
+  readonly maxCount = 10;
+
   countValid = computed(() => {
     if (this.isEdit()) return true;
     const c = Number(this.count());
-    return Number.isInteger(c) && c > 0;
+    return Number.isInteger(c) && c > 0 && c <= this.maxCount;
   });
 
   amountError = computed<string | null>(() => {
@@ -195,7 +198,7 @@ export class VoucherFormComponent implements OnInit, CanLeaveComponent {
     const v = this.voucher();
     if (!v) return false;
     const amountOk = v.initialVoucher !== undefined && v.initialVoucher >= 1;
-    return this.phoneError() === null && amountOk && this.reasonValid();
+    return this.phoneError() === null && amountOk && this.countValid() && this.reasonValid();
   });
 
   async save(): Promise<void> {

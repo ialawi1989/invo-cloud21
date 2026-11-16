@@ -24,6 +24,7 @@ import { EmployeeEarningsFeature, isEmployeeEarningsEnabled } from '../../../aut
 import { EmployeeOptionsService } from '../../services/employee-options.service';
 import { FavoritesService } from '../../services/favorites.service';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /* ── Menu definition (matches original menu.ts structure with icons) ─ */
 export interface SideMenuItem {
   id: number;
@@ -316,7 +317,7 @@ interface FavoritePage { label: string; link: string; }
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, SafeHtmlPipe, QuickActionsComponent, TranslateModule],
+  imports: [TooltipDirective, CommonModule, FormsModule, RouterModule, SafeHtmlPipe, QuickActionsComponent, TranslateModule],
   template: `
     <aside class="sidebar" [class.collapsed]="collapsed" [class.mobile-open]="mobileOpen">
 
@@ -339,7 +340,7 @@ interface FavoritePage { label: string; link: string; }
           </svg>
         </div>
       } @else {
-        <div class="company-row-collapsed" (click)="openSwitcher()" title="{{ companyService.currentCompanyName() }}">
+        <div class="company-row-collapsed" (click)="openSwitcher()" [appTooltip]="companyService.currentCompanyName()">
           <div class="company-logo">
             @if (companyLogo()) {
               <img [src]="companyLogo()" class="company-logo-img" alt="logo" />

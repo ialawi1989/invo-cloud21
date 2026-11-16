@@ -33,6 +33,7 @@ import {
 import { AddTabModalComponent, AddTabResult } from '../add-tab-modal/add-tab-modal.component';
 import { TabTypeIconComponent } from '../tab-type-icon/tab-type-icon.component';
 
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /**
  * Tab-template builder (Settings → Tab Builder).
  *
@@ -48,7 +49,7 @@ import { TabTypeIconComponent } from '../tab-type-icon/tab-type-icon.component';
 @Component({
   selector: 'app-tab-template-builder',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, DragDropModule, SearchDropdownComponent, RichEditorComponent, TabTypeIconComponent],
+  imports: [TooltipDirective, CommonModule, FormsModule, TranslateModule, DragDropModule, SearchDropdownComponent, RichEditorComponent, TabTypeIconComponent],
   templateUrl: './tab-template-builder.component.html',
   styleUrl: './tab-template-builder.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

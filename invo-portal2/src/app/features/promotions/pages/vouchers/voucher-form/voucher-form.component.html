@@ -22,9 +22,9 @@
         <section class="vf-card">
           <div class="vf-field">
             <label>{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.COUNT' | translate }}</label>
-            <input type="number" class="vf-input" [ngModel]="count()" (ngModelChange)="count.set($event)"/>
+            <input type="number" class="vf-input" min="1" [max]="maxCount" step="1" [ngModel]="count()" (ngModelChange)="count.set($event)"/>
             @if (!countValid()) {
-              <p class="vf-error">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.AMOUNT_MUST_BE_MORE_THAN_0' | translate }}</p>
+              <p class="vf-error">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.COUNT_MUST_BE_BETWEEN' | translate: { max: maxCount } }}</p>
             }
           </div>
         </section>
