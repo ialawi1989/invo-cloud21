@@ -11,7 +11,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { from } from 'rxjs';
+import { from, merge } from 'rxjs';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { withTranslations } from '@core/i18n/with-translations';
@@ -371,7 +371,9 @@ export class DashboardComponent implements OnInit {
 
   constructor() {
     withTranslations('dashboard', 'reports');
-    this.translate.onLangChange
+    // The 'dashboard' namespace loads lazily; re-render labels once it arrives,
+    // otherwise the period dropdown shows the raw DASHBOARD.RANGE.* key.
+    merge(this.translate.onLangChange, this.translate.onTranslationChange)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.i18nTick.update((n) => n + 1));
   }
