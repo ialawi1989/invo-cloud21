@@ -1,0 +1,67 @@
+<ng-template #summary>
+  @if (settings(); as s) {
+    <section class="cl-card" [class.cl-card--disabled]="!s.enabled">
+      <div class="cl-bar">
+        @if (canEnableDisable) {
+          @for (k of toggleKeys(); track k) {
+            <app-toggle [checked]="s.enabled" (checkedChange)="toggleEnabled()"
+              [label]="'PROMOTIONS.COUPONS.DISABLE_ENABLE_COUPON_SETS' | translate"/>
+          }
+        }
+        <app-toggle [checked]="activeOnly()" [disabled]="!s.enabled" (checkedChange)="changeActiveOnly($event)"
+          [label]="'PROMOTIONS.COUPONS.ACTIVE_ONLY' | translate"/>
+        <div class="cl-type">
+          <span class="cl-type__label">{{ 'PROMOTIONS.COUPONS.TYPE' | translate }}</span>
+          <app-segmented-toggle [options]="typeOptions()" [value]="setType()" (valueChange)="changeType($event)"/>
+        </div>
+      </div>
+    </section>
+  }
+</ng-template>
+
+<app-list-page
+  [pageTitle]="'PROMOTIONS.COUPONS.COUPONS_TITLE' | translate"
+  [breadcrumbs]="breadcrumbs"
+  [columns]="columns"
+  [dataSource]="loadSets"
+  [pagination]="paginationConfig"
+  [search]="searchConfig"
+  [sorting]="sortingConfig"
+  [filters]="[]"
+  [headerActions]="[]"
+  [selectable]="false"
+  [fitContent]="true"
+  [emptyState]="emptyState"
+  (rowClicked)="onRowClick($event)">
+
+  <div listHeaderActions class="flex items-center gap-3">
+    <button type="button" class="cl-btn" (click)="openHistory()">
+      {{ 'PROMOTIONS.COUPONS.COUPONS_SETS_CHANGES' | translate }}
+    </button>
+    @if (canAdd) {
+      @if (hasCoupons) {
+        <button type="button" class="cl-btn cl-btn--primary" [disabled]="!enabled()" (click)="add('discount')">
+          + {{ 'PROMOTIONS.COUPONS.DISCOUNT_COUPON_SET' | translate }}
+        </button>
+        <button type="button" class="cl-btn cl-btn--primary" [disabled]="!enabled()" (click)="add('products')">
+          + {{ 'PROMOTIONS.COUPONS.PRODUCTS_COUPONS_SET' | translate }}
+        </button>
+      }
+      @if (hasStampCards) {
+        <button type="button" class="cl-btn cl-btn--primary" [disabled]="!enabled()" (click)="add('stamp-cards')">
+          + {{ 'PROMOTIONS.COUPONS.STAMP_CARD_SET' | translate }}
+        </button>
+      }
+    }
+  </div>
+
+  <div listSubHeader><ng-container *ngTemplateOutlet="summary"/></div>
+
+  <ng-template listCellTemplate="name" let-row>{{ translate(row.name, currentLang()) }}</ng-template>
+  <ng-template listCellTemplate="status" let-row><app-coupon-status-badge [status]="row.status" kind="set"/></ng-template>
+  <ng-template listCellTemplate="type" let-row>{{ 'PROMOTIONS.COUPONS.' + row.type | translate }}</ng-template>
+  <ng-template listCellTemplate="max" let-row>
+    {{ row.max > 0 ? row.max : ('PROMOTIONS.COUPONS.UNLIMITED' | translate) }}
+  </ng-template>
+  <ng-template listCellTemplate="unused" let-row>{{ unused(row) }}</ng-template>
+</app-list-page>

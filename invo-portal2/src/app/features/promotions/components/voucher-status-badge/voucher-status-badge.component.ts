@@ -11,7 +11,7 @@ import { VouchersStatues } from '../../models/vouchers.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <span class="vsb" [class]="'vsb--' + status().toLowerCase()">
-      {{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.STATUS.' + status() | translate }}
+      {{ keyPrefix() + 'STATUS.' + status() | translate }}
     </span>
   `,
   styles: [`
@@ -28,4 +28,6 @@ import { VouchersStatues } from '../../models/vouchers.model';
 })
 export class VoucherStatusBadgeComponent {
   status = input<VouchersStatues | string>('');
+  /** i18n namespace holding the STATUS.* labels (gift vouchers by default; points pass their own). */
+  keyPrefix = input<string>('PROMOTIONS.PROMOTIONS_VOUCHERS.');
 }

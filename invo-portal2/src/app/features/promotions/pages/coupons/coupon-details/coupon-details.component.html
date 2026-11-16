@@ -1,0 +1,137 @@
+<div class="sd-page">
+  <header class="page-header">
+    <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+    <div class="page-header__row">
+      <h1 class="page-header__title">
+        {{ (isStamp() ? 'PROMOTIONS.COUPONS.STAMP_CARD_DETAILS_TITLE' : 'PROMOTIONS.COUPONS.COUPON_DETAILS_TITLE') | translate }}
+        @if (coupon(); as c) { <app-coupon-status-badge [status]="c.status" kind="coupon"/> }
+      </h1>
+      @if (coupon()) {
+        <div class="sd-actions">
+          @if (showActivate()) {
+            <button type="button" class="sd-btn" (click)="activate()">
+              {{ (isStamp() ? 'PROMOTIONS.COUPONS.ACTIVATE_STAMP_CARD' : 'PROMOTIONS.COUPONS.ACTIVATE_COUPONS') | translate }}
+            </button>
+          }
+          @if (showDeactivate()) {
+            <button type="button" class="sd-btn" (click)="deactivate()">
+              {{ (isStamp() ? 'PROMOTIONS.COUPONS.DE_ACTIVATE_STAMP_CARD' : 'PROMOTIONS.COUPONS.DE_ACTIVATE_COUPONS') | translate }}
+            </button>
+          }
+          @if (showStamp()) {
+            <button type="button" class="sd-btn" (click)="stamp()">{{ 'PROMOTIONS.COUPONS.STAMP' | translate }}</button>
+          }
+          @if (showUnstamp()) {
+            <button type="button" class="sd-btn" (click)="unstamp()">{{ 'PROMOTIONS.COUPONS.UNSTAMP' | translate }}</button>
+          }
+          @if (showExtend()) {
+            <button type="button" class="sd-btn" (click)="extend()">
+              {{ (isStamp() ? 'PROMOTIONS.COUPONS.EXTEND_STAMP_CARD' : 'PROMOTIONS.COUPONS.EXTEND_COUPONS') | translate }}
+            </button>
+          }
+          @if (showCancel()) {
+            <button type="button" class="sd-btn sd-btn--danger" (click)="cancel()">
+              {{ (isStamp() ? 'PROMOTIONS.COUPONS.CANCEL_STAMP_CARD' : 'PROMOTIONS.COUPONS.CANCEL_COUPONS') | translate }}
+            </button>
+          }
+          @if (showUncancel()) {
+            <button type="button" class="sd-btn" (click)="uncancel()">
+              {{ (isStamp() ? 'PROMOTIONS.COUPONS.UNCANCEL_STAMP_CARD' : 'PROMOTIONS.COUPONS.UNCANCEL_COUPONS') | translate }}
+            </button>
+          }
+          @if (showEmail()) {
+            <button type="button" class="sd-btn" (click)="sendEmail()">{{ 'PROMOTIONS.PROMOTIONS_POINTS.SEND_EMAIL' | translate }}</button>
+          }
+        </div>
+      }
+    </div>
+  </header>
+
+  @if (coupon(); as c) {
+    <section class="sd-tiles">
+      <div class="sd-tile">
+        <span class="sd-tile__label">{{ (isStamp() ? 'PROMOTIONS.COUPONS.STAMP_CARD_CODE' : 'PROMOTIONS.COUPONS.CODE') | translate }}</span>
+        <span class="sd-tile__value">{{ c.code }}</span>
+      </div>
+      @if (c.phoneNumber) {
+        <div class="sd-tile">
+          <span class="sd-tile__label">{{ 'PROMOTIONS.COUPONS.PHONE_NUMBER' | translate }}</span>
+          <span class="sd-tile__value">{{ c.phoneNumber }}</span>
+        </div>
+      }
+      @if (c.email) {
+        <div class="sd-tile">
+          <span class="sd-tile__label">{{ 'PROMOTIONS.COUPONS.EMAIL' | translate }}</span>
+          <span class="sd-tile__value">{{ c.email }}</span>
+        </div>
+      }
+      @if (c.orderNumber) {
+        <div class="sd-tile">
+          <span class="sd-tile__label">{{ 'PROMOTIONS.COUPONS.ORDER_NUMBER' | translate }}</span>
+          <span class="sd-tile__value">{{ c.orderNumber }}</span>
+        </div>
+      }
+      <div class="sd-tile">
+        <span class="sd-tile__label">{{ 'PROMOTIONS.COUPONS.ACTIVE_DATE' | translate }}</span>
+        <span class="sd-tile__value">{{ c.activeDate | date: 'dd/MM/yyyy' }}</span>
+      </div>
+      <div class="sd-tile">
+        <span class="sd-tile__label">{{ 'PROMOTIONS.COUPONS.EXPIRY_DATE' | translate }}</span>
+        <span class="sd-tile__value">{{ c.expiryDate | date: 'dd/MM/yyyy' }}</span>
+      </div>
+      <div class="sd-tile">
+        <span class="sd-tile__label">{{ 'PROMOTIONS.COUPONS.COUNT_OF_USAGE' | translate }}</span>
+        <span class="sd-tile__value">{{ c.countOfUsage }}</span>
+      </div>
+      @if (c.isUsed) {
+        <div class="sd-tile">
+          <span class="sd-tile__label">{{ 'PROMOTIONS.COUPONS.USE_DATE' | translate }}</span>
+          <span class="sd-tile__value">{{ c.uesDate | date: 'dd/MM/yyyy' }}</span>
+        </div>
+      }
+      @if (isStamp() && c.usedStamps !== undefined) {
+        <div class="sd-tile">
+          <span class="sd-tile__label">{{ 'PROMOTIONS.COUPONS.USED_STAMPS' | translate }}</span>
+          <span class="sd-tile__value">{{ c.usedStamps }}</span>
+        </div>
+        <div class="sd-tile">
+          <span class="sd-tile__label">{{ 'PROMOTIONS.COUPONS.UNUSED_STAMPS' | translate }}</span>
+          <span class="sd-tile__value">{{ $any(c).totalStamps - $any(c).usedStamps }}</span>
+        </div>
+      }
+    </section>
+
+    <section class="sd-card">
+      <button type="button" class="sd-card__head" (click)="toggleOpen()">
+        <span>{{ 'PROMOTIONS.PROMOTIONS_POINTS.ACTIONS_LIST' | translate }}</span>
+        <span class="sd-chevron" [class.is-open]="open()">&#9662;</span>
+      </button>
+      @if (open()) {
+        <div class="sd-table-wrap">
+          <table class="sd-table">
+            <thead><tr>
+              <th>{{ 'PROMOTIONS.PROMOTIONS_POINTS.ACTION_NAME' | translate }}</th>
+              <th>{{ 'PROMOTIONS.PROMOTIONS_POINTS.ACTION_DATE' | translate }}</th>
+              <th>{{ 'PROMOTIONS.PROMOTIONS_POINTS.USER' | translate }}</th>
+              <th>{{ 'PROMOTIONS.CAMPAIGNS.NOTE' | translate }}</th>
+              <th>{{ 'PROMOTIONS.PROMOTIONS_POINTS.REASON' | translate }}</th>
+            </tr></thead>
+            <tbody>
+              @for (a of actions(); track $index) {
+                <tr>
+                  <td>{{ 'PROMOTIONS.COUPONS.ACTIONS.' + a.actionName | translate }}</td>
+                  <td>{{ a.actionDate | date: 'dd/MM/yyyy HH:mm' }}</td>
+                  <td>{{ a.user }}</td>
+                  <td>{{ a.note || '—' }}</td>
+                  <td>{{ translate(a.reason, currentLang()) || '—' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <app-pagination [page]="page().page" [pageSize]="page().limit" [count]="page().count ?? null"
+          (pageChange)="onPage($event)" (pageSizeChange)="onSize($event)"/>
+      }
+    </section>
+  }
+</div>

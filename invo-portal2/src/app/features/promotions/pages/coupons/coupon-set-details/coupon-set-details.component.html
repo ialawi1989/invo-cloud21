@@ -1,0 +1,202 @@
+<div class="sd-page">
+  <header class="page-header">
+    <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+    <div class="page-header__row">
+      <h1 class="page-header__title">
+        {{ titleKey() | translate }}
+        @if (set(); as s) { <app-coupon-status-badge [status]="s.status" kind="set"/> }
+      </h1>
+      @if (set(); as s) {
+        <div class="sd-actions">
+          @if (canActivate && s.status === Status.INACTIVE) {
+            <button type="button" class="sd-btn" (click)="activate()">{{ 'PROMOTIONS.COUPONS.ACTIVATE' | translate }}</button>
+          }
+          @if (canDeactivate && s.status === Status.ACTIVE) {
+            <button type="button" class="sd-btn sd-btn--danger" (click)="deactivate()">{{ 'PROMOTIONS.COUPONS.DEACTIVATE' | translate }}</button>
+          }
+          @if (canIssue && s.status === Status.ACTIVE) {
+            <button type="button" class="sd-btn" (click)="issue()">{{ 'PROMOTIONS.COUPONS.ISSUE_COUPONS' | translate }}</button>
+          }
+          @if (canEdit) {
+            <button type="button" class="sd-btn sd-btn--primary" (click)="edit()">{{ 'PROMOTIONS.COUPONS.EDIT' | translate }}</button>
+          }
+        </div>
+      }
+    </div>
+  </header>
+
+  @if (set(); as s) {
+    <section class="sd-tiles">
+      <div class="sd-tile">
+        <span class="sd-tile__label">{{ 'PROMOTIONS.COUPONS.COUPON_SET_NAME' | translate }}</span>
+        <span class="sd-tile__value">{{ translate(s.name, currentLang()) }}</span>
+      </div>
+      <div class="sd-tile">
+        <span class="sd-tile__label">{{ 'PROMOTIONS.COUPONS.COUPON_CODE_PREFIX' | translate }}</span>
+        <span class="sd-tile__value">{{ s.codePrefix }}</span>
+      </div>
+      <div class="sd-tile">
+        <span class="sd-tile__label">{{ 'PROMOTIONS.COUPONS.GIVEN_DATE' | translate }}</span>
+        <span class="sd-tile__value">{{ s.givenDate | date: 'dd/MM/yyyy' }}</span>
+      </div>
+      <div class="sd-tile">
+        <span class="sd-tile__label">{{ 'PROMOTIONS.COUPONS.COUPONS_NUMBER' | translate }}</span>
+        <span class="sd-tile__value">
+          @if (s.max > 0) { {{ s.max }} {{ 'PROMOTIONS.COUPONS.COUPONS' | translate }} }
+          @else { {{ 'PROMOTIONS.COUPONS.UNLIMITED' | translate }} }
+        </span>
+      </div>
+      <div class="sd-tile">
+        <span class="sd-tile__label">{{ 'PROMOTIONS.COUPONS.ISSUED' | translate }}</span>
+        <span class="sd-tile__value">{{ s.issued }}</span>
+      </div>
+      @if (s.max > 0) {
+        <div class="sd-tile">
+          <span class="sd-tile__label">{{ 'PROMOTIONS.COUPONS.NOT_ISSUED' | translate }}</span>
+          <span class="sd-tile__value">{{ s.max - s.issued }}</span>
+        </div>
+      }
+      <div class="sd-tile">
+        <span class="sd-tile__label">{{ 'PROMOTIONS.COUPONS.EXPIRED' | translate }}</span>
+        <span class="sd-tile__value">{{ s.expired }}</span>
+      </div>
+      <div class="sd-tile">
+        <span class="sd-tile__label">{{ 'PROMOTIONS.COUPONS.USED' | translate }}</span>
+        <span class="sd-tile__value">{{ s.used }}</span>
+      </div>
+      <div class="sd-tile">
+        <span class="sd-tile__label">{{ 'PROMOTIONS.COUPONS.UNUSED' | translate }}</span>
+        <span class="sd-tile__value">{{ unused() }}</span>
+      </div>
+
+      @if (isDiscount()) {
+        <div class="sd-tile">
+          <span class="sd-tile__label">{{ 'PROMOTIONS.COUPONS.DISCOUNT_PERCENTAGE' | translate }}</span>
+          <span class="sd-tile__value">{{ s.percentage }} %</span>
+        </div>
+        <div class="sd-tile">
+          <span class="sd-tile__label">{{ 'PROMOTIONS.COUPONS.MIN_TOTAL_AMOUNT' | translate }}</span>
+          <span class="sd-tile__value">{{ s.minimumOrder | mycurrency }}</span>
+        </div>
+      }
+      @if (isProducts()) {
+        <div class="sd-tile">
+          <span class="sd-tile__label">{{ 'PROMOTIONS.CAMPAIGNS.PRODUCTS' | translate }}</span>
+          <span class="sd-tile__value">{{ s.products?.productsInfo ? translate(s.products.productsInfo.name, currentLang()) : '—' }}</span>
+        </div>
+        <div class="sd-tile">
+          <span class="sd-tile__label">{{ 'PROMOTIONS.COUPONS.DISCOUNT_ON' | translate }}</span>
+          <span class="sd-tile__value">
+            @if (s.products?.percentage === 100) { {{ 'PROMOTIONS.COUPONS.FREE' | translate }} }
+            @else { {{ s.products?.percentage }} % }
+          </span>
+        </div>
+      }
+      <div class="sd-tile">
+        <span class="sd-tile__label">{{ 'PROMOTIONS.COUPONS.ACTIVE_PERIOD' | translate }}</span>
+        <span class="sd-tile__value">{{ s.activePeriod.value }} {{ 'PROMOTIONS.CUSTOMER_TIERS.' + s.activePeriod.periodUnit | translate }}</span>
+      </div>
+      <div class="sd-tile">
+        <span class="sd-tile__label">{{ 'PROMOTIONS.COUPONS.END_PERIOD' | translate }}</span>
+        <span class="sd-tile__value">{{ s.expiryPeriod.value }} {{ 'PROMOTIONS.CUSTOMER_TIERS.' + s.expiryPeriod.periodUnit | translate }}</span>
+      </div>
+    </section>
+
+    @if (isStamp()) {
+      <section class="sd-card">
+        <h2 class="sd-card__title">{{ 'PROMOTIONS.CAMPAIGNS.PRODUCTS' | translate }}</h2>
+        <p class="sd-equation">
+          <strong>{{ s.requiresStamps }}</strong> {{ 'PROMOTIONS.COUPONS.REQUIRED_STAMPS_FOR' | translate }}
+          @for (p of s.product ?? []; track $index; let last = $last) {
+            <span class="sd-chip">{{ translate(p.name, currentLang()) }}</span>@if (!last) { OR }
+          }
+          @if (s.prizeProduct?.length) {
+            &rarr;
+            @for (p of s.prizeProduct; track $index; let last = $last) {
+              @if (p?.name) { <span class="sd-chip">{{ translate(p.name, currentLang()) }}</span>@if (!last) { OR } }
+            }
+          }
+        </p>
+      </section>
+    }
+
+    <section class="sd-card">
+      <h2 class="sd-card__title">{{ 'PROMOTIONS.COUPONS.BRANCHES' | translate }}</h2>
+      <div class="sd-chips">
+        @for (b of selectedBranches(); track b.id) { <span class="sd-chip">{{ b.name }}</span> }
+      </div>
+    </section>
+    <section class="sd-card">
+      <h2 class="sd-card__title">{{ 'PROMOTIONS.COUPONS.SERVICES' | translate }}</h2>
+      <div class="sd-chips">
+        @for (sv of selectedServices(); track sv.id) { <span class="sd-chip">{{ sv.name }}</span> }
+      </div>
+    </section>
+
+    <!-- tables -->
+    <section class="sd-card">
+      <button type="button" class="sd-card__head" (click)="toggleOpen()">
+        <span>{{ (view() === 'actionList' ? 'PROMOTIONS.COUPONS.ACTIONS_LIST' : 'PROMOTIONS.COUPONS.COUPONS') | translate }}</span>
+        <span class="sd-chevron" [class.is-open]="open()">&#9662;</span>
+      </button>
+      <div class="sd-view">
+        <span>{{ 'PROMOTIONS.COUPONS.VIEW' | translate }}</span>
+        <app-segmented-toggle [options]="viewOptions" [value]="view()" (valueChange)="changeView($event)"/>
+      </div>
+
+      @if (open()) {
+        @if (view() === 'actionList') {
+          <div class="sd-table-wrap">
+            <table class="sd-table">
+              <thead><tr>
+                <th>{{ 'PROMOTIONS.COUPONS.ACTION_NAME' | translate }}</th>
+                <th>{{ 'PROMOTIONS.COUPONS.ACTION_DATE' | translate }}</th>
+                <th>{{ 'PROMOTIONS.COUPONS.USER' | translate }}</th>
+                <th>{{ 'PROMOTIONS.COUPONS.NOTE' | translate }}</th>
+                <th>{{ 'PROMOTIONS.COUPONS.REASON' | translate }}</th>
+              </tr></thead>
+              <tbody>
+                @for (a of actions(); track $index) {
+                  <tr>
+                    <td>{{ 'PROMOTIONS.COUPONS.ACTIONS.' + a.actionName | translate }}</td>
+                    <td>{{ a.actionDate | date: 'dd/MM/yyyy HH:mm' }}</td>
+                    <td>{{ a.user }}</td>
+                    <td>{{ a.note || '—' }}</td>
+                    <td>{{ translate(a.reason, currentLang()) || '—' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <app-pagination [page]="actionsPage().page" [pageSize]="actionsPage().limit" [count]="actionsPage().count ?? null"
+            (pageChange)="onActionsPage($event)" (pageSizeChange)="onActionsSize($event)"/>
+        } @else {
+          <div class="sd-table-wrap">
+            <table class="sd-table">
+              <thead><tr>
+                <th>{{ 'PROMOTIONS.COUPONS.COUPON_CODE' | translate }}</th>
+                <th>{{ 'PROMOTIONS.COUPONS.STATUS_LABEL' | translate }}</th>
+                <th>{{ 'PROMOTIONS.COUPONS.ACTIVE_DATE' | translate }}</th>
+                <th>{{ 'PROMOTIONS.COUPONS.EXPIRY_DATE' | translate }}</th>
+                <th>{{ 'PROMOTIONS.COUPONS.COUNT_OF_USAGE' | translate }}</th>
+              </tr></thead>
+              <tbody>
+                @for (c of coupons(); track c.id) {
+                  <tr class="sd-row-link" (click)="openCoupon(c)">
+                    <td>{{ c.code }}</td>
+                    <td><app-coupon-status-badge [status]="c.status" kind="coupon"/></td>
+                    <td>{{ c.activeDate | date: 'dd/MM/yyyy HH:mm' }}</td>
+                    <td>{{ c.expiryDate | date: 'dd/MM/yyyy HH:mm' }}</td>
+                    <td>{{ c.countOfUsage }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <app-pagination [page]="couponsPage().page" [pageSize]="couponsPage().limit" [count]="couponsPage().count ?? null"
+            (pageChange)="onCouponsPage($event)" (pageSizeChange)="onCouponsSize($event)"/>
+        }
+      }
+    </section>
+  }
+</div>

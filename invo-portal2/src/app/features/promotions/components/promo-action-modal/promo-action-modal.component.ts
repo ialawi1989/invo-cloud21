@@ -16,10 +16,18 @@ import { InvoicePickerComponent } from '../invoice-picker/invoice-picker.compone
 import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
 import { TranslatedStringInputComponent } from '../translated-string-input/translated-string-input.component';
 
-export type PromoActionKind = 'reason' | 'extend' | 'spend' | 'refund' | 'email';
+export type PromoActionKind = 'reason' | 'extend' | 'spend' | 'refund' | 'email' | 'stamp';
 
 export interface PromoActionData {
   kind: PromoActionKind;
+  /** Which i18n namespace / validation set applies; default is gift vouchers. */
+  domain?: 'vouchers' | 'points' | 'tiers' | 'coupons';
+  /** stamp / unstamp: highest stamp count allowed. */
+  validateStampCount?: number;
+  /** points spend: the customer's active points (upper limit). */
+  activePoints?: number;
+  /** points refund: points that may still be refunded (upper limit). */
+  validRefundPoint?: number;
   /** i18n key of the modal title. */
   title: string;
   /** extend: current expiry (also the minimum). */
@@ -39,6 +47,7 @@ export interface PromoActionResult {
   amount?: number;
   endDate?: Date | string;
   email?: string;
+  stampCount?: number;
   spentOrderNumber?: string;
   spentOrderId?: string;
 }
@@ -71,12 +80,24 @@ export class PromoActionModalComponent {
   note = signal('');
   amount = signal<number | null>(this.data.amount ?? null);
   email = signal('');
+  stampCount = signal<number | null>(1);
   endDate = signal<Date | null>(this.data.endDate ? new Date(this.data.endDate) : null);
   invoice = signal<InvoiceInfo | null>(null);
 
   today = (() => { const t = new Date(); t.setHours(0, 0, 0, 0); return t; })();
 
   get kind(): PromoActionKind { return this.data.kind; }
+  get domain(): 'vouchers' | 'points' | 'tiers' | 'coupons' { return this.data.domain ?? 'vouchers'; }
+  /** i18n namespace of the labels/messages for the current domain. */
+  get ns(): string {
+    return this.domain === 'points'
+      ? 'PROMOTIONS.PROMOTIONS_POINTS.'
+      : this.domain === 'coupons'
+        ? 'PROMOTIONS.COUPONS.'
+      : this.domain === 'tiers'
+        ? 'PROMOTIONS.CUSTOMER_TIERS.'
+        : 'PROMOTIONS.PROMOTIONS_VOUCHERS.';
+  }
 
   // ── decimals (legacy MathHelpers.afterDecimal) ───────────────────
   private afterDecimal = computed(() => this.company.settings()?.settings?.afterDecimal ?? 3);
@@ -98,6 +119,14 @@ export class PromoActionModalComponent {
 
   amountError = computed<string | null>(() => {
     const a = this.amount();
+    if (this.domain === 'points') {
+      // legacy SpendPointsComponent / RefundPointsComponent.validateAmount
+      if (a === null) return 'REQUIRED';
+      if (a < 1) return 'LESS_THAN_1';
+      if (this.kind === 'spend' && a > (this.data.activePoints ?? 0)) return 'MORE_THAN_BALANCE';
+      if (this.kind === 'refund' && a > (this.data.validRefundPoint ?? 0)) return 'MORE_THAN_REFUND';
+      return null;
+    }
     if (this.kind === 'spend') {
       if (a === null || a === 0) return 'REQUIRED';
       if (a < 0) return 'LESS_THAN_0';
@@ -120,12 +149,21 @@ export class PromoActionModalComponent {
     return d >= this.today;
   });
 
+  /** Legacy StampCardActionComponent.stampCardNumberValidate. */
+  stampError = computed<string | null>(() => {
+    const c = this.stampCount();
+    if (c === null || c === undefined || c === 0) return 'STAMP_CARD_COUNT_REQUIRED';
+    if (c > (this.data.validateStampCount ?? 0)) return 'STAMP_CARD_COUNT_EXCEEDS_LIMIT';
+    return null;
+  });
+
   valid = computed(() => {
     if (!this.reasonValid()) return false;
     switch (this.kind) {
       case 'spend':
       case 'refund': return this.amountError() === null;
       case 'email': return this.emailValid();
+      case 'stamp': return this.stampError() === null;
       case 'extend': return this.dateValid();
       default: return true;
     }
@@ -147,7 +185,7 @@ export class PromoActionModalComponent {
     if (!this.valid()) return;
 
     // Refund above what was actually spent needs an explicit go-ahead (legacy confirm).
-    if (this.kind === 'refund' && (this.amount() ?? 0) > (this.data.validRefundVoucher ?? 0)) {
+    if (this.domain === 'vouchers' && this.kind === 'refund' && (this.amount() ?? 0) > (this.data.validRefundVoucher ?? 0)) {
       const ok = await this.modal.open<ConfirmModalComponent, ConfirmModalData, boolean>(ConfirmModalComponent, {
         size: 'sm',
         data: {
@@ -158,6 +196,25 @@ export class PromoActionModalComponent {
       if (!ok) return;
     }
 
+    // Spending points against an invoice: warn about invoices that look wrong (legacy SpendPointsComponent).
+    if (this.domain === 'points' && this.kind === 'spend' && this.invoice()) {
+      const inv = this.invoice()!;
+      const confirmKey = inv.isGavePoints
+        ? 'CONFIRM_POINTS_ALREADY_GIVEN'
+        : inv.status === 'Paid'
+          ? 'CONFIRM_INVOICE_PAID'
+          : inv.status === 'Cancel'
+            ? 'CONFIRM_INVOICE_CANCEL'
+            : '';
+      if (confirmKey) {
+        const ok = await this.modal.open<ConfirmModalComponent, ConfirmModalData, boolean>(ConfirmModalComponent, {
+          size: 'sm',
+          data: { title: this.translate.instant(this.ns + confirmKey), message: '' },
+        }).afterClosed();
+        if (!ok) return;
+      }
+    }
+
     const result: PromoActionResult = { reason: this.reason(), note: this.note() };
     if (this.kind === 'spend' || this.kind === 'refund') result.amount = this.amount() ?? 0;
     if (this.kind === 'spend') {
@@ -166,6 +223,7 @@ export class PromoActionModalComponent {
     }
     if (this.kind === 'extend') result.endDate = this.endDate() ?? undefined;
     if (this.kind === 'email') result.email = this.email().trim();
+    if (this.kind === 'stamp') result.stampCount = this.stampCount() ?? 0;
     this.ref.close(result);
   }
 

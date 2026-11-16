@@ -111,6 +111,12 @@
 
       "GIFT_VOUCHERS":             "Gift Vouchers",
       "GIFT_VOUCHERS_DESC":        "Configure and manage gift vouchers given to customers.",
+      "CUSTOMER_TIERS": "Customer Tiers",
+      "CUSTOMER_TIERS_DESC": "Tier customers by orders or spend and manage their benefits.",
+      "PROMOTIONAL_POINTS": "Promotional Points",
+      "PROMOTIONAL_POINTS_DESC": "Loyalty points: earning rate, expiry and customer balances.",
+      "COUPONS": "Coupons & Stamp Cards",
+      "COUPONS_DESC": "Discount coupons, product coupons and stamp cards.",
 
       "PAYMENT_METHODS":           "Payments Method",
       "PAYMENT_METHODS_DESC":      "Payment methods, currencies, and configuration for linking to POS and website.",

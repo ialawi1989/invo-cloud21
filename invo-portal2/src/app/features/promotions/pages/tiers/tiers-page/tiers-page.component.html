@@ -1,0 +1,228 @@
+<div class="tp-page">
+  <header class="page-header">
+    <app-breadcrumbs [items]="breadcrumbs" separator="chevron"/>
+    <div class="page-header__row">
+      <h1 class="page-header__title">{{ 'PROMOTIONS.CUSTOMER_TIERS.CUSTOMER_TIERS' | translate }}</h1>
+      @if (data(); as d) {
+        <div class="tp-actions">
+          @if (canEvaluate && !editMode()) {
+            <button type="button" class="tp-btn" [disabled]="!d.enabled" (click)="evaluate()">
+              {{ 'PROMOTIONS.CUSTOMER_TIERS.EVALUATION' | translate }}
+            </button>
+          }
+          <button type="button" class="tp-btn" (click)="openHistory()">
+            {{ 'PROMOTIONS.CUSTOMER_TIERS.HISTORY' | translate }}
+          </button>
+        </div>
+      }
+    </div>
+  </header>
+
+  @if (data(); as d) {
+    <!-- ── Summary banner (view mode) ───────────────────────────── -->
+    @if (!editMode()) {
+      <section class="tp-summary">
+        <p class="tp-summary__text">
+          {{ 'PROMOTIONS.CUSTOMER_TIERS.CUSTOMER_MUST_MATCH' | translate }}
+          @switch (d.conditionMatch) {
+            @case (ConditionMatch.NO_CONDITION) { <strong>{{ 'PROMOTIONS.CUSTOMER_TIERS.CONDITION' | translate }}</strong> }
+            @case (ConditionMatch.ANY_CONDITION) { <strong>{{ 'PROMOTIONS.CUSTOMER_TIERS.ANY_CONDITION' | translate }}</strong> }
+            @case (ConditionMatch.ALL_CONDITION) { <strong>{{ 'PROMOTIONS.CUSTOMER_TIERS.ALL_CONDITION' | translate }}</strong> }
+          }
+          {{ 'PROMOTIONS.CUSTOMER_TIERS.AMONG' | translate }}
+          <strong>{{ d.calculationPeriod.value }} {{ 'PROMOTIONS.CUSTOMER_TIERS.' + d.calculationPeriod.periodUnit | translate }}</strong>
+        </p>
+        @if (d.evaluationLastDate) {
+          <p class="tp-summary__meta">
+            {{ 'PROMOTIONS.CUSTOMER_TIERS.LAST_EVALUATION_DATE' | translate }}
+            <strong>{{ d.evaluationLastDate | date: 'medium' }}</strong>
+          </p>
+        }
+      </section>
+
+      <!-- ── Tier list (view mode) ──────────────────────────────── -->
+      <section class="tp-card">
+        <header class="tp-card__head">
+          <h2 class="tp-card__title">{{ 'PROMOTIONS.CUSTOMER_TIERS.CUSTOMER_TIERS' | translate }}</h2>
+          <div class="tp-card__tools">
+            @if (canEnableDisable) {
+              @for (k of toggleKeys(); track k) {
+                <app-toggle [checked]="d.enabled" (checkedChange)="toggleEnabled()"
+                  [label]="'PROMOTIONS.CUSTOMER_TIERS.DISABLE_ENABLE_CUSTOMER_TIERS' | translate"/>
+              }
+            }
+            @if (canEdit) {
+              <button type="button" class="tp-btn" [disabled]="!d.enabled" (click)="switchToEditMode()">
+                {{ 'COMMON.EDIT' | translate }}
+              </button>
+            }
+          </div>
+        </header>
+
+        <div class="tp-grid">
+          @for (tier of d.customerTiers; track $index) {
+            @if (tier.enabled) {
+              <article class="tp-tier" [class.tp-tier--muted]="!d.enabled">
+                <div class="tp-tier__head">
+                  <h3 class="tp-tier__name">{{ translate(tier.name, currentLang()) }}</h3>
+                  <div class="tp-tier__side">
+                    <span class="tp-pill">
+                      {{ 'PROMOTIONS.CUSTOMER_TIERS.CUSTOMER_COUNT' | translate }} <strong>{{ tier.customerCount }}</strong>
+                    </span>
+                    @if (canSendEmail) {
+                      <button type="button" class="tp-icon-btn" [disabled]="!d.enabled" (click)="sendEmail($index)"
+                        [attr.aria-label]="'PROMOTIONS.PROMOTIONS_POINTS.SEND_EMAIL' | translate">&#9993;</button>
+                    }
+                  </div>
+                </div>
+                @if (d.useMinOrder || d.useMinSpend) {
+                  <div class="tp-tier__stats">
+                    @if (d.useMinOrder) {
+                      <div class="tp-stat">
+                        <span class="tp-stat__label">{{ 'PROMOTIONS.CUSTOMER_TIERS.NUMBER_OF_ORDER' | translate }}</span>
+                        <span class="tp-stat__value">{{ tier.minNumberOfOrders }}</span>
+                      </div>
+                    }
+                    @if (d.useMinSpend) {
+                      <div class="tp-stat">
+                        <span class="tp-stat__label">{{ 'PROMOTIONS.CUSTOMER_TIERS.AMOUNT_SPEND' | translate }}</span>
+                        <span class="tp-stat__value">{{ tier.minAmountSpend | mycurrency }}</span>
+                      </div>
+                    }
+                  </div>
+                }
+              </article>
+            }
+          }
+        </div>
+      </section>
+    }
+
+    <!-- ── Edit mode ────────────────────────────────────────────── -->
+    @if (editMode()) {
+      <section class="tp-card">
+        <header class="tp-card__head">
+          <h2 class="tp-card__title">{{ 'PROMOTIONS.CUSTOMER_TIERS.CONDITION_SITTING' | translate }}</h2>
+        </header>
+        <div class="tp-form-row">
+          <div class="tp-field">
+            <label>{{ 'PROMOTIONS.CUSTOMER_TIERS.CUSTOMER_MUST_MATCH' | translate }}</label>
+            <app-search-dropdown
+              [items]="conditionOptions"
+              [displayWith]="conditionDisplay"
+              [compareWith]="conditionCompare"
+              [toValue]="conditionToValue"
+              [clearable]="false"
+              [searchable]="false"
+              [disabled]="isCustomerMatchDisabled()"
+              [value]="selectedCondition()"
+              (valueChange)="setConditionMatch($any($event))"/>
+          </div>
+          <div class="tp-field">
+            <label>{{ 'PROMOTIONS.CUSTOMER_TIERS.CALCULATION_PERIOD' | translate }}</label>
+            <app-day-span-control [value]="d.calculationPeriod" (valueChange)="setCalculationPeriod($event)"/>
+          </div>
+        </div>
+        <div class="tp-field">
+          <label>{{ 'PROMOTIONS.CUSTOMER_TIERS.Condition_Type' | translate }}</label>
+          <div class="tp-checks">
+            <label class="tp-check">
+              <input type="checkbox" [ngModel]="d.useMinOrder" (ngModelChange)="setUseMinOrder($event)"/>
+              <span>{{ 'PROMOTIONS.CUSTOMER_TIERS.NUMBER_OF_ORDER' | translate }}</span>
+            </label>
+            <label class="tp-check">
+              <input type="checkbox" [ngModel]="d.useMinSpend" (ngModelChange)="setUseMinSpend($event)"/>
+              <span>{{ 'PROMOTIONS.CUSTOMER_TIERS.AMOUNT_SPEND' | translate }}</span>
+            </label>
+          </div>
+          @if (!atLeastOneConditionSelected()) {
+            <p class="tp-error">{{ 'PROMOTIONS.CUSTOMER_TIERS.SELECT_AT_LEAST_ONE_CONDITION' | translate }}</p>
+          }
+        </div>
+      </section>
+
+      <div class="tp-grid">
+        @for (tier of d.customerTiers; track $index; let i = $index) {
+          <article class="tp-tier tp-tier--edit" [class.tp-tier--muted]="!tier.enabled">
+            <div class="tp-tier__head">
+              <h3 class="tp-tier__name">{{ translate(tier.name, currentLang()) }}</h3>
+              @if (i !== 0) {
+                <div class="tp-tier__side">
+                  <app-toggle [checked]="tier.enabled" (checkedChange)="setTierEnabled(i, $event)"/>
+                  <button type="button" class="tp-icon-btn tp-icon-btn--danger" (click)="confirmRemoveTier(i)"
+                    [attr.aria-label]="'COMMON.CONFIRM_DELETE' | translate">&#128465;</button>
+                </div>
+              }
+            </div>
+
+            <div class="tp-tier__fields">
+              <div class="tp-field">
+                <app-translated-string-input
+                  label="PROMOTIONS.CUSTOMER_TIERS.CUSTOMER_TIERS_NAME"
+                  [value]="tier.name" (valueChange)="setTierName(i, $event)"/>
+                @if (validateTierName(tier, i); as err) {
+                  <p class="tp-error">{{ err | translate }}</p>
+                }
+              </div>
+
+              @if (d.useMinOrder) {
+                <div class="tp-field">
+                  <label>{{ 'PROMOTIONS.CUSTOMER_TIERS.NUMBER_OF_ORDER' | translate }}</label>
+                  <input type="number" class="tp-input" [disabled]="i === 0 || !tier.enabled"
+                    [ngModel]="tier.minNumberOfOrders" (ngModelChange)="setTierOrders(i, $event)"/>
+                  @if (ordersNotAbovePrevious(i)) {
+                    <p class="tp-error">
+                      {{ 'PROMOTIONS.CUSTOMER_TIERS.TIER_VALIDATION.ORDERS_HIGHER_THAN' | translate: { cur: i, prev: i - 1 } }}
+                    </p>
+                  }
+                </div>
+              }
+
+              @if (d.useMinSpend) {
+                <div class="tp-field">
+                  <label>{{ 'PROMOTIONS.CUSTOMER_TIERS.AMOUNT_SPEND' | translate }}</label>
+                  <input type="number" class="tp-input" [step]="amountStep()" [disabled]="i === 0 || !tier.enabled"
+                    [ngModel]="tier.minAmountSpend" (ngModelChange)="setTierSpend(i, $event)"
+                    (input)="limitAmountDecimals($event, i)"/>
+                  @if (spendNotAbovePrevious(i)) {
+                    <p class="tp-error">
+                      {{ 'PROMOTIONS.CUSTOMER_TIERS.TIER_VALIDATION.SPEND_HIGHER_THAN' | translate: { cur: i, prev: i - 1 } }}
+                    </p>
+                  }
+                </div>
+              }
+            </div>
+          </article>
+        }
+
+        @if (isAddCustomerTierVisible()) {
+          <button type="button" class="tp-add" (click)="addCustomerTier()">
+            + {{ 'PROMOTIONS.CUSTOMER_TIERS.ADD_CUSTOMER_TIER' | translate }}
+          </button>
+        }
+      </div>
+
+      <section class="tp-card">
+        <header class="tp-card__head">
+          <h2 class="tp-card__title">{{ 'PROMOTIONS.CUSTOMER_TIERS.REASON_AND_NOTES' | translate }}</h2>
+        </header>
+        <app-translated-string-input label="PROMOTIONS.CUSTOMER_TIERS.REASON" [required]="true"
+          [value]="reason()" (valueChange)="reason.set($event)"/>
+        @if (!reasonValid()) {
+          <p class="tp-error">{{ 'PROMOTIONS.PROMOTIONS_POINTS.REASON_REQUIRED' | translate }}</p>
+        }
+        <div class="tp-field">
+          <label>{{ 'PROMOTIONS.CUSTOMER_TIERS.NOTE' | translate }}</label>
+          <input type="text" class="tp-input" [ngModel]="notes()" (ngModelChange)="notes.set($event)"/>
+        </div>
+      </section>
+
+      <app-form-sticky-footer>
+        <button type="button" class="tp-btn" (click)="cancelChanges()">{{ 'COMMON.CANCEL' | translate }}</button>
+        <button type="button" class="tp-btn tp-btn--primary" [disabled]="!valid() || saving()" (click)="save()">
+          {{ 'COMMON.SAVE' | translate }}
+        </button>
+      </app-form-sticky-footer>
+    }
+  }
+</div>

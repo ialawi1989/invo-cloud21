@@ -1,0 +1,199 @@
+<div class="cf-page">
+  <header class="page-header">
+    <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+    <h1 class="page-header__title">{{ titleKey() | translate }}</h1>
+  </header>
+
+  @if (set(); as s) {
+    <!-- name -->
+    <section class="cf-card">
+      <app-translated-string-input
+        [label]="isStamp() ? 'PROMOTIONS.COUPONS.STAMP_CARD_SET_NAME' : 'PROMOTIONS.COUPONS.COUPON_SET_NAME'"
+        [value]="s.name" (valueChange)="onName($event)"/>
+      @if (nameError() === 'name is empty') {
+        <p class="cf-error">{{ 'PROMOTIONS.CAMPAIGNS.THE_NAME_IS_REQUIRED' | translate }}</p>
+      }
+      @if (nameError() === 'name is already used') {
+        <p class="cf-error">{{ 'PROMOTIONS.CAMPAIGNS.NAME_IS_ALREADY_USED' | translate }}</p>
+      }
+    </section>
+
+    <!-- code prefix -->
+    <section class="cf-card">
+      <div class="cf-field">
+        <label>{{ (isStamp() ? 'PROMOTIONS.COUPONS.STAMP_CARD_CODE_PREFIX' : 'PROMOTIONS.COUPONS.COUPON_CODE_PREFIX') | translate }}</label>
+        @if (canEditPrefix()) {
+          <div class="cf-inline">
+            <input type="text" class="cf-input cf-grow" [ngModel]="s.codePrefix" (ngModelChange)="patch({ codePrefix: $event })"/>
+            <button type="button" class="cf-btn" (click)="generatePrefix()">
+              {{ 'PROMOTIONS.COUPONS.GENERATE_PREFIX' | translate }}
+            </button>
+          </div>
+          @if (prefixError() === 'empty') { <p class="cf-error">{{ 'PROMOTIONS.COUPONS.CODE_PREFIX_REQUIRED' | translate }}</p> }
+          @if (prefixError() === 'spaces') { <p class="cf-error">{{ 'PROMOTIONS.COUPONS.CODE_PREFIX_NO_SPACES' | translate }}</p> }
+        } @else {
+          <input type="text" class="cf-input" [ngModel]="s.codePrefix" disabled/>
+        }
+      </div>
+    </section>
+
+    <!-- end period + count -->
+    <section class="cf-card">
+      <div class="cf-field">
+        <label>{{ 'PROMOTIONS.CAMPAIGNS.END_PERIOD' | translate }}</label>
+        <app-day-span-control [value]="s.expiryPeriod" (valueChange)="patch({ expiryPeriod: $event })"/>
+        @if (expiryError()) { <p class="cf-error">{{ 'PROMOTIONS.COUPONS.NEGATIVE_NOT_ALLOWED' | translate }}</p> }
+      </div>
+
+      <div class="cf-field">
+        <label>
+          {{ (isStamp() ? 'PROMOTIONS.COUPONS.STAMP_CARD_COUNT' : 'PROMOTIONS.COUPONS.COUPONS_NUMBER') | translate }}
+          <small>{{ 'PROMOTIONS.COUPONS.0_FOR_UNLIMITED' | translate }}</small>
+        </label>
+        <div class="cf-inline">
+          <input type="number" class="cf-input cf-grow" [min]="s.issued"
+            [ngModel]="s.max" (ngModelChange)="patch({ max: $event })"/>
+          <span class="cf-suffix">{{ (isStamp() ? 'PROMOTIONS.COUPONS.STAMP_CARDS' : 'PROMOTIONS.COUPONS.COUPONS') | translate }}</span>
+        </div>
+        @if (maxError() === 'negative') { <p class="cf-error">{{ 'PROMOTIONS.COUPONS.NEGATIVE_NOT_ALLOWED' | translate }}</p> }
+        @if (maxError() === 'below-issued') {
+          <p class="cf-error">{{ 'PROMOTIONS.COUPONS.MIN_ORDER_VALIDATION' | translate }} {{ s.issued }}</p>
+        }
+      </div>
+
+      @if (isDiscount()) {
+        <div class="cf-field">
+          <label>{{ 'PROMOTIONS.COUPONS.DISCOUNT_PERCENTAGE' | translate }}</label>
+          <div class="cf-inline">
+            <input type="number" class="cf-input cf-grow" min="1" max="100"
+              [ngModel]="s.percentage" (ngModelChange)="patch({ percentage: $event })"/>
+            <span class="cf-suffix">%</span>
+          </div>
+          @if (!percentageOk()) { <p class="cf-error">{{ 'PROMOTIONS.COUPONS.PERCENTAGE_VALIDATION' | translate }}</p> }
+        </div>
+      }
+
+      @if (isStamp()) {
+        <div class="cf-field">
+          <label>
+            {{ 'PROMOTIONS.COUPONS.REQUIRES_STAMPS' | translate }}
+            <small>{{ 'PROMOTIONS.COUPONS.MAXIMUM_IS_10' | translate }}</small>
+          </label>
+          <input type="number" class="cf-input" [ngModel]="s.requiresStamps" (ngModelChange)="patch({ requiresStamps: $event })"/>
+          @if (stampsError(); as err) { <p class="cf-error">{{ 'PROMOTIONS.COUPONS.' + err | translate }}</p> }
+        </div>
+      }
+    </section>
+
+    <!-- products -->
+    @if (isProducts()) {
+      <section class="cf-card">
+        <div class="cf-field">
+          <label>{{ 'PROMOTIONS.CAMPAIGNS.PRODUCTS' | translate }}</label>
+          <app-promo-product-picker [value]="s.products?.productsInfo" (valueChange)="onProduct($event)"/>
+          @if (!productSelected()) {
+            <p class="cf-error">{{ 'PROMOTIONS.CAMPAIGNS.PRODUCT_SELECT_REQUIRED' | translate }}</p>
+          }
+        </div>
+        <label class="cf-check">
+          <input type="checkbox" [checked]="s.products?.percentage === 100" (change)="onFree($any($event.target).checked)"/>
+          <span>{{ 'PROMOTIONS.COUPONS.FREE' | translate }}</span>
+        </label>
+        @if (s.products?.percentage !== 100) {
+          <div class="cf-field">
+            <div class="cf-inline">
+              <input type="number" class="cf-input cf-grow" min="1" max="100"
+                [ngModel]="s.products?.percentage" (ngModelChange)="patchProducts({ percentage: $event })"/>
+              <span class="cf-suffix">%</span>
+            </div>
+            @if (!productPercentageOk()) { <p class="cf-error">{{ 'PROMOTIONS.COUPONS.PERCENTAGE_VALIDATION' | translate }}</p> }
+          </div>
+        }
+      </section>
+    }
+
+    @if (isStamp()) {
+      <section class="cf-card">
+        <div class="cf-field">
+          <label>{{ 'PROMOTIONS.CAMPAIGNS.PRODUCTS' | translate }}</label>
+          <app-product-selector-list [items]="s.product ?? []" (itemsChange)="patch({ product: $event })"/>
+          @if (!stampProductOk()) {
+            <p class="cf-error">{{ 'PROMOTIONS.CAMPAIGNS.PRODUCT_SELECT_REQUIRED' | translate }}</p>
+          }
+        </div>
+      </section>
+      <section class="cf-card">
+        <label class="cf-check">
+          <input type="checkbox" [checked]="usePrize()" (change)="onPrize($any($event.target).checked)"/>
+          <span>{{ 'PROMOTIONS.COUPONS.USE_DIFFERENT_REWARD_PRODUCT' | translate }}</span>
+        </label>
+        @if (usePrize()) {
+          <div class="cf-field">
+            <label>{{ 'PROMOTIONS.COUPONS.PRIZE_PRODUCT' | translate }}</label>
+            <app-product-selector-list [items]="s.prizeProduct ?? []" (itemsChange)="patch({ prizeProduct: $event })"/>
+          </div>
+        }
+      </section>
+    }
+
+    <!-- edit: reason + note -->
+    @if (isEdit()) {
+      <section class="cf-card">
+        <app-translated-string-input label="PROMOTIONS.PROMOTIONS_POINTS.REASON" [required]="true"
+          [value]="reason()" (valueChange)="reason.set($event)"/>
+        @if (!reasonValid()) { <p class="cf-error">{{ 'PROMOTIONS.CAMPAIGNS.REASON_REQUIRED' | translate }}</p> }
+        <div class="cf-field">
+          <label>{{ 'PROMOTIONS.CAMPAIGNS.NOTE' | translate }}</label>
+          <textarea class="cf-input" rows="2" [ngModel]="note()" (ngModelChange)="note.set($event)"></textarea>
+        </div>
+      </section>
+    }
+
+    <!-- advanced -->
+    <section class="cf-card">
+      <button type="button" class="cf-adv" (click)="advancedOpen.set(!advancedOpen())">
+        <span>{{ 'PROMOTIONS.CAMPAIGNS.ADVANCE_SETTINGS' | translate }}</span>
+        <span class="cf-chevron" [class.is-open]="advancedOpen()">&#9662;</span>
+      </button>
+      @if (advancedOpen()) {
+        <div class="cf-field">
+          <label>{{ 'PROMOTIONS.CAMPAIGNS.START_PERIOD' | translate }}</label>
+          <app-day-span-control [value]="s.activePeriod" (valueChange)="patch({ activePeriod: $event })"/>
+          @if (activeError()) { <p class="cf-error">{{ 'PROMOTIONS.COUPONS.NEGATIVE_NOT_ALLOWED' | translate }}</p> }
+        </div>
+
+        <div class="cf-field">
+          <label>{{ 'PROMOTIONS.COUPONS.BRANCHES' | translate }}</label>
+          <app-check-chips [items]="branches()" [selected]="s.branchesId ?? []" (selectedChange)="patch({ branchesId: $event })"/>
+          @if (!branchesOk()) { <p class="cf-error">{{ 'PROMOTIONS.COUPONS.SELECT_BRANCH' | translate }}</p> }
+        </div>
+
+        <div class="cf-field">
+          <label>{{ 'PROMOTIONS.COUPONS.SERVICES' | translate }}</label>
+          <app-check-chips [items]="services()" [selected]="s.servicesId ?? []" (selectedChange)="patch({ servicesId: $event })"/>
+          @if (!servicesOk()) { <p class="cf-error">{{ 'PROMOTIONS.COUPONS.SELECT_SERVICE' | translate }}</p> }
+        </div>
+
+        @if (isDiscount()) {
+          <div class="cf-field">
+            <label>{{ 'PROMOTIONS.COUPONS.MIN_TOTAL_AMOUNT' | translate }}</label>
+            <div class="cf-inline">
+              <input type="number" class="cf-input cf-grow" [step]="amountStep()" min="0"
+                [ngModel]="s.minimumOrder" (ngModelChange)="patch({ minimumOrder: $event })"
+                (input)="limitMinimumOrderDecimals($event)"/>
+              @if (currencySymbol()) { <span class="cf-suffix">{{ currencySymbol() }}</span> }
+            </div>
+            @if (!orderOk()) { <p class="cf-error">{{ 'PROMOTIONS.COUPONS.MIN_ORDER_VALIDATION' | translate }}</p> }
+          </div>
+        }
+      }
+    </section>
+
+    <app-form-sticky-footer>
+      <button type="button" class="cf-btn" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+      <button type="button" class="cf-btn cf-btn--primary" [disabled]="!formValid() || saving()" (click)="save()">
+        {{ 'COMMON.SAVE' | translate }}
+      </button>
+    </app-form-sticky-footer>
+  }
+</div>

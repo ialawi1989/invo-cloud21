@@ -223,6 +223,12 @@ export const SETTINGS_GROUPS: SettingGroup[] = [
     items: [
       { label: 'SETTINGS.ITEMS.GIFT_VOUCHERS', description: 'SETTINGS.ITEMS.GIFT_VOUCHERS_DESC', link: '/promotions/promotions-vouchers', privilege: 'PromotionalVoucherPrivileges.access',
         i18nPrefix: 'PROMOTIONS_VOUCHERS' },
+      { label: 'SETTINGS.ITEMS.CUSTOMER_TIERS', description: 'SETTINGS.ITEMS.CUSTOMER_TIERS_DESC', link: '/promotions/customer-tiers', privilege: 'customerTiersPrivileges.access',
+        i18nPrefix: 'CUSTOMER_TIERS' },
+      { label: 'SETTINGS.ITEMS.PROMOTIONAL_POINTS', description: 'SETTINGS.ITEMS.PROMOTIONAL_POINTS_DESC', link: '/promotions/promotional-points', privilege: 'PromotionalPointsPrivileges.access',
+        i18nPrefix: 'PROMOTIONS_POINTS' },
+      { label: 'SETTINGS.ITEMS.COUPONS', description: 'SETTINGS.ITEMS.COUPONS_DESC', link: '/promotions/coupons', privilege: 'couponsPrivileges.access',
+        i18nPrefix: 'COUPONS' },
     ],
   },
   {

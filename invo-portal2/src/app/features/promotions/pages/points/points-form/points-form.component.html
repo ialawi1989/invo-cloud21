@@ -1,0 +1,86 @@
+<div class="pf-page">
+  <header class="page-header">
+    <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+    <h1 class="page-header__title">{{ 'PROMOTIONS.PROMOTIONS_POINTS.GIVE_PROMOTIONS_POINTS' | translate }}</h1>
+  </header>
+
+  @if (!loading() && settings() && !settings()!.enabled) {
+    <div class="pf-disabled">{{ 'PROMOTIONS.PROMOTIONS_POINTS.SORRY_THE_POINTS_SETTING_IS_DISABLED' | translate }}</div>
+  }
+
+  @if (point(); as p) {
+    @if (settings()?.enabled) {
+      <section class="pf-card">
+        <div class="pf-field">
+          <label>{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.CUSTOMER' | translate }}</label>
+          <app-customer-picker (valueChange)="onCustomer($event)"/>
+        </div>
+
+        <div class="pf-field">
+          <label>{{ 'PROMOTIONS.PROMOTIONS_POINTS.PHONE_NUMBER' | translate }}</label>
+          <app-phone-input [disabled]="customerSelected()"
+            [ngModel]="p.phoneNumber" (ngModelChange)="patch({ phoneNumber: $event })"/>
+          @switch (phoneError()) {
+            @case ('REQUIRED') { <p class="pf-error">{{ 'PROMOTIONS.PROMOTIONS_POINTS.PHONE_NUMBER_IS_REQUIRED' | translate }}</p> }
+            @case ('INVALID') { <p class="pf-error">{{ 'PROMOTIONS.PROMOTIONS_POINTS.PHONE_NUMBER_IS_INVALID' | translate }}</p> }
+          }
+        </div>
+      </section>
+
+      <section class="pf-card">
+        <div class="pf-field">
+          <label>{{ 'PROMOTIONS.PROMOTIONS_POINTS.POINTS' | translate }}</label>
+          <input type="number" class="pf-input"
+            [ngModel]="p.givenPoints" (ngModelChange)="patch({ givenPoints: $event })"/>
+          @switch (pointsError()) {
+            @case ('LESS_THAN_1') { <p class="pf-error">{{ 'PROMOTIONS.PROMOTIONS_POINTS.GIVEN_POINTS_MUST_BE_GREATER_THAN_0' | translate }}</p> }
+            @case ('REQUIRED') { <p class="pf-error">{{ 'PROMOTIONS.PROMOTIONS_POINTS.GIVEN_POINTS_REQUIRED' | translate }}</p> }
+          }
+        </div>
+      </section>
+
+      <section class="pf-card pf-card--row">
+        <div class="pf-field">
+          <label>{{ 'PROMOTIONS.PROMOTIONS_POINTS.ACTIVE_DATE' | translate }}</label>
+          <app-date-picker mode="single" [min]="p.givenDate" [value]="p.activeDate" (valueChange)="onActiveDate($event)"/>
+          @if (!p.activeDate) {
+            <p class="pf-error">{{ 'PROMOTIONS.PROMOTIONS_POINTS.ACTIVE_DATE_REQUIRED' | translate }}</p>
+          }
+        </div>
+        <div class="pf-field">
+          <label>{{ 'PROMOTIONS.PROMOTIONS_POINTS.EXPIRY_DATE' | translate }}</label>
+          <app-date-picker mode="single" [min]="minExpiry()" [value]="p.expiryDate" (valueChange)="onExpiryDate($event)"/>
+          @if (!p.expiryDate) {
+            <p class="pf-error">{{ 'PROMOTIONS.PROMOTIONS_POINTS.EXPIRY_DATE_REQUIRED' | translate }}</p>
+          }
+        </div>
+      </section>
+
+      <section class="pf-card">
+        <div class="pf-field">
+          <label>{{ 'PROMOTIONS.PROMOTIONS_POINTS.ORDER_NUMBER' | translate }}</label>
+          <app-invoice-picker [phoneNumber]="p.phoneNumber" (valueChange)="onInvoice($event)"/>
+        </div>
+      </section>
+
+      <section class="pf-card">
+        <app-translated-string-input label="PROMOTIONS.PROMOTIONS_POINTS.REASON" [required]="true"
+          [value]="p.reason" (valueChange)="patch({ reason: $event })"/>
+        @if (!reasonValid()) {
+          <p class="pf-error">{{ 'PROMOTIONS.PROMOTIONS_POINTS.REASON_REQUIRED' | translate }}</p>
+        }
+        <div class="pf-field">
+          <label>{{ 'PROMOTIONS.PROMOTIONS_POINTS.NOTE' | translate }}</label>
+          <textarea class="pf-input" rows="3" [ngModel]="p.note" (ngModelChange)="patch({ note: $event })"></textarea>
+        </div>
+      </section>
+
+      <app-form-sticky-footer>
+        <button type="button" class="pf-btn" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+        <button type="button" class="pf-btn pf-btn--primary" [disabled]="!formValid() || saving()" (click)="save()">
+          {{ 'COMMON.SAVE' | translate }}
+        </button>
+      </app-form-sticky-footer>
+    }
+  }
+</div>

@@ -1,0 +1,102 @@
+<div class="ps-page">
+  <header class="page-header">
+    <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+    <h1 class="page-header__title">{{ 'PROMOTIONS.PROMOTIONS_POINTS.PROMOTIONS_POINT_SETTINGS' | translate }}</h1>
+  </header>
+
+  @if (setting(); as s) {
+    <section class="ps-card">
+      <app-translated-string-input
+        label="PROMOTIONS.PROMOTIONS_POINTS.PROMOTIONS_POINTS_NAME"
+        [value]="s.pointsName" (valueChange)="patch({ pointsName: $event })"/>
+      @if (nameError()) {
+        <p class="ps-error">{{ 'PROMOTIONS.PROMOTIONS_POINTS.THE_NAME_IS_REQUIRED' | translate }}</p>
+      }
+    </section>
+
+    <section class="ps-card">
+      <div class="ps-field">
+        <label>{{ 'PROMOTIONS.PROMOTIONS_POINTS.ACTIVE_PERIOD' | translate }}</label>
+        <app-day-span-control [value]="s.activePeriod" (valueChange)="patch({ activePeriod: $event })"/>
+        @if (activeNegative()) {
+          <p class="ps-error">{{ 'PROMOTIONS.PROMOTIONS_POINTS.ACTIVE_period_cannot_be_negative' | translate }}</p>
+        }
+      </div>
+
+      <div class="ps-field">
+        <label>{{ 'PROMOTIONS.PROMOTIONS_POINTS.EXPIRY_PERIOD' | translate }}</label>
+        <app-day-span-control [value]="s.expiryPeriod" (valueChange)="patch({ expiryPeriod: $event })"/>
+        @if (expiryNotPositive()) {
+          <p class="ps-error">{{ 'PROMOTIONS.PROMOTIONS_POINTS.EXPIRY_PERIOD_MUST_BE_GREATER_THAN_0' | translate }}</p>
+        }
+      </div>
+
+      <div class="ps-field">
+        <label>{{ 'PROMOTIONS.PROMOTIONS_POINTS.EXPIRY_SOON_PERIOD' | translate }}</label>
+        <app-day-span-control [value]="s.expirySoonPeriod" (valueChange)="patch({ expirySoonPeriod: $event })"/>
+        @if (expirySoonNotPositive()) {
+          <p class="ps-error">{{ 'PROMOTIONS.PROMOTIONS_POINTS.EXPIRY_PERIOD_MUST_BE_GREATER_THAN_0' | translate }}</p>
+        }
+      </div>
+
+      @if (periodError()) {
+        <p class="ps-error">{{ 'PROMOTIONS.PROMOTIONS_POINTS.EXPIRY_PERIOD_MUST_BE_GREATER_THAN_ACTIVE_PERIOD' | translate }}</p>
+      }
+    </section>
+
+    <section class="ps-card">
+      <h2 class="ps-card__title">{{ 'PROMOTIONS.PROMOTIONS_POINTS.EQUATION' | translate }}</h2>
+      <div class="ps-row">
+        <div class="ps-field">
+          <label>{{ 'PROMOTIONS.PROMOTIONS_POINTS.POINTS' | translate }}</label>
+          <input type="number" class="ps-input" min="1"
+            [ngModel]="s.pointsValue" (ngModelChange)="patch({ pointsValue: $event })"/>
+          @if (pointsNotPositive()) {
+            <p class="ps-error">{{ 'PROMOTIONS.PROMOTIONS_POINTS.GIVEN_POINTS_MUST_BE_GREATER_THAN_0' | translate }}</p>
+          }
+        </div>
+        <span class="ps-eq">=</span>
+        <div class="ps-field">
+          <label>{{ 'PROMOTIONS.PROMOTIONS_POINTS.BHD' | translate }}</label>
+          <input type="number" class="ps-input" min="1" [step]="amountStep()"
+            [ngModel]="s.currencyValue" (ngModelChange)="patch({ currencyValue: $event })"
+            (input)="limitCurrencyValueDecimals($event)"/>
+          @if (currencyNegative()) {
+            <p class="ps-error">{{ 'PROMOTIONS.PROMOTIONS_POINTS.CURRENCY_VALUE_CANNOT_BE_NEGATIVE' | translate }}</p>
+          }
+        </div>
+      </div>
+      @if (s.pointsValue && s.currencyValue) {
+        <div class="ps-preview">
+          <span>{{ 'PROMOTIONS.PROMOTIONS_POINTS.FOR_EVERY' | translate }}</span>
+          <strong>{{ s.pointsValue }}</strong>
+          <span>{{ 'PROMOTIONS.PROMOTIONS_POINTS.POINTS' | translate }}</span>
+          <span>&rarr;</span>
+          <span>{{ 'PROMOTIONS.PROMOTIONS_POINTS.THE_CUSTOMER_RECEIVES' | translate }}</span>
+          <strong>{{ s.currencyValue }}</strong>
+          <span>{{ 'PROMOTIONS.PROMOTIONS_POINTS.BHD' | translate }}</span>
+        </div>
+      }
+    </section>
+
+    <section class="ps-card">
+      <app-translated-string-input
+        label="PROMOTIONS.PROMOTIONS_POINTS.REASON" [required]="true"
+        [value]="reason()" (valueChange)="reason.set($event)"/>
+      @if (!reasonValid()) {
+        <p class="ps-error">{{ 'PROMOTIONS.PROMOTIONS_POINTS.REASON_REQUIRED' | translate }}</p>
+      }
+      <div class="ps-field">
+        <label>{{ 'PROMOTIONS.PROMOTIONS_POINTS.NOTE' | translate }}</label>
+        <textarea class="ps-input" rows="2" [ngModel]="note()" (ngModelChange)="note.set($event)"></textarea>
+      </div>
+    </section>
+
+    <app-form-sticky-footer>
+      <button type="button" class="ps-btn" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+      <button type="button" class="ps-btn ps-btn--primary" [disabled]="!formValid() || saving()" (click)="save()">
+        {{ 'COMMON.SAVE' | translate }}
+      </button>
+    </app-form-sticky-footer>
+  }
+</div>

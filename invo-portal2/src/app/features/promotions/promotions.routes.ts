@@ -11,6 +11,8 @@ import { privilegeGuard } from '@core/guards/privilege.guard';
 // /promotions/promotions-vouchers/history     → settings change log
 // /promotions/promotions-vouchers/:id         → voucher details (actions, history)
 // /promotions/promotions-vouchers/:id/edit    → edit a voucher
+// /promotions/customer-tiers               → tiers (view + edit in place), /history → change log
+// /promotions/promotional-points             → points (simple/advanced), /new, /settings, /history, /:id
 // Static segments come before `:id` so they aren't swallowed as an id.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -21,6 +23,9 @@ const translationsLoaded: CanActivateFn = async () => {
 };
 
 const VOUCHERS = 'PromotionalVoucherPrivileges';
+const TIERS = 'customerTiersPrivileges';
+const POINTS = 'PromotionalPointsPrivileges';
+const COUPONS = 'couponsPrivileges';
 
 export const PROMOTIONS_ROUTES: Routes = [
   { path: '', redirectTo: 'promotions-vouchers', pathMatch: 'full' },
@@ -77,6 +82,105 @@ export const PROMOTIONS_ROUTES: Routes = [
         canActivate: [privilegeGuard],
         loadComponent: () =>
           import('./pages/vouchers/voucher-form/voucher-form.component').then(m => m.VoucherFormComponent),
+      },
+    ],
+  },
+  {
+    path: 'customer-tiers',
+    canActivate: [translationsLoaded, privilegeGuard],
+    data: { permissionPath: `${TIERS}.access` },
+    children: [
+      {
+        path: '',
+        canDeactivate: [unsavedChangesGuard],
+        loadComponent: () =>
+          import('./pages/tiers/tiers-page/tiers-page.component').then(m => m.TiersPageComponent),
+      },
+      {
+        path: 'history',
+        loadComponent: () =>
+          import('./pages/tiers/tiers-history/tiers-history.component').then(m => m.TiersHistoryComponent),
+      },
+    ],
+  },
+  {
+    path: 'promotional-points',
+    canActivate: [translationsLoaded, privilegeGuard],
+    data: { permissionPath: `${POINTS}.access` },
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./pages/points/points-list/points-list.component').then(m => m.PointsListComponent),
+      },
+      {
+        path: 'new',
+        canDeactivate: [unsavedChangesGuard],
+        data: { permissionPath: `${POINTS}.actions.AddPoints.access` },
+        canActivate: [privilegeGuard],
+        loadComponent: () =>
+          import('./pages/points/points-form/points-form.component').then(m => m.PointsFormComponent),
+      },
+      {
+        path: 'settings',
+        canDeactivate: [unsavedChangesGuard],
+        data: { permissionPath: `${POINTS}.actions.EditRate.access` },
+        canActivate: [privilegeGuard],
+        loadComponent: () =>
+          import('./pages/points/points-settings/points-settings.component').then(m => m.PointsSettingsComponent),
+      },
+      {
+        path: 'history',
+        loadComponent: () =>
+          import('./pages/points/points-history/points-history.component').then(m => m.PointsHistoryComponent),
+      },
+      {
+        path: ':id',
+        loadComponent: () =>
+          import('./pages/points/points-details/points-details.component').then(m => m.PointsDetailsComponent),
+      },
+    ],
+  },
+  {
+    path: 'coupons',
+    canActivate: [translationsLoaded, privilegeGuard],
+    data: { permissionPath: `${COUPONS}.access` },
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./pages/coupons/coupons-list/coupons-list.component').then(m => m.CouponsListComponent),
+      },
+      {
+        path: 'history',
+        loadComponent: () =>
+          import('./pages/coupons/coupons-history/coupons-history.component').then(m => m.CouponsHistoryComponent),
+      },
+      {
+        path: 'new/:type',
+        canDeactivate: [unsavedChangesGuard],
+        data: { permissionPath: `${COUPONS}.actions.AddCouponSets.access` },
+        canActivate: [privilegeGuard],
+        loadComponent: () =>
+          import('./pages/coupons/coupon-set-form/coupon-set-form.component').then(m => m.CouponSetFormComponent),
+      },
+      {
+        path: 'coupon/:couponId',
+        loadComponent: () =>
+          import('./pages/coupons/coupon-details/coupon-details.component').then(m => m.CouponDetailsComponent),
+      },
+      {
+        path: ':id',
+        loadComponent: () =>
+          import('./pages/coupons/coupon-set-details/coupon-set-details.component').then(m => m.CouponSetDetailsComponent),
+      },
+      {
+        path: ':id/edit',
+        canDeactivate: [unsavedChangesGuard],
+        data: { permissionPath: `${COUPONS}.actions.EditCouponSets.access` },
+        canActivate: [privilegeGuard],
+        loadComponent: () =>
+          import('./pages/coupons/coupon-set-form/coupon-set-form.component').then(m => m.CouponSetFormComponent),
       },
     ],
   },

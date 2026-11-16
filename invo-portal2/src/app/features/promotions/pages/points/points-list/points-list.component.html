@@ -1,0 +1,130 @@
+<!-- Settings summary, shared by both views -->
+<ng-template #summary>
+  @if (settings(); as s) {
+    <section class="pl-card" [class.pl-card--disabled]="!s.enabled">
+      <header class="pl-card__head">
+        <h2 class="pl-card__title">{{ 'PROMOTIONS.PROMOTIONS_POINTS.PROMOTIONS_POINT_SETTINGS' | translate }}</h2>
+        <div class="pl-card__tools">
+          @if (canEnableDisable) {
+            @for (k of toggleKeys(); track k) {
+              <app-toggle [checked]="s.enabled" (checkedChange)="toggleEnabled()"
+                [label]="'PROMOTIONS.PROMOTIONS_POINTS.DISABLE_ENABLE_PROMOTIONAL_POINTS' | translate"/>
+            }
+          }
+          @if (canEditSettings) {
+            <button type="button" class="pl-btn" [disabled]="!s.enabled" (click)="editSettings()">
+              {{ 'COMMON.EDIT' | translate }}
+            </button>
+          }
+        </div>
+      </header>
+      <div class="pl-tiles">
+        <div class="pl-tile">
+          <span class="pl-tile__label">{{ 'PROMOTIONS.PROMOTIONS_POINTS.PROMOTIONS_POINTS_NAME' | translate }}</span>
+          <span class="pl-tile__value">{{ translate(s.pointsName, currentLang()) }}</span>
+        </div>
+        <div class="pl-tile">
+          <span class="pl-tile__label">{{ 'PROMOTIONS.PROMOTIONS_POINTS.ACTIVE_PERIOD' | translate }}</span>
+          <span class="pl-tile__value">{{ s.activePeriod.value }} {{ 'PROMOTIONS.CUSTOMER_TIERS.' + s.activePeriod.periodUnit | translate }}</span>
+        </div>
+        <div class="pl-tile">
+          <span class="pl-tile__label">{{ 'PROMOTIONS.PROMOTIONS_POINTS.EXPIRY_PERIOD' | translate }}</span>
+          <span class="pl-tile__value">{{ s.expiryPeriod.value }} {{ 'PROMOTIONS.CUSTOMER_TIERS.' + s.expiryPeriod.periodUnit | translate }}</span>
+        </div>
+        <div class="pl-tile">
+          <span class="pl-tile__label">{{ 'PROMOTIONS.PROMOTIONS_POINTS.EXPIRY_SOON_PERIOD' | translate }}</span>
+          <span class="pl-tile__value">{{ s.expirySoonPeriod.value }} {{ 'PROMOTIONS.CUSTOMER_TIERS.' + s.expirySoonPeriod.periodUnit | translate }}</span>
+        </div>
+      </div>
+      <div class="pl-equation">
+        <span class="pl-equation__label">{{ 'PROMOTIONS.PROMOTIONS_POINTS.EQUATION' | translate }}</span>
+        <span>{{ 'PROMOTIONS.PROMOTIONS_POINTS.FOR_EVERY' | translate }}</span>
+        <strong>{{ s.pointsValue }}</strong>
+        <span>{{ 'PROMOTIONS.PROMOTIONS_POINTS.POINTS' | translate }}</span>
+        <span>&rarr;</span>
+        <span>{{ 'PROMOTIONS.PROMOTIONS_POINTS.THE_CUSTOMER_RECEIVES' | translate }}</span>
+        <strong>{{ s.currencyValue | mycurrency }}</strong>
+      </div>
+    </section>
+  }
+</ng-template>
+
+<!-- Header actions, shared by both views -->
+<ng-template #headerActions>
+  <div class="flex items-center gap-3">
+    <app-segmented-toggle [options]="viewOptions" [value]="view()" (valueChange)="view.set($event)"/>
+    <button type="button" class="pl-btn" (click)="openHistory()">
+      {{ 'PROMOTIONS.PROMOTIONS_POINTS.PROMOTIONS_POINTS_CHANGES' | translate }}
+    </button>
+    @if (canAdd) {
+      <button type="button" class="pl-btn pl-btn--primary" [disabled]="!enabled()" (click)="give()">
+        + {{ 'PROMOTIONS.PROMOTIONS_POINTS.GIVE_PROMOTIONS_POINTS' | translate }}
+      </button>
+    }
+  </div>
+</ng-template>
+
+@if (view() === 'advanced') {
+  <app-list-page
+    [pageTitle]="'PROMOTIONS.PROMOTIONS_POINTS.PROMOTIONS_POINTS' | translate"
+    [breadcrumbs]="breadcrumbs"
+    [columns]="advancedColumns"
+    [dataSource]="loadPoints"
+    [pagination]="paginationConfig"
+    [search]="searchConfig"
+    [sorting]="sortingConfig"
+    [filters]="[]"
+    [headerActions]="[]"
+    [selectable]="false"
+    [fitContent]="true"
+    [emptyState]="advancedEmpty"
+    (rowClicked)="onRowClick($event)">
+
+    <div listHeaderActions><ng-container *ngTemplateOutlet="headerActions"/></div>
+    <div listSubHeader><ng-container *ngTemplateOutlet="summary"/></div>
+
+    <ng-template listCellTemplate="status" let-row>
+      <app-voucher-status-badge [status]="row.status" keyPrefix="PROMOTIONS.PROMOTIONS_POINTS."/>
+    </ng-template>
+    <ng-template listCellTemplate="givenDate" let-row>{{ row.givenDate | date: 'dd/MM/yyyy HH:mm' }}</ng-template>
+    <ng-template listCellTemplate="activeDate" let-row>{{ row.activeDate | date: 'dd/MM/yyyy HH:mm' }}</ng-template>
+    <ng-template listCellTemplate="expiryDate" let-row>{{ row.expiryDate | date: 'dd/MM/yyyy' }}</ng-template>
+  </app-list-page>
+} @else {
+  <app-list-page
+    [pageTitle]="'PROMOTIONS.PROMOTIONS_POINTS.PROMOTIONS_POINTS' | translate"
+    [breadcrumbs]="breadcrumbs"
+    [columns]="simpleColumns"
+    [dataSource]="loadStatement"
+    [pagination]="paginationConfig"
+    [search]="searchConfig"
+    [sorting]="sortingConfig"
+    [filters]="[]"
+    [headerActions]="[]"
+    [selectable]="false"
+    [fitContent]="true"
+    [syncToUrl]="false"
+    [emptyState]="simpleEmpty">
+
+    <div listHeaderActions><ng-container *ngTemplateOutlet="headerActions"/></div>
+    <div listSubHeader><ng-container *ngTemplateOutlet="summary"/></div>
+
+    <ng-template listCellTemplate="actionDate" let-row>{{ row.actionDate | date: 'dd/MM/yyyy HH:mm' }}</ng-template>
+    <ng-template listCellTemplate="reason" let-row>
+      (@if (isExtend(row.actionName)) {
+        {{ 'PROMOTIONS.PROMOTIONS_POINTS.ACTIONS.EXTEND' | translate }}
+        {{ extendSuffix(row.actionName) }}
+        {{ row.changes?.new?.expiryDate | date: 'dd/MM/yyyy' }}
+      } @else {
+        {{ 'PROMOTIONS.PROMOTIONS_POINTS.ACTIONS.' + row.actionName | translate }}
+      })
+      {{ translate(row.reason, currentLang()) }}
+    </ng-template>
+    <ng-template listCellTemplate="amount" let-row>
+      <span [class.pl-pos]="row.extraDetails?.spentPoints > 0" [class.pl-neg]="row.extraDetails?.spentPoints < 0">
+        {{ row.extraDetails?.spentPoints > 0 ? '+' : '' }}{{ row.extraDetails?.spentPoints }}
+      </span>
+    </ng-template>
+    <ng-template listCellTemplate="balance" let-row>{{ row.extraDetails?.grandActivePoints }}</ng-template>
+  </app-list-page>
+}
