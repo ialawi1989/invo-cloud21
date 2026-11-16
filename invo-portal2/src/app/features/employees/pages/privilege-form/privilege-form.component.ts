@@ -826,20 +826,46 @@ export class PrivilegeFormComponent implements OnInit, CanLeaveComponent {
     this.markChanged();
   }
 
-  /** Per-group "select all" — flips every action in the group. */
-  onSelectAll(section: PrivilegeSetting, value: boolean): void {
+  /**
+   * Group "Select all" / "Deselect all" button. Its state comes from the
+   * ACTIONS only (`allOn`), never from the group's `access`, which is the
+   * independent enable switch (legacy behaviour — the saved JSON has groups
+   * with access=false and ticked actions, and the reverse).
+   *   • not all on → tick every action and enable the group (legacy `turnOn`)
+   *   • all on     → clear every action, leave the enable switch as it is
+   */
+  onSelectAll(section: PrivilegeSetting, allOn: boolean): void {
     if (this.lockedRole()) return;
     if (section.actions) {
-      for (const ak in section.actions) section.actions[ak].access = value;
+      for (const ak in section.actions) section.actions[ak].access = !allOn;
     }
-    section.access = value;
+    if (!allOn) section.access = true;
     this.markChanged();
   }
 
-  /** Header toggle for an action-less group binds straight to its access. */
+  /**
+   * Group enable switch (legacy behaviour). Off clears every action. On enables
+   * the group and ticks its View action — a group that is enabled but cannot
+   * even be opened is never what anyone means — and ticks every action only if
+   * the group opts in with `selectAllChildren: true`. The rest are picked
+   * individually or with the Select all button. Groups with no View action
+   * (e.g. Promotions) just switch on.
+   */
   onSectionToggle(section: PrivilegeSetting, value: boolean): void {
     if (this.lockedRole()) return;
     section.access = value;
+    if (section.actions) {
+      if (!value) {
+        for (const ak in section.actions) section.actions[ak].access = false;
+      } else if (section.selectAllChildren === true) {
+        for (const ak in section.actions) section.actions[ak].access = true;
+      } else {
+        // The exact "view" action only — not viewJournals / viewReservations,
+        // which are separate capabilities, not the group's main read access.
+        const viewKey = Object.keys(section.actions).find(k => k.toLowerCase() === 'view');
+        if (viewKey) section.actions[viewKey].access = true;
+      }
+    }
     this.markChanged();
   }
 
@@ -866,7 +892,10 @@ export class PrivilegeFormComponent implements OnInit, CanLeaveComponent {
     for (const ak in section.actions) {
       if (section.actions[ak].access === true) { any = true; break; }
     }
-    section.access = any;
+    if (any) section.access = true;
+    // Groups that opt out of select-all-children keep their enable switch as the
+    // user left it when the last action is unticked; the rest follow their actions.
+    else if (section.selectAllChildren === true) section.access = false;
   }
 
   private markChanged(): void {

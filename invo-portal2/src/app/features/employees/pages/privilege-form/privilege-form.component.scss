@@ -242,9 +242,26 @@
   }
   &--open &__chevron { transform: rotate(90deg); }
 
+  &__title {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+  }
+
   &__name {
     font-size: 14px;
     font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  // Legacy-style one-line description under the group name.
+  &__desc {
+    font-size: 12px;
+    font-weight: 400;
+    color: #64748b;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -258,6 +275,23 @@
     background: #eef2f5;
     border-radius: 999px;
     padding: 2px 9px;
+  }
+
+  // Legacy-style "Select All" pill beside the group's enable switch.
+  &__select-btn {
+    flex-shrink: 0;
+    margin-inline-end: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #0f7a8a;
+    background: #e8f6f8;
+    border: 1px solid #b9e2e8;
+    border-radius: 6px;
+    padding: 3px 10px;
+    cursor: pointer;
+    transition: background .15s;
+
+    &:hover { background: #d3eef2; }
   }
 
   &__select-all {

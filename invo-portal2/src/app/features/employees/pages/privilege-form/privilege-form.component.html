@@ -292,26 +292,22 @@
                   } @else {
                     <span class="group__chevron group__chevron--empty" aria-hidden="true"></span>
                   }
-                  <span class="group__name">{{ g.label }}</span>
+                  <span class="group__title">
+                    <span class="group__name">{{ g.label }}</span>
+                    <span class="group__desc">{{ 'EMPLOYEES.PRIVILEGES.GROUP_DESC' | translate: { name: g.label.toLowerCase() } }}</span>
+                  </span>
                   @if (g.hasActions) {
                     <span class="group__count">{{ g.enabledActions }} / {{ g.totalActions }}</span>
                   }
                 </button>
 
-                @if (g.hasActions) {
-                  <label class="group__select-all">
-                    <span class="group__select-all-label">
-                      {{ 'EMPLOYEES.PRIVILEGES.SELECT_ALL' | translate }}
-                    </span>
-                    <app-toggle
-                      size="sm"
-                      [checked]="g.allOn"
-                      [disabled]="lockedRole()"
-                      [ariaLabel]="'EMPLOYEES.PRIVILEGES.SELECT_ALL' | translate"
-                      (checkedChange)="onSelectAll(g.section, $event)"
-                    />
-                  </label>
-                } @else {
+                @if (g.hasActions && !lockedRole()) {
+                  <button type="button" class="group__select-btn" (click)="onSelectAll(g.section, g.allOn)"
+                          [appTooltip]="(g.allOn ? 'EMPLOYEES.PRIVILEGES.DESELECT_ALL_HINT' : 'EMPLOYEES.PRIVILEGES.SELECT_ALL_HINT') | translate">
+                    {{ (g.allOn ? 'EMPLOYEES.PRIVILEGES.DESELECT_ALL' : 'EMPLOYEES.PRIVILEGES.SELECT_ALL') | translate }}
+                  </button>
+                }
+                <span class="group__enable" [appTooltip]="'EMPLOYEES.PRIVILEGES.GROUP_ENABLE_HINT' | translate">
                   <app-toggle
                     size="sm"
                     [checked]="g.sectionChecked"
@@ -319,7 +315,7 @@
                     [ariaLabel]="g.label"
                     (checkedChange)="onSectionToggle(g.section, $event)"
                   />
-                }
+                </span>
               </div>
 
               @if ((g.expanded || open) && g.hasActions) {
