@@ -32,7 +32,23 @@
       "LIST": "Sections",
       "NAME_PLACEHOLDER": "Section name",
       "COLOR": "Section color",
-      "PRODUCT_COLORS": "Product colors"
+      "PRODUCT_COLORS": "Product colors",
+      "RENAME": "Rename",
+      "CHANGE_COLOR": "Change color",
+      "DUPLICATE": "Duplicate",
+      "ACTIONS_FOR": "Actions for section {{name}}",
+      "DRAG_HANDLE": "Drag to reorder {{name}} (or press Alt and Arrow Up / Down)",
+      "PRODUCTS_N": "{{n}} products",
+      "EMPTY_WARNING": "{{n}} sections are empty and won't show on the POS.",
+      "RENAME_NAMED": "Rename section {{name}}",
+      "PAGES": "Pages",
+      "PAGE_OF": "Page {{n}} / {{total}}",
+      "GO_TO_PAGE": "Go to page {{n}}",
+      "ADD_PAGE_HINT": "Add a product to the last page first",
+      "SLOTS_USED": "{{used}} of {{total}} slots used",
+      "GRID_HINT": "Drag products to rearrange. Drag from the search results onto a slot to add.",
+      "CONFIRM_DELETE": "Delete {{name}}? Its {{n}} products will be removed from this menu.",
+      "DELETED": "Deleted {{name}}"
     },
     "MANAGE": {
       "TITLE": "Product color in ({{name}})",
@@ -45,7 +61,21 @@
       "ADD_HERE": "Add product here",
       "COLOR": "Change color",
       "WIDE": "Toggle wide (×2 columns)",
-      "TALL": "Toggle tall (×2 rows)"
+      "TALL": "Toggle tall (×2 rows)",
+      "LABEL": "Product grid, 6 by 6",
+      "TILE_LABEL": "{{name}}, slot {{slot}}",
+      "REMOVE_FROM_SLOT": "Remove {{name}} from slot {{slot}}",
+      "TILE_ACTIONS": "Actions for {{name}}",
+      "MOVE_UP": "Move up",
+      "MOVE_DOWN": "Move down",
+      "MOVE_LEFT": "Move left",
+      "MOVE_RIGHT": "Move right",
+      "DUPLICATE": "{{name}} is already on this page.",
+      "FULL": "This page has no free slot.",
+      "OCCUPIED": "That slot is taken.",
+      "SOME_SKIPPED": "{{n}} products did not fit and were not added.",
+      "CANT_MOVE": "It can't go there. Only an empty slot, or a tile of the same size, works.",
+      "REMOVED": "Removed {{name}}"
     },
     "PICK": {
       "TITLE": "Pick products",
@@ -66,30 +96,61 @@
       "BORDER": "Border"
     },
     "STATUS": {
-      "COLUMN": "Status",
-      "ACTIVE": "Active now",
-      "STARTS_AT": "Starts at {{time}}",
-      "ENDED_AT": "Ended at {{time}}",
-      "OFF": "Off",
-      "CHANGES_AT": "Changes at {{time}}",
-      "FILTER_LABEL": "Filter menus by status",
-      "FILTER": {
-        "ALL": "All",
-        "ACTIVE": "Active now",
-        "SCHEDULED": "Scheduled",
-        "ENDED": "Ended",
-        "DISABLED": "Disabled"
-      },
-      "SUMMARY_ACTIVE": "Active now:",
-      "SUMMARY_COUNT": "{{n}} of {{total}}",
-      "NONE_ACTIVE": "No menu is active right now. The POS will show nothing.",
-      "SEE_SCHEDULED": "See scheduled menus",
-      "TZ_HINT": "Times shown in branch time ({{zone}})",
       "ALL_DAY": "All day",
-      "NEXT_DAY": "(next day)",
-      "NO_SECTIONS": "No sections, nothing will show on the POS",
-      "OVERLAP": "Overlaps with {{names}}",
-      "EMPTY_FILTER": "No menus in this status."
+      "NEXT_DAY": "(next day)"
+    },
+    "DONE": "Done",
+    "EDIT": "Edit",
+    "REMOVE_BRANCH": "Remove {{name}}",
+    "MORE_N": "+{{n}} more",
+    "AVAILABLE_HOURS": "Available hours",
+    "TO": "to",
+    "TIMES_IN": "Times in {{zone}}",
+    "UNSAVED": "Unsaved changes",
+    "SAVE_MENU": "Save menu",
+    "UNDO": "Undo",
+    "ERR": {
+      "REQUIRED": "This field is required.",
+      "INVALID_TIME": "Enter a valid time.",
+      "SAME_AS_START": "End time must differ from the start time.",
+      "INVALID_BRANCH": "One or more branches do not exist.",
+      "SECTION_REQUIRED": "Section name is required.",
+      "DUPLICATE_NAME": "Another section already uses this name.",
+      "DUPLICATE_ORDER": "Two sections have the same order."
+    },
+    "SEARCH": {
+      "LABEL": "Search products to add",
+      "PLACEHOLDER": "Search products to add",
+      "RESULTS": "Product results",
+      "NONE": "No products found."
+    },
+    "A11Y": {
+      "SECTION_ADDED": "Added section {{name}}",
+      "SECTION_MOVED": "Moved {{name}} to position {{n}} of {{total}}",
+      "SECTION_DUPLICATED": "Duplicated section {{name}}",
+      "SECTION_DELETED": "Deleted section {{name}}",
+      "PRODUCT_ADDED": "Added {{name}} to slot {{slot}}",
+      "PRODUCTS_ADDED": "{{n}} products added",
+      "PRODUCT_SWAPPED": "Swapped {{name}} into slot {{slot}}",
+      "PRODUCT_MOVED": "Moved {{name}} to slot {{slot}}",
+      "PRODUCT_REMOVED": "Removed {{name}} from slot {{slot}}",
+      "SAVED": "Menu saved",
+      "FIX_ERRORS": "The menu has errors. Fix the highlighted fields."
+    },
+    "ARRANGE": {
+      "BUTTON": "Menu priority",
+      "TITLE": "Menu priority",
+      "HINT": "Drag the menus into order. The first has the highest priority.",
+      "HANDLE": "Move {{name}} (position {{n}}). Drag, or press Alt and Arrow Up / Down.",
+      "MOVED": "{{name}} is now number {{n}} of {{total}}"
+    },
+    "SUMMARY": {
+      "TOTAL": "{{n}} menus",
+      "ACTIVE": "{{n}} active now",
+      "SCHEDULED": "{{n}} scheduled",
+      "ENDED": "{{n}} ended",
+      "ACTIVE_LABEL": "Active now:",
+      "NONE_ACTIVE": "No menu is active right now."
     }
   }
 }

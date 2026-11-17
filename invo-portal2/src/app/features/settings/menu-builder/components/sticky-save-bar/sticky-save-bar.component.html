@@ -1,0 +1,12 @@
+<app-form-sticky-footer>
+  <span class="ssb__dirty" role="status">
+    @if (dirty()) {
+      <span class="ssb__dot" aria-hidden="true"></span>{{ 'MENU_BUILDER.UNSAVED' | translate }}
+    }
+  </span>
+  <button type="button" class="btn btn-ghost" (click)="cancel.emit()">{{ 'COMMON.CANCEL' | translate }}</button>
+  <button type="button" class="btn btn-primary" [disabled]="saving()" [attr.aria-busy]="saving()" (click)="save.emit()">
+    @if (saving()) { <span class="ssb__spin" aria-hidden="true"></span> }
+    {{ (saving() ? 'COMMON.SAVING' : 'MENU_BUILDER.SAVE_MENU') | translate }}
+  </button>
+</app-form-sticky-footer>

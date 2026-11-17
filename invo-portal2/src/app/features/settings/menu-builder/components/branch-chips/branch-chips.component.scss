@@ -1,0 +1,15 @@
+:host { display: block; }
+.bc__head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+.bc__label { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #64748b; }
+.bc__link { border: 0; background: transparent; padding: 2px 4px; font: inherit; font-size: 12px; font-weight: 600; color: var(--color-brand-700, #207484); cursor: pointer; border-radius: 4px;
+  &:hover { text-decoration: underline; } &:focus-visible { outline: 2px solid var(--color-brand-600, #2691a4); } }
+.bc__chips { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 0; padding: 0; }
+.bc__chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px 4px 10px; border-radius: 999px; background: #ecfeff; color: var(--color-brand-700, #207484); font-size: 12px; font-weight: 600; max-width: 100%; }
+.bc__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 180px; }
+.bc__x { width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer;
+  &:hover { background: rgba(32, 116, 132, 0.15); } &:focus-visible { outline: 2px solid var(--color-brand-600, #2691a4); } }
+.bc__more { padding: 4px 10px; border: 1px dashed #cbd5e1; border-radius: 999px; background: #fff; font: inherit; font-size: 12px; font-weight: 600; color: #475569; cursor: pointer;
+  &:hover { background: #f8fafc; } &:focus-visible { outline: 2px solid var(--color-brand-600, #2691a4); } }
+.bc__empty, .bc__hint { font-size: 13px; color: #94a3b8; margin: 0; }
+.bc__picker { margin-top: 8px; }
+.bc__error { margin: 6px 0 0; font-size: 12px; color: #dc2626; }

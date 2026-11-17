@@ -9,10 +9,7 @@ import {
   Menu,
   MenuListItem,
   MenuListPage,
-  MenuStatus,
-  MenuStatusCounts,
   MenuSummary,
-  MENU_STATUSES,
   MenuSection,
   MenuSectionColor,
   MenuSectionProduct,
@@ -40,20 +37,28 @@ import {
  *   - Legacy `colorName` of `'Default'` is normalised to `'Razzmatazz'`
  *     to match the legacy parser's behaviour.
  */
+/** Outcome of `MenuBuilderService.save`. */
+export interface MenuSaveResult {
+  success: boolean;
+  /** The saved menu, when the server sends it back whole. */
+  data?: Menu | null;
+  /** Id of a menu that was just created. */
+  id?: string;
+  /** Why the server refused, when it did. */
+  message?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class MenuBuilderService {
   private api = inject(ApiService);
   private translate = inject(TranslateService);
 
   // ─── List ────────────────────────────────────────────────────────────
-  async getList(params: { page?: number; limit?: number; search?: string; status?: MenuStatus[]; sort?: 'status' } = {}): Promise<MenuListPage> {
-    const body = {
-      page: params.page ?? 1,
-      limit: params.limit ?? 50,
-      ...(params.search ? { searchTerm: params.search } : {}),
-      ...(params.status?.length ? { status: params.status } : {}),
-      ...(params.sort ? { sort: params.sort } : {}),
-    };
+  async getList(params: { page?: number; limit?: number; search?: string; sortBy?: { sortValue: string; sortDirection: 'asc' | 'desc' } } = {}): Promise<MenuListPage> {
+    // Default order: the menu priority (`index`, set with the legacy Arrange), lowest first. A column chosen in the table replaces it;
+    // clearing that sort brings this default back.
+    const sortBy = params.sortBy ?? { sortValue: 'index', sortDirection: 'asc' };
+    const body = { page: params.page ?? 1, limit: params.limit ?? 50, searchTerm: params.search ?? '', sortBy };
     const res = await this.api.request<any>(this.api.post('product/getMenuList', body));
     const raw = res?.data ?? res;
     const list: any[] = Array.isArray(raw?.list) ? raw.list : Array.isArray(raw) ? raw : [];
@@ -61,39 +66,27 @@ export class MenuBuilderService {
       list: list.map((m): MenuListItem => ({
         id:              String(m?.id ?? ''),
         name:            String(m?.name ?? ''),
-        branchIds:       Array.isArray(m?.branchIds) ? m.branchIds.map(String) : [],
+        branchIds:       parseBranchIds(m?.branchIds),
         startAt:         String(m?.startAt ?? '00:00:00'),
         endAt:           String(m?.endAt   ?? '23:59:00'),
         availableOnline: m?.availableOnline !== false,
         index:           int(m?.index, 0),
         sectionsCount:   Array.isArray(m?.sections) ? m.sections.length : (m?.sectionsCount ?? undefined),
-        status:          toStatus(m?.status),
-        nextChangeAt:    typeof m?.nextChangeAt === 'string' ? m.nextChangeAt : null,
-        allDay:          m?.allDay === true,
-        overnight:       m?.overnight === true,
-        days:            Array.isArray(m?.days) ? m.days.map(Number) : null,
-        hasOverlap:      m?.hasOverlap === true,
-        overlapsWith:    Array.isArray(m?.overlapsWith) ? m.overlapsWith.map((o: any) => ({ id: String(o?.id ?? ''), name: String(o?.name ?? '') })) : [],
-        warnings:        Array.isArray(m?.warnings) ? m.warnings : [],
       })),
       total: int(raw?.count ?? raw?.total ?? list.length, list.length),
-      statusCounts: toCounts(raw?.statusCounts),
-      branchTimeZone: String(raw?.branchTimeZone ?? ''),
-      serverNow: String(raw?.serverNow ?? ''),
     };
   }
 
-  /** Counts per status and the menus live right now. */
+  /** Counts per live state and the menus live now (`product/getMenuSummary`). */
   async getSummary(): Promise<MenuSummary> {
     const res = await this.api.request<any>(this.api.get('product/getMenuSummary'));
     const raw = res?.data ?? res ?? {};
+    const c = raw.statusCounts ?? {};
     return {
       total: int(raw.total, 0),
-      statusCounts: toCounts(raw.statusCounts),
-      active: Array.isArray(raw.active) ? raw.active.map((a: any) => ({ id: String(a?.id ?? ''), name: String(a?.name ?? ''), nextChangeAt: a?.nextChangeAt ?? null })) : [],
-      nextChangeAt: raw.nextChangeAt ?? null,
+      statusCounts: { ACTIVE: int(c.ACTIVE, 0), SCHEDULED: int(c.SCHEDULED, 0), ENDED: int(c.ENDED, 0), DISABLED: int(c.DISABLED, 0) },
+      active: Array.isArray(raw.active) ? raw.active.map((a: any) => ({ id: String(a?.id ?? ''), name: String(a?.name ?? '') })) : [],
       branchTimeZone: String(raw.branchTimeZone ?? ''),
-      serverNow: String(raw.serverNow ?? ''),
     };
   }
 
@@ -106,12 +99,20 @@ export class MenuBuilderService {
   }
 
   // ─── Save (create or update) ─────────────────────────────────────────
-  async save(menu: Menu): Promise<{ success: boolean; data?: Menu | null }> {
+  /** Saves the whole menu in one request (create or update). */
+  async save(menu: Menu): Promise<MenuSaveResult> {
     const payload = this.serialiseMenu(menu);
     const res = await this.api.request<any>(this.api.post('product/saveMenu', payload));
     const ok = res?.success !== false;
-    const data = res?.data ? this.parseMenu(res.data) : null;
-    return { success: ok, data };
+    const raw = res?.data;
+    // An update answers with an empty list, a create with `{ id }`; only a whole menu (it has sections) is used as the new state.
+    const whole = ok && raw && !Array.isArray(raw) && Array.isArray(raw.sections);
+    return {
+      success: ok,
+      data: whole ? this.parseMenu(raw) : null,
+      id: ok && raw && !Array.isArray(raw) && raw.id ? String(raw.id) : undefined,
+      message: ok ? undefined : String(res?.msg ?? res?.message ?? ''),
+    };
   }
 
   // NOTE: the backend has no `deleteMenu` endpoint at the moment
@@ -142,7 +143,7 @@ export class MenuBuilderService {
   // every menu-eligible product regardless of which branch the menu
   // is linked to.
   async listMenuProducts(params: { page?: number; limit?: number; searchTerm?: string } = {}): Promise<{
-    list: Array<{ id: string; name: string; defaultImage: string; color: string; categoryId: string; categoryName: string }>;
+    list: Array<{ id: string; name: string; defaultImage: string; color: string; price: number | null; categoryId: string; categoryName: string }>;
     count: number;
   }> {
     const body = {
@@ -165,6 +166,7 @@ export class MenuBuilderService {
         name:         resolveLocalizedName(p, this.translate.currentLang),
         defaultImage: String(p?.defaultImage ?? p?.image ?? ''),
         color:        String(p?.color ?? ''),
+        price:        p?.price == null || p?.price === '' || Number.isNaN(Number(p.price)) ? null : Number(p.price),
         categoryId:   String(p?.categoryId   ?? ''),
         categoryName: String(p?.categoryName ?? ''),
       })),
@@ -204,16 +206,16 @@ export class MenuBuilderService {
 
   private parseSection(raw: any): MenuSection {
     const properties = raw?.properties ?? {};
+    const products: MenuSectionProduct[] = Array.isArray(raw?.products) ? raw.products.map((p: any) => this.parseProduct(p)) : [];
     return {
       id:          raw?.id ? String(raw.id) : null,
       name:        String(raw?.name ?? ''),
       translation: parseTranslation(raw?.translation),
       image:       String(raw?.image ?? ''),
-      pages:       clamp(int(raw?.pages, 1), 1, 3),
+      // The backend does not store a page count: a section has as many pages as its products reach.
+      pages:       clamp(Math.max(int(raw?.pages, 1), ...products.map((p) => p.page), 1), 1, 3),
       color:       parseColor(properties?.color ?? raw?.color),
-      products:    Array.isArray(raw?.products)
-        ? raw.products.map((p: any) => this.parseProduct(p))
-        : [],
+      products,
     };
   }
 
@@ -237,6 +239,7 @@ export class MenuBuilderService {
       rows:         rows === 2 ? 2 : 1,
       color:        String(raw?.color ?? ''),
       defaultImage: String(raw?.defaultImage ?? ''),
+      price:        raw?.price == null || raw?.price === '' || Number.isNaN(Number(raw.price)) ? null : Number(raw.price),
       mediaId:      raw?.mediaId ? String(raw.mediaId) : null,
     };
   }
@@ -284,7 +287,8 @@ export class MenuBuilderService {
     return {
       id:              m.id,
       name:            m.name,
-      branchIds:       m.branchIds,
+      // The POS sync matches `{ branchId }` objects (the legacy and getMenu shape), not bare ids.
+      branchIds:       m.branchIds.map((branchId) => ({ branchId })),
       priceLabelId:    m.priceLabelId,
       startAt:         m.startAt,
       endAt:           m.endAt,
@@ -313,14 +317,6 @@ function parseBranchIds(raw: unknown): string[] {
       return '';
     })
     .filter((s) => !!s);
-}
-
-function toStatus(v: unknown): MenuStatus {
-  return (MENU_STATUSES as readonly string[]).includes(String(v)) ? (v as MenuStatus) : 'DISABLED';
-}
-
-function toCounts(v: any): MenuStatusCounts {
-  return { ACTIVE: int(v?.ACTIVE, 0), SCHEDULED: int(v?.SCHEDULED, 0), ENDED: int(v?.ENDED, 0), DISABLED: int(v?.DISABLED, 0) };
 }
 
 function int(v: unknown, fb: number): number {

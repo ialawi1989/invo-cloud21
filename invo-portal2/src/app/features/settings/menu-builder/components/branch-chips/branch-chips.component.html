@@ -1,0 +1,39 @@
+<div class="bc" [attr.data-field]="'branchIds'">
+  <div class="bc__head">
+    <span class="bc__label" id="bc-label">{{ 'MENU_BUILDER.BRANCHES' | translate }} ({{ selected().length }})</span>
+    <button type="button" class="bc__link" (click)="toggle()" [attr.aria-expanded]="editing()" aria-controls="bc-picker">
+      {{ (editing() ? 'MENU_BUILDER.DONE' : 'MENU_BUILDER.EDIT') | translate }}
+    </button>
+  </div>
+
+  @if (branches().length === 0) {
+    <p class="bc__hint">{{ 'MENU_BUILDER.NO_BRANCHES' | translate }}</p>
+  } @else {
+    <ul class="bc__chips" aria-labelledby="bc-label">
+      @for (b of shown(); track b.id) {
+        <li class="bc__chip">
+          <span class="bc__name">{{ b.name || b.id }}</span>
+          <button type="button" class="bc__x" (click)="remove(b.id)" [attr.aria-label]="('MENU_BUILDER.REMOVE_BRANCH' | translate: { name: b.name || b.id })">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </li>
+      }
+      @if (more() > 0) {
+        <li><button type="button" class="bc__more" (click)="toggle()">{{ 'MENU_BUILDER.MORE_N' | translate: { n: more() } }}</button></li>
+      }
+      @if (selected().length === 0) {
+        <li class="bc__empty">{{ 'MENU_BUILDER.BRANCHES_PLACEHOLDER' | translate }}</li>
+      }
+    </ul>
+    @if (editing()) {
+      <div id="bc-picker" class="bc__picker">
+        <app-search-dropdown
+          [items]="branches()" [multiple]="true" [searchable]="true" [clearable]="true"
+          [displayWith]="label" [toValue]="value" [compareWith]="equals"
+          [value]="selected()" (valueChange)="onDropdown($any($event))"
+          [placeholder]="'MENU_BUILDER.BRANCHES_PLACEHOLDER' | translate"/>
+      </div>
+    }
+  }
+  @if (error()) { <p class="bc__error" role="alert">{{ ('MENU_BUILDER.ERR.' + error()) | translate }}</p> }
+</div>

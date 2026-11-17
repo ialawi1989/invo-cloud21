@@ -1,0 +1,26 @@
+<div class="ps">
+  <label class="ps__label" for="ps-input">{{ 'MENU_BUILDER.SEARCH.LABEL' | translate }}</label>
+  <div class="ps__box">
+    <svg class="ps__icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input id="ps-input" type="search" class="ps__input" role="combobox" aria-autocomplete="list" aria-controls="ps-list" autocomplete="off"
+           [attr.aria-expanded]="open() && results().length > 0" [attr.aria-activedescendant]="results().length ? 'ps-opt-' + active() : null"
+           [disabled]="disabled()" [value]="term()" [placeholder]="'MENU_BUILDER.SEARCH.PLACEHOLDER' | translate"
+           (input)="onInput($any($event.target).value)" (focus)="onFocus()" (keydown)="onKey($event)"/>
+    @if (loading()) { <span class="ps__spin" aria-hidden="true"></span> }
+  </div>
+
+  @if (open() && !disabled()) {
+    <ul id="ps-list" class="ps__list" role="listbox" [attr.aria-label]="'MENU_BUILDER.SEARCH.RESULTS' | translate">
+      @for (p of results(); track p.id; let i = $index) {
+        <li role="option" class="ps__item" [id]="'ps-opt-' + i" [class.ps__item--on]="i === active()" [attr.aria-selected]="i === active()"
+            draggable="true" (dragstart)="dragStart($event, p)" (click)="pick.emit(p)" (mouseenter)="active.set(i)">
+          @if (p.defaultImage) { <img class="ps__img" [src]="p.defaultImage" alt="" draggable="false"/> } @else { <span class="ps__img ps__img--none" aria-hidden="true"></span> }
+          <span class="ps__name">{{ p.name }}</span>
+          @if (p.price != null) { <span class="ps__price">{{ p.price }}</span> }
+        </li>
+      } @empty {
+        @if (!loading()) { <li class="ps__none" role="presentation">{{ 'MENU_BUILDER.SEARCH.NONE' | translate }}</li> }
+      }
+    </ul>
+  }
+</div>

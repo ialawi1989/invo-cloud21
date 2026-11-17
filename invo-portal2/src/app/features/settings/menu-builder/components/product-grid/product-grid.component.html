@@ -1,0 +1,47 @@
+<div #grid class="pg" role="group" [attr.aria-label]="'MENU_BUILDER.GRID.LABEL' | translate"
+     [style.grid-template-columns]="'repeat(' + cols() + ', 1fr)'" [style.grid-template-rows]="'repeat(' + rows() + ', 1fr)'"
+     [class.pg--resizing]="!!resizing()">
+
+  @for (c of cells(); track trackCell($index, c)) {
+    <button type="button" class="cell" [class.cell--over]="overCell() === c.x + ',' + c.y"
+            [style.grid-column-start]="c.x + 1" [style.grid-row-start]="c.y + 1"
+            (click)="onCellClick(c)" (dragover)="onCellDragOver($event, c)" (dragleave)="onCellDragLeave()" (drop)="onCellDrop($event, c)"
+            [attr.aria-label]="'MENU_BUILDER.GRID.ADD_HERE' | translate">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+    </button>
+  }
+
+  @if (dragTarget(); as t) {
+    <div class="drop-target" [class.drop-target--invalid]="!t.valid" aria-hidden="true"
+         [style.grid-column-start]="t.x + 1" [style.grid-column-end]="'span ' + t.cols"
+         [style.grid-row-start]="t.y + 1" [style.grid-row-end]="'span ' + t.rows"></div>
+  }
+
+  @for (p of products(); track keyOf(p)) {
+    <div class="tile" cdkDrag cdkDragBoundary=".pg" tabindex="0" role="group" [attr.aria-label]="tileLabel(p)"
+         (cdkDragStarted)="onTileDragStarted(p, $event)" (cdkDragMoved)="onTileDragMoved(p, $event)" (cdkDragEnded)="onTileDragEnd(p, $event)"
+         [style.grid-column-start]="p.x + 1" [style.grid-column-end]="'span ' + effCols(p)"
+         [style.grid-row-start]="p.y + 1" [style.grid-row-end]="'span ' + effRows(p)"
+         [style.--tile-color]="p.color || sectionColor()?.borderColor">
+      <div class="tile__inner">
+        @if (p.defaultImage) { <img class="tile__img" [src]="p.defaultImage" alt="" draggable="false"/> }
+        <span class="tile__name">{{ p.productName }}</span>
+        @if (p.price != null) { <span class="tile__price">{{ p.price }}</span> }
+      </div>
+
+      <div class="tile__actions">
+        <app-row-menu [label]="menuLabel(p)" [items]="tileMenu(p)" (pick)="onTileMenu(p, $event)"/>
+        <button type="button" class="tile__x" (click)="tileRemove.emit(p)" [attr.aria-label]="removeLabel(p)">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <span class="tile__handle tile__handle--e" (mousedown)="beginResize(p, 'E', $event)" aria-hidden="true"></span>
+      <span class="tile__handle tile__handle--s" (mousedown)="beginResize(p, 'S', $event)" aria-hidden="true"></span>
+      <span class="tile__handle tile__handle--se" (mousedown)="beginResize(p, 'SE', $event)" aria-hidden="true"></span>
+    </div>
+  }
+</div>
+@if (notice()) { <p class="pg__notice" role="status">{{ notice() }}</p> }

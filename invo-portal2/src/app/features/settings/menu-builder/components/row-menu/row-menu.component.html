@@ -1,0 +1,14 @@
+<button #trigger type="button" class="rm__btn" aria-haspopup="menu" [attr.aria-expanded]="open()" [attr.aria-label]="label()"
+        (click)="toggle($event)" (keydown)="onTriggerKey($event)">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/>
+  </svg>
+</button>
+@if (open() && pos(); as p) {
+  <div #panel class="rm__panel" role="menu" [attr.aria-label]="label()" [style.top.px]="p.top" [style.left.px]="p.left" (keydown)="onKey($event)">
+    @for (it of items(); track it.id) {
+      @if (it.separator) { <div class="rm__sep" role="separator"></div> }
+      <button type="button" role="menuitem" class="rm__item" [class.rm__item--danger]="it.danger" [disabled]="it.disabled" (click)="choose(it)">{{ it.label }}</button>
+    }
+  </div>
+}

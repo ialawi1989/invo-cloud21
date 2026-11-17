@@ -1,0 +1,30 @@
+<app-modal-header [title]="'MENU_BUILDER.ARRANGE.TITLE' | translate"/>
+
+<div class="am">
+  <p class="am__hint">{{ 'MENU_BUILDER.ARRANGE.HINT' | translate }}</p>
+
+  @if (loading()) {
+    <p class="am__hint">{{ 'COMMON.LOADING' | translate }}</p>
+  } @else {
+    <ol class="am__list" cdkDropList (cdkDropListDropped)="drop($event)" [cdkDropListLockAxis]="'y'" [attr.aria-label]="'MENU_BUILDER.ARRANGE.TITLE' | translate">
+      @for (r of rows(); track r.id; let i = $index) {
+        <li class="am__row" cdkDrag [attr.data-arrange-id]="r.id">
+          <span class="am__n" aria-hidden="true">{{ i + 1 }}</span>
+          <button type="button" class="am__handle" cdkDragHandle (keydown)="onKey($event, i)" aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown"
+                  [attr.aria-label]="'MENU_BUILDER.ARRANGE.HANDLE' | translate: { name: r.name, n: i + 1 }">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/>
+            </svg>
+          </button>
+          <span class="am__name">{{ r.name }}</span>
+          <span class="am__hours">{{ r.startAt.slice(0, 5) }} – {{ r.endAt.slice(0, 5) }}</span>
+        </li>
+      }
+    </ol>
+  }
+</div>
+
+<app-modal-footer>
+  <button class="btn-cancel" type="button" (click)="ref.dismiss()">{{ 'COMMON.CANCEL' | translate }}</button>
+  <button class="btn-confirm" type="button" [disabled]="!dirty() || saving()" (click)="save()">{{ 'COMMON.SAVE' | translate }}</button>
+</app-modal-footer>

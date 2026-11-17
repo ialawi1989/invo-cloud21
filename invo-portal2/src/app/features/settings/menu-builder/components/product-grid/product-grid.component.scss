@@ -1,0 +1,101 @@
+:host { display: block; }
+
+// CDK inserts the placeholder clone outside this component's encapsulation, so it is styled through ::ng-deep.
+:host ::ng-deep .cdk-drag-placeholder {
+  border: 2px dashed #32acc1 !important;
+  background: #f1f5f9 !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+  border-radius: 10px;
+  .tile__inner { opacity: 0.35; }
+  .tile__actions, .tile__handle { display: none !important; }
+}
+
+.pg {
+  display: grid;
+  gap: 8px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 10px;
+  // Square 6x6: cell width equals cell height, so the drag and resize maths are symmetric.
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  user-select: none;
+  position: relative;
+  &--resizing { cursor: nwse-resize; }
+}
+
+.cell {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px dashed #cbd5e1;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+  &:hover, &--over { background: var(--color-brand-50, #ecfeff); color: var(--color-brand-700, #207484); border-color: var(--color-brand-300, #7dd3e0); }
+  &--over { border-style: solid; }
+  &:focus-visible { outline: 2px solid var(--color-brand-600, #2691a4); outline-offset: 1px; }
+}
+
+.drop-target {
+  border: 2px dashed var(--color-brand-600, #32acc1);
+  background: rgba(50, 172, 193, 0.12);
+  border-radius: 10px;
+  pointer-events: none;
+  z-index: 1;
+  &--invalid { border-color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+}
+
+.tile {
+  --tile-color: var(--color-brand-600, #2691a4);
+  position: relative;
+  border: 2px solid var(--tile-color);
+  border-radius: 10px;
+  background: #fff;
+  cursor: grab;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06);
+  overflow: visible;
+  transition: box-shadow 120ms ease;
+  &:hover { box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12); }
+  &:active { cursor: grabbing; }
+  &:focus-visible { outline: 2px solid var(--color-brand-600, #2691a4); outline-offset: 2px; }
+  &.cdk-drag-preview { box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18); border-radius: 12px; }
+  &.cdk-drag-dragging { transition: none; cursor: grabbing; }
+
+  &__inner {
+    width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 6px; gap: 2px; pointer-events: none; overflow: hidden; border-radius: 8px;
+  }
+  &__img { width: 46%; aspect-ratio: 1 / 1; object-fit: contain; }
+  &__name {
+    font-size: 11px; font-weight: 600; line-height: 1.2; color: #0f172a; max-width: 100%;
+    display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  &__price { font-size: 10px; font-weight: 700; color: #475569; font-variant-numeric: tabular-nums; }
+
+  // Actions are shown on hover AND on keyboard focus (so they are never mouse-only).
+  &__actions { position: absolute; top: 3px; inset-inline-end: 3px; display: flex; gap: 2px; opacity: 0; transition: opacity 120ms ease; z-index: 2; }
+  &:hover &__actions, &:focus-within &__actions { opacity: 1; }
+  &__x {
+    width: 22px; height: 22px; border: 0; border-radius: 6px; background: rgba(15, 23, 42, 0.62); color: #fff; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    &:hover { background: #b91c1c; } &:focus-visible { outline: 2px solid #fff; outline-offset: -3px; }
+  }
+  &__actions ::ng-deep .rm__btn { width: 22px; height: 22px; border-radius: 6px; background: rgba(15, 23, 42, 0.62); color: #fff; &:hover { background: rgba(15, 23, 42, 0.85); color: #fff; } }
+
+  &__handle { position: absolute; background: var(--tile-color); opacity: 0; z-index: 2; transition: opacity 120ms ease;
+    &--e { top: 25%; bottom: 25%; inset-inline-end: -3px; width: 6px; border-radius: 3px; cursor: ew-resize; }
+    &--s { inset-inline: 25%; bottom: -3px; height: 6px; border-radius: 3px; cursor: ns-resize; }
+    &--se { bottom: -2px; inset-inline-end: -2px; width: 12px; height: 12px; border-radius: 3px; cursor: nwse-resize; } }
+  &:hover &__handle { opacity: 0.85; }
+}
+
+.pg__notice { margin: 8px 0 0; text-align: center; font-size: 12px; font-weight: 600; color: #b45309; }
+@media (prefers-reduced-motion: reduce) { .tile, .cell, .tile__actions, .tile__handle { transition: none; } }

@@ -1,0 +1,50 @@
+<section class="se" [attr.aria-label]="section().name">
+  <header class="se__head">
+    <div class="se__title">
+      @if (editing()) {
+        <input #nameInput class="se__name-input" type="text" [value]="section().name" [attr.aria-label]="'MENU_BUILDER.SECTION.NAME_PLACEHOLDER' | translate"
+               [class.se__name-input--invalid]="nameError()" data-field="section-name"
+               (keydown.enter)="commit($any($event.target).value)" (keydown.escape)="cancel()" (blur)="commit($any($event.target).value)"/>
+      } @else {
+        <h2 class="se__name">{{ section().name || ('MENU_BUILDER.UNNAMED_SECTION' | translate) }}</h2>
+        <button type="button" class="se__icon" (click)="startRename()" [attr.aria-label]="'MENU_BUILDER.SECTION.RENAME_NAMED' | translate: { name: section().name }">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+        </button>
+      }
+    </div>
+
+    <button type="button" class="se__color" [disabled]="section().products.length === 0" (click)="productColors.emit()">
+      <span class="se__swatch" [style.background]="'linear-gradient(135deg,' + section().color.colorStart + ',' + section().color.colorEnd + ')'" aria-hidden="true"></span>
+      {{ 'MENU_BUILDER.SECTION.PRODUCT_COLORS' | translate }}
+    </button>
+
+    <div class="se__pager" role="group" [attr.aria-label]="'MENU_BUILDER.SECTION.PAGES' | translate">
+      <span class="se__page-of" aria-live="polite">{{ 'MENU_BUILDER.SECTION.PAGE_OF' | translate: { n: page(), total: section().pages } }}</span>
+      @for (n of pageNumbers(); track n) {
+        <button type="button" class="se__pg" [class.se__pg--on]="n === page()" [attr.aria-current]="n === page() ? 'page' : null"
+                [attr.aria-label]="'MENU_BUILDER.SECTION.GO_TO_PAGE' | translate: { n }" (click)="selectPage.emit(n)">{{ n }}</button>
+      }
+      @if (section().pages < maxPages) {
+        <button type="button" class="se__pg se__pg--add" [disabled]="!canAddPage()" (click)="addPage.emit()"
+                [attr.aria-label]="'MENU_BUILDER.ADD_PAGE' | translate" [title]="canAddPage() ? '' : ('MENU_BUILDER.SECTION.ADD_PAGE_HINT' | translate)">+</button>
+      }
+      @if (page() > 1) {
+        <button type="button" class="se__pg se__pg--del" (click)="removePage.emit(page())" [attr.aria-label]="'MENU_BUILDER.REMOVE_PAGE' | translate">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      }
+    </div>
+  </header>
+  @if (nameError()) { <p class="se__error" role="alert">{{ ('MENU_BUILDER.ERR.' + nameError()) | translate }}</p> }
+
+  <app-product-search [results]="results()" [loading]="searching()" (query)="query.emit($event)" (pick)="pickResult.emit($event)"/>
+
+  <p class="se__count" role="status">{{ 'MENU_BUILDER.SECTION.SLOTS_USED' | translate: { used: slotsUsed(), total: total } }}</p>
+
+  <app-product-grid
+    [products]="products()" [sectionColor]="section().color" [cols]="cols" [rows]="rows" [notice]="notice()"
+    (pickAt)="pickAt.emit($event)" (tileMove)="tileMove.emit($event)" (tileResize)="tileResize.emit($event)" (tileStep)="tileStep.emit($event)"
+    (tileRemove)="tileRemove.emit($event)" (tileColor)="tileColor.emit($event)" (productDrop)="productDrop.emit($event)"/>
+
+  <p class="se__hint">{{ 'MENU_BUILDER.SECTION.GRID_HINT' | translate }}</p>
+</section>

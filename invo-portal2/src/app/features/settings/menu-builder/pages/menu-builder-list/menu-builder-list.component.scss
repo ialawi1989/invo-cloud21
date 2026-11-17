@@ -1,7 +1,0 @@
-/* Not encapsulated: the rows belong to the shared list page. A live menu gets a faint green tint and a 3px bar
-   on its leading edge (a box-shadow, so the row height never changes; mirrored in RTL). */
-tr.menu-row--active > td { background: rgba(16, 185, 129, 0.06); }
-tr.menu-row--active > td:first-child { box-shadow: inset 3px 0 0 #10b981; }
-[dir='rtl'] tr.menu-row--active > td:first-child { box-shadow: inset -3px 0 0 #10b981; }
-tr.menu-row--flash > td { background: rgba(50, 172, 193, 0.18) !important; transition: background 0.4s ease; }
-@media (prefers-reduced-motion: reduce) { tr.menu-row--flash > td { transition: none; } }

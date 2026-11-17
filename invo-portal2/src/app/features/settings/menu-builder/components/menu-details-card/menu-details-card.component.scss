@@ -1,0 +1,27 @@
+:host { display: block; }
+.card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px 20px; }
+.card__heading { margin: 0 0 14px; font-size: 14px; font-weight: 700; color: #0f172a; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 20px; }
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.field--wide { grid-column: 1 / -1; }
+.field--toggle { justify-content: flex-end; padding-bottom: 6px; }
+.field__label { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #64748b; }
+.field__hint { margin: 0; font-size: 12px; color: #94a3b8; }
+.field__error { margin: 0; font-size: 12px; color: #dc2626; }
+.input { width: 100%; padding: 9px 12px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; font: inherit; font-size: 14px; color: #0f172a;
+  &:focus { outline: none; border-color: var(--color-brand-500, #32acc1); box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.14); }
+  &--invalid { border-color: #ef4444; } }
+.hours { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.hours__to { font-size: 13px; color: #64748b; }
+.hours__next { font-size: 12px; font-weight: 600; color: #475569; }
+.chip { display: inline-flex; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+.chip--teal { background: #ecfeff; color: var(--color-brand-700, #207484); }
+.toggle { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; position: relative; }
+.toggle input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.toggle__track { position: relative; width: 36px; height: 20px; border-radius: 999px; background: #cbd5e1; flex: none; transition: background 120ms ease; }
+.toggle__thumb { position: absolute; top: 3px; inset-inline-start: 3px; width: 14px; height: 14px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(15, 23, 42, 0.25); transition: inset-inline-start 120ms ease; }
+.toggle input:checked + .toggle__track { background: var(--color-brand-600, #2691a4); }
+.toggle input:checked + .toggle__track .toggle__thumb { inset-inline-start: 19px; }
+.toggle input:focus-visible + .toggle__track { outline: 2px solid var(--color-brand-600, #2691a4); outline-offset: 2px; }
+.toggle__label { font-size: 13px; color: #334155; }
+@media (max-width: 720px) { .grid { grid-template-columns: minmax(0, 1fr); } }

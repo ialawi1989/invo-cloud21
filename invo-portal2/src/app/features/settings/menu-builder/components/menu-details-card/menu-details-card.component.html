@@ -1,0 +1,50 @@
+<section class="card" aria-labelledby="mdc-title">
+  <h2 class="card__heading" id="mdc-title">{{ 'MENU_BUILDER.SECTION.DETAILS' | translate }}</h2>
+
+  <div class="grid">
+    <div class="field">
+      <label class="field__label" for="mdc-name">{{ 'MENU_BUILDER.NAME' | translate }} *</label>
+      <input id="mdc-name" type="text" class="input" data-field="name" [class.input--invalid]="errors()['name']"
+             [attr.aria-invalid]="!!errors()['name']" [attr.aria-describedby]="errors()['name'] ? 'mdc-name-err' : null"
+             [ngModel]="menu().name" (ngModelChange)="patch.emit({ key: 'name', value: $event })"
+             [placeholder]="'MENU_BUILDER.NAME_PLACEHOLDER' | translate"/>
+      @if (errors()['name']) { <p class="field__error" id="mdc-name-err" role="alert">{{ ('MENU_BUILDER.ERR.' + errors()['name']) | translate }}</p> }
+    </div>
+
+    <div class="field">
+      <span class="field__label" id="mdc-price-l">{{ 'MENU_BUILDER.PRICE' | translate }}</span>
+      <app-search-dropdown [items]="priceLabels()" [displayWith]="priceLabel" [toValue]="priceValue" [compareWith]="priceEquals"
+                           [searchable]="priceLabels().length > 6" [clearable]="true" [value]="priceSelected()"
+                           (valueChange)="onPrice($event)"/>
+    </div>
+
+    <div class="field">
+      <span class="field__label" id="mdc-hours-l">{{ 'MENU_BUILDER.AVAILABLE_HOURS' | translate }}</span>
+      <div class="hours" role="group" aria-labelledby="mdc-hours-l" data-field="endAt">
+        <app-time-picker [ngModel]="short(menu().startAt)" (ngModelChange)="patch.emit({ key: 'startAt', value: long($event) })"/>
+        <span class="hours__to">{{ 'MENU_BUILDER.TO' | translate }}</span>
+        <app-time-picker [ngModel]="short(menu().endAt)" (ngModelChange)="patch.emit({ key: 'endAt', value: long($event) })"/>
+        @if (hours().allDay) { <span class="chip chip--teal">{{ 'MENU_BUILDER.STATUS.ALL_DAY' | translate }}</span> }
+        @else if (hours().overnight) { <span class="hours__next">{{ 'MENU_BUILDER.STATUS.NEXT_DAY' | translate }}</span> }
+      </div>
+      @if (errors()['endAt'] || errors()['startAt']) {
+        <p class="field__error" role="alert">{{ ('MENU_BUILDER.ERR.' + (errors()['endAt'] || errors()['startAt'])) | translate }}</p>
+      } @else if (timeZone()) {
+        <p class="field__hint">{{ 'MENU_BUILDER.TIMES_IN' | translate: { zone: timeZone() } }}</p>
+      }
+    </div>
+
+    <div class="field field--toggle">
+      <label class="toggle">
+        <input type="checkbox" [checked]="menu().availableOnline" (change)="patch.emit({ key: 'availableOnline', value: $any($event.target).checked })"/>
+        <span class="toggle__track"><span class="toggle__thumb"></span></span>
+        <span class="toggle__label">{{ 'MENU_BUILDER.AVAILABLE_ONLINE' | translate }}</span>
+      </label>
+    </div>
+
+    <div class="field field--wide">
+      <app-branch-chips [branches]="branches()" [selectedIds]="menu().branchIds" [error]="errors()['branchIds'] || null"
+                        (change)="patch.emit({ key: 'branchIds', value: $event })"/>
+    </div>
+  </div>
+</section>

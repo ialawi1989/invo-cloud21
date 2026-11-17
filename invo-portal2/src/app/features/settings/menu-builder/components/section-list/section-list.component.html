@@ -1,0 +1,45 @@
+<div class="sl">
+  <h3 class="sl__heading" id="sl-heading">{{ 'MENU_BUILDER.SECTION.LIST' | translate }}</h3>
+
+  @if (sections().length > 0) {
+    <ul class="sl__list" role="list" aria-labelledby="sl-heading" cdkDropList (cdkDropListDropped)="drop($event)" [cdkDropListLockAxis]="'y'">
+      @for (s of sections(); track s.id; let i = $index) {
+        <li class="sl__row" role="listitem" cdkDrag [cdkDragData]="s.id" [attr.data-section-id]="s.id"
+            [class.sl__row--on]="s.id === selectedId()" [attr.aria-current]="s.id === selectedId() ? 'true' : null">
+          <button type="button" class="sl__handle" cdkDragHandle [attr.aria-label]="handleLabel(s)" aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown" tabindex="-1">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/>
+            </svg>
+          </button>
+          <button type="button" class="sl__main" (click)="select.emit(s.id)" (keydown)="onRowKey($event, i)" aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown">
+            <span class="sl__dot" [style.background]="'linear-gradient(135deg,' + s.colorStart + ',' + s.colorEnd + ')'" aria-hidden="true"></span>
+            <span class="sl__text">
+              <span class="sl__name">{{ s.name || ('MENU_BUILDER.UNNAMED_SECTION' | translate) }}</span>
+              <span class="sl__count" [class.sl__count--empty]="s.productsCount === 0">{{ 'MENU_BUILDER.SECTION.PRODUCTS_N' | translate: { n: s.productsCount } }}</span>
+            </span>
+          </button>
+          <app-row-menu [label]="menuLabel(s)" [items]="menuItems()" (pick)="onPick(s.id, $event)"/>
+          @if (errors()['section:' + s.id]; as err) {
+            <p class="sl__error" role="alert">{{ ('MENU_BUILDER.ERR.' + err) | translate }}</p>
+          }
+        </li>
+      }
+    </ul>
+  } @else {
+    <p class="sl__empty">{{ 'MENU_BUILDER.NO_SECTIONS' | translate }}</p>
+  }
+
+  <button type="button" class="sl__add" (click)="add.emit()">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    {{ 'MENU_BUILDER.ADD_SECTION' | translate }}
+  </button>
+
+  @if (emptyCount() > 0) {
+    <p class="sl__warn" role="status">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+      {{ 'MENU_BUILDER.SECTION.EMPTY_WARNING' | translate: { n: emptyCount() } }}
+    </p>
+  }
+</div>
