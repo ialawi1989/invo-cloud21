@@ -288,20 +288,21 @@ export class MediaService {
   }
 
   /**
-   * Fetch the raw image bytes for a media item as a Blob.
+   * Fetch the image bytes of a media item as a Blob that belongs to this page's own origin.
    *
-   * Streams the bytes through our backend (`GET media/:id/raw`) instead of the
-   * CDN's signed-S3 redirect, so the response carries our CORS headers and the
-   * request goes through the auth interceptor. Loading the resulting blob into
-   * a canvas leaves it untainted, so the Photo Editor can export/save.
+   * The CDN / signed-S3 address carries no CORS headers, so an image drawn from it taints the Photo Editor's canvas and the browser
+   * refuses to export the edit ("image can't be exported"). The backend's authenticated `media/getMediabyId/:id` returns the same
+   * file inline as a base64 data URI (`data.media`); turning that into a Blob gives bytes the canvas may read, which is exactly the
+   * situation of an image just picked from the computer. (A `media/:id/raw` route was assumed here before; the backend has no such route.)
    */
   async getMediaRawBlob(mediaId: string): Promise<Blob> {
-    return firstValueFrom(
-      this.http.get(`${this.baseUrl}media/${mediaId}/raw`, { responseType: 'blob' })
-    );
+    const res = await firstValueFrom(this.http.get<any>(`${this.baseUrl}media/getMediabyId/${mediaId}`));
+    const dataUri: string | null | undefined = res?.data?.media;
+    if (!dataUri || !dataUri.startsWith('data:')) throw new Error('The image could not be read from the server');
+    return (await fetch(dataUri)).blob();
   }
 
-  /** Download a media item's bytes via the authenticated raw endpoint. */
+  /** Download a media item's bytes through the authenticated backend (see {@link getMediaRawBlob}). */
   async downloadMediaRaw(mediaId: string, filename: string): Promise<void> {
     const blob = await this.getMediaRawBlob(mediaId);
     this.triggerDownload(blob, filename);
