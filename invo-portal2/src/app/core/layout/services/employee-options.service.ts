@@ -77,7 +77,25 @@ export interface ProductFormPrefs {
  *  fallback used when no per-type override exists. */
 export type ProductFormPrefsByType = { [productType: string]: ProductFormPrefs };
 
+/**
+ * The signed-in employee's own display preferences (My Account > Preferences). Stored with the rest of the employee's
+ * options, so they follow the person across browsers; each field is optional and an unset one means "use the default".
+ */
+export interface EmployeePreferences {
+  /** IANA timezone (e.g. 'Asia/Bahrain'); unset = the browser's. */
+  timezone?: string;
+  /** Angular date pattern used wherever a date is shown without its own pattern (e.g. 'dd/MM/yyyy'). */
+  dateFormat?: string;
+  timeFormat?: '12h' | '24h';
+  /** UI language code; unset = whatever was last chosen on this device. */
+  language?: string;
+  /** 0 = Sunday ... 6 = Saturday; the first column of every calendar. */
+  firstDayOfWeek?: number;
+}
+
 export interface EmployeeOptions {
+  /** The employee's display preferences (timezone, date / time format, language, first day of week). */
+  preferences?: EmployeePreferences;
   sidebar?: SidebarOptions;
   /** Per-entity list preferences, keyed by entity type (e.g. 'product'). */
   lists?: { [entityType: string]: ListPreference };
@@ -146,6 +164,14 @@ export class EmployeeOptionsService {
         this.http.post(`${this.base}/employee/setEmployeeOptions`, options)
       );
     } catch { /* fail silently */ }
+  }
+
+  /** Like {@link set} but a failed save throws (and the response's `success: false` counts as failed), for screens that must tell the user. */
+  async setStrict(options: EmployeeOptions): Promise<void> {
+    const res: any = await firstValueFrom(this.http.post(`${this.base}/employee/setEmployeeOptions`, options));
+    if (res?.success === false) throw new Error(typeof res?.msg === 'string' && res.msg ? res.msg : 'Could not save the options');
+    this.cached = options;
+    this.loaded = true;
   }
 
   async patch(patch: Partial<EmployeeOptions>): Promise<void> {

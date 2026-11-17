@@ -82,7 +82,7 @@
       <section class="pd-card">
         <button type="button" class="pd-card__head" (click)="toggleHistory()">
           <span>{{ 'PROMOTIONS.PROMOTIONS_POINTS.ACTIONS_LIST' | translate }}</span>
-          <span class="pd-chevron" [class.is-open]="historyOpen()">&#9662;</span>
+          <span class="pd-chevron ui-chevron" [class.is-open]="historyOpen()"></span>
         </button>
 
         @if (historyOpen()) {

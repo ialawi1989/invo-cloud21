@@ -159,6 +159,15 @@ export class AuthService {
     }
   }
 
+  /** Merges fields into the signed-in employee (e.g. a new picture or name) and keeps the stored copy in step. */
+  patchEmployee(patch: Partial<Employee>): void {
+    const stored = this.currentEmployee$.value;
+    if (!stored) return;
+    const next = { ...stored, ...patch } as Employee;
+    setItemSync('employee', JSON.stringify(next), true);
+    this.currentEmployee$.next(next);
+  }
+
   /** Stores token + employee and hydrates permission/feature services */
   storeSession(response: AuthResponse): void {
     const data     = response.data;

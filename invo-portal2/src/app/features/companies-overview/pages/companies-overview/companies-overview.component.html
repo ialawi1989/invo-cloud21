@@ -1,0 +1,158 @@
+<app-report-page-shell
+  [title]="titleKey | translate"
+  [crumbs]="crumbs"
+  [subtitle]="'COMPANIES_OVERVIEW.SUBTITLE' | translate"
+  [showNav]="false" [showFavorite]="false" [spinning]="spinning()"
+  (refresh)="refresh()">
+
+  <app-report-export-button shellExport [formats]="['pdf', 'xlsx']" [printable]="false" [busy]="exporting()" (exportAs)="export($event)" />
+
+  <div class="co-toolbar">
+    <app-report-filter-bar [flags]="{ date: true }" [value]="filterState()" (apply)="onFilterApply($event)" />
+  </div>
+
+  @if (loading() && !(tab === 'sales' ? sales() : payments())) {
+    <app-report-skeleton [kpis]="isDashboard ? 4 : 0" [chart]="isDashboard" [columns]="0" />
+  } @else if (error()) {
+    <app-empty-state icon="error" tone="error" [title]="error()!" [body]="'COMPANIES_OVERVIEW.LOAD_ERROR' | translate" />
+  } @else {
+    <div class="co" [class.stale]="loading()">
+      @if (tab === 'sales' && sales(); as d) {
+        @if (isDashboard) { <app-report-kpi-row [kpis]="kpis()" [columns]="4" /> }
+
+        <section class="co-card">
+          <header class="co-head">
+            <h3>{{ 'COMPANIES_OVERVIEW.COMPANY_PERFORMANCE' | translate }}
+              <span class="count">{{ visibleCompanies().length }} {{ 'COMPANIES_OVERVIEW.COMPANIES' | translate }}</span></h3>
+            <input class="co-search" type="search" [ngModel]="search()" (ngModelChange)="search.set($event)"
+                   [placeholder]="'COMPANIES_OVERVIEW.SEARCH' | translate" />
+          </header>
+
+          <div class="co-scroll">
+            <table class="co-table">
+              <thead>
+                <tr>
+                  <th>{{ 'COMPANIES_OVERVIEW.COMPANY' | translate }}</th>
+                  <th class="num">{{ 'COMPANIES_OVERVIEW.INVOICES' | translate }}</th>
+                  <th class="num">{{ 'COMPANIES_OVERVIEW.SALES' | translate }}</th>
+                  <th class="num">{{ 'COMPANIES_OVERVIEW.DISCOUNT' | translate }}</th>
+                  <th class="num">{{ 'COMPANIES_OVERVIEW.TAX' | translate }}</th>
+                  <th class="num">{{ 'COMPANIES_OVERVIEW.TOTAL' | translate }}</th>
+                  <th class="num">{{ 'COMPANIES_OVERVIEW.RETURN' | translate }}</th>
+                  <th class="num">{{ 'COMPANIES_OVERVIEW.NET_SALES' | translate }}</th>
+                  <th class="act"></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (c of visibleCompanies(); track c.companyId) {
+                  <tr class="company">
+                    <td>
+                      <div class="name">{{ c.companyName }}</div>
+                      <div class="sub">{{ c.branches.length }} {{ (c.branches.length === 1 ? 'COMPANIES_OVERVIEW.BRANCH' : 'COMPANIES_OVERVIEW.BRANCHES') | translate }}</div>
+                    </td>
+                    <td class="num">{{ c.numberOfInvoices | mynumber }}</td>
+                    <td class="num">{{ c.sales | mycurrency }}</td>
+                    <td class="num">{{ c.discountTotal | mycurrency }}</td>
+                    <td class="num">{{ c.taxTotal | mycurrency }}</td>
+                    <td class="num">{{ c.total | mycurrency }}</td>
+                    <td class="num">{{ c.totalReturn | mycurrency }}</td>
+                    <td class="num strong">{{ c.netSales | mycurrency }}</td>
+                    <td class="act">
+                      @if (c.branches.length) {
+                        <button type="button" class="expand" [class.open]="expanded().has(c.companyId)" (click)="toggle(c.companyId)"
+                                [attr.aria-expanded]="expanded().has(c.companyId)"
+                                [attr.aria-label]="(expanded().has(c.companyId) ? 'COMPANIES_OVERVIEW.COLLAPSE' : 'COMPANIES_OVERVIEW.EXPAND') | translate">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                        </button>
+                      }
+                    </td>
+                  </tr>
+                  @if (expanded().has(c.companyId)) {
+                    @for (b of c.branches; track b.branchId) {
+                      <tr class="branch">
+                        <td><span class="branch-name">{{ b.branchName }}</span></td>
+                        <td class="num">{{ b.numberOfInvoices | mynumber }}</td>
+                        <td class="num">{{ b.sales | mycurrency }}</td>
+                        <td class="num">{{ b.discountTotal | mycurrency }}</td>
+                        <td class="num">{{ b.taxTotal | mycurrency }}</td>
+                        <td class="num">{{ b.total | mycurrency }}</td>
+                        <td class="num">{{ b.totalReturn | mycurrency }}</td>
+                        <td class="num">{{ b.netSales | mycurrency }}</td>
+                        <td class="act"></td>
+                      </tr>
+                    }
+                  }
+                } @empty {
+                  <tr><td colspan="9" class="empty">{{ 'COMPANIES_OVERVIEW.NO_ROWS' | translate }}<br><small>{{ 'COMPANIES_OVERVIEW.NO_ROWS_HINT' | translate }}</small></td></tr>
+                }
+                @if (visibleCompanies().length) {
+                  <tr class="total">
+                    <td>{{ 'COMPANIES_OVERVIEW.TOTAL' | translate }} ({{ d.companies.length }} {{ 'COMPANIES_OVERVIEW.COMPANIES' | translate }})</td>
+                    <td class="num">{{ d.totals.numberOfInvoices | mynumber }}</td>
+                    <td class="num">{{ d.totals.sales | mycurrency }}</td>
+                    <td class="num">{{ d.totals.discountTotal | mycurrency }}</td>
+                    <td class="num">{{ d.totals.taxTotal | mycurrency }}</td>
+                    <td class="num">{{ d.totals.total | mycurrency }}</td>
+                    <td class="num">{{ d.totals.totalReturn | mycurrency }}</td>
+                    <td class="num">{{ d.totals.netSales | mycurrency }}</td>
+                    <td class="act"></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        @if (isDashboard && d.companies.length) {
+          <section class="co-card">
+            <header class="co-head">
+              <h3>{{ 'COMPANIES_OVERVIEW.SALES_BY_COMPANY' | translate }}</h3>
+              <div class="order">
+                <span>{{ 'COMPANIES_OVERVIEW.ORDER_BY' | translate }}</span>
+                <app-search-dropdown [items]="measures" [displayWith]="measureLabel" [compareWith]="sameMeasure" [searchable]="false"
+                  [value]="{ value: chartMeasure() }" (valueChange)="chartMeasure.set($any($event)?.value ?? 'netSales')" [clearable]="false" />
+              </div>
+            </header>
+            <apx-chart [series]="chartSeries()" [chart]="chartMeta" [xaxis]="chartXaxis()" [yaxis]="yaxis" [colors]="palette"
+                       [plotOptions]="plot" [legend]="legend" [grid]="grid" [dataLabels]="dataLabels" />
+          </section>
+        }
+      } @else if (tab === 'payments' && payments(); as p) {
+        <section class="co-card">
+          <header class="co-head">
+            <h3>{{ 'COMPANIES_OVERVIEW.PAYMENTS_BY_COMPANY' | translate }}
+              <span class="count">{{ paymentRows().length }} {{ 'COMPANIES_OVERVIEW.COMPANIES' | translate }}</span></h3>
+            <input class="co-search" type="search" [ngModel]="search()" (ngModelChange)="search.set($event)"
+                   [placeholder]="'COMPANIES_OVERVIEW.SEARCH' | translate" />
+          </header>
+          <div class="co-scroll">
+            <table class="co-table">
+              <thead>
+                <tr>
+                  <th>{{ 'COMPANIES_OVERVIEW.COMPANY' | translate }}</th>
+                  @for (m of p.methods; track m) { <th class="num">{{ methodLabel(m) }}</th> }
+                </tr>
+              </thead>
+              <tbody>
+                @for (r of paymentRows(); track r.companyId) {
+                  <tr class="company">
+                    <td><div class="name">{{ r.companyName }}</div></td>
+                    @for (m of p.methods; track m) { <td class="num">{{ r.payments[m] | mycurrency }}</td> }
+                  </tr>
+                } @empty {
+                  <tr><td [attr.colspan]="1 + p.methods.length" class="empty">{{ 'COMPANIES_OVERVIEW.NO_ROWS' | translate }}<br><small>{{ 'COMPANIES_OVERVIEW.NO_ROWS_HINT' | translate }}</small></td></tr>
+                }
+                @if (paymentRows().length) {
+                  <tr class="total">
+                    <td>{{ 'COMPANIES_OVERVIEW.TOTAL' | translate }} ({{ p.rows.length }} {{ 'COMPANIES_OVERVIEW.COMPANIES' | translate }})</td>
+                    @for (m of p.methods; track m) { <td class="num">{{ p.totals[m] | mycurrency }}</td> }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+      }
+    </div>
+  }
+</app-report-page-shell>

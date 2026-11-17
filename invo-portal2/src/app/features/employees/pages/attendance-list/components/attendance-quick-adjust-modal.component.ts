@@ -61,7 +61,7 @@ export interface QuickAdjustResult {
           </div>
         }
 
-        @if (data.showIn && data.showOut) { <span class="arrow" aria-hidden="true">→</span> }
+        @if (data.showIn && data.showOut) { <span class="arrow" aria-hidden="true"><span class="ui-icon ui-icon-arrow-right"></span></span> }
 
         @if (data.showOut) {
           <div class="field">

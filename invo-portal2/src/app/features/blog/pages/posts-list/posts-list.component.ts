@@ -145,7 +145,7 @@ export class PostsListComponent implements OnInit {
   languageOptions = computed(() => {
     this.i18nTick();
     return [
-      { id: '',   label: '🌐 ' + this.translate.instant('BLOG.LIST.LANG_ALL') },
+      { id: '',   label: '' + this.translate.instant('BLOG.LIST.LANG_ALL') },
       { id: 'en', label: '🇺🇸 English' },
       { id: 'ar', label: '🇸🇦 العربية' },
     ];

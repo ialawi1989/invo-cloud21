@@ -87,14 +87,14 @@
                   <button type="button" class="tool" (click)="convertToMegaMenu(item)" [appTooltip]="'NAV.BUILDER.TO_MEGA' | translate">
                     <span class="item-icon sm" [innerHTML]="itemIcon('mega')"></span>
                   </button>
-                  <button type="button" class="tool" (click)="editItem(item)" appTooltip="Edit">✎</button>
+                  <button type="button" class="tool" (click)="editItem(item)" appTooltip="Edit"><span class="ui-icon ui-icon-edit"></span></button>
                 } @else {
-                  <button type="button" class="tool" (click)="editMegaMenu(item)" appTooltip="Edit mega menu">✎</button>
+                  <button type="button" class="tool" (click)="editMegaMenu(item)" appTooltip="Edit mega menu"><span class="ui-icon ui-icon-edit"></span></button>
                 }
                 <button type="button" class="tool" (click)="translateItem(item)" appTooltip="Translate">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
                 </button>
-                <button type="button" class="tool danger" (click)="removeItem(item)" appTooltip="Remove">✕</button>
+                <button type="button" class="tool danger" (click)="removeItem(item)" appTooltip="Remove"><span class="ui-icon ui-icon-x"></span></button>
               </span>
             </div>
 
@@ -136,7 +136,7 @@
                         <input class="form-input" [(ngModel)]="column.title" [placeholder]="'NAV.BUILDER.COLUMN_TITLE' | translate" />
                         <input class="form-input narrow" type="number" [(ngModel)]="column.width" placeholder="%" />
                         @if (item.megaColumns && item.megaColumns.length > 1) {
-                          <button type="button" class="tool danger" (click)="removeMegaColumn(item, ci)">✕</button>
+                          <button type="button" class="tool danger" (click)="removeMegaColumn(item, ci)"><span class="ui-icon ui-icon-x"></span></button>
                         }
                       </div>
 
@@ -150,7 +150,7 @@
                               <span class="item-icon sm" [innerHTML]="itemIcon(colItem.type)"></span>
                             }
                             <span class="col-item-name">{{ colItem.name }}</span>
-                            <button type="button" class="tool danger" (click)="removeColumnItem(column, ii)">✕</button>
+                            <button type="button" class="tool danger" (click)="removeColumnItem(column, ii)"><span class="ui-icon ui-icon-x"></span></button>
                           </div>
                         }
                         @if (!column.items.length) {
@@ -187,7 +187,7 @@
       <div class="picker" (click)="$event.stopPropagation()">
         <div class="picker-head">
           <h4>{{ 'NAV.BUILDER.PICK_ITEM' | translate }}</h4>
-          <button type="button" class="tool" (click)="closeColumnPicker()">✕</button>
+          <button type="button" class="tool" (click)="closeColumnPicker()"><span class="ui-icon ui-icon-x"></span></button>
         </div>
         <div class="picker-tabs">
           @for (tab of pickerTabs(); track tab.abbr) {

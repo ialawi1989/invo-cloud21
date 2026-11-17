@@ -22,6 +22,7 @@ import { TranslatedStringInputComponent } from '@features/promotions/components/
 
 import { FieldTemplate } from '../../../../models/product-fields/field-template';
 import {
+  MAX_PROMOTION_COUNT,
   ProductPromotionSettings,
   ProductPromotionSettingsFields,
 } from '../../../../models/product-promotion-settings.model';
@@ -32,16 +33,20 @@ const DEFAULT_FIELD: FieldTemplate = { isVisible: true, isDisabled: false, isReq
 interface PromotionLabels {
   name: string;
   amount: string;
+  count: string;
   namePlaceholder: string;
   amountPlaceholder: string;
+  countPlaceholder: string;
 }
 
 /** Wording used when the product type has no entry of its own. */
 const DEFAULT_LABELS: PromotionLabels = {
   name: 'PRODUCTS.PROMOTION_NAME',
   amount: 'PRODUCTS.PROMOTION_AMOUNT',
+  count: 'PRODUCTS.PROMOTION_COUNT',
   namePlaceholder: 'PRODUCTS.PROMOTION_FORM.ENTER_PROMOTION_NAME',
   amountPlaceholder: 'PRODUCTS.PROMOTION_FORM.ENTER_PROMOTION_AMOUNT',
+  countPlaceholder: 'PRODUCTS.PROMOTION_FORM.ENTER_PROMOTION_COUNT',
 };
 
 /** Product types that name these fields after themselves. Add an entry per new type. */
@@ -49,8 +54,10 @@ const LABELS_BY_TYPE: Record<string, PromotionLabels> = {
   voucher: {
     name: 'PRODUCTS.VOUCHER_NAME',
     amount: 'PRODUCTS.VOUCHER_AMOUNT',
+    count: 'PRODUCTS.VOUCHER_COUNT',
     namePlaceholder: 'PRODUCTS.PROMOTION_FORM.ENTER_VOUCHER_NAME',
     amountPlaceholder: 'PRODUCTS.PROMOTION_FORM.ENTER_VOUCHER_AMOUNT',
+    countPlaceholder: 'PRODUCTS.PROMOTION_FORM.ENTER_VOUCHER_COUNT',
   },
 };
 
@@ -89,7 +96,7 @@ export class PromotionSettingsComponent implements OnInit, OnDestroy {
   /** Product type — picks the wording of the labels. */
   type = input<string>('');
 
-  private readonly fieldNames = ['voucherName', 'initialVoucher', 'expiryPeriod', 'activePeriod', 'oneTimeUse', 'private'];
+  private readonly fieldNames = ['voucherName', 'initialVoucher', 'count', 'expiryPeriod', 'activePeriod', 'oneTimeUse', 'private'];
 
   /** Bumped on every edit so OnPush re-reads the in-place-mutated `settings`. */
   private tick = signal(0);
@@ -98,6 +105,8 @@ export class PromotionSettingsComponent implements OnInit, OnDestroy {
   labels = computed(() => LABELS_BY_TYPE[this.type()] ?? DEFAULT_LABELS);
   nameField = computed(() => this.fields()?.voucherName ?? DEFAULT_FIELD);
   amountField = computed(() => this.fields()?.initialVoucher ?? DEFAULT_FIELD);
+  countField = computed(() => this.fields()?.count ?? DEFAULT_FIELD);
+  readonly maxCount = MAX_PROMOTION_COUNT;
   privateField = computed(() => this.fields()?.private ?? DEFAULT_FIELD);
 
   constructor() {
@@ -109,6 +118,9 @@ export class PromotionSettingsComponent implements OnInit, OnDestroy {
     const f = this.fields();
     this.addControl('voucherName', this.nameField(), s.voucherName?.[this.code()] ?? '', []);
     this.addControl('initialVoucher', this.amountField(), s.initialVoucher, [Validators.min(0)]);
+    // count defaults to 1 and is capped at 10 (one sale issues at most 10 vouchers)
+    if (s.count == null) s.count = 1;
+    this.addControl('count', this.countField(), s.count, [Validators.min(1), Validators.max(MAX_PROMOTION_COUNT)]);
     this.addControl('expiryPeriod', f?.expiryPeriod ?? DEFAULT_FIELD, s.expiryPeriod?.value, [Validators.min(0)]);
     this.addControl('activePeriod', f?.activePeriod ?? DEFAULT_FIELD, s.activePeriod?.value, [Validators.min(0)]);
     this.addControl('oneTimeUse', f?.oneTimeUse ?? DEFAULT_FIELD, s.oneTimeUse);
@@ -116,6 +128,7 @@ export class PromotionSettingsComponent implements OnInit, OnDestroy {
 
     // Mirror the plain controls back into the model (legacy used ngModel + formControlName).
     this.bind('initialVoucher', v => (this.settings().initialVoucher = v));
+    this.bind('count', v => (this.settings().count = v));
     this.bind('oneTimeUse', v => (this.settings().oneTimeUse = v));
     this.bind('private', v => (this.settings().private = v));
   }

@@ -21,24 +21,21 @@
     </div>
 
     <div class="gs-list" id="gs-list" role="listbox" #list>
+      @if (suggestion(); as s) {
+        <div class="gs-didyoumean">
+          {{ 'GLOBAL_SEARCH.SHOWING_FOR' | translate }}
+          <button type="button" (click)="applySuggestion()">{{ s }}</button>
+        </div>
+      }
       @if (hits().length) {
         <div class="gs-heading">{{ (hasQuery() ? 'GLOBAL_SEARCH.RESULTS' : 'GLOBAL_SEARCH.QUICK_ACCESS') | translate }}</div>
         @for (hit of hits(); track hit.entry.id; let i = $index) {
           <button type="button" class="gs-item" role="option" [attr.data-i]="i"
                   [class.gs-item--active]="i === active()" [attr.aria-selected]="i === active()"
                   (mouseenter)="active.set(i)" (click)="go(hit)">
-            <span class="gs-item__icon" [class.gs-item__icon--setting]="hit.entry.kind === 'setting'">
-              @if (hit.entry.kind === 'setting') {
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="3"/>
-                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                </svg>
-              } @else {
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
-                </svg>
-              }
-            </span>
+            <span class="gs-item__icon" [class.gs-item__icon--setting]="hit.entry.kind === 'setting'"
+                  [style.color]="hit.entry.color" [style.background]="hit.entry.color ? hit.entry.color + '18' : null"
+                  [innerHTML]="hit.entry.iconSvg | safeHtml"></span>
             <span class="gs-item__body">
               <span class="gs-item__title">{{ hit.entry.title }}</span>
               @if (hit.entry.crumb) { <span class="gs-item__crumb">{{ hit.entry.crumb }}</span> }
@@ -62,7 +59,7 @@
     </div>
 
     <div class="gs-footer">
-      <span><kbd>↑</kbd><kbd>↓</kbd> {{ 'GLOBAL_SEARCH.HINT_NAV' | translate }}</span>
+      <span><kbd><span class="ui-icon ui-icon-arrow-up"></span></kbd><kbd><span class="ui-icon ui-icon-arrow-down"></span></kbd> {{ 'GLOBAL_SEARCH.HINT_NAV' | translate }}</span>
       <span><kbd>↵</kbd> {{ 'GLOBAL_SEARCH.HINT_OPEN' | translate }}</span>
       <span><kbd>Esc</kbd> {{ 'GLOBAL_SEARCH.HINT_CLOSE' | translate }}</span>
     </div>

@@ -52,6 +52,7 @@ export const TRANSLATION_GROUP_ORDER: string[] = [
   'TRANSLATIONS.GROUPS.INTERFACE',
   'TRANSLATIONS.GROUPS.BUSINESS',
   'TRANSLATIONS.GROUPS.STORE',
+  'TRANSLATIONS.GROUPS.PROMOTIONS',
 ];
 
 /** Shared endpoints — one generic backend serves every `api` entity;
@@ -210,6 +211,33 @@ export const TRANSLATION_ENTITIES: TranslationEntityConfig[] = [
     labelKey: 'TRANSLATIONS.ENTITIES.MATRIX.LABEL',
     groupKey: 'TRANSLATIONS.GROUPS.STORE',
     descKey: 'TRANSLATIONS.ENTITIES.MATRIX.DESC',
+    ready: true,
+    source: 'api',
+    endpoints: TRANSLATION_ENDPOINTS,
+    fields: [
+      { key: 'name', labelKey: 'TRANSLATIONS.FIELDS.NAME' },
+    ],
+  },
+
+  // ── Promotions (names live inside each promotion's own document; the backend
+  //    edits them in place and records the change in the promotion's history) ──
+  {
+    id: 'promotion-campaigns',
+    labelKey: 'TRANSLATIONS.ENTITIES.PROMOTION_CAMPAIGNS.LABEL',
+    groupKey: 'TRANSLATIONS.GROUPS.PROMOTIONS',
+    descKey: 'TRANSLATIONS.ENTITIES.PROMOTION_CAMPAIGNS.DESC',
+    ready: true,
+    source: 'api',
+    endpoints: TRANSLATION_ENDPOINTS,
+    fields: [
+      { key: 'name', labelKey: 'TRANSLATIONS.FIELDS.NAME' },
+    ],
+  },
+  {
+    id: 'promotion-coupon-sets',
+    labelKey: 'TRANSLATIONS.ENTITIES.PROMOTION_COUPON_SETS.LABEL',
+    groupKey: 'TRANSLATIONS.GROUPS.PROMOTIONS',
+    descKey: 'TRANSLATIONS.ENTITIES.PROMOTION_COUPON_SETS.DESC',
     ready: true,
     source: 'api',
     endpoints: TRANSLATION_ENDPOINTS,

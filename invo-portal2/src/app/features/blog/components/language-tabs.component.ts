@@ -45,7 +45,7 @@ import { LanguageService } from '@core/i18n/language.service';
               </svg>
             }
             @if (l === defaultLang() && showDefaultBadge()) {
-              <span class="lt__pin" [title]="'BLOG.COMPOSER.DEFAULT' | translate">★</span>
+              <span class="lt__pin" [title]="'BLOG.COMPOSER.DEFAULT' | translate"><span class="ui-icon ui-icon-star-fill"></span></span>
             }
             @if (canRemove() && l !== defaultLang() && activeLangs().length > 1) {
               <button type="button"

@@ -1,148 +1,66 @@
-<div class="tax-settings-page">
-  <header class="page-header">
-    <div class="page-header__titles">
-      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-      <h1 class="page-title">{{ 'SETTINGS.ITEMS.TAX_SETTINGS' | translate }}</h1>
-      <p class="page-sub">{{ 'SETTINGS.ITEMS.TAX_SETTINGS_DESC' | translate }}</p>
-    </div>
-    <div class="page-header__actions">
-      <button class="btn btn-primary" type="button" (click)="addTax()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="12" y1="5" x2="12" y2="19"></line>
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-        {{ 'SETTINGS.TAX.ADD_NEW' | translate }}
-      </button>
-    </div>
-  </header>
+<app-list-page
+  [pageTitle]="'SETTINGS.ITEMS.TAX_SETTINGS' | translate"
+  [pageSubtitle]="'SETTINGS.ITEMS.TAX_SETTINGS_DESC' | translate"
+  [breadcrumbs]="breadcrumbs()"
+  [columns]="columns()"
+  [dataSource]="load"
+  [pagination]="paginationConfig"
+  [search]="searchConfig()"
+  [sorting]="sortingConfig"
+  [headerActions]="[]"
+  [selectable]="false"
+  [fitContent]="true"
+  [emptyState]="emptyState()"
+  [entityType]="'tax'"
+  (rowClicked)="editTax($event.row)">
 
-  <app-loading-overlay [show]="loading()" [fullScreen]="false"/>
+  <div listHeaderActions class="flex items-center gap-3">
+    <button type="button" (click)="addTax()"
+      class="flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium bg-gradient-to-r from-brand-500 to-brand-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      {{ 'SETTINGS.TAX.ADD_NEW' | translate }}
+    </button>
+  </div>
 
-  <div class="card">
-    <div class="card__header">
-      <div class="list-header__search">
-        <svg class="list-header__search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"></circle>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        </svg>
-        <input
-          type="text"
-          class="input input--search"
-          [placeholder]="'SETTINGS.SEARCH_PLACEHOLDER' | translate"
-          [value]="searchTerm()"
-          (input)="onSearch($any($event.target).value)"
-        />
-        @if (searchTerm()) {
-          <button class="list-header__clear" type="button" (click)="clearSearch()">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
-        }
-      </div>
-    </div>
-
-    <div class="card__body">
-      @if (taxes().length > 0) {
-        <div class="tax-list">
-          @for (tax of taxes(); track tax.id) {
-            <div class="tax-item">
-              <div class="tax-item__info">
-                <span class="tax-item__name">{{ tax.name }}</span>
-                <div class="tax-item__badges">
-                  @if (tax.isGroup) {
-                    <span class="badge badge--secondary">Group</span>
-                  }
-                  @if (tax.default) {
-                    <span class="badge badge--teal">Default</span>
-                  }
-                </div>
-              </div>
-
-              @if (!tax.isGroup && tax.percentage != null) {
-                <div class="tax-item__percent">{{ tax.percentage }}%</div>
-              }
-
-              <div class="tax-item__actions">
-                <button
-                  class="btn btn-secondary btn--sm"
-                  type="button"
-                  (click)="setAsDefault(tax.id)"
-                  [disabled]="tax.default"
-                >
-                  {{ 'SETTINGS.BRANCHES.SET_AS_DEFAULT' | translate }}
-                </button>
-
-                @if (tax.name !== 'Exempt Tax' && tax.name !== 'Zero Tax' && !tax.default) {
-                  <button
-                    class="btn btn-secondary btn--sm btn--icon"
-                    type="button"
-                    (click)="editTax(tax)"
-                    [appTooltip]="'GENERAL.EDIT' | translate"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                    </svg>
-                  </button>
-                }
-
-                <div class="dropdown">
-                  <button
-                    class="btn btn-secondary btn--sm btn--icon"
-                    type="button"
-                    (click)="toggleDropdown(tax.id, $event)"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <circle cx="12" cy="5" r="1"></circle>
-                      <circle cx="12" cy="12" r="1"></circle>
-                      <circle cx="12" cy="19" r="1"></circle>
-                    </svg>
-                  </button>
-                  @if (openDropdownId() === tax.id) {
-                    <ul class="dropdown-menu dropdown-menu-show">
-                      <li>
-                        <a (click)="assignTo(tax.id); $event.stopPropagation()">
-                          {{ 'SETTINGS.TAX.ASSIGN_TO' | translate }}
-                        </a>
-                      </li>
-                    </ul>
-                  }
-                </div>
-              </div>
-            </div>
-          }
-        </div>
-
-        <div class="pagination">
-          <button
-            class="btn btn-secondary btn--sm"
-            type="button"
-            (click)="prevPage()"
-            [disabled]="pageNum() === 1"
-          >
-            ← Previous
-          </button>
-          <span class="pagination__page">Page {{ pageNum() }}</span>
-          <button
-            class="btn btn-secondary btn--sm"
-            type="button"
-            (click)="nextPage()"
-            [disabled]="taxes().length < pageLimit()"
-          >
-            Next →
-          </button>
-        </div>
-      } @else if (!loading()) {
-        <div class="empty-state">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-            <polyline points="14 2 14 8 20 8"></polyline>
-          </svg>
-          <p>{{ 'MESSAGE.NO_DATA_FOUND' | translate }}</p>
-        </div>
+  <ng-template listCellTemplate="name" let-row>
+    <div class="flex items-center gap-2">
+      <span class="font-medium text-slate-900">{{ row.name }}</span>
+      @if (isGroup(row)) {
+        <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">{{ 'SETTINGS.TAX.IS_GROUP' | translate }}</span>
+      }
+      @if (row.default) {
+        <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-teal-50 text-teal-700">{{ 'SETTINGS.BRANCHES.DEFAULT' | translate }}</span>
       }
     </div>
-  </div>
-</div>
+  </ng-template>
+
+  <ng-template listCellTemplate="taxPercentage" let-row>
+    <span class="text-slate-700 tabular-nums">{{ row.taxPercentage }}%</span>
+  </ng-template>
+
+  <ng-template listCellTemplate="taxType" let-row>
+    @if (isGroup(row)) {
+      <span class="text-slate-700">{{ (row.taxType === 'stacked' ? 'SETTINGS.TAX.TYPE_STACKED' : 'SETTINGS.TAX.TYPE_FLAT') | translate }}</span>
+    } @else {
+      <span class="text-slate-400">—</span>
+    }
+  </ng-template>
+
+  <ng-template listRowActions let-row>
+    <div class="inline-flex items-center justify-end gap-2" (click)="$event.stopPropagation()">
+      @if (canEdit(row)) {
+        <button type="button" (click)="editTax(row); $event.stopPropagation()"
+          class="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity px-4 h-9 inline-flex items-center rounded-full bg-brand-600 text-white text-sm font-medium shadow-sm hover:bg-brand-700">
+          {{ 'COMMON.EDIT' | translate }}
+        </button>
+      }
+      <app-dropdown-menu-btn [items]="rowMenu(row)" [appendToBody]="true" [chevron]="false" align="end">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <circle cx="5" cy="12" r="1.75"/><circle cx="12" cy="12" r="1.75"/><circle cx="19" cy="12" r="1.75"/>
+        </svg>
+      </app-dropdown-menu-btn>
+    </div>
+  </ng-template>
+</app-list-page>

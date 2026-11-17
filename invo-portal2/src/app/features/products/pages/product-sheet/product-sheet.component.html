@@ -172,7 +172,7 @@
                   (change)="toggleColumn(entry.header, $any($event.target).checked)"/>
                 {{ entry.header }}
                 @if (entry.column && entry.column.header !== entry.header) {
-                  <span class="text-slate-400">→ {{ entry.column.header }}</span>
+                  <span class="text-slate-400"><span class="ui-icon ui-icon-arrow-right"></span> {{ entry.column.header }}</span>
                 }
               </label>
             }

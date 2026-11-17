@@ -45,7 +45,7 @@ import { VisibleDirective } from '../../../../../shared/directives/visible.direc
             @if (stats()!.sales_figure_change_pct == null || stats()!.sales_figure_change_pct === 0) {
               <span class="muted">{{ 'PRODUCTS.SALES.NO_CHANGE' | translate }}</span>
             } @else {
-              <span class="arrow">{{ arrow(stats()!.sales_figure_change_pct) }}</span>
+              <span class="arrow ui-icon" [class]="arrow(stats()!.sales_figure_change_pct)"></span>
               <span>{{ formatPct(stats()!.sales_figure_change_pct) }}</span>
               <span class="muted">{{ 'PRODUCTS.SALES.FROM_LAST_MONTH' | translate }}</span>
             }
@@ -60,7 +60,7 @@ import { VisibleDirective } from '../../../../../shared/directives/visible.direc
             @if (stats()!.total_sales_change_pct == null || stats()!.total_sales_change_pct === 0) {
               <span class="muted">{{ 'PRODUCTS.SALES.NO_CHANGE' | translate }}</span>
             } @else {
-              <span class="arrow">{{ arrow(stats()!.total_sales_change_pct) }}</span>
+              <span class="arrow ui-icon" [class]="arrow(stats()!.total_sales_change_pct)"></span>
               <span>{{ formatPct(stats()!.total_sales_change_pct) }}</span>
               <span class="muted">{{ 'PRODUCTS.SALES.FROM_LAST_MONTH' | translate }}</span>
             }
@@ -75,7 +75,7 @@ import { VisibleDirective } from '../../../../../shared/directives/visible.direc
             @if (stats()!.units_sold_change_pct == null || stats()!.units_sold_change_pct === 0) {
               <span class="muted">{{ 'PRODUCTS.SALES.NO_CHANGE' | translate }}</span>
             } @else {
-              <span class="arrow">{{ arrow(stats()!.units_sold_change_pct) }}</span>
+              <span class="arrow ui-icon" [class]="arrow(stats()!.units_sold_change_pct)"></span>
               <span>{{ formatPct(stats()!.units_sold_change_pct) }}</span>
               <span class="muted">{{ 'PRODUCTS.SALES.FROM_LAST_MONTH' | translate }}</span>
             }
@@ -179,8 +179,8 @@ export class SalesStatsComponent implements OnInit {
   }
 
   arrow(pct: number | null | undefined): string {
-    if (pct == null || pct === 0) return '→';
-    return pct > 0 ? '↗' : '↘';
+    if (pct == null || pct === 0) return 'ui-icon-arrow-right';
+    return pct > 0 ? 'ui-icon-external' : 'ui-icon-arrow-down-right';
   }
 
   formatPct(pct: number | null | undefined): string {

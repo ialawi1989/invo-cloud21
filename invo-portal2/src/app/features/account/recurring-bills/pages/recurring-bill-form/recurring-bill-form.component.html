@@ -37,7 +37,7 @@
       @if (frozen) { <p class="df-hint">{{ 'RECURRING_BILLS.FORM.LOCKED_HINT' | translate }}</p> }
 
       <button type="button" class="df-link rf-advanced" (click)="advancedOpen = !advancedOpen">
-        {{ 'RECURRING_BILLS.FORM.ADVANCED' | translate }} {{ advancedOpen ? '▴' : '▾' }}
+        {{ 'RECURRING_BILLS.FORM.ADVANCED' | translate }} <span class="ui-chevron" [class.is-open]="advancedOpen"></span>
       </button>
       @if (advancedOpen) {
         <div class="df-row">

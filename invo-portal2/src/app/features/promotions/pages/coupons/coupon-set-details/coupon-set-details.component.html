@@ -137,7 +137,7 @@
     <section class="sd-card">
       <button type="button" class="sd-card__head" (click)="toggleOpen()">
         <span>{{ (view() === 'actionList' ? 'PROMOTIONS.COUPONS.ACTIONS_LIST' : 'PROMOTIONS.COUPONS.COUPONS') | translate }}</span>
-        <span class="sd-chevron" [class.is-open]="open()">&#9662;</span>
+        <span class="sd-chevron ui-chevron" [class.is-open]="open()"></span>
       </button>
       <div class="sd-view">
         <span>{{ 'PROMOTIONS.COUPONS.VIEW' | translate }}</span>

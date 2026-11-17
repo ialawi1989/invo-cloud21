@@ -31,6 +31,16 @@ export function resolveEmployeeName(emp: Employee | null): string {
   );
 }
 
+/** The employee's picture, from whichever field the payload carries (`mediaUrl` is the media-library object). */
+export function resolveAvatarUrl(emp: Employee | null): string | null {
+  if (!emp) return null;
+  const m = emp['mediaUrl'];
+  if (emp.avatar || emp['profileImage']) return emp.avatar || emp['profileImage'];
+  // `defaultUrl` is the one the My Account page shows; it is resized through the media URL's query (as that page does).
+  const url: string | undefined = m && typeof m === 'object' ? m.defaultUrl : undefined;
+  return url ? (url.includes('?') ? url : `${url}?width=96&height=96`) : null;
+}
+
 /** Generate 1–2 letter initials from display name */
 export function resolveInitials(emp: Employee | null): string {
   const name = resolveEmployeeName(emp);

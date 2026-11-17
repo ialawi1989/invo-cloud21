@@ -104,7 +104,7 @@
       <section class="vd-card">
         <button type="button" class="vd-card__head" (click)="toggleHistory()">
           <span>{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.ACTIONS_LIST' | translate }}</span>
-          <span class="vd-chevron" [class.is-open]="historyOpen()">&#9662;</span>
+          <span class="vd-chevron ui-chevron" [class.is-open]="historyOpen()"></span>
         </button>
 
         @if (historyOpen()) {

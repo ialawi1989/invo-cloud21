@@ -36,7 +36,7 @@
   </ng-template>
   <ng-template listCellTemplate="branchName" let-row>
     {{ row.branchName }}
-    @if (row.type === 'Transfer Out' && row.destinationBranchName) { <span class="text-slate-400"> → </span>{{ row.destinationBranchName }} }
+    @if (row.type === 'Transfer Out' && row.destinationBranchName) { <span class="text-slate-400"> <span class="ui-icon ui-icon-arrow-right"></span> </span>{{ row.destinationBranchName }} }
   </ng-template>
   <ng-template listCellTemplate="createdDate" let-row>{{ row.createdDate | date: 'dd/MM/yyyy' }}</ng-template>
 

@@ -44,7 +44,7 @@
             @if (cur?.dirty) {
               <span class="es__badge es__badge--warn">{{ 'PRODUCTS.EMPLOYEE_SERVICES.UNSAVED' | translate }}</span>
             }
-            <span class="es__chev">{{ expandedId() === emp.id ? '&#9650;' : '&#9660;' }}</span>
+            <span class="es__chev ui-chevron" [class.is-open]="expandedId() === emp.id"></span>
           </button>
 
           @if (expandedId() === emp.id) {

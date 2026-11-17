@@ -112,7 +112,7 @@
               @for (c of changesOf(row); track c.column) {
                 <div class="text-slate-600">
                   <span class="font-medium">{{ c.column }}</span>:
-                  <span class="line-through text-slate-400">{{ c.old }}</span> →
+                  <span class="line-through text-slate-400">{{ c.old }}</span> <span class="ui-icon ui-icon-arrow-right"></span>
                   <span class="text-slate-900">{{ c.new }}</span>
                 </div>
               }
@@ -128,10 +128,10 @@
   @if (filteredRows().length > pageSize) {
     <div class="flex items-center justify-end gap-2 text-sm">
       <button type="button" class="px-3 py-1 rounded border border-slate-200 disabled:opacity-40"
-        [disabled]="page() <= 1" (click)="page.set(page() - 1)">‹</button>
+        [disabled]="page() <= 1" (click)="page.set(page() - 1)"><span class="ui-icon ui-icon-chevron-left"></span></button>
       <span class="text-slate-500">{{ page() }} / {{ pageCount() }}</span>
       <button type="button" class="px-3 py-1 rounded border border-slate-200 disabled:opacity-40"
-        [disabled]="page() >= pageCount()" (click)="page.set(page() + 1)">›</button>
+        [disabled]="page() >= pageCount()" (click)="page.set(page() + 1)"><span class="ui-icon ui-icon-chevron-right"></span></button>
     </div>
   }
 </div>

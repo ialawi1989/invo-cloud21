@@ -65,17 +65,17 @@ interface MobileBarItem {
 }
 
 const HEADER_LAYOUTS = [
-  { value: 'logo-left-menu-right', label: 'Logo Left, Menu Right', icon: '◧' },
-  { value: 'logo-center-menu-below', label: 'Logo Center', icon: '◫' },
-  { value: 'logo-left-menu-center', label: 'Logo Left, Menu Center', icon: '◨' },
-  { value: 'minimal', label: 'Minimal', icon: '▭' },
+  { value: 'logo-left-menu-right', label: 'Logo Left, Menu Right', icon: 'ui-icon-layout-left' },
+  { value: 'logo-center-menu-below', label: 'Logo Center', icon: 'ui-icon-layout-center' },
+  { value: 'logo-left-menu-center', label: 'Logo Left, Menu Center', icon: 'ui-icon-layout-right' },
+  { value: 'minimal', label: 'Minimal', icon: 'ui-icon-layout-minimal' },
 ];
 
 const FOOTER_LAYOUTS = [
-  { value: '4-columns', label: '4 Columns', icon: '▣▣▣▣' },
-  { value: '3-columns', label: '3 Columns', icon: '▣▣▣' },
-  { value: '2-columns', label: '2 Columns', icon: '▣▣' },
-  { value: 'centered', label: 'Centered', icon: '◯' },
+  { value: '4-columns', label: '4 Columns', icon: 'ui-icon-columns-4' },
+  { value: '3-columns', label: '3 Columns', icon: 'ui-icon-columns-3' },
+  { value: '2-columns', label: '2 Columns', icon: 'ui-icon-columns-2' },
+  { value: 'centered', label: 'Centered', icon: 'ui-icon-layout-circle' },
 ];
 
 // Static page schemas
@@ -232,8 +232,8 @@ const STATIC_PAGE_SCHEMAS: Record<string, any> = {
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
                     <span>{{ getComponentName(comp.type) }}</span>
                     <div class="item-actions">
-                      <button (click)="moveComponent(comp.id, 'up'); $event.stopPropagation()">↑</button>
-                      <button (click)="moveComponent(comp.id, 'down'); $event.stopPropagation()">↓</button>
+                      <button (click)="moveComponent(comp.id, 'up'); $event.stopPropagation()"><span class="ui-icon ui-icon-arrow-up"></span></button>
+                      <button (click)="moveComponent(comp.id, 'down'); $event.stopPropagation()"><span class="ui-icon ui-icon-arrow-down"></span></button>
                       <button class="del" (click)="removeComponent(comp.id); $event.stopPropagation()">×</button>
                     </div>
                   </div>
@@ -256,7 +256,7 @@ const STATIC_PAGE_SCHEMAS: Record<string, any> = {
             <!-- Theme Manager Button -->
             <div class="theme-trigger">
               <button class="theme-btn" (click)="openThemeManager()">
-                <div class="theme-icon">🎨</div>
+                <div class="theme-icon"><span class="ui-icon ui-icon-sparkle"></span></div>
                 <div class="theme-info">
                   <strong>Theme Manager</strong>
                   <span>Browse themes & templates</span>
@@ -278,7 +278,7 @@ const STATIC_PAGE_SCHEMAS: Record<string, any> = {
                     <div class="layout-options">
                       @for (layout of headerLayouts; track layout.value) {
                         <button class="layout-btn" [class.selected]="headerSettings.layout === layout.value" (click)="headerSettings.layout = layout.value; onSettingsChange()">
-                          <span class="layout-icon">{{ layout.icon }}</span>
+                          <span class="layout-icon ui-icon" [class]="layout.icon"></span>
                           <span>{{ layout.label }}</span>
                         </button>
                       }
@@ -340,7 +340,7 @@ const STATIC_PAGE_SCHEMAS: Record<string, any> = {
                     <div class="layout-options">
                       @for (layout of footerLayouts; track layout.value) {
                         <button class="layout-btn" [class.selected]="footerSettings.layout === layout.value" (click)="footerSettings.layout = layout.value; onSettingsChange()">
-                          <span class="layout-icon">{{ layout.icon }}</span>
+                          <span class="layout-icon ui-icon" [class]="layout.icon"></span>
                           <span>{{ layout.label }}</span>
                         </button>
                       }
@@ -415,8 +415,8 @@ const STATIC_PAGE_SCHEMAS: Record<string, any> = {
                           <div class="item-icon" [innerHTML]="item.icon"></div>
                           <span class="item-name">{{ item.name }}</span>
                           <div class="item-order">
-                            <button (click)="moveMobileItem(i, 'up')" [disabled]="i === 0">↑</button>
-                            <button (click)="moveMobileItem(i, 'down')" [disabled]="i === mobileBarItems.length - 1">↓</button>
+                            <button (click)="moveMobileItem(i, 'up')" [disabled]="i === 0"><span class="ui-icon ui-icon-arrow-up"></span></button>
+                            <button (click)="moveMobileItem(i, 'down')" [disabled]="i === mobileBarItems.length - 1"><span class="ui-icon ui-icon-arrow-down"></span></button>
                           </div>
                         </div>
                       }

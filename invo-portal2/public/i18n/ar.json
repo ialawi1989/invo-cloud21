@@ -569,6 +569,7 @@
     "RESULTS": "النتائج",
     "QUICK_ACCESS": "وصول سريع",
     "NO_RESULTS": "لا توجد صفحات أو إعدادات مطابقة لـ",
+    "SHOWING_FOR": "عرض النتائج لـ",
     "FOUND_IN_PAGE": "موجود في الصفحة",
     "HINT_NAV": "للتنقل",
     "HINT_OPEN": "للفتح",
@@ -709,6 +710,9 @@
     "FORBIDDEN_REQUEST_PENDING": "لديك طلب معلق لهذه الصفحة. سيقوم المسؤول بمراجعته.",
     "FORBIDDEN_REQUEST_DONE": "تم إرسال الطلب",
     "FORBIDDEN_REQUEST_FAILED": "تعذّر إرسال الطلب. يرجى المحاولة مرة أخرى.",
+    "FEATURE_REQUEST_TITLE": "الميزة غير متاحة لحسابك",
+    "FEATURE_REQUEST_DESC": "{{page}} ليست ضمن باقتك الحالية.",
+    "FEATURE_REQUEST_HINT": "تواصل مع INVO لتفعيلها لحسابك.",
     "FEATURE_UNAVAILABLE_TITLE": "الميزة غير متاحة",
     "FEATURE_UNAVAILABLE_DESC": "هذه الميزة غير مدرجة في خطتك الحالية.",
     "FEATURE_UNAVAILABLE_HINT": "تواصل مع المسؤول أو قم بترقية خطتك لفتح هذه الميزة."

@@ -592,14 +592,14 @@ interface LocalView {
       <div class="chips">
         @if (activeSort()) {
           <span class="chip">
-            Sort: {{ getSortName() }} {{ activeSort()!.dir === 'asc' ? 'A→Z' : 'Z→A' }}
-            <button class="chip-x" (click)="clearSort()">✕</button>
+            Sort: {{ getSortName() }} {{ activeSort()!.dir === 'asc' ? 'A to Z' : 'Z to A' }}
+            <button class="chip-x" (click)="clearSort()"><span class="ui-icon ui-icon-x"></span></button>
           </span>
         }
         @if (activeFilter()) {
           <span class="chip">
             {{ getFilterName() }} {{ activeFilter()!.condition }} "{{ activeFilter()!.value }}"
-            <button class="chip-x" (click)="clearFilter()">✕</button>
+            <button class="chip-x" (click)="clearFilter()"><span class="ui-icon ui-icon-x"></span></button>
           </span>
         }
       </div>
@@ -780,11 +780,11 @@ interface LocalView {
                                 @if (!['image','boolean','rich-text'].includes(field.type)) {
                                   <button class="cmi" (click)="colMenuSort(field, 'asc')">
                                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="3" y1="6" x2="21" y2="6"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="9" y1="18" x2="15" y2="18"/></svg>
-                                    Sort A → Z
+                                    Sort A to Z
                                   </button>
                                   <button class="cmi" (click)="colMenuSort(field, 'desc')">
                                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="3" y1="18" x2="21" y2="18"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="9" y1="6" x2="15" y2="6"/></svg>
-                                    Sort Z → A
+                                    Sort Z to A
                                   </button>
                                 }
 

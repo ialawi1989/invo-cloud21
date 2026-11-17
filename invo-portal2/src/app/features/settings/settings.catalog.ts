@@ -162,6 +162,8 @@ export const SETTINGS_GROUPS: SettingGroup[] = [
     items: [
       { label: 'SETTINGS.ITEMS.MANAGE_TAX', description: 'SETTINGS.ITEMS.MANAGE_TAX_DESC', link: '/settings/tax', privilege: 'taxSecurity.actions.view.access',
         i18nPrefix: 'SETTINGS.TAX' },
+      { label: 'SETTINGS.ITEMS.TAX_DETAILS', description: 'SETTINGS.ITEMS.TAX_DETAILS_DESC', link: '/settings/tax-details', privilege: 'companySettingsSecurity.actions.businessSettings.access',
+        i18nPrefix: 'SETTINGS.BUSINESS' },
     ],
   },
   {

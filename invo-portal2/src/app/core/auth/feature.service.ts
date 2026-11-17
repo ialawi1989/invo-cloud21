@@ -8,7 +8,8 @@ export class FeatureService {
 
   /** Set features from a string array (e.g. ['PROMOTIONS', 'DELIVERY']) */
   setFeatures(features: string[]): void {
-    this.features$.set(new Set(features));
+    // The backend matches feature keys case-insensitively (CompanyRepo.isFeatureEnabled); so do we.
+    this.features$.set(new Set((features ?? []).map(f => String(f).toLowerCase())));
   }
 
   clearFeatures(): void {
@@ -24,16 +25,16 @@ export class FeatureService {
    * is "any-match": true as soon as one entry is enabled.
    */
   isEnabled(feature: string | string[]): boolean {
-    if (Array.isArray(feature)) return feature.some(f => this.features$().has(f));
-    return this.features$().has(feature);
+    if (Array.isArray(feature)) return feature.some(f => this.features$().has(f.toLowerCase()));
+    return this.features$().has(feature.toLowerCase());
   }
 
   /** Computed signal — reactive in templates. Same any-match semantics as
    *  `isEnabled` for a list. */
   isEnabled$ = (feature: string | string[]) => computed(() =>
     Array.isArray(feature)
-      ? feature.some(f => this.features$().has(f))
-      : this.features$().has(feature),
+      ? feature.some(f => this.features$().has(f.toLowerCase()))
+      : this.features$().has(feature.toLowerCase()),
   );
 
   /** All enabled features as array */

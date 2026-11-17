@@ -33,6 +33,8 @@ export class ReportPageShellComponent {
   /** Show the favourite star. */
   showFavorite = input(true);
   favorite = input(false);
+  /** Hide the Back / Browse Reports buttons (pages that are not part of the reports catalog). */
+  showNav = input(true);
   /** Spin the refresh icon. */
   spinning = input(false);
 

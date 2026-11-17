@@ -48,10 +48,10 @@ interface Row extends SupplierItem { selected?: boolean }
           <thead>
             <tr>
               <th class="si__chk"><input type="checkbox" [checked]="allOnPage()" (change)="toggleAll()"/></th>
-              <th class="si__sort" (click)="sort('productName')">{{ 'SUPPLIERS.ITEMS.PRODUCT' | translate }}{{ arrow('productName') }}</th>
-              <th class="si__sort" (click)="sort('supplierCode')">{{ 'SUPPLIERS.ITEMS.SUPPLIER_CODE' | translate }}{{ arrow('supplierCode') }}</th>
-              <th class="si__sort end" (click)="sort('minimumOrder')">{{ 'SUPPLIERS.ITEMS.MINIMUM_ORDER' | translate }}{{ arrow('minimumOrder') }}</th>
-              <th class="si__sort end" (click)="sort('cost')">{{ 'SUPPLIERS.ITEMS.UNIT_COST' | translate }}{{ arrow('cost') }}</th>
+              <th class="si__sort" (click)="sort('productName')">{{ 'SUPPLIERS.ITEMS.PRODUCT' | translate }}@if (arrow('productName')) { <span class="ui-icon" [class]="arrow('productName')"></span> }</th>
+              <th class="si__sort" (click)="sort('supplierCode')">{{ 'SUPPLIERS.ITEMS.SUPPLIER_CODE' | translate }}@if (arrow('supplierCode')) { <span class="ui-icon" [class]="arrow('supplierCode')"></span> }</th>
+              <th class="si__sort end" (click)="sort('minimumOrder')">{{ 'SUPPLIERS.ITEMS.MINIMUM_ORDER' | translate }}@if (arrow('minimumOrder')) { <span class="ui-icon" [class]="arrow('minimumOrder')"></span> }</th>
+              <th class="si__sort end" (click)="sort('cost')">{{ 'SUPPLIERS.ITEMS.UNIT_COST' | translate }}@if (arrow('cost')) { <span class="ui-icon" [class]="arrow('cost')"></span> }</th>
             </tr>
           </thead>
           <tbody>
@@ -74,9 +74,9 @@ interface Row extends SupplierItem { selected?: boolean }
         <select class="si__limit" [ngModel]="limit" (ngModelChange)="onLimit($event)" [ngModelOptions]="{ standalone: true }">
           @for (n of [10, 25, 50, 100]; track n) { <option [value]="n">{{ n }}</option> }
         </select>
-        <button type="button" class="si__btn" [disabled]="page <= 1" (click)="go(page - 1)">‹</button>
+        <button type="button" class="si__btn" [disabled]="page <= 1" (click)="go(page - 1)"><span class="ui-icon ui-icon-chevron-left"></span></button>
         <span>{{ page }} / {{ pageCount() }}</span>
-        <button type="button" class="si__btn" [disabled]="page >= pageCount()" (click)="go(page + 1)">›</button>
+        <button type="button" class="si__btn" [disabled]="page >= pageCount()" (click)="go(page + 1)"><span class="ui-icon ui-icon-chevron-right"></span></button>
       </div>
     </section>
   `,
@@ -151,7 +151,7 @@ export class SupplierItemsCardComponent implements OnInit {
     else this.sortBy = {};
     void this.load();
   }
-  arrow(col: string): string { return this.sortBy.sortValue === col ? (this.sortBy.sortDirection === 'asc' ? ' ↑' : ' ↓') : ''; }
+  arrow(col: string): string { return this.sortBy.sortValue === col ? (this.sortBy.sortDirection === 'asc' ? 'ui-icon-arrow-up' : 'ui-icon-arrow-down') : ''; }
 
   // ── selection ──────────────────────────────────────────────────────
   allOnPage = () => this.rows().length > 0 && this.rows().every(r => this.selected().has(r.productId));

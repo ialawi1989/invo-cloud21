@@ -7,6 +7,7 @@ import { FeatureService } from '../../core/auth/feature.service';
 import { SafeHtmlPipe } from '../../core/pipes/safe-html.pipe';
 import { ModalService } from '../../shared/modal/modal.service';
 import { withTranslations } from '../../core/i18n/with-translations';
+import { SegmentedToggleComponent, SegmentedToggleOption } from '../../shared/components/segmented-toggle/segmented-toggle.component';
 import { SETTINGS_GROUPS, SettingGroup, SettingItem } from './settings.catalog';
 
 
@@ -48,7 +49,7 @@ function levenshtein(a: string, b: string, budget: number): number {
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslateModule, SafeHtmlPipe],
+  imports: [CommonModule, RouterModule, TranslateModule, SafeHtmlPipe, SegmentedToggleComponent],
   template: `
     <div class="settings-page">
 
@@ -60,7 +61,8 @@ function levenshtein(a: string, b: string, budget: number): number {
         </div>
       </div>
 
-      <!-- Search -->
+      <!-- Search + view switch -->
+      <div class="toolbar">
       <div class="search-bar">
         <svg class="search-bar__icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
              stroke="currentColor" stroke-width="2">
@@ -83,6 +85,8 @@ function levenshtein(a: string, b: string, budget: number): number {
           </button>
         }
       </div>
+      <app-segmented-toggle [options]="viewOptions" [value]="viewMode()" (valueChange)="setView($event)" size="sm"/>
+      </div>
 
       <!-- Did-you-mean hint — rendered only when the typed query
            returned no results AND we found a similar word in the
@@ -94,6 +98,32 @@ function levenshtein(a: string, b: string, budget: number): number {
         </p>
       }
 
+      <!-- One row template shared by both views -->
+      <ng-template #rows let-group>
+        @for (item of group.items; track item.label) {
+          @if (canAccess(item)) {
+            @if (item.link) {
+              <a [routerLink]="item.link" [queryParams]="item.queryParams ?? null" class="setting-item">
+                <div class="item-text">
+                  <span class="item-label">{{ item.label | translate }}</span>
+                  <span class="item-desc">{{ item.description | translate }}</span>
+                </div>
+                <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </a>
+            } @else if (item.popup) {
+              <button class="setting-item setting-item--btn" (click)="openPopup(item.popup)">
+                <div class="item-text">
+                  <span class="item-label">{{ item.label | translate }}</span>
+                  <span class="item-desc">{{ item.description | translate }}</span>
+                </div>
+                <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+            }
+          }
+        }
+      </ng-template>
+
+      @if (viewMode() === 'grid') {
       <!-- Groups grid -->
       <div class="groups-grid">
         @for (group of filteredGroups(); track group.id) {
@@ -108,40 +138,36 @@ function levenshtein(a: string, b: string, budget: number): number {
                 </div>
                 <h3 class="group-title">{{ group.title | translate }}</h3>
               </div>
-
               <div class="group-items">
-                @for (item of group.items; track item.label) {
-                  @if (canAccess(item)) {
-                    @if (item.link) {
-                      <a [routerLink]="item.link" [queryParams]="item.queryParams ?? null" class="setting-item">
-                        <div class="item-text">
-                          <span class="item-label">{{ item.label | translate }}</span>
-                          <span class="item-desc">{{ item.description | translate }}</span>
-                        </div>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                             stroke="#cbd5e1" stroke-width="2">
-                          <polyline points="9 18 15 12 9 6"/>
-                        </svg>
-                      </a>
-                    } @else if (item.popup) {
-                      <button class="setting-item setting-item--btn" (click)="openPopup(item.popup)">
-                        <div class="item-text">
-                          <span class="item-label">{{ item.label | translate }}</span>
-                          <span class="item-desc">{{ item.description | translate }}</span>
-                        </div>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                             stroke="#cbd5e1" stroke-width="2">
-                          <polyline points="9 18 15 12 9 6"/>
-                        </svg>
-                      </button>
-                    }
-                  }
-                }
+                <ng-container *ngTemplateOutlet="rows; context: { $implicit: group }"/>
               </div>
             </div>
           }
         }
       </div>
+      } @else {
+      <!-- Groups list: a heading per group, then one card of rows -->
+      <div class="groups-list">
+        @for (group of filteredGroups(); track group.id) {
+          @if (group.items.length > 0) {
+            <section class="list-group">
+              <div class="list-group__head">
+                <div class="group-icon" [style.background]="group.color + '18'">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                       [style.stroke]="group.color" stroke-width="2"
+                       stroke-linecap="round" stroke-linejoin="round"
+                       [innerHTML]="group.icon | safeHtml"></svg>
+                </div>
+                <h2 class="list-group__title">{{ group.title | translate }}</h2>
+              </div>
+              <div class="list-group__card">
+                <ng-container *ngTemplateOutlet="rows; context: { $implicit: group }"/>
+              </div>
+            </section>
+          }
+        }
+      </div>
+      }
 
     </div>
   `,
@@ -151,6 +177,9 @@ function levenshtein(a: string, b: string, budget: number): number {
     .page-header { margin-bottom: 20px; }
     .page-title  { font-size: 22px; font-weight: 700; color: #1e293b; margin: 0 0 4px; }
     .page-sub    { font-size: 14px; color: #64748b; margin: 0; }
+
+    .toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; flex-wrap: wrap; }
+    .toolbar .search-bar { flex: 1 1 280px; margin-bottom: 0; }
 
     .search-bar {
       display: flex; align-items: center; gap: 10px;
@@ -237,6 +266,19 @@ function levenshtein(a: string, b: string, budget: number): number {
     .group-title { font-size: 14px; font-weight: 600; color: #1e293b; margin: 0; }
 
     .group-items { padding: 4px 0 8px; }
+
+    /* List view */
+    .groups-list { display: flex; flex-direction: column; gap: 28px; margin-top: 16px; }
+    .list-group__head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .list-group__title { font-size: 17px; font-weight: 600; color: #0f172a; margin: 0; }
+    .list-group__card {
+      background: #fff; border-radius: 14px; padding: 6px 0;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, .06), 0 4px 14px rgba(15, 23, 42, .04);
+    }
+    .list-group__card .setting-item { padding: 14px 22px; }
+    .list-group__card .item-label { font-size: 14px; color: #0f172a; }
+    .list-group__card .item-desc  { font-size: 13px; color: #64748b; white-space: normal; }
+    :host-context([dir='rtl']) .chev { transform: scaleX(-1); }
     .setting-item {
       display: flex; align-items: center; gap: 12px;
       padding: 11px 18px; text-decoration: none;
@@ -266,6 +308,20 @@ export class SettingsComponent {
   private translateSvc     = inject(TranslateService);
 
   constructor() { withTranslations('settings'); }
+
+  /** How the tiles are laid out: a plain list (default) or the card grid. A per-viewer convenience, so it is remembered in the browser only. */
+  readonly viewOptions: SegmentedToggleOption<'list' | 'grid'>[] = [
+    { value: 'list', label: 'SETTINGS.VIEW_LIST', icon: '<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/>' },
+    { value: 'grid', label: 'SETTINGS.VIEW_GRID', icon: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>' },
+  ];
+  viewMode = signal<'list' | 'grid'>(this.readView());
+  setView(v: 'list' | 'grid'): void {
+    this.viewMode.set(v);
+    try { localStorage.setItem('settings.view', v); } catch { /* private mode: the choice just isn't remembered */ }
+  }
+  private readView(): 'list' | 'grid' {
+    try { return localStorage.getItem('settings.view') === 'grid' ? 'grid' : 'list'; } catch { return 'list'; }
+  }
 
   private searchQuery = signal('');
   /** Public read-only view bound to the search input's `[value]`, so

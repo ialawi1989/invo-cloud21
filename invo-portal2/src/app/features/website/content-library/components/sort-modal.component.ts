@@ -73,14 +73,14 @@ export interface SortResult {
       <button class="dir-row" [class.on]="sortDir === 'asc'" (click)="sortDir = 'asc'">
         <div class="dir-radio"><div class="dir-dot" [style.opacity]="sortDir==='asc'?1:0"></div></div>
         <div class="dir-info">
-          <div class="dir-name">A → Z (Ascending)</div>
+          <div class="dir-name">A to Z (Ascending)</div>
           <div class="dir-sub">Smallest or earliest first</div>
         </div>
       </button>
       <button class="dir-row" [class.on]="sortDir === 'desc'" (click)="sortDir = 'desc'">
         <div class="dir-radio"><div class="dir-dot" [style.opacity]="sortDir==='desc'?1:0"></div></div>
         <div class="dir-info">
-          <div class="dir-name">Z → A (Descending)</div>
+          <div class="dir-name">Z to A (Descending)</div>
           <div class="dir-sub">Largest or most recent first</div>
         </div>
       </button>

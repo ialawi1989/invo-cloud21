@@ -59,8 +59,8 @@ export const FALLBACK_MANIFEST: PageTypeManifest = {
             options: [
               { title: '- Select -',       value: '' },
               { title: 'Name',             value: 'name' },
-              { title: 'Price low → high', value: 'priceAsc' },
-              { title: 'Price high → low', value: 'priceDesc' },
+              { title: 'Price: low to high', value: 'priceAsc' },
+              { title: 'Price: high to low', value: 'priceDesc' },
               { title: 'Newest',           value: 'newest' },
             ],
           },

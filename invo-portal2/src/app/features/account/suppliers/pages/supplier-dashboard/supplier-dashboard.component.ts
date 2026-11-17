@@ -415,7 +415,7 @@ export class SupplierDashboardComponent implements OnInit, OnDestroy {
     this.items.update(s => ({ ...s, page: 1 }));
     void this.loadItems();
   }
-  arrow(col: string): string { const s = this.itemSort(); return s.sortValue === col ? (s.sortDirection === 'asc' ? ' ↑' : ' ↓') : ''; }
+  arrow(col: string): string { const s = this.itemSort(); return s.sortValue === col ? (s.sortDirection === 'asc' ? 'ui-icon-arrow-up' : 'ui-icon-arrow-down') : ''; }
 
   itemsExportMenu = (): DropdownMenuBtnItem[] => [
     { label: 'CSV', click: () => void this.reports.exportPath('getsupplieritems', 'csv', { supplierId: this.supplierId }, 'supplier-items'), disabled: false, danger: false },

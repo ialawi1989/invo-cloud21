@@ -1,3 +1,4 @@
+import { EmojiIconComponent } from '@shared/components/emoji-icon/emoji-icon.component';
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -8,12 +9,12 @@ import { ContentLibraryService } from '../services/content-library.service';
 @Component({
   selector: 'app-new-collection-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, EmojiIconComponent],
   template: `
     <div style="min-width:360px">
       <div style="padding:20px 24px 14px;border-bottom:1px solid #f0f2f5;display:flex;align-items:center;justify-content:space-between">
         <h3 style="font-size:16px;font-weight:600;color:#111827;margin:0">New Collection</h3>
-        <button (click)="ref.dismiss()" style="border:none;background:transparent;cursor:pointer;color:#9ca3af;font-size:18px;line-height:1">✕</button>
+        <button (click)="ref.dismiss()" style="border:none;background:transparent;cursor:pointer;color:#9ca3af;font-size:18px;line-height:1"><span class="ui-icon ui-icon-x"></span></button>
       </div>
       <div style="padding:20px 24px">
         <div style="margin-bottom:16px">
@@ -38,7 +39,7 @@ import { ContentLibraryService } from '../services/content-library.service';
                       [style.border]="icon===ic ? '2px solid #32acc1' : '1.5px solid #e5e7eb'"
                       [style.background]="icon===ic ? '#e6f7f9' : '#fff'"
                       style="width:36px;height:36px;border-radius:8px;font-size:18px;cursor:pointer;transition:.12s">
-                {{ ic }}
+                <app-emoji-icon [value]="ic"/>
               </button>
             }
           </div>

@@ -22,8 +22,8 @@
 }
 
 <div class="ts-wrap" [class.can-left]="canLeft()" [class.can-right]="canRight()">
-  <button type="button" class="ts-arrow ts-arrow-start" [disabled]="!canLeft()" (click)="scrollBy('start')" [attr.aria-label]="'REPORTS.BO.SCROLL_START' | translate">‹</button>
-  <button type="button" class="ts-arrow ts-arrow-end" [disabled]="!canRight()" (click)="scrollBy('end')" [attr.aria-label]="'REPORTS.BO.SCROLL_END' | translate">›</button>
+  <button type="button" class="ts-arrow ts-arrow-start" [disabled]="!canLeft()" (click)="scrollBy('start')" [attr.aria-label]="'REPORTS.BO.SCROLL_START' | translate"><span class="ui-icon ui-icon-chevron-left"></span></button>
+  <button type="button" class="ts-arrow ts-arrow-end" [disabled]="!canRight()" (click)="scrollBy('end')" [attr.aria-label]="'REPORTS.BO.SCROLL_END' | translate"><span class="ui-icon ui-icon-chevron-right"></span></button>
   <div class="ts-scroll" #scroller (scroll)="update()">
     <ng-content />
   </div>

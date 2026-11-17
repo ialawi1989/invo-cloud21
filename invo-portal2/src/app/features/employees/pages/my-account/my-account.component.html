@@ -9,7 +9,10 @@
   @if (loading()) {
     <app-form-skeleton />
   } @else {
+    <app-segmented-toggle class="tabs" [options]="tabs" [value]="tab()" (valueChange)="setTab($event)"/>
+
     <!-- ═══ Profile ═══ -->
+    @if (tab() === 'profile') {
     <section class="card">
       <header class="card__head">
         <h2 class="card__title">{{ 'EMPLOYEES.FORM.BASIC_INFORMATION' | translate }}</h2>
@@ -33,20 +36,13 @@
           </div>
 
           <div class="avatar-row__actions">
-            <label class="btn btn-ghost btn-sm" for="ma-avatar">
+            <button type="button" class="btn btn-ghost btn-sm" (click)="chooseAvatar()">
               @if (avatarPreview() || original()?.mediaUrl?.defaultUrl) {
                 {{ 'EMPLOYEES.FORM.REPLACE_IMAGE' | translate }}
               } @else {
                 {{ 'EMPLOYEES.FORM.CHOOSE_IMAGE' | translate }}
               }
-            </label>
-            <input
-              id="ma-avatar"
-              class="visually-hidden"
-              type="file"
-              accept="image/*"
-              (change)="onAvatarPicked($event)"
-            />
+            </button>
           </div>
         </div>
 
@@ -89,8 +85,10 @@
         </div>
       </div>
     </section>
+    }
 
     <!-- ═══ Security ═══ -->
+    @if (tab() === 'security') {
     <section class="card">
       <header class="card__head">
         <h2 class="card__title">{{ 'EMPLOYEES.MY_ACCOUNT.SECURITY' | translate }}</h2>
@@ -177,8 +175,49 @@
         </div>
       </div>
     </section>
+    }
+
+    <!-- ═══ Preferences (saved to the employee's options) ═══ -->
+    @if (tab() === 'preferences') {
+    <section class="card">
+      <header class="card__head">
+        <h2 class="card__title">{{ 'EMPLOYEES.MY_ACCOUNT.PREFERENCES' | translate }}</h2>
+        <p class="card__sub">{{ 'EMPLOYEES.MY_ACCOUNT.PREFERENCES_DESC' | translate }}</p>
+      </header>
+
+      <div class="card__body">
+        <div class="grid grid--2">
+          <div class="field">
+            <label class="field-label">{{ 'EMPLOYEES.MY_ACCOUNT.PREF_TIMEZONE' | translate }}</label>
+            <app-search-dropdown [items]="timezoneItems" [displayWith]="timezoneLabel" [compareWith]="sameItem" [clearable]="false"
+              [value]="{ value: prefs().timezone ?? '' }" (valueChange)="setPref('timezone', $any($event)?.value || undefined)"/>
+          </div>
+          <div class="field">
+            <label class="field-label">{{ 'EMPLOYEES.MY_ACCOUNT.PREF_LANGUAGE' | translate }}</label>
+            <app-search-dropdown [items]="languageItems" [displayWith]="languageLabel" [compareWith]="sameItem" [searchable]="false" [clearable]="false"
+              [value]="{ value: prefs().language ?? '' }" (valueChange)="setPref('language', $any($event)?.value || undefined)"/>
+          </div>
+          <div class="field">
+            <label class="field-label">{{ 'EMPLOYEES.MY_ACCOUNT.PREF_DATE_FORMAT' | translate }}</label>
+            <app-search-dropdown [items]="dateFormatItems" [displayWith]="dateFormatLabel" [compareWith]="sameItem" [searchable]="false" [clearable]="false"
+              [value]="{ value: prefs().dateFormat ?? '' }" (valueChange)="setPref('dateFormat', $any($event)?.value || undefined)"/>
+            <p class="field-hint">{{ 'EMPLOYEES.MY_ACCOUNT.PREF_DATE_FORMAT_HINT' | translate }}</p>
+          </div>
+          <div class="field">
+            <label class="field-label">{{ 'EMPLOYEES.MY_ACCOUNT.PREF_TIME_FORMAT' | translate }}</label>
+            <app-segmented-toggle [options]="timeFormatOptions" [value]="prefs().timeFormat ?? '24h'" (valueChange)="setPref('timeFormat', $event)"/>
+          </div>
+          <div class="field">
+            <label class="field-label">{{ 'EMPLOYEES.MY_ACCOUNT.PREF_WEEK_START' | translate }}</label>
+            <app-segmented-toggle [options]="weekStartOptions" [value]="'' + (prefs().firstDayOfWeek ?? 0)" (valueChange)="setPref('firstDayOfWeek', +$event)"/>
+          </div>
+        </div>
+      </div>
+    </section>
+    }
 
     <!-- ═══ Account info (read-only) ═══ -->
+    @if (tab() === 'info') {
     <section class="card">
       <header class="card__head">
         <h2 class="card__title">{{ 'EMPLOYEES.MY_ACCOUNT.ACCOUNT_INFO' | translate }}</h2>
@@ -213,6 +252,7 @@
         }
       </div>
     </section>
+    }
   }
 
   <app-loading-overlay [show]="saving()" [message]="saveLabel()"/>

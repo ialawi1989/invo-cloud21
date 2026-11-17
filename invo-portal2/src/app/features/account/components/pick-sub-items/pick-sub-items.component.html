@@ -14,7 +14,7 @@
             <span class="psi__hint">{{ (isUnlimited(level) ? 'SUB_ITEMS.CHOOSE_ANY' : 'SUB_ITEMS.CHOOSE_N') | translate: { count: level.required } }}</span>
           </div>
           <span class="psi__count" [class.psi__count--done]="levelComplete(level)">
-            @if (levelComplete(level)) { ✓ }
+            @if (levelComplete(level)) { <span class="ui-icon ui-icon-check"></span> }
             {{ selectedCount(level) }}@if (!isUnlimited(level)) { / {{ level.required }} }
           </span>
         </header>
@@ -27,7 +27,7 @@
             @if (!optionsOnly) {
               <div class="psi__card" [class.psi__card--static]="!isMenuSelection" (click)="toggleItem(level, item)">
                 @if (isMenuSelection) {
-                  <span class="psi__radio" [class.psi__radio--square]="level.required !== 1" [class.psi__radio--on]="item.selected">✓</span>
+                  <span class="psi__radio" [class.psi__radio--square]="level.required !== 1" [class.psi__radio--on]="item.selected"><span class="ui-icon ui-icon-check"></span></span>
                 }
                 @if (item.mediaUrl && !item.imgFailed) {
                   <img class="psi__img" [src]="item.mediaUrl" [alt]="item.name" (error)="item.imgFailed = true"/>
@@ -63,7 +63,7 @@
                               <span>{{ option.qty }}</span>
                               <button type="button" [disabled]="option.qty >= option.maxQty" (click)="increaseDefault(option)">+</button>
                             </div>
-                            <button type="button" class="psi__rm" [appTooltip]="'SUB_ITEMS.REMOVE' | translate" (click)="removeDefault(option)">✕</button>
+                            <button type="button" class="psi__rm" [appTooltip]="'SUB_ITEMS.REMOVE' | translate" (click)="removeDefault(option)"><span class="ui-icon ui-icon-x"></span></button>
                           } @else {
                             <button type="button" class="psi__add" (click)="increaseDefault(option)">+ {{ 'SUB_ITEMS.ADD' | translate }}</button>
                           }
@@ -97,7 +97,7 @@
                               <span>{{ option.name }}</span>
                               @if (option.price && showPrices) { <small class="psi__price-add">+ {{ option.price | mycurrency }}</small> }
                             </div>
-                            <span class="psi__tick">✓</span>
+                            <span class="psi__tick"><span class="ui-icon ui-icon-check"></span></span>
                           </div>
                         }
                       </div>
@@ -122,7 +122,7 @@
                             <span>{{ option.name }}</span>
                             @if (option.price && showPrices) { <small class="psi__price-add">+ {{ option.price | mycurrency }}</small> }
                           </div>
-                          <span class="psi__tick">✓</span>
+                          <span class="psi__tick"><span class="ui-icon ui-icon-check"></span></span>
                         </div>
                       }
                     </div>

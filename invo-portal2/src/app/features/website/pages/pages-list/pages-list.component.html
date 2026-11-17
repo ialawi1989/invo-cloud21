@@ -49,7 +49,7 @@
         </span>
       } @else if (row.status === 'redirect') {
         <span class="shrink-0 rounded-full bg-violet-100 px-2 py-0.5 text-[11px] font-semibold text-violet-700">
-          {{ 'WEBSITE.PAGES.STATUS_REDIRECT' | translate }} → /{{ row.redirectTo }}
+          {{ 'WEBSITE.PAGES.STATUS_REDIRECT' | translate }} <span class="ui-icon ui-icon-arrow-right"></span> /{{ row.redirectTo }}
         </span>
       }
     </span>

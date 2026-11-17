@@ -128,7 +128,7 @@
               >
                 {{ h.label }}
                 @if (h.sortDir) {
-                  <span class="sort-icon">{{ h.sortDir === 'asc' ? '▲' : '▼' }}</span>
+                  <span class="sort-icon ui-chevron" [class.is-up]="h.sortDir === 'asc'"></span>
                 }
               </th>
             }

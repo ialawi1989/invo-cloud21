@@ -55,22 +55,27 @@
   display: flex; align-items: center; gap: 12px; width: 100%; padding: 8px 10px;
   background: transparent; border: none; border-radius: 9px; cursor: pointer;
   font-family: inherit; text-align: start; color: #2a3042;
-  &--active { background: #eef1ff; .gs-item__enter { opacity: 1; } }
+  &--active { background: var(--color-brand-50, #effbfd); .gs-item__enter { opacity: 1; } }
 }
 .gs-item__icon {
   width: 30px; height: 30px; flex-shrink: 0; border-radius: 8px;
   display: flex; align-items: center; justify-content: center;
-  background: #eef1ff; color: #556ee6;
-  &--setting { background: #e6f7f7; color: #32acc1; }
+  background: var(--color-brand-50, #effbfd); color: var(--color-brand-600, #2691a4);
+  &--setting { background: var(--color-brand-100, #d6f4f8); color: var(--color-brand-600, #2691a4); }
 }
 .gs-item__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
 .gs-item__title { font-size: 14px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .gs-item__crumb { font-size: 12px; color: #94a3b8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.gs-item__snippet { font-size: 12px; color: #556ee6; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gs-item__snippet { font-size: 12px; color: var(--color-brand-600, #2691a4); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .gs-item__enter { flex-shrink: 0; color: #9ca3af; opacity: 0; }
 :host-context([dir='rtl']) .gs-item__enter { transform: scaleX(-1); }
 
 .gs-empty { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 36px 16px; color: #94a3b8; p { margin: 0; font-size: 14px; } }
+
+.gs-didyoumean {
+  padding: 8px 14px 2px; font-size: 12.5px; color: #64748b;
+  button { all: unset; cursor: pointer; font-weight: 600; color: var(--color-brand-600, #2691a4); margin-inline-start: 4px; &:hover { text-decoration: underline; } }
+}
 
 .gs-footer {
   display: flex; gap: 16px; padding: 8px 14px; border-top: 1px solid #f0f2f5;
@@ -78,3 +83,5 @@
   kbd { font: 600 10px/1 inherit; padding: 2px 5px; margin-inline-end: 3px; border: 1px solid #e4e7ec; border-radius: 4px; background: #fff; color: #6c757d; }
 }
 @media (max-width: 767px) { .gs-footer { display: none; } .gs-panel { top: 60px; } }
+
+.gs-item__icon svg { width: 16px; height: 16px; display: block; }

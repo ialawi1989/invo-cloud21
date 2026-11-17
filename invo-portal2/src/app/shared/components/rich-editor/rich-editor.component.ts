@@ -712,7 +712,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
           </div>
           <div class="re__embedTabs">
             <button type="button" [class.is-on]="embedEdit().tab === 'html'" (click)="setEmbedTab('html')">&lt;/&gt; HTML</button>
-            <button type="button" [class.is-on]="embedEdit().tab === 'link'" (click)="setEmbedTab('link')">🔗 Link</button>
+            <button type="button" [class.is-on]="embedEdit().tab === 'link'" (click)="setEmbedTab('link')">Link</button>
           </div>
           @if (embedEdit().tab === 'html') {
             <textarea class="re__embedCode" rows="6" placeholder="Paste your code (HTTPS only)"

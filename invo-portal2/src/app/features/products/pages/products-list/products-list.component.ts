@@ -193,7 +193,7 @@ export class ProductsListComponent implements OnInit {
     const current = this.listPage?.sortBy();
     if (!current) return '';
     const col = this.columns.find(c => c.key === current.sortValue);
-    return `${col?.headerLabel || col?.label || current.sortValue} ${current.sortDirection === 'asc' ? '↑' : '↓'}`;
+    return `${col?.headerLabel || col?.label || current.sortValue}`;
   }
 
   private clickCloseListener = () => this.closeRowMenu();

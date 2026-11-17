@@ -1,3 +1,4 @@
+import { toSignal } from '@angular/core/rxjs-interop';
 import {
   Component, Input, Output, EventEmitter, inject, computed, signal,
   HostListener, ElementRef
@@ -9,7 +10,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AssistantService } from '../../../ai/assistant/assistant.service';
 import { AuthService } from '../../../auth/auth.service';
 import { CompanyService } from '../../../auth/company.service';
-import { resolveEmployeeName, resolveInitials } from '../../../auth/auth.models';
+import { resolveEmployeeName, resolveInitials, resolveAvatarUrl } from '../../../auth/auth.models';
 import { ModalService } from '../../../../shared/modal/modal.service';
 import { CompanySwitcherComponent } from './company-switcher.component';
 import { LanguageSwitcherComponent } from '../../../i18n/language-switcher.component';
@@ -181,7 +182,7 @@ import type { FavPage as FavTab } from '../../services/favorites.service';
         <div class="topbar-divider"></div>
         <button class="avatar-btn" [appTooltip]="displayName()" (click)="openProfile()">
           @if (avatarUrl()) {
-            <img [src]="avatarUrl()" class="avatar-img" [alt]="displayName()" />
+            <img [src]="avatarUrl()" class="avatar-img" [alt]="displayName()" (error)="avatarBroken.set(true)" />
           } @else {
             <span class="avatar-initials">{{ initials() }}</span>
           }
@@ -639,12 +640,13 @@ export class TopbarComponent {
   editingFav      = signal<FavTab | null>(null);
   isFullscreen    = signal(false);
 
-  displayName = computed(() => resolveEmployeeName(this.auth.currentEmployee));
-  initials    = computed(() => resolveInitials(this.auth.currentEmployee));
-  avatarUrl   = computed(() => {
-    const emp = this.auth.currentEmployee as any;
-    return emp?.avatar ?? emp?.profileImage ?? null;
-  });
+  /** The signed-in employee as a signal, so a new name / picture (My Account) shows without a reload. */
+  private employee = toSignal(this.auth.employee$, { initialValue: this.auth.currentEmployee });
+  displayName = computed(() => resolveEmployeeName(this.employee()));
+  initials    = computed(() => resolveInitials(this.employee()));
+  /** Set when the picture fails to load, so the initials show instead of a broken image. */
+  avatarBroken = signal(false);
+  avatarUrl   = computed(() => (this.avatarBroken() ? null : resolveAvatarUrl(this.employee())));
 
   favTabs     = computed(() => this.favsService.favorites());
   // Different routes can share the same menu label (e.g. multiple list pages

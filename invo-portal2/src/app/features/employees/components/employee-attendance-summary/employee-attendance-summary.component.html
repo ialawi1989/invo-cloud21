@@ -112,7 +112,7 @@
                   @if (sel.gap.leaveTypeRaw) { <small>{{ sel.gap.leaveTypeRaw }}</small> }
                 </span>
                 @if (sel.gap.leaveDescription) { <span class="att__note">{{ sel.gap.leaveDescription }}</span> }
-                @if (sel.gap.days > 1) { <span class="att__note">{{ sel.gap.startDate }} → {{ sel.gap.endDate }} · {{ sel.gap.days }} {{ 'EMPLOYEES.ATTENDANCE_SUMMARY.DAYS' | translate }}</span> }
+                @if (sel.gap.days > 1) { <span class="att__note">{{ sel.gap.startDate }} <span class="ui-icon ui-icon-arrow-right"></span> {{ sel.gap.endDate }} · {{ sel.gap.days }} {{ 'EMPLOYEES.ATTENDANCE_SUMMARY.DAYS' | translate }}</span> }
               </div>
             } @else {
               <p class="att__empty">{{ 'EMPLOYEES.ATTENDANCE_SUMMARY.NO_RECORD' | translate }}</p>
@@ -134,7 +134,7 @@
           <div class="att__adj">
             <button type="button" class="att__adj-toggle" (click)="showAdjustments.set(!showAdjustments())">
               {{ 'EMPLOYEES.ATTENDANCE_SUMMARY.ADJUSTMENTS' | translate }} ({{ adjustmentList().length }})
-              <span>{{ showAdjustments() ? '▲' : '▼' }}</span>
+              <span class="ui-chevron" [class.is-open]="showAdjustments()"></span>
             </button>
             @if (showAdjustments()) {
               <ul class="att__adj-list">
@@ -142,7 +142,7 @@
                   <li>
                     <b>{{ a.date }}</b>
                     <span>{{ (a.field === 'clockedIn' ? 'EMPLOYEES.ATTENDANCE_SUMMARY.CLOCK_IN' : 'EMPLOYEES.ATTENDANCE_SUMMARY.CLOCK_OUT') | translate }}:
-                      {{ time(a.rawValue) || '—' }} → {{ time(a.adjustedValue) || '—' }}</span>
+                      {{ time(a.rawValue) || '—' }} <span class="ui-icon ui-icon-arrow-right"></span> {{ time(a.adjustedValue) || '—' }}</span>
                     @if (a.actorName) { <span>{{ 'EMPLOYEES.ATTENDANCE_SUMMARY.BY' | translate }} {{ a.actorName }}</span> }
                     @if (a.reason) { <span class="att__note">{{ a.reason }}</span> }
                   </li>

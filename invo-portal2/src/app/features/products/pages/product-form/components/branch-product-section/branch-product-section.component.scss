@@ -8,6 +8,9 @@
 // second stylesheet. Chevrons flip via a scaleX on the RTL host.
 // ─────────────────────────────────────────────────────────────────────────
 
+// Outline the whole Branches card (master/detail split, so it reads as one block).
+.pf-bp { border: 1px solid #e2e8f0; }
+
 .pf-card__header { flex-wrap: wrap; gap: 12px; }
 
 .pf-bp-summary {

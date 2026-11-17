@@ -3,6 +3,11 @@ import { CanActivateFn, Routes } from '@angular/router';
 import { LanguageService } from '@core/i18n/language.service';
 import { unsavedChangesGuard } from '@core/guards/unsaved-changes.guard';
 import { privilegeGuard } from '@core/guards/privilege.guard';
+import { planFeatureGuard } from '@core/guards/feature.guard';
+import {
+  CAMPAIGNS_FEATURE_KEYS, PROMOTIONS_COUPONS, PROMOTIONS_CUSTOMER_TIERS, PROMOTIONS_POINTS,
+  PROMOTIONS_STAMP_CARDS, PROMOTIONS_VOUCHERS,
+} from './promotions-feature-flags';
 
 // ── URL pattern ──────────────────────────────────────────────────────────────
 // /promotions/promotions-vouchers            → gift vouchers (settings summary + list)
@@ -33,18 +38,10 @@ export const PROMOTIONS_ROUTES: Routes = [
   { path: '', redirectTo: 'promotions-vouchers', pathMatch: 'full' },
   {
     path: 'promotions-vouchers',
-    // Not plan-gated on purpose for now: the voucher endpoints don't check the
-    // feature server-side, and gating here on `promotions.vouchers` would hide
-    // the route for the 167 companies that still carry only the legacy bare
-    // `promotions` key — see promotions-feature-flags.ts and
-    // docs/tickets/promotions-feature-key-mismatch.md.
-    //
-    // To enforce it later: import PROMOTIONS_VOUCHERS from
-    // './promotions-feature-flags' and check FeatureService in a guard. Do NOT
-    // reach for `featureGuard` — core/guards/feature.guard.ts is referenced by
-    // no route (see docs/tickets/feature-interceptor-unreachable-keys.md).
-    canActivate: [translationsLoaded, privilegeGuard],
-    data: { permissionPath: `${VOUCHERS}.access` },
+    // Plan-gated: the backend refuses these endpoints ("This feature is not available for
+    // your account") when the company lacks `promotions.vouchers`, so don't open the page.
+    canActivate: [translationsLoaded, planFeatureGuard, privilegeGuard],
+    data: { permissionPath: `${VOUCHERS}.access`, planFeature: PROMOTIONS_VOUCHERS },
     children: [
       {
         path: '',
@@ -89,8 +86,8 @@ export const PROMOTIONS_ROUTES: Routes = [
   },
   {
     path: 'customer-tiers',
-    canActivate: [translationsLoaded, privilegeGuard],
-    data: { permissionPath: `${TIERS}.access` },
+    canActivate: [translationsLoaded, planFeatureGuard, privilegeGuard],
+    data: { permissionPath: `${TIERS}.access`, planFeature: PROMOTIONS_CUSTOMER_TIERS },
     children: [
       {
         path: '',
@@ -107,8 +104,8 @@ export const PROMOTIONS_ROUTES: Routes = [
   },
   {
     path: 'promotional-points',
-    canActivate: [translationsLoaded, privilegeGuard],
-    data: { permissionPath: `${POINTS}.access` },
+    canActivate: [translationsLoaded, planFeatureGuard, privilegeGuard],
+    data: { permissionPath: `${POINTS}.access`, planFeature: PROMOTIONS_POINTS },
     children: [
       {
         path: '',
@@ -145,8 +142,8 @@ export const PROMOTIONS_ROUTES: Routes = [
   },
   {
     path: 'coupons',
-    canActivate: [translationsLoaded, privilegeGuard],
-    data: { permissionPath: `${COUPONS}.access` },
+    canActivate: [translationsLoaded, planFeatureGuard, privilegeGuard],
+    data: { permissionPath: `${COUPONS}.access`, planFeature: [PROMOTIONS_COUPONS, PROMOTIONS_STAMP_CARDS] },
     children: [
       {
         path: '',
@@ -188,8 +185,8 @@ export const PROMOTIONS_ROUTES: Routes = [
   },
   {
     path: 'campaigns',
-    canActivate: [translationsLoaded, privilegeGuard],
-    data: { permissionPath: `${CAMPAIGNS}.access` },
+    canActivate: [translationsLoaded, planFeatureGuard, privilegeGuard],
+    data: { permissionPath: `${CAMPAIGNS}.access`, planFeature: [...CAMPAIGNS_FEATURE_KEYS] },
     children: [
       {
         path: '',

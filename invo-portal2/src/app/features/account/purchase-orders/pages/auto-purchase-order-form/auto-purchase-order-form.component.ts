@@ -92,7 +92,7 @@ interface AutoLine {
                         [placeholder]="'PURCHASE_ORDERS.AUTO.SELECT_SUPPLIER' | translate"/>
                     </td>
                     <td class="end">{{ l.unitCost * l.qty | mycurrency }}</td>
-                    <td class="end"><button type="button" class="ap__x" (click)="remove(i)" aria-label="remove">✕</button></td>
+                    <td class="end"><button type="button" class="ap__x" (click)="remove(i)" aria-label="remove"><span class="ui-icon ui-icon-x"></span></button></td>
                   </tr>
                 }
               </tbody>

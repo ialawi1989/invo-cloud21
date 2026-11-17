@@ -151,7 +151,7 @@ export interface LinkOption {
                       
                       <div class="item-actions">
                         @if (item.depth > 0) {
-                          <button class="action-btn" (click)="moveLeft(item)" title="Decrease depth">←</button>
+                          <button class="action-btn" (click)="moveLeft(item)" title="Decrease depth"><span class="ui-icon ui-icon-arrow-left"></span></button>
                         }
                         @if (canMoveRight(item)) {
                           <button class="action-btn" (click)="moveRight(item)" title="Increase depth">→</button>
@@ -159,9 +159,9 @@ export interface LinkOption {
                         @if (!item.isMegaMenu && item.depth === 0) {
                           <button class="action-btn mega-btn" (click)="convertToMegaMenu(item)" title="Convert to Mega Menu">▦</button>
                         }
-                        <button class="action-btn" (click)="editItem(item)" title="Edit">✎</button>
+                        <button class="action-btn" (click)="editItem(item)" title="Edit"><span class="ui-icon ui-icon-edit"></span></button>
                         @if (item.isMegaMenu) {
-                          <button class="action-btn" (click)="editMegaMenu(item)" title="Edit Mega Menu">⚙</button>
+                          <button class="action-btn" (click)="editMegaMenu(item)" title="Edit Mega Menu"><span class="ui-icon ui-icon-gear"></span></button>
                         }
                         <button class="action-btn delete-btn" (click)="removeItem(item.uId)" title="Remove">×</button>
                       </div>

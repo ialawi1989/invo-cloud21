@@ -31,14 +31,14 @@
     <div class="fb-stats__avg">
       <div class="fb-stats__num">{{ stats().average }}</div>
       <div class="fb-stars">
-        @for (s of stars(stats().average); track $index) { <span>{{ s }}</span> }
+        @for (s of stars(stats().average); track $index) { <span class="ui-icon" [class.ui-icon-star-fill]="s" [class.ui-icon-star]="!s"></span> }
       </div>
       <p class="fb-stats__txt">{{ 'FEEDBACKS.AVERAGE_RATING_FOR' | translate }} <strong>{{ stats().total }}</strong> {{ 'FEEDBACKS.FEEDBACKS' | translate }}</p>
     </div>
     <div class="fb-stats__bars">
       @for (r of ratings; track r) {
         <div class="fb-bar">
-          <span class="fb-bar__label">{{ r }} ★</span>
+          <span class="fb-bar__label">{{ r }} <span class="ui-icon ui-icon-star-fill"></span></span>
           <div class="fb-bar__track"><div class="fb-bar__fill" [class]="'fb-bar__fill--' + color(r)" [style.width.%]="stats().distribution[r]"></div></div>
           <span class="fb-bar__pct">{{ stats().distribution[r] }}%</span>
         </div>
@@ -51,7 +51,7 @@
     <small class="text-slate-500">{{ row.createdAt | date: 'hh:mm a' }}</small>
   </ng-template>
   <ng-template listCellTemplate="rating" let-row>
-    <div class="fb-stars">@for (s of stars(row.rating); track $index) { <span>{{ s }}</span> }</div>
+    <div class="fb-stars">@for (s of stars(row.rating); track $index) { <span class="ui-icon" [class.ui-icon-star-fill]="s" [class.ui-icon-star]="!s"></span> }</div>
     <span class="fb-badge" [class]="'fb-badge--' + color(row.rating)">{{ row.rating }}/5</span>
   </ng-template>
   <ng-template listCellTemplate="comment" let-row>

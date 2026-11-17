@@ -60,6 +60,7 @@
       "INTERFACE": "Site text",
       "BUSINESS": "Business info",
       "STORE": "Store",
+      "PROMOTIONS": "Promotions",
       "CMS": "Content Library"
     },
     "ENTITIES": {
@@ -110,6 +111,14 @@
       "MATRIX": {
         "LABEL": "Matrix items",
         "DESC": "Names for your matrix items."
+      },
+      "PROMOTION_CAMPAIGNS": {
+        "LABEL": "Campaigns",
+        "DESC": "Names of your promotion campaigns."
+      },
+      "PROMOTION_COUPON_SETS": {
+        "LABEL": "Coupon sets",
+        "DESC": "Names of your coupon sets."
       },
       "CMS": {
         "LABEL": "Content Library",

@@ -31,7 +31,7 @@
           <label for="expenseNumber">{{ 'EXPENSES.FORM.EXPENSE_NUMBER' | translate }} <span class="req">*</span></label>
           <div class="df-num" [class.is-invalid]="fieldError('expenseNumber')">
             <input id="expenseNumber" type="text" [(ngModel)]="e.expenseNumber" (ngModelChange)="markDirty()"/>
-            <button type="button" class="df-gear" (click)="openNumberPrefs()" [appTooltip]="'EXPENSES.FORM.NUMBER_HELP' | translate" aria-label="settings">⚙</button>
+            <button type="button" class="df-gear" (click)="openNumberPrefs()" [appTooltip]="'EXPENSES.FORM.NUMBER_HELP' | translate" aria-label="settings"><span class="ui-icon ui-icon-gear"></span></button>
           </div>
           @if (fieldError('expenseNumber'); as err) { <p class="df-error">{{ err }}</p> }
         </div>

@@ -8,15 +8,21 @@ import { FieldTemplate } from './product-fields/field-template';
 export interface ProductPromotionSettingsFields {
   voucherName: FieldTemplate;
   initialVoucher: FieldTemplate;
+  count?: FieldTemplate;
   expiryPeriod?: FieldTemplate;
   activePeriod?: FieldTemplate;
   oneTimeUse?: FieldTemplate;
   private?: FieldTemplate;
 }
 
+/** Legacy master: "voucher max issue to 10". */
+export const MAX_PROMOTION_COUNT = 10;
+
 export class ProductPromotionSettings {
   voucherName: TranslatedString = {};
   initialVoucher: number | null = null;
+  /** How many vouchers one sale issues — 1 to {@link MAX_PROMOTION_COUNT}. */
+  count: number | null = 1;
   expiryPeriod: DaySpan = new DaySpan(1, PeriodUnit.DAYS);
   activePeriod: DaySpan = new DaySpan(1, PeriodUnit.DAYS);
   oneTimeUse: boolean = false;

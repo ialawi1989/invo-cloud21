@@ -41,7 +41,7 @@
           <label for="creditNoteNumber">{{ 'CREDIT_NOTES.FORM.CREDIT_NOTE_NUMBER' | translate }} <span class="req">*</span></label>
           <div class="df-num" [class.is-invalid]="fieldError('creditNoteNumber')">
             <input id="creditNoteNumber" type="text" [(ngModel)]="c.creditNoteNumber" (ngModelChange)="markDirty()"/>
-            <button type="button" class="df-gear" (click)="openNumberPrefs()" [appTooltip]="'CREDIT_NOTES.FORM.NUMBER_HELP' | translate" aria-label="settings">⚙</button>
+            <button type="button" class="df-gear" (click)="openNumberPrefs()" [appTooltip]="'CREDIT_NOTES.FORM.NUMBER_HELP' | translate" aria-label="settings"><span class="ui-icon ui-icon-gear"></span></button>
           </div>
           @if (fieldError('creditNoteNumber'); as err) { <p class="df-error">{{ err }}</p> }
         </div>

@@ -269,13 +269,13 @@
               <table class="cd-table">
                 <thead>
                   <tr>
-                    <th class="cd-sort" (click)="sortItems('productName')">{{ 'SUPPLIERS.ITEMS.PRODUCT' | translate }}{{ arrow('productName') }}</th>
+                    <th class="cd-sort" (click)="sortItems('productName')">{{ 'SUPPLIERS.ITEMS.PRODUCT' | translate }}@if (arrow('productName')) { <span class="ui-icon" [class]="arrow('productName')"></span> }</th>
                     <th>{{ 'SUPPLIERS.DASHBOARD_PAGE.UOM' | translate }}</th>
                     <th>{{ 'SUPPLIERS.DASHBOARD_PAGE.ITEM_TYPE' | translate }}</th>
-                    <th class="cd-sort" (click)="sortItems('supplierCode')">{{ 'SUPPLIERS.ITEMS.SUPPLIER_CODE' | translate }}{{ arrow('supplierCode') }}</th>
+                    <th class="cd-sort" (click)="sortItems('supplierCode')">{{ 'SUPPLIERS.ITEMS.SUPPLIER_CODE' | translate }}@if (arrow('supplierCode')) { <span class="ui-icon" [class]="arrow('supplierCode')"></span> }</th>
                     <th class="end">{{ 'SUPPLIERS.DASHBOARD_PAGE.ON_HAND' | translate }}</th>
-                    <th class="end cd-sort" (click)="sortItems('minimumOrder')">{{ 'SUPPLIERS.ITEMS.MINIMUM_ORDER' | translate }}{{ arrow('minimumOrder') }}</th>
-                    <th class="end cd-sort" (click)="sortItems('cost')">{{ 'SUPPLIERS.ITEMS.UNIT_COST' | translate }}{{ arrow('cost') }}</th>
+                    <th class="end cd-sort" (click)="sortItems('minimumOrder')">{{ 'SUPPLIERS.ITEMS.MINIMUM_ORDER' | translate }}@if (arrow('minimumOrder')) { <span class="ui-icon" [class]="arrow('minimumOrder')"></span> }</th>
+                    <th class="end cd-sort" (click)="sortItems('cost')">{{ 'SUPPLIERS.ITEMS.UNIT_COST' | translate }}@if (arrow('cost')) { <span class="ui-icon" [class]="arrow('cost')"></span> }</th>
                   </tr>
                 </thead>
                 <tbody>

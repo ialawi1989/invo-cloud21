@@ -48,6 +48,8 @@
       "Closed": "Closed",
       "Paid": "Paid",
       "Partially Paid": "Partially Paid",
+      "Pending Payments": "Pending Payment",
+      "Payment Failed": "Payment Failed",
       "Void": "Void",
       "writeOff": "Write off",
       "merged": "Merged"

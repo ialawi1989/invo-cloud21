@@ -49,7 +49,7 @@
               <strong>{{ t.name || ('DOCUMENT_BUILDER.UNNAMED' | translate) }}</strong>
               @if (t.isDefault) {
                 <span class="dbl__item-default" [appTooltip]="'DOCUMENT_BUILDER.IS_DEFAULT_HINT' | translate">
-                  ★ {{ 'DOCUMENT_BUILDER.IS_DEFAULT' | translate }}
+                  <span class="ui-icon ui-icon-star-fill"></span> {{ 'DOCUMENT_BUILDER.IS_DEFAULT' | translate }}
                 </span>
               }
               <span

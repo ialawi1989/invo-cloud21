@@ -16,6 +16,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { UserPreferencesService } from '@core/preferences/user-preferences.service';
 import { OverlayModule } from '@angular/cdk/overlay';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
@@ -123,7 +124,8 @@ export class DatePickerComponent implements ControlValueAccessor {
   inline = input<boolean>(false);
 
   /** Sunday = 0, Monday = 1, etc. */
-  firstDayOfWeek = input<number>(0);
+  /** Defaults to the employee's own setting (My Account > Preferences). */
+  firstDayOfWeek = input<number>(inject(UserPreferencesService).firstDayOfWeek());
 
   /**
    * Week-picker mode (range mode only). Clicking any day selects the whole

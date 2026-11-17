@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, effect, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { DaySpan, PeriodUnit } from '../../models/common.model';
@@ -42,6 +42,8 @@ import { DaySpan, PeriodUnit } from '../../models/common.model';
   `],
 })
 export class DaySpanControlComponent {
+  private translate = inject(TranslateService);
+
   value = input<DaySpan>({ value: 0, periodUnit: PeriodUnit.DAYS });
   valueChange = output<DaySpan>();
 
@@ -59,7 +61,8 @@ export class DaySpanControlComponent {
   }
 
   selectedUnit = () => this.units.find(u => u.value === this.internal().periodUnit) ?? null;
-  display = (item: any) => item?.label ?? '';
+  // The unit labels are i18n keys; the dropdown shows whatever this returns, so translate here.
+  display = (item: any) => (item?.label ? this.translate.instant(item.label) : '');
   compare = (a: any, b: any) => (a?.value ?? a) === (b?.value ?? b);
   toValue = (item: any) => item?.value ?? item;
 

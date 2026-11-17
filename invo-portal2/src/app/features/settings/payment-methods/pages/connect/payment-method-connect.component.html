@@ -227,9 +227,9 @@
                   <td>
                     @if (getBenefitTest(row.kind).paymentId) {
                       @if (getBenefitTest(row.kind).succeed) {
-                        <span class="test-tick" aria-label="ok">✓</span>
+                        <span class="test-tick" aria-label="ok"><span class="ui-icon ui-icon-check"></span></span>
                       } @else {
-                        <span class="test-cross" aria-label="failed">✕</span>
+                        <span class="test-cross" aria-label="failed"><span class="ui-icon ui-icon-x"></span></span>
                       }
                     } @else {
                       <span class="test-empty">—</span>

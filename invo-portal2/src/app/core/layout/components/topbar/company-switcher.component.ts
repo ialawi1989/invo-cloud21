@@ -2,14 +2,17 @@ import {
   Component, OnInit, inject, signal, computed
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { LanguageService } from '../../../i18n/language.service';
 import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../../../auth/auth.service';
 import { CompanyService } from '../../../auth/company.service';
-import { Company, resolveEmployeeName, resolveInitials } from '../../../auth/auth.models';
+import { PrivilegeService } from '../../../auth/privileges/privilege.service';
+import { Company, resolveAvatarUrl, resolveEmployeeName, resolveInitials } from '../../../auth/auth.models';
 import { MODAL_REF } from '../../../../shared/modal/modal.tokens';
 import { ModalRef, ModalService } from '../../../../shared/modal/modal.service';
+import { EmployeeAvatarService } from '../../../auth/employee-avatar.service';
 import { EmployeeAiOverrideComponent } from '../../../ai/employee-ai-override/employee-ai-override.component';
 
 @Component({
@@ -21,7 +24,9 @@ import { EmployeeAiOverrideComponent } from '../../../ai/employee-ai-override/em
 
       <!-- Employee identity -->
       <div class="identity">
-        <div class="id-avatar">{{ initials() }}</div>
+        <div class="id-avatar">
+          @if (avatarUrl(); as url) { <img [src]="url" class="id-avatar__img" [alt]="displayName()" (error)="avatarBroken.set(true)"/> } @else { {{ initials() }} }
+        </div>
         <div class="id-text">
           <p class="id-name">{{ displayName() }}</p>
           <p class="id-company">
@@ -36,7 +41,7 @@ import { EmployeeAiOverrideComponent } from '../../../ai/employee-ai-override/em
 
       <!-- Action buttons -->
       <div class="actions">
-        <a routerLink="/account" class="btn-act" (click)="ref.dismiss()">
+        <a routerLink="/employees/my-account" class="btn-act" (click)="ref.dismiss()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
             <circle cx="12" cy="7" r="4"/>
@@ -44,13 +49,15 @@ import { EmployeeAiOverrideComponent } from '../../../ai/employee-ai-override/em
           {{ 'COMPANY_SWITCHER.MY_ACCOUNT' | translate }}
         </a>
 
-        <a routerLink="/companies" class="btn-act" (click)="ref.dismiss()">
+        @if (canSeeOverview) {
+        <a routerLink="/companies-overview" class="btn-act" (click)="ref.dismiss()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="2" y="7" width="20" height="14" rx="2"/>
             <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
           </svg>
           {{ 'COMPANY_SWITCHER.COMPANIES_OVERVIEW' | translate }}
         </a>
+        }
 
         <button type="button" class="btn-act" (click)="openAiOverride()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -144,8 +151,9 @@ import { EmployeeAiOverrideComponent } from '../../../ai/employee-ai-override/em
       width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
       background: linear-gradient(135deg, #32acc1, #2b95a8);
       color: #fff; font-weight: 700; font-size: 15px;
-      display: flex; align-items: center; justify-content: center;
+      display: flex; align-items: center; justify-content: center; overflow: hidden;
     }
+    .id-avatar__img { width: 100%; height: 100%; object-fit: cover; }
     .id-name    { font-size: 14px; font-weight: 600; color: #1e293b; margin: 0 0 3px; }
     .id-company {
       display: flex; align-items: center; gap: 4px;
@@ -247,13 +255,19 @@ export class CompanySwitcherComponent implements OnInit {
   private modal  = inject(ModalService);
   ref            = inject<ModalRef>(MODAL_REF);
   companyService = inject(CompanyService);
+  private privileges = inject(PrivilegeService);
+  private avatars    = inject(EmployeeAvatarService);
+  /** Group-wide figures: only for employees holding the Companies Overview privilege (super admins always). */
+  get canSeeOverview(): boolean { return this.privileges.isSuperAdmin || this.privileges.check('companiesOverviewSecurity.access'); }
 
   loading    = signal(false);
   langService = inject(LanguageService);
   loggingOut = signal(false);
   switching  = signal<string | null>(null);
 
-  employee    = signal(this.auth.currentEmployee);
+  employee    = toSignal(this.auth.employee$, { initialValue: this.auth.currentEmployee });
+  avatarBroken = signal(false);
+  avatarUrl   = computed(() => (this.avatarBroken() ? null : resolveAvatarUrl(this.employee())));
   displayName = computed(() => resolveEmployeeName(this.employee()));
   initials    = computed(() => resolveInitials(this.employee()));
 
@@ -265,6 +279,7 @@ export class CompanySwitcherComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
+    void this.avatars.sync();
     if (this.companyService.companies().length === 0) {
       this.loading.set(true);
       await this.companyService.loadCompanies(

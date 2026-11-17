@@ -89,7 +89,7 @@ export class CalculatedFieldsComponent implements OnChanges {
         seen.add(f.fullId);
         // `table` is a v2 node id ("invoiceLines.product"): name the relation
         // path, or nothing for the report's own entity.
-        const rel = f.table.split('.').slice(1).map(humanize).join(' › ');
+        const rel = f.table.split('.').slice(1).map(humanize).join(' / ');
         result.push({ value: f.fullId, label: rel ? `${f.label} (${rel})` : f.label });
       }
     }

@@ -122,11 +122,11 @@ export type HeaderLayout =
   | 'minimal';
 
 export const HEADER_LAYOUTS: { value: HeaderLayout; label: string; icon: string }[] = [
-  { value: 'logo-left-menu-right', label: 'Logo Left, Menu Right', icon: '◧' },
-  { value: 'logo-center-menu-below', label: 'Logo Center, Menu Below', icon: '◫' },
-  { value: 'logo-left-menu-center', label: 'Logo Left, Menu Center', icon: '◨' },
+  { value: 'logo-left-menu-right', label: 'Logo Left, Menu Right', icon: 'ui-icon-layout-left' },
+  { value: 'logo-center-menu-below', label: 'Logo Center, Menu Below', icon: 'ui-icon-layout-center' },
+  { value: 'logo-left-menu-center', label: 'Logo Left, Menu Center', icon: 'ui-icon-layout-right' },
   { value: 'logo-center-menu-sides', label: 'Logo Center, Menu Sides', icon: '⬚' },
-  { value: 'minimal', label: 'Minimal', icon: '▭' },
+  { value: 'minimal', label: 'Minimal', icon: 'ui-icon-layout-minimal' },
 ];
 
 export const DEFAULT_HEADER_SETTINGS: HeaderSettings = {
@@ -183,13 +183,13 @@ export type FooterLayout =
   | 'minimal';
 
 export const FOOTER_LAYOUTS: { value: FooterLayout; label: string; columns: number; icon: string }[] = [
-  { value: '4-columns', label: '4 Columns', columns: 4, icon: '▣▣▣▣' },
-  { value: '3-columns', label: '3 Columns', columns: 3, icon: '▣▣▣' },
-  { value: '2-columns', label: '2 Columns', columns: 2, icon: '▣▣' },
-  { value: '1-column', label: '1 Column', columns: 1, icon: '▣' },
-  { value: 'logo-left-links-right', label: 'Logo Left, Links Right', columns: 2, icon: '◧' },
-  { value: 'centered', label: 'Centered', columns: 1, icon: '◯' },
-  { value: 'minimal', label: 'Minimal', columns: 1, icon: '▭' },
+  { value: '4-columns', label: '4 Columns', columns: 4, icon: 'ui-icon-columns-4' },
+  { value: '3-columns', label: '3 Columns', columns: 3, icon: 'ui-icon-columns-3' },
+  { value: '2-columns', label: '2 Columns', columns: 2, icon: 'ui-icon-columns-2' },
+  { value: '1-column', label: '1 Column', columns: 1, icon: 'ui-icon-columns-1' },
+  { value: 'logo-left-links-right', label: 'Logo Left, Links Right', columns: 2, icon: 'ui-icon-layout-left' },
+  { value: 'centered', label: 'Centered', columns: 1, icon: 'ui-icon-layout-circle' },
+  { value: 'minimal', label: 'Minimal', columns: 1, icon: 'ui-icon-layout-minimal' },
 ];
 
 export interface FooterColumn {

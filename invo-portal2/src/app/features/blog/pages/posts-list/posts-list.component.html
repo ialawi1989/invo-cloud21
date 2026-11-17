@@ -92,7 +92,7 @@
       }
       <div class="bp-postCell__main">
         <span class="bp-title list-interactive-cell">
-          @if (row.isFeatured) { <span class="bp-feat" appTooltip="Featured">★</span> }
+          @if (row.isFeatured) { <span class="bp-feat" appTooltip="Featured"><span class="ui-icon ui-icon-star-fill"></span></span> }
           {{ titleOf(row) }}
         </span>
         <span class="bp-badgeRow">
@@ -152,7 +152,7 @@
   </ng-template>
   <ng-template listMobileTitle let-row>
     <span class="bp-mtitle">
-      @if (row.isFeatured) { <span class="bp-feat" appTooltip="Featured">★</span> }
+      @if (row.isFeatured) { <span class="bp-feat" appTooltip="Featured"><span class="ui-icon ui-icon-star-fill"></span></span> }
       {{ titleOf(row) }}
     </span>
     <app-blog-status-badge [status]="row.status"/>

@@ -1,0 +1,41 @@
+<div class="tax-details-page" [formGroup]="form">
+  <header class="page-header">
+    <div class="page-header__titles">
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="page-title">{{ 'SETTINGS.ITEMS.TAX_DETAILS' | translate }}</h1>
+      <p class="page-sub">{{ 'SETTINGS.ITEMS.TAX_DETAILS_DESC' | translate }}</p>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <app-form-skeleton />
+  } @else {
+    <section class="card">
+      <header class="card__head">
+        <h2 class="card__title">{{ 'SETTINGS.BUSINESS.TAX' | translate }}</h2>
+        <p class="card__sub">{{ 'SETTINGS.BUSINESS.TAX_DESC' | translate }}</p>
+      </header>
+
+      <div class="card__body">
+        <div class="grid grid--2">
+          <div class="field">
+            <label class="field-label" for="td-vat">{{ 'SETTINGS.BUSINESS.VAT_NUMBER' | translate }}</label>
+            <input id="td-vat" type="text" class="input" formControlName="vatNumber"/>
+          </div>
+          <app-toggle
+            formControlName="isInclusiveTax"
+            [label]="'SETTINGS.BUSINESS.INCLUSIVE_TAX' | translate"
+            [hint]="'SETTINGS.BUSINESS.INCLUSIVE_TAX_HINT' | translate"/>
+        </div>
+      </div>
+    </section>
+  }
+
+  <app-loading-overlay [show]="saving()" [message]="'COMMON.SAVING' | translate"/>
+
+  <app-form-sticky-footer>
+    <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving() || loading()">
+      {{ 'COMMON.SAVE' | translate }}
+    </button>
+  </app-form-sticky-footer>
+</div>

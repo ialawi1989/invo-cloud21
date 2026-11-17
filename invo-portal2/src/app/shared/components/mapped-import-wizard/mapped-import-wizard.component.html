@@ -49,7 +49,7 @@
 
         @if (config.tips?.length) {
           <div class="mi__tips">
-            <h4>💡 {{ 'COMMON.MAPPED_IMPORT.TIPS' | translate }}</h4>
+            <h4><span class="ui-icon ui-icon-warning"></span> {{ 'COMMON.MAPPED_IMPORT.TIPS' | translate }}</h4>
             <ul>
               @for (t of config.tips; track t) { <li>{{ t | translate }}</li> }
             </ul>
@@ -128,7 +128,7 @@
                     @for (i of sec.list; track $index) {
                       <tr>
                         <td>{{ i.row }}</td><td>{{ i.ref }}</td><td [class.mi__ok]="i.fixedTo">
-                          @if (i.fixedTo) { ✓ {{ 'COMMON.MAPPED_IMPORT.FIXED' | translate }} } @else { {{ i.reason }} }
+                          @if (i.fixedTo) { <span class="ui-icon ui-icon-check"></span> {{ 'COMMON.MAPPED_IMPORT.FIXED' | translate }} } @else { {{ i.reason }} }
                         </td>
                         <td class="mi__fix">
                           @if (i.fix; as fix) {
@@ -170,12 +170,12 @@
       <button type="button" class="mi__btn mi__btn--primary" (click)="finish()">{{ 'COMMON.MAPPED_IMPORT.CLOSE' | translate }}</button>
     } @else {
       @if (step() !== 'configure') {
-        <button type="button" class="mi__btn" [disabled]="busy()" (click)="previous()">‹ {{ 'COMMON.MAPPED_IMPORT.PREVIOUS' | translate }}</button>
+        <button type="button" class="mi__btn" [disabled]="busy()" (click)="previous()"><span class="ui-icon ui-icon-chevron-left"></span> {{ 'COMMON.MAPPED_IMPORT.PREVIOUS' | translate }}</button>
       }
       @if (step() === 'preview') {
         <button type="button" class="mi__btn mi__btn--primary" [disabled]="busy() || !(preview()?.ready) || !!preview()?.failed?.length" (click)="runImport()">{{ 'COMMON.MAPPED_IMPORT.IMPORT' | translate }}</button>
       } @else {
-        <button type="button" class="mi__btn mi__btn--primary" [disabled]="busy() || (step() === 'configure' && !file())" (click)="next()">{{ 'COMMON.MAPPED_IMPORT.NEXT' | translate }} ›</button>
+        <button type="button" class="mi__btn mi__btn--primary" [disabled]="busy() || (step() === 'configure' && !file())" (click)="next()">{{ 'COMMON.MAPPED_IMPORT.NEXT' | translate }} <span class="ui-icon ui-icon-chevron-right"></span></button>
       }
     }
   </div>

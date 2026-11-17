@@ -66,7 +66,7 @@ export class FeedbacksListComponent implements OnInit {
     ];
     this.filters = [{
       type: 'multi-select', key: 'ratings', label: t('FILTER_BY_RATING'),
-      options: RATINGS.map(r => ({ value: r, label: r + ' ★' })),
+      options: RATINGS.map(r => ({ value: r, label: String(r) })),
     }];
     this.breadcrumbs = [
       { label: 'Home', routerLink: '/', icon: 'home', iconOnly: true },
@@ -117,8 +117,8 @@ export class FeedbacksListComponent implements OnInit {
     });
   }
 
-  stars(rating: number): string[] {
-    return Array.from({ length: 5 }, (_, i) => (i < Math.round(rating) ? '★' : '☆'));
+  stars(rating: number): boolean[] {
+    return Array.from({ length: 5 }, (_, i) => i < Math.round(rating));
   }
 
   openComment(f: Feedback): void {

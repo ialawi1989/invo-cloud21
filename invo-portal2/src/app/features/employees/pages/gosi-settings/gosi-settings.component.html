@@ -42,7 +42,7 @@
                       · {{ 'EMPLOYEES.GOSI.COUNTRY.RISES' | translate: { step: r.employerRateAnnualIncrementPercent, year: r.employerRateEscalationEndYear } }}
                     }
                     @if (r.employerRateAfterYears !== null) {
-                      → {{ r.employerRateAfterPercent }}% {{ 'EMPLOYEES.GOSI.COUNTRY.AFTER_YEARS' | translate: { years: r.employerRateAfterYears } }}
+                      <span class="ui-icon ui-icon-arrow-right"></span> {{ r.employerRateAfterPercent }}% {{ 'EMPLOYEES.GOSI.COUNTRY.AFTER_YEARS' | translate: { years: r.employerRateAfterYears } }}
                     }
                   </span>
                   }
@@ -106,28 +106,28 @@
                     <td>
                       {{ p.tier1EmployeeRatePercent ?? '—' }}@if (p.tier1EmployeeRateAnnualIncrementPercent) {
                         <span class="gosi-esc" [appTooltip]="'EMPLOYEES.GOSI.RATES.ESCALATES_HINT' | translate">
-                          ↗ {{ p.tier1EmployeeRateAnnualIncrementPercent }}%/yr@if (p.tier1EmployeeRateEscalationEndYear) { &nbsp;→{{ p.tier1EmployeeRateEscalationEndYear }} }
+                          <span class="ui-icon ui-icon-external"></span> {{ p.tier1EmployeeRateAnnualIncrementPercent }}%/yr@if (p.tier1EmployeeRateEscalationEndYear) { &nbsp;→{{ p.tier1EmployeeRateEscalationEndYear }} }
                         </span>
                       }
                     </td>
                     <td>
                       {{ p.tier1EmployerRatePercent ?? '—' }}@if (p.tier1EmployerRateAnnualIncrementPercent) {
                         <span class="gosi-esc" [appTooltip]="'EMPLOYEES.GOSI.RATES.ESCALATES_HINT' | translate">
-                          ↗ {{ p.tier1EmployerRateAnnualIncrementPercent }}%/yr@if (p.tier1EmployerRateEscalationEndYear) { &nbsp;→{{ p.tier1EmployerRateEscalationEndYear }} }
+                          <span class="ui-icon ui-icon-external"></span> {{ p.tier1EmployerRateAnnualIncrementPercent }}%/yr@if (p.tier1EmployerRateEscalationEndYear) { &nbsp;→{{ p.tier1EmployerRateEscalationEndYear }} }
                         </span>
                       }
                     </td>
                     <td>
                       {{ p.tier2EmployeeRatePercent ?? '—' }}@if (p.tier2EmployeeRateAnnualIncrementPercent) {
                         <span class="gosi-esc" [appTooltip]="'EMPLOYEES.GOSI.RATES.ESCALATES_HINT' | translate">
-                          ↗ {{ p.tier2EmployeeRateAnnualIncrementPercent }}%/yr@if (p.tier2EmployeeRateEscalationEndYear) { &nbsp;→{{ p.tier2EmployeeRateEscalationEndYear }} }
+                          <span class="ui-icon ui-icon-external"></span> {{ p.tier2EmployeeRateAnnualIncrementPercent }}%/yr@if (p.tier2EmployeeRateEscalationEndYear) { &nbsp;→{{ p.tier2EmployeeRateEscalationEndYear }} }
                         </span>
                       }
                     </td>
                     <td>
                       {{ p.tier2EmployerRatePercent ?? '—' }}@if (p.tier2EmployerRateAnnualIncrementPercent) {
                         <span class="gosi-esc" [appTooltip]="'EMPLOYEES.GOSI.RATES.ESCALATES_HINT' | translate">
-                          ↗ {{ p.tier2EmployerRateAnnualIncrementPercent }}%/yr@if (p.tier2EmployerRateEscalationEndYear) { &nbsp;→{{ p.tier2EmployerRateEscalationEndYear }} }
+                          <span class="ui-icon ui-icon-external"></span> {{ p.tier2EmployerRateAnnualIncrementPercent }}%/yr@if (p.tier2EmployerRateEscalationEndYear) { &nbsp;→{{ p.tier2EmployerRateEscalationEndYear }} }
                         </span>
                       }
                     </td>

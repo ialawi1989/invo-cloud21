@@ -16,7 +16,7 @@ import { Feedback, ratingColor } from '../../models/feedback.model';
     <app-modal-header [title]="data.customerName || ('FEEDBACKS.TITLE' | translate)" [subtitle]="(data.createdAt | date: 'dd/MM/yyyy hh:mm a') ?? ''" />
     <div class="body">
       <div class="meta">
-        <span class="stars">@for (s of stars; track $index) { <span>{{ $index < data.rating ? '★' : '☆' }}</span> }</span>
+        <span class="stars">@for (s of stars; track $index) { <span class="ui-icon" [class.ui-icon-star-fill]="$index < data.rating" [class.ui-icon-star]="$index >= data.rating"></span> }</span>
         <span class="badge" [class]="'badge--' + color">{{ data.rating }}/5</span>
       </div>
       <p class="text">{{ data.comment || ('FEEDBACKS.NO_COMMENT' | translate) }}</p>

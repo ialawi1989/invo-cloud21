@@ -197,9 +197,9 @@
                                 {{ 'OPENING_BALANCES.SHOWING' | translate: { from: recordRange(p).from, to: recordRange(p).to, count: p.count } }}
                               </span>
                               <div class="ob-pager__btns">
-                                <button type="button" [disabled]="p.page <= 1" (click)="goToRecordPage(a, p.page - 1); $event.stopPropagation()">‹</button>
+                                <button type="button" [disabled]="p.page <= 1" (click)="goToRecordPage(a, p.page - 1); $event.stopPropagation()"><span class="ui-icon ui-icon-chevron-left"></span></button>
                                 <span>{{ p.page }} / {{ p.pageCount }}</span>
-                                <button type="button" [disabled]="p.page >= p.pageCount" (click)="goToRecordPage(a, p.page + 1); $event.stopPropagation()">›</button>
+                                <button type="button" [disabled]="p.page >= p.pageCount" (click)="goToRecordPage(a, p.page + 1); $event.stopPropagation()"><span class="ui-icon ui-icon-chevron-right"></span></button>
                               </div>
                             </div>
                           }

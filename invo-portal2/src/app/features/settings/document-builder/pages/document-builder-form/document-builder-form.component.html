@@ -187,7 +187,7 @@
               <button class="dbf-designer-layers__btn"
                       (click)="$event.stopPropagation(); patchDesignerElement(el.id, { locked: !el.locked })"
                       [appTooltip]="(el.locked ? 'DOCUMENT_BUILDER.DESIGNER.UNLOCK' : 'DOCUMENT_BUILDER.DESIGNER.LOCK') | translate">
-                {{ el.locked ? '🔒' : '🔓' }}
+                <span class="ui-icon" [class.ui-icon-lock]="el.locked" [class.ui-icon-unlock]="!el.locked"></span>
               </button>
             </li>
           }

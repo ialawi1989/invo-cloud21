@@ -68,6 +68,7 @@ const VOUCHER_CONFIG: Node = {
   promotionSettings: {
     voucherName: visible(true),
     initialVoucher: visible(true),
+    count: visible(),
     expiryPeriod: visible(),
     activePeriod: visible(),
     oneTimeUse: visible(),

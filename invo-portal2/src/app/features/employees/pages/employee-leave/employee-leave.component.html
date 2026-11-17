@@ -571,7 +571,7 @@
           <header class="leave-card__head">
             <div class="leave-card__ident">
               <span class="leave-card__type">{{ typeLabel(r) | translate }}</span>
-              <span class="leave-card__dates">{{ r.startDate }} → {{ r.endDate }}</span>
+              <span class="leave-card__dates">{{ r.startDate }} <span class="ui-icon ui-icon-arrow-right"></span> {{ r.endDate }}</span>
               <span class="leave-card__days">
                 <!-- The stored figure, as decided. Not recalculated. -->
                 {{ r.days ?? '—' }} {{ 'EMPLOYEES.LEAVE.DAYS' | translate }}

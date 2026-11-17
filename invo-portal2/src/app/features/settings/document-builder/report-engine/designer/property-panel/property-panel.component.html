@@ -628,10 +628,10 @@
         </div>
 
         <ng-container *ngIf="visibleWhenEval() as r">
-          <p class="pp__feedback pp__feedback--error" *ngIf="r.kind === 'error'">⚠ {{ r.message }}</p>
+          <p class="pp__feedback pp__feedback--error" *ngIf="r.kind === 'error'"><span class="ui-icon ui-icon-warning"></span> {{ r.message }}</p>
           <ng-container *ngIf="r.kind === 'ok'">
             <p class="pp__feedback" [class.pp__feedback--ok]="r.truthy" [class.pp__feedback--warn]="!r.truthy">
-              {{ r.truthy ? '✓ Visible' : '✗ Hidden' }} — evaluates to <strong>{{ r.display }}</strong>
+              @if (r.truthy) { <span class="ui-icon ui-icon-check"></span> Visible } @else { <span class="ui-icon ui-icon-x"></span> Hidden } — evaluates to <strong>{{ r.display }}</strong>
             </p>
             <p class="pp__hint">
               Tested against the current sample data. Use <code>row.x</code> inside table rows; top-level paths outside.
@@ -855,14 +855,14 @@
 
 <!-- Inline ✓/⚠ under an expression input. -->
 <ng-template #exprFeedback let-r>
-  <p class="pp__feedback pp__feedback--ok" *ngIf="r.kind === 'ok'">✓ {{ r.display }}</p>
-  <p class="pp__feedback pp__feedback--error" *ngIf="r.kind === 'error'">⚠ {{ r.message }}</p>
+  <p class="pp__feedback pp__feedback--ok" *ngIf="r.kind === 'ok'"><span class="ui-icon ui-icon-check"></span> {{ r.display }}</p>
+  <p class="pp__feedback pp__feedback--error" *ngIf="r.kind === 'error'"><span class="ui-icon ui-icon-warning"></span> {{ r.message }}</p>
 </ng-template>
 
 <!-- Row-filter match count for table / payments. -->
 <ng-template #rowFeedback>
   <ng-container *ngIf="rowVisibleWhenEval() as r">
-    <p class="pp__feedback pp__feedback--error" *ngIf="r.kind === 'error'">⚠ {{ r.message }}</p>
+    <p class="pp__feedback pp__feedback--error" *ngIf="r.kind === 'error'"><span class="ui-icon ui-icon-warning"></span> {{ r.message }}</p>
     <p class="pp__feedback" *ngIf="r.kind === 'ok'"
        [class.pp__feedback--ok]="r.matched > 0" [class.pp__feedback--warn]="r.matched === 0">
       {{ r.matched }} of {{ r.total }} rows match (in sample data)

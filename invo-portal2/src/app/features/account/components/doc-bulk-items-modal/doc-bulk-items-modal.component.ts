@@ -38,7 +38,7 @@ export interface BulkPick { product: any; qty: number; }
                 <div class="bi__name">{{ p.name }}</div>
                 <div class="bi__rate">{{ 'DOC_LINES.RATE' | translate }}: {{ p.defaultPrice | mycurrency }}@if (p.barcode) { · {{ 'DOC_LINES.BARCODE' | translate }}: {{ p.barcode }} }</div>
               </div>
-              <span class="bi__check">{{ isPicked(p) ? '✓' : '' }}</span>
+              <span class="bi__check">@if (isPicked(p)) { <span class="ui-icon ui-icon-check"></span> }</span>
             </li>
           } @empty {
             <li class="bi__empty">{{ (loading() ? 'DOC_LINES.LOADING' : 'DOC_LINES.NO_ITEMS') | translate }}</li>
@@ -56,7 +56,7 @@ export interface BulkPick { product: any; qty: number; }
             <div class="bi__row">
               <span class="bi__name">{{ pk.product.name }}</span>
               <app-qty-input size="sm" [allowDecimal]="true" [min]="0.001" [step]="1" [ngModel]="pk.qty" (ngModelChange)="setQty(pk, $event)"/>
-              <button type="button" class="bi__x" (click)="toggle(pk.product)" aria-label="remove">✕</button>
+              <button type="button" class="bi__x" (click)="toggle(pk.product)" aria-label="remove"><span class="ui-icon ui-icon-x"></span></button>
             </div>
           } @empty {
             <div class="bi__hint">{{ 'DOC_LINES.CLICK_TO_SELECT' | translate }}</div>

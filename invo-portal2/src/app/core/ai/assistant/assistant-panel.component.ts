@@ -25,7 +25,7 @@ import { AssistantLink } from './assistant.types';
           @if (chat.items().length) {
             <button type="button" class="as-icon" (click)="chat.reset()" [title]="'ASSISTANT.NEW_CHAT' | translate">⟲</button>
           }
-          <button type="button" class="as-icon" (click)="open.set(false)" [attr.aria-label]="'COMMON.CLOSE' | translate">✕</button>
+          <button type="button" class="as-icon" (click)="open.set(false)" [attr.aria-label]="'COMMON.CLOSE' | translate"><span class="ui-icon ui-icon-x"></span></button>
         </header>
 
         <div class="as-body" #body>
@@ -43,7 +43,7 @@ import { AssistantLink } from './assistant.types';
               @if (m.links?.length) {
                 <div class="as-links">
                   @for (l of m.links; track l.url) {
-                    <button type="button" class="as-link" (click)="go(l)">{{ l.label }} ›</button>
+                    <button type="button" class="as-link" (click)="go(l)">{{ l.label }} <span class="ui-icon ui-icon-chevron-right"></span></button>
                   }
                 </div>
               }
@@ -58,7 +58,7 @@ import { AssistantLink } from './assistant.types';
           @if (chat.busy()) {
             <button type="button" class="as-send" (click)="chat.stop()">■</button>
           } @else {
-            <button type="submit" class="as-send" [disabled]="!draft.trim()">➤</button>
+            <button type="submit" class="as-send" [disabled]="!draft.trim()"><span class="ui-icon ui-icon-send"></span></button>
           }
         </form>
         @if (chat.usagePct(); as pct) {

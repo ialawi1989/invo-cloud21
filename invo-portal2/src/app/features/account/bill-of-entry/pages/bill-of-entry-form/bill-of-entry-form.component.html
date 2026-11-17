@@ -20,7 +20,7 @@
           <label for="boeNumber">{{ 'BILL_OF_ENTRY.FORM.NUMBER' | translate }} <span class="req">*</span></label>
           <div class="df-num" [class.is-invalid]="fieldError('billingOfEnrtyNumber')">
             <input id="boeNumber" type="text" [(ngModel)]="e.billingOfEnrtyNumber" (ngModelChange)="markDirty()"/>
-            <button type="button" class="df-gear" (click)="openNumberPrefs()" [appTooltip]="'BILL_OF_ENTRY.FORM.NUMBER_HELP' | translate" aria-label="settings">⚙</button>
+            <button type="button" class="df-gear" (click)="openNumberPrefs()" [appTooltip]="'BILL_OF_ENTRY.FORM.NUMBER_HELP' | translate" aria-label="settings"><span class="ui-icon ui-icon-gear"></span></button>
           </div>
           @if (fieldError('billingOfEnrtyNumber'); as err) { <p class="df-error">{{ err }}</p> }
         </div>

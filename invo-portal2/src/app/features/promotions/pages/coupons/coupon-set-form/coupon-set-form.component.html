@@ -153,7 +153,7 @@
     <section class="cf-card">
       <button type="button" class="cf-adv" (click)="advancedOpen.set(!advancedOpen())">
         <span>{{ 'PROMOTIONS.CAMPAIGNS.ADVANCE_SETTINGS' | translate }}</span>
-        <span class="cf-chevron" [class.is-open]="advancedOpen()">&#9662;</span>
+        <span class="cf-chevron ui-chevron" [class.is-open]="advancedOpen()"></span>
       </button>
       @if (advancedOpen()) {
         <div class="cf-field">

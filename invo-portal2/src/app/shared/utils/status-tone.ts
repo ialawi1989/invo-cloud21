@@ -13,9 +13,10 @@
  *   sky     #50a5f1  void · placed · empty (bootstrap "info")            → sky-500
  *   red     #f46a6a  closed · rejected · overdue · failed (bs "danger")  → red-400
  *   gray    #74788d  write-off (bootstrap "secondary")                   → slate-500
+ *   yellow  #ffc107  pending payment(s) — online checkout awaiting the gateway → yellow-400 (dark text)
  *   orange  #ff5a00  departure · arrived · completed                     → orange-500/600
  */
-export type StatusTone = 'dark' | 'lime' | 'amber' | 'cyan' | 'sky' | 'red' | 'gray' | 'orange';
+export type StatusTone = 'dark' | 'lime' | 'amber' | 'cyan' | 'sky' | 'red' | 'gray' | 'orange' | 'yellow';
 
 const TONES: Record<string, StatusTone> = {
   // legacy
@@ -24,7 +25,8 @@ const TONES: Record<string, StatusTone> = {
   'partially paid': 'amber',
   open: 'cyan', merged: 'cyan',
   void: 'sky', voided: 'sky', placed: 'sky',
-  closed: 'red', rejected: 'red', overdue: 'red', 'failed payment': 'red',
+  closed: 'red', rejected: 'red', overdue: 'red', 'failed payment': 'red', 'payment failed': 'red',
+  'pending payments': 'yellow', 'pending payment': 'yellow',
   writeoff: 'gray', 'write off': 'gray',
   departure: 'orange', arrived: 'orange', completed: 'orange',
   // not in legacy — same colour as the closest-meaning legacy status
@@ -49,6 +51,7 @@ const CLASSES: Record<StatusTone, string> = {
   red: 'bg-red-400 text-white',
   gray: 'bg-slate-500 text-white',
   orange: 'bg-orange-500 text-white',
+  yellow: 'bg-yellow-400 text-slate-900',
 };
 
 /** Tailwind classes of a status pill (`text-xs font-medium px-2.5 py-1 rounded-full` stays with the caller). */
@@ -61,6 +64,7 @@ export const railKind = (status: string | null | undefined): 'draft' | 'open' | 
     case 'dark': return 'draft';
     case 'lime': return 'paid';
     case 'amber':
+    case 'yellow':
     case 'orange': return 'partial';
     case 'red': return 'void';
     case 'sky': return 'info';

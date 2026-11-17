@@ -106,17 +106,17 @@
               <div class="cm-item__actions">
                 @if (c.status === 'deleted') {
                   <button type="button" class="cm-link cm-link--ok" (click)="restore(c)" [appTooltip]="'BLOG.COMMENTS.TIP_RESTORE' | translate">↺ {{ 'BLOG.COMMENTS.RESTORE' | translate }}</button>
-                  <button type="button" class="cm-link cm-link--danger" (click)="deleteForever(c)" [appTooltip]="'BLOG.COMMENTS.TIP_DELETE_FOREVER' | translate">🗑 {{ 'BLOG.COMMENTS.DELETE_FOREVER' | translate }}</button>
+                  <button type="button" class="cm-link cm-link--danger" (click)="deleteForever(c)" [appTooltip]="'BLOG.COMMENTS.TIP_DELETE_FOREVER' | translate">{{ 'BLOG.COMMENTS.DELETE_FOREVER' | translate }}</button>
                 } @else {
                   @if (c.status === 'pending') {
                     <button type="button" class="cm-link cm-link--ok" (click)="approve(c)" [appTooltip]="'BLOG.COMMENTS.TIP_APPROVE' | translate">
-                      ✓ {{ 'BLOG.COMMENTS.APPROVE' | translate }}
+                      <span class="ui-icon ui-icon-check"></span> {{ 'BLOG.COMMENTS.APPROVE' | translate }}
                     </button>
                   }
                   @if (c.status !== 'flagged') {
                     <button type="button" class="cm-link" (click)="flag(c)" [appTooltip]="'BLOG.COMMENTS.TIP_FLAG' | translate">⚑ {{ 'BLOG.COMMENTS.FLAG' | translate }}</button>
                   }
-                  <button type="button" class="cm-link cm-link--danger" (click)="remove(c)" [appTooltip]="'BLOG.COMMENTS.TIP_TRASH' | translate">🗑 {{ 'BLOG.COMMENTS.MOVE_TRASH' | translate }}</button>
+                  <button type="button" class="cm-link cm-link--danger" (click)="remove(c)" [appTooltip]="'BLOG.COMMENTS.TIP_TRASH' | translate">{{ 'BLOG.COMMENTS.MOVE_TRASH' | translate }}</button>
                   <button type="button" class="cm-link" (click)="openReply(c)" [appTooltip]="'BLOG.COMMENTS.TIP_REPLY' | translate">↩ {{ 'BLOG.COMMENTS.REPLY' | translate }}</button>
                 }
               </div>

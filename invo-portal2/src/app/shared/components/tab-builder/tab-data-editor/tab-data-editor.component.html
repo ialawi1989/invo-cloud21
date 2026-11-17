@@ -272,7 +272,7 @@
               {{ 'TAB_BUILDER.REVIEWS' | translate }}
               @if (reviewValue(tpl).length) {
                 <span class="review-summary">
-                  {{ averageRating(tpl) }} ★ · {{ reviewValue(tpl).length }}
+                  {{ averageRating(tpl) }} <span class="ui-icon ui-icon-star-fill"></span> · {{ reviewValue(tpl).length }}
                 </span>
               }
             </h4>

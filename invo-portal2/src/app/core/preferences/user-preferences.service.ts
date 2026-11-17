@@ -1,0 +1,60 @@
+import { Injectable, computed, effect, inject, signal, untracked } from '@angular/core';
+import { EmployeeOptionsService, EmployeePreferences } from '../layout/services/employee-options.service';
+import { LanguageService } from '../i18n/language.service';
+import { installDatePipePreferences } from './date-pipe-preferences';
+
+/** Date patterns offered in My Account (Angular `DatePipe` syntax). */
+export const DATE_FORMATS = ['dd/MM/yyyy', 'MM/dd/yyyy', 'yyyy-MM-dd', 'dd MMM yyyy', 'MMM d, yyyy'] as const;
+
+/**
+ * The employee's display preferences, loaded once after sign-in from the employee's options (`employee/getEmployeeOptions`)
+ * and saved back with `employee/setEmployeeOptions` through {@link EmployeeOptionsService}.
+ *
+ * What follows them app-wide: the timezone of every `date` pipe (through `DATE_PIPE_DEFAULT_OPTIONS`, see app.config) and its
+ * date format and clock (date-pipe-preferences.ts rewrites the well-known patterns, so existing templates need no change), the UI language, and the first day of the week of the shared date picker.
+ * `timePattern` is there for screens that show a bare time.
+ */
+@Injectable({ providedIn: 'root' })
+export class UserPreferencesService {
+  private options = inject(EmployeeOptionsService);
+  private lang = inject(LanguageService);
+
+  readonly prefs = signal<EmployeePreferences>({});
+  private loaded = false;
+
+  readonly timezone = computed(() => this.prefs().timezone || undefined);
+  readonly dateFormat = computed(() => this.prefs().dateFormat || undefined);
+  readonly firstDayOfWeek = computed(() => this.prefs().firstDayOfWeek ?? 0);
+  readonly timePattern = computed(() => (this.prefs().timeFormat === '12h' ? 'hh:mm a' : 'HH:mm'));
+
+  constructor() {
+    // Every `date` pipe follows the chosen date format and clock, whatever pattern its template names.
+    installDatePipePreferences(() => ({ date: this.dateFormat(), time: this.prefs().timeFormat }));
+    // Switching language from the top bar also becomes the employee's choice, so the next sign-in does not undo it.
+    effect(() => {
+      const code = this.lang.current();
+      untracked(() => {
+        if (this.loaded && this.prefs().language && this.prefs().language !== code) void this.save({ ...this.prefs(), language: code });
+      });
+    });
+  }
+
+  /** Reads the saved preferences and applies the language. Safe to call repeatedly. */
+  async load(): Promise<void> {
+    if (this.loaded) return;
+    const opts = await this.options.get();
+    this.prefs.set({ ...(opts?.preferences ?? {}) });
+    this.loaded = true;
+    const language = this.prefs().language;
+    if (language && language !== this.lang.current()) await this.lang.use(language);
+  }
+
+  /** Saves `next` as the employee's preferences (the other options are left as they are) and applies them. */
+  async save(next: EmployeePreferences): Promise<void> {
+    const clean = Object.fromEntries(Object.entries(next).filter(([, v]) => v !== undefined && v !== '' && v !== null)) as EmployeePreferences;
+    const current = (await this.options.get()) ?? {};
+    await this.options.setStrict({ ...current, preferences: clean });
+    this.prefs.set(clean);
+    if (clean.language && clean.language !== this.lang.current()) await this.lang.use(clean.language);
+  }
+}

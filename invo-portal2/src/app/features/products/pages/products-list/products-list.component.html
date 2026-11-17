@@ -63,6 +63,7 @@
       <span>{{ 'PRODUCTS.SORT.LABEL' | translate }}</span>
       @if (currentSortLabel()) {
         <span class="text-brand-600 font-medium">{{ currentSortLabel() }}</span>
+        <span class="text-brand-600 ui-icon" [class]="listPage?.sortBy()?.sortDirection === 'asc' ? 'ui-icon-arrow-up' : 'ui-icon-arrow-down'"></span>
       }
     </app-dropdown-menu-btn>
   </div>

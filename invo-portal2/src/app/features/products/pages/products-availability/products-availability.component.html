@@ -81,7 +81,7 @@
                 <td class="pa__name">
                   @if (row.hasOptions) {
                     <button type="button" class="pa__expand" (click)="toggleOptions(row)" [attr.aria-expanded]="isExpanded(row)">
-                      <span class="pa__chev" [class.is-open]="isExpanded(row)">&#9662;</span>{{ row.name }}
+                      <span class="pa__chev ui-chevron" [class.is-open]="isExpanded(row)"></span>{{ row.name }}
                     </button>
                   } @else {
                     {{ row.name }}

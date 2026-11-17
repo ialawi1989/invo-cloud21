@@ -95,7 +95,7 @@ export function humanize(name: string): string {
 export function nodeLabel(index: CatalogIndex, nodeId: string): string {
   const [rootKey, ...rels] = (nodeId || '').split('.');
   if (rels.length === 0) return index.get(rootKey)?.label || rootKey;
-  return rels.map(humanize).join(' › ');
+  return rels.map(humanize).join(' / ');
 }
 
 /** Fields of one node as builder FlatFields. */

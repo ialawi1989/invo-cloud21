@@ -2,6 +2,7 @@ import { E_INVOICE_PUBLIC_ROUTES } from './features/e-invoice/e-invoice.routes';
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { guestGuard } from './core/guards/guest.guard';
+import { preferencesLoadedGuard } from './core/preferences/preferences-loaded.guard';
 import { unsavedChangesGuard } from './core/guards/unsaved-changes.guard';
 import { privilegeGuard } from './core/guards/privilege.guard';
 import { customReportsTranslationsLoaded } from './features/reports/custom/custom-reports.guards';
@@ -139,10 +140,19 @@ export const routes: Routes = [
       import('./features/reports/custom/custom-reports.routes').then(m => m.CUSTOM_REPORTS_ROUTES),
   },
 
+  {
+    // Companies Overview — the company-group area has its own slim shell (own top bar, no portal sidebar/topbar),
+    // like the legacy `companies-overview` module. Its routes live in the feature.
+    path: 'companies-overview',
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('./features/companies-overview/companies-overview.routes').then(m => m.COMPANIES_OVERVIEW_ROUTES),
+  },
+
   // ── Protected (requires login) ───────────────────────────────────────────
   {
     path: '',
-    canActivate: [authGuard],
+    canActivate: [authGuard, preferencesLoadedGuard],
     loadComponent: () =>
       import('./core/layout/main-layout.component').then(m => m.MainLayoutComponent),
     children: [
@@ -250,6 +260,23 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/settings/pages/estimate-options/estimate-options.component')
             .then(m => m.EstimateOptionsComponent),
+        canDeactivate: [unsavedChangesGuard],
+      },
+      {
+        path: 'settings/tax-details',
+        loadComponent: () =>
+          import('./features/settings/pages/tax-details/tax-details.component')
+            .then(m => m.TaxDetailsComponent),
+        canDeactivate: [unsavedChangesGuard],
+      },
+      {
+        path: 'settings/tax/new',
+        loadComponent: () => import('./features/settings/pages/tax-form/tax-form.component').then(m => m.TaxFormComponent),
+        canDeactivate: [unsavedChangesGuard],
+      },
+      {
+        path: 'settings/tax/:id',
+        loadComponent: () => import('./features/settings/pages/tax-form/tax-form.component').then(m => m.TaxFormComponent),
         canDeactivate: [unsavedChangesGuard],
       },
       {

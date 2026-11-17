@@ -22,7 +22,7 @@
         <div class="cpo__suppliers-head">
           <span>{{ 'PRODUCTS.INVENTORY_REQUEST.CHOOSE_SUPPLIER' | translate }}</span>
           <button type="button" class="cpo__collapse" (click)="collapsed.set(!collapsed())">
-            {{ collapsed() ? '›' : '‹' }}
+            <span class="ui-icon" [class.ui-icon-chevron-right]="collapsed()" [class.ui-icon-chevron-left]="!collapsed()"></span>
           </button>
         </div>
         @if (!collapsed()) {

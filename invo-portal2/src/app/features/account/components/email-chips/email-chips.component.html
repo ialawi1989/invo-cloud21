@@ -5,7 +5,7 @@
         (keydown)="onEditKey($event)" (blur)="commitEdit(true)"/>
     } @else {
       <span class="ec__chip" (contextmenu)="openMenu($event, e)" (dblclick)="startEdit(e)" [appTooltip]="'DOC_SEND.CHIP_HINT' | translate">{{ e }}
-        <button type="button" [disabled]="disabled()" (click)="remove(e)" aria-label="remove">✕</button></span>
+        <button type="button" [disabled]="disabled()" (click)="remove(e)" aria-label="remove"><span class="ui-icon ui-icon-x"></span></button></span>
     }
   }
   <input class="ec__input" type="text" [placeholder]="'DOC_SEND.ADD_EMAIL' | translate" [disabled]="disabled()"

@@ -3,6 +3,7 @@ import {
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
+import { SafeHtmlPipe } from '../../../pipes/safe-html.pipe';
 import { ModalService } from '../../../../shared/modal/modal.service';
 import { GlobalSearchService, SearchHit } from '../../services/global-search.service';
 
@@ -14,7 +15,7 @@ import { GlobalSearchService, SearchHit } from '../../services/global-search.ser
 @Component({
   selector: 'app-global-search',
   standalone: true,
-  imports: [TranslateModule],
+  imports: [TranslateModule, SafeHtmlPipe],
   templateUrl: './global-search.component.html',
   styleUrl: './global-search.component.scss',
 })
@@ -34,10 +35,20 @@ export class GlobalSearchComponent {
 
   readonly isMac = typeof navigator !== 'undefined' && /mac/i.test(navigator.platform);
 
+  /** Corrected query ("previllege" → "privilege") when the typed one finds nothing. */
+  readonly suggestion = computed<string | null>(() => {
+    this.indexVersion();
+    const q = this.query().trim();
+    if (!q || this.search.search(q).length) return null;
+    const s = this.search.suggest(q);
+    return s && this.search.search(s).length ? s : null;
+  });
+
   readonly hits = computed<SearchHit[]>(() => {
     this.indexVersion();
     const q = this.query().trim();
-    return q ? this.search.search(q) : this.search.browse();
+    if (!q) return this.search.browse();
+    return this.search.search(this.suggestion() ?? q);
   });
   readonly hasQuery = computed(() => this.query().trim().length > 0);
 
@@ -74,6 +85,14 @@ export class GlobalSearchComponent {
   onInput(e: Event): void {
     this.query.set((e.target as HTMLInputElement).value);
     this.active.set(0);
+  }
+
+  applySuggestion(): void {
+    const s = this.suggestion();
+    if (!s) return;
+    this.query.set(s);
+    this.active.set(0);
+    this.inputEl?.nativeElement.focus();
   }
 
   onKeydown(e: KeyboardEvent): void {

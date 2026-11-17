@@ -30,7 +30,7 @@
             [placeholder]="'COMMON.SEARCH' | translate"
           />
           @if (searchTerm()) {
-            <button type="button" class="pf-sl-clear" (click)="clearSearch()" [attr.aria-label]="'COMMON.CLEAR_ALL' | translate">✕</button>
+            <button type="button" class="pf-sl-clear" (click)="clearSearch()" [attr.aria-label]="'COMMON.CLEAR_ALL' | translate"><span class="ui-icon ui-icon-x"></span></button>
           }
         </label>
       } @else {

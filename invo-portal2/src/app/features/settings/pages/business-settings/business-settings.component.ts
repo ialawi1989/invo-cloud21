@@ -26,7 +26,6 @@ import { LoadingOverlayComponent } from '@shared/components/spinner/loading-over
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 import { ToastService } from '@shared/components/toast/toast.service';
-import { ToggleComponent } from '@shared/components/toggle/toggle.component';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
 import { ModalService } from '@shared/modal/modal.service';
 
@@ -37,7 +36,7 @@ import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton
 /**
  * Settings → Business Settings
  *
- * Edits company-wide identity, locale and tax fields. Reads/writes via
+ * Edits company-wide identity and locale fields (tax lives in Tax Settings). Reads/writes via
  * `BusinessSettingsService` which wraps `getCompanySetting` / `saveCompany`
  * and re-pushes the cached `CompanyService.settings` signal on save so
  * sidebar names / logos / breadcrumbs refresh immediately.
@@ -58,8 +57,7 @@ import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton
     LoadingOverlayComponent,
     SearchDropdownComponent,
     FormStickyFooterComponent,
-    ToggleComponent,
-  ],
+    ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './business-settings.component.html',
   styleUrl: './business-settings.component.scss',
@@ -94,8 +92,6 @@ export class BusinessSettingsComponent implements OnInit, CanLeaveComponent {
     afterDecimal:     [{ value: 0, disabled: true }],
     smallestCurrency: [0, [Validators.min(0), Validators.max(0.99)]],
     roundingType:     ['normal' as 'normal' | 'negative' | 'positive'],
-    vatNumber:        [''],
-    isInclusiveTax:   [false],
   });
 
   /** Logo state lives outside the form because it goes through the media
@@ -153,8 +149,6 @@ export class BusinessSettingsComponent implements OnInit, CanLeaveComponent {
         afterDecimal:     data.settings?.afterDecimal ?? 0,
         smallestCurrency: data.smallestCurrency ?? 0,
         roundingType:     data.roundingType ?? 'normal',
-        vatNumber:        data.vatNumber ?? '',
-        isInclusiveTax:   !!data.isInclusiveTax,
       });
       this.mediaId.set(data.mediaId ?? null);
       this.mediaUrl.set(data.mediaUrl?.defaultUrl ?? data.mediaUrl?.thumbnailUrl ?? null);
@@ -246,8 +240,6 @@ export class BusinessSettingsComponent implements OnInit, CanLeaveComponent {
         name:             v.name,
         smallestCurrency: Number(v.smallestCurrency ?? 0),
         roundingType:     v.roundingType,
-        vatNumber:        v.vatNumber ?? '',
-        isInclusiveTax:   !!v.isInclusiveTax,
         mediaId:          this.mediaId(),
       };
       await this.service.saveCompany(payload);

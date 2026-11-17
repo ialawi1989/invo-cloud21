@@ -275,7 +275,7 @@
               <span class="role-card__title">{{ 'EMPLOYEES.FORM.CLOUD_ADMIN' | translate }}</span>
               <span class="role-card__hint">{{ 'EMPLOYEES.FORM.FULL_SYSTEM_ACCESS' | translate }}</span>
               <span class="role-card__check" [class.role-card__check--on]="isAdmin()" aria-hidden="true">
-                @if (isAdmin()) { ✓ }
+                @if (isAdmin()) { <span class="ui-icon ui-icon-check"></span> }
               </span>
             </button>
 
@@ -292,7 +292,7 @@
               <span class="role-card__title">{{ 'EMPLOYEES.FORM.POS_USER' | translate }}</span>
               <span class="role-card__hint">{{ 'EMPLOYEES.FORM.POINT_OF_SALE_ACCESS' | translate }}</span>
               <span class="role-card__check" [class.role-card__check--on]="isUser()" aria-hidden="true">
-                @if (isUser()) { ✓ }
+                @if (isUser()) { <span class="ui-icon ui-icon-check"></span> }
               </span>
             </button>
 
@@ -308,7 +308,7 @@
               <span class="role-card__title">{{ 'EMPLOYEES.FORM.IS_DRIVER' | translate }}</span>
               <span class="role-card__hint">{{ 'EMPLOYEES.FORM.DELIVERY_DRIVER_ROLE' | translate }}</span>
               <span class="role-card__check" [class.role-card__check--on]="form.controls['isDriver'].value" aria-hidden="true">
-                @if (form.controls['isDriver'].value) { ✓ }
+                @if (form.controls['isDriver'].value) { <span class="ui-icon ui-icon-check"></span> }
               </span>
             </button>
 
@@ -324,7 +324,7 @@
               <span class="role-card__title">{{ 'EMPLOYEES.FORM.IS_SALES_PERSON' | translate }}</span>
               <span class="role-card__hint">{{ 'EMPLOYEES.FORM.SALES_PERSON_ROLE' | translate }}</span>
               <span class="role-card__check" [class.role-card__check--on]="form.controls['isSalesPerson'].value" aria-hidden="true">
-                @if (form.controls['isSalesPerson'].value) { ✓ }
+                @if (form.controls['isSalesPerson'].value) { <span class="ui-icon ui-icon-check"></span> }
               </span>
             </button>
           </div>
@@ -596,7 +596,7 @@
                       [disabled]="isSuperAdmin()"
                       [appTooltip]="'EMPLOYEES.FORM.SET_AS_PRIMARY' | translate"
                       (click)="setPrimaryBranch(b.id)">
-                      {{ b.id === primaryBranchId() ? '★' : '☆' }}
+                      <span class="ui-icon" [class.ui-icon-star-fill]="b.id === primaryBranchId()" [class.ui-icon-star]="b.id !== primaryBranchId()"></span>
                     </button>
                     <span class="branch-list__name">{{ b.name }}</span>
                     @if (b.id === primaryBranchId()) {

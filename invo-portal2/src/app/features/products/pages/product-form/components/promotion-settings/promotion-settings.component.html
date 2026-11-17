@@ -39,6 +39,25 @@
         }
       </div>
 
+      @if (countField().isVisible) {
+        <div class="pf-field">
+          <label class="pf-label" [attr.for]="controlName('count')">{{ labels().count | translate }}</label>
+          <input type="number" class="pf-input" min="1" [max]="maxCount" step="1" [id]="controlName('count')"
+            [formControlName]="controlName('count')"
+            [class.pf-input--invalid]="ctl('count')?.errors"
+            [placeholder]="labels().countPlaceholder | translate"/>
+          @if (hasError('count', 'required')) {
+            <p class="pf-error">{{ 'PRODUCTS.PROMOTION_FORM.THIS_VALUE_IS_REQUIRED' | translate }}</p>
+          }
+          @if (hasError('count', 'min')) {
+            <p class="pf-error">{{ 'PRODUCTS.PROMOTION_FORM.MINIMUM_VALUE' | translate: { value: 1 } }}</p>
+          }
+          @if (hasError('count', 'max')) {
+            <p class="pf-error">{{ 'PRODUCTS.PROMOTION_FORM.MAXIMUM_VALUE' | translate: { value: maxCount } }}</p>
+          }
+        </div>
+      }
+
       <div class="pf-field">
         <label class="pf-label">{{ 'PROMOTIONS.PROMOTIONS_POINTS.ACTIVE_PERIOD' | translate }}</label>
         <app-day-span-control [value]="settings().activePeriod" (valueChange)="onPeriodChange('activePeriod', $event)"/>

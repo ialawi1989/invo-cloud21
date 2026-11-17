@@ -92,7 +92,7 @@
                 [disabled]="i === 0"
                 [appTooltip]="'CUSTOM_REPORTS.DASHBOARD.MOVE_EARLIER' | translate"
               >
-                ‹
+                <span class="ui-icon ui-icon-chevron-left"></span>
               </button>
               <button
                 type="button"
@@ -101,7 +101,7 @@
                 [disabled]="i === dashboard.sheets.length - 1"
                 [appTooltip]="'CUSTOM_REPORTS.DASHBOARD.MOVE_LATER' | translate"
               >
-                ›
+                <span class="ui-icon ui-icon-chevron-right"></span>
               </button>
             </div>
           </div>

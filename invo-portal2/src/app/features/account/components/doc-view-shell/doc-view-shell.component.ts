@@ -119,9 +119,9 @@ import { DocRailFilterComponent, DocRailFilterOption } from '../doc-rail-filter/
         </div>
         @if (railPageCount() > 1) {
           <div class="dv-rail__pager">
-            <button type="button" class="dv-rail__page-btn" [disabled]="railPage() <= 1" (click)="railPrev.emit()">‹ {{ 'COMMON.PREVIOUS' | translate }}</button>
+            <button type="button" class="dv-rail__page-btn" [disabled]="railPage() <= 1" (click)="railPrev.emit()"><span class="ui-icon ui-icon-chevron-left"></span> {{ 'COMMON.PREVIOUS' | translate }}</button>
             <span class="dv-rail__page-of">{{ railPage() }} / {{ railPageCount() }}</span>
-            <button type="button" class="dv-rail__page-btn" [disabled]="railPage() >= railPageCount()" (click)="railNext.emit()">{{ 'COMMON.NEXT' | translate }} ›</button>
+            <button type="button" class="dv-rail__page-btn" [disabled]="railPage() >= railPageCount()" (click)="railNext.emit()">{{ 'COMMON.NEXT' | translate }} <span class="ui-icon ui-icon-chevron-right"></span></button>
           </div>
         }
       </aside>

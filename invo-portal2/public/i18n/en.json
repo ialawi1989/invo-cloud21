@@ -569,6 +569,7 @@
     "RESULTS": "Results",
     "QUICK_ACCESS": "Quick access",
     "NO_RESULTS": "No pages or settings match",
+    "SHOWING_FOR": "Showing results for",
     "FOUND_IN_PAGE": "Found in page",
     "HINT_NAV": "to navigate",
     "HINT_OPEN": "to open",
@@ -709,6 +710,9 @@
     "FORBIDDEN_REQUEST_PENDING": "You already have a pending request for this page. Your administrator will review it.",
     "FORBIDDEN_REQUEST_DONE": "Request sent",
     "FORBIDDEN_REQUEST_FAILED": "Couldn't send the request. Please try again.",
+    "FEATURE_REQUEST_TITLE": "Feature not available for your account",
+    "FEATURE_REQUEST_DESC": "{{page}} isn't part of your current plan.",
+    "FEATURE_REQUEST_HINT": "Contact INVO to enable it for your account.",
     "FEATURE_UNAVAILABLE_TITLE": "Feature not available",
     "FEATURE_UNAVAILABLE_DESC": "This feature is not included in your current plan.",
     "FEATURE_UNAVAILABLE_HINT": "Contact your administrator or upgrade your plan to unlock it."

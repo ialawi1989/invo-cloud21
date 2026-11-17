@@ -45,8 +45,8 @@ export interface ReorderModalData {
               (change)="moveTo(i, $any($event.target).value)" [attr.aria-label]="'COMMON.REORDER.POSITION' | translate"/>
             @if (it.image) { <img class="ro__img" [src]="it.image" alt=""/> }
             <div class="ro__name"><strong>{{ it.label }}</strong>@if (it.sub) { <small>{{ it.sub }}</small> }</div>
-            <button type="button" class="ro__btn" [disabled]="i === 0" (click)="moveTo(i, i)" [attr.aria-label]="'COMMON.MOVE_UP' | translate">▲</button>
-            <button type="button" class="ro__btn" [disabled]="i === items().length - 1" (click)="moveTo(i, i + 2)" [attr.aria-label]="'COMMON.MOVE_DOWN' | translate">▼</button>
+            <button type="button" class="ro__btn" [disabled]="i === 0" (click)="moveTo(i, i)" [attr.aria-label]="'COMMON.MOVE_UP' | translate"><span class="ui-chevron is-up"></span></button>
+            <button type="button" class="ro__btn" [disabled]="i === items().length - 1" (click)="moveTo(i, i + 2)" [attr.aria-label]="'COMMON.MOVE_DOWN' | translate"><span class="ui-chevron"></span></button>
           </li>
         }
       </ul>

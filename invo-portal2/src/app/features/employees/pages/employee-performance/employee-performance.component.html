@@ -180,7 +180,7 @@
           <header class="perf-card__head">
             <div class="perf-card__ident">
               <span class="perf-card__cycle">{{ cycleLabel(r) | translate }}</span>
-              <span class="perf-card__period">{{ r.periodStart }} → {{ r.periodEnd }}</span>
+              <span class="perf-card__period">{{ r.periodStart }} <span class="ui-icon ui-icon-arrow-right"></span> {{ r.periodEnd }}</span>
               @if (r.reviewerName) {
                 <span class="perf-chip">{{ r.reviewerName }}</span>
               }

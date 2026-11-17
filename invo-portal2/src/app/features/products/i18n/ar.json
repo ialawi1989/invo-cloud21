@@ -457,16 +457,21 @@
     "PROMOTION_SETTINGS": "إعدادات العرض",
     "VOUCHER_NAME": "اسم القسيمة",
     "VOUCHER_AMOUNT": "قيمة القسيمة",
+    "VOUCHER_COUNT": "عدد القسائم",
     "PROMOTION_NAME": "اسم العرض",
     "PROMOTION_AMOUNT": "قيمة العرض",
+    "PROMOTION_COUNT": "عدد العروض",
     "GIFT_VOUCHER": "قسيمة هدية",
     "PROMOTION_FORM": {
       "ENTER_VOUCHER_NAME": "أدخل اسم القسيمة",
       "ENTER_VOUCHER_AMOUNT": "أدخل قيمة القسيمة",
+      "ENTER_VOUCHER_COUNT": "أدخل عدد القسائم",
       "ENTER_PROMOTION_NAME": "أدخل اسم العرض",
       "ENTER_PROMOTION_AMOUNT": "أدخل قيمة العرض",
+      "ENTER_PROMOTION_COUNT": "أدخل عدد العروض",
       "THIS_VALUE_IS_REQUIRED": "هذه القيمة مطلوبة",
-      "MINIMUM_VALUE": "القيمة الدنيا هي {{value}}"
+      "MINIMUM_VALUE": "القيمة الدنيا هي {{value}}",
+      "MAXIMUM_VALUE": "القيمة القصوى هي {{value}}"
     },
     "TYPES": {
       "INVENTORY": "مخزون",

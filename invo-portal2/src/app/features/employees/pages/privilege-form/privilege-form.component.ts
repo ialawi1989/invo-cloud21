@@ -17,6 +17,7 @@ import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { EmployeePrivilege } from '@core/auth/privileges/models/privilege.model';
 import { PrivilegeSetting } from '@core/auth/privileges/models/privilege-setting.model';
+import { SECURITY_DEFINITIONS } from '@core/auth/privileges/definitions/registry';
 
 /** A saved privilege set the user can clone from (the "preset" dropdown). */
 interface RoleOption { id: string; name: string; }
@@ -682,6 +683,18 @@ export class PrivilegeFormComponent implements OnInit, CanLeaveComponent {
     this.translate.onLangChange
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.i18nTick.update(n => n + 1));
+
+    // Deep link from the global search (?privilege=<groupKey>): open that group's module and filter to it.
+    this.route.queryParamMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(q => {
+        const key = q.get('privilege');
+        if (!key) return;
+        const g = (SECURITY_DEFINITIONS as Record<string, () => PrivilegeSetting>)[key]?.();
+        if (!g) return;
+        this.moduleKey.set(g.securityGroup || 'general');
+        this.search.set(g.name);
+      });
   }
 
   async ngOnInit(): Promise<void> {

@@ -8,13 +8,13 @@
 
     <div class="dis__row dis__row--actions">
       <button class="dis__icon-btn" [appTooltip]="'DOCUMENT_BUILDER.DESIGNER.SEND_TO_BACK' | translate" (click)="arrange.emit('back')">⇤</button>
-      <button class="dis__icon-btn" [appTooltip]="'DOCUMENT_BUILDER.DESIGNER.SEND_BACK' | translate" (click)="arrange.emit('backward')">←</button>
+      <button class="dis__icon-btn" [appTooltip]="'DOCUMENT_BUILDER.DESIGNER.SEND_BACK' | translate" (click)="arrange.emit('backward')"><span class="ui-icon ui-icon-arrow-left"></span></button>
       <button class="dis__icon-btn" [appTooltip]="'DOCUMENT_BUILDER.DESIGNER.BRING_FORWARD' | translate" (click)="arrange.emit('forward')">→</button>
       <button class="dis__icon-btn" [appTooltip]="'DOCUMENT_BUILDER.DESIGNER.BRING_TO_FRONT' | translate" (click)="arrange.emit('front')">⇥</button>
       <span class="dis__sep"></span>
       <button class="dis__icon-btn" [appTooltip]="'COMMON.DUPLICATE' | translate" (click)="duplicate.emit()">⎘</button>
       <button class="dis__icon-btn" [appTooltip]="(e.hidden ? 'DOCUMENT_BUILDER.DESIGNER.SHOW' : 'DOCUMENT_BUILDER.DESIGNER.HIDE') | translate" (click)="toggleHidden.emit()">{{ e.hidden ? '◯' : '◉' }}</button>
-      <button class="dis__icon-btn" [appTooltip]="(e.locked ? 'DOCUMENT_BUILDER.DESIGNER.UNLOCK' : 'DOCUMENT_BUILDER.DESIGNER.LOCK') | translate" (click)="toggleLocked.emit()">{{ e.locked ? '🔒' : '🔓' }}</button>
+      <button class="dis__icon-btn" [appTooltip]="(e.locked ? 'DOCUMENT_BUILDER.DESIGNER.UNLOCK' : 'DOCUMENT_BUILDER.DESIGNER.LOCK') | translate" (click)="toggleLocked.emit()"><span class="ui-icon" [class.ui-icon-lock]="e.locked" [class.ui-icon-unlock]="!e.locked"></span></button>
       <button class="dis__icon-btn dis__icon-btn--danger" [appTooltip]="'COMMON.DELETE' | translate" (click)="delete.emit()">×</button>
     </div>
 

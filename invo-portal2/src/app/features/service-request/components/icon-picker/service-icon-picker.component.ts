@@ -2,18 +2,8 @@ import { ChangeDetectionStrategy, Component, ElementRef, HostListener, computed,
 import { TranslateModule } from '@ngx-translate/core';
 
 import { DEFAULT_SERVICE_ICON } from '../../models/service-request.model';
-
-interface IconCategory { key: string; label: string; icons: string[]; }
-
-/** Same emoji sets as the legacy form's `restaurantIconCategories`. */
-const CATEGORIES: IconCategory[] = [
-  { key: 'service', label: 'SERVICE_REQUEST.ICONS.SERVICE', icons: ['🛎️', '👋', '🙋‍♂️', '🙋‍♀️', '💳', '🧾', '💰', '💸', '🧮', '✋', '📞', '📱', '🆘', '⚠️', '❗', '❓', '💡', '🔔', '📢', '📣', '🚨', '⏰', '⌛', '🕐', '🕑', '🕒', '🕓', '🕔', '🕕', '🔄', '🔃', '♻️', '🔁', '🆔', '🏷️', '📝', '📋', '✅', '❌', '⭕'] },
-  { key: 'water_drinks', label: 'SERVICE_REQUEST.ICONS.WATER_DRINKS', icons: ['💧', '🚰', '🫗', '🥤', '🧊', '🍶', '🥛', '☕', '🫖', '🍵', '🧃', '🧋', '🍾', '🍷', '🍸', '🍹', '🍺', '🍻', '🥂', '🥃', '🧉', '🍋', '🍊', '🥥', '🍇', '🍓', '💦', '🌊', '🏺', '🪣', '🫙', '🍼', '🥢', '🥄', '🍴'] },
-  { key: 'bbq_grill', label: 'SERVICE_REQUEST.ICONS.BBQ_GRILL', icons: ['🔥', '🪵', '⚫', '🪨', '🧱', '⛽', '🔋', '🪔', '🕯️', '💨', '🌬️', '💥', '⚡', '🌡️', '🥩', '🍖', '🍗', '🌭', '🥓', '🐟', '🦐', '🦞', '🦀', '🥘', '🍲', '🍳', '🥞', '🧆', '🌮', '🍔', '👨‍🍳', '👩‍🍳', '🧑‍🍳', '🔪', '🍽️', '🧂', '🌶️', '🧄'] },
-  { key: 'assistance', label: 'SERVICE_REQUEST.ICONS.ASSISTANCE', icons: ['🆘', '❓', '❗', '💡', '🔍', '👀', '👂', '👋', '✋', '🤚', '🖐️', '🙏', '👍', '👎', '👌', '✌️', '🤞', '🤝', '👏', '🙌', '🤷‍♂️', '🤷‍♀️', '🙋‍♂️', '🙋‍♀️', '💁‍♂️', '💁‍♀️', '🧑‍💼', '👨‍💼', '👩‍💼', '📞', '📱', '📢', '📣', '🔔', '⏰', '🛎️', '🚨', '⚠️', '🆔', '🏷️'] },
-  { key: 'payment', label: 'SERVICE_REQUEST.ICONS.PAYMENT', icons: ['💳', '💰', '💸', '💵', '💴', '💶', '💷', '🪙', '💎', '🏦', '🧾', '📄', '📃', '📋', '📝', '✏️', '🖊️', '✒️', '🖋️', '📊', '📈', '📉', '🧮', '💲', '🔢', '#️⃣', '*️⃣', '🔟', '💯', '🆔', '🏷️', '📍', '📌', '📎', '🖇️', '📁', '📂', '🗂️', '🗃️', '🗄️'] },
-  { key: 'utensils', label: 'SERVICE_REQUEST.ICONS.UTENSILS', icons: ['🍽️', '🥄', '🍴', '🥢', '🔪', '🧂', '🫙', '🍷', '🥂', '🍾', '🫖', '☕', '🍵', '🥛', '🧊', '🕯️', '🪔', '🧻', '🧽', '🧴', '🧼', '🫧', '💧', '🚰', '🫗', '🥤', '🧃', '🍼', '🥫', '🍱', '🥡', '🥪', '🌯', '🌮', '🥙', '🍗', '🍖', '🥩', '🍳', '🥞'] },
-];
+import { EmojiIconComponent } from '@shared/components/emoji-icon/emoji-icon.component';
+import { EMOJI_ICON_CATEGORIES, emojiIconFor } from '@shared/components/emoji-icon/emoji-icon-set';
 
 const PER_PAGE = 48;
 
@@ -24,7 +14,7 @@ const PER_PAGE = 48;
 @Component({
   selector: 'app-service-icon-picker',
   standalone: true,
-  imports: [TranslateModule],
+  imports: [TranslateModule, EmojiIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './service-icon-picker.component.html',
   styleUrl: './service-icon-picker.component.scss',
@@ -41,13 +31,13 @@ export class ServiceIconPickerComponent {
   readonly category = signal('all');
   readonly page = signal(1);
 
-  readonly tabs = computed(() => [{ key: 'all', label: 'SERVICE_REQUEST.ICONS.ALL' }, ...CATEGORIES.map(c => ({ key: c.key, label: c.label }))]);
+  readonly tabs = computed(() => [{ key: 'all', label: 'SERVICE_REQUEST.ICONS.ALL' }, ...EMOJI_ICON_CATEGORIES.map(c => ({ key: c.key, label: c.label }))]);
 
   readonly filtered = computed(() => {
     const cat = this.category();
-    let icons = cat === 'all' ? [...new Set(CATEGORIES.flatMap(c => c.icons))] : (CATEGORIES.find(c => c.key === cat)?.icons ?? []);
+    let icons = cat === 'all' ? [...new Set(EMOJI_ICON_CATEGORIES.flatMap(c => c.emojis))] : (EMOJI_ICON_CATEGORIES.find(c => c.key === cat)?.emojis ?? []);
     const q = this.query();
-    if (q) icons = icons.filter(i => i.includes(q));
+    if (q) { const ql = q.toLowerCase(); icons = icons.filter(i => emojiIconFor(i).label.includes(ql)); }
     return icons;
   });
   readonly totalPages = computed(() => Math.ceil(this.filtered().length / PER_PAGE));

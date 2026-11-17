@@ -7,6 +7,8 @@ import { LayoutService } from '../../core/layout/services/layout.service';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { TopbarComponent } from './components/topbar/topbar.component';
 import { AssistantPanelComponent } from '../ai/assistant/assistant-panel.component';
+import { EmployeeAvatarService } from '../auth/employee-avatar.service';
+import { UserPreferencesService } from '../preferences/user-preferences.service';
 import { ScrollTopButtonComponent } from '@shared/components/scroll-top/scroll-top-button.component';
 
 @Component({
@@ -97,6 +99,9 @@ export class MainLayoutComponent {
   private restoreCollapsed: boolean | null = null;
 
   constructor() {
+    // The employee's own preferences (timezone, formats, language) apply from the first screen after sign-in.
+    void inject(UserPreferencesService).load();
+    void inject(EmployeeAvatarService).sync();
     // The router's `scrollPositionRestoration: 'top'` runs once, right at
     // NavigationEnd — before a lazy page has rendered. Anything that then
     // focuses or scrolls an element while the page settles (autofocus,

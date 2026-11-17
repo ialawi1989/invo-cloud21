@@ -75,7 +75,7 @@
                 }
                 <div class="ep-chips">
                   @for (e of picked; track e.id; let i = $index) {
-                    <button type="button" class="ep-chip" (click)="unpick(e)" [appTooltip]="'COMMON.REMOVE' | translate">{{ i + 1 }}. {{ e.name }} ✕</button>
+                    <button type="button" class="ep-chip" (click)="unpick(e)" [appTooltip]="'COMMON.REMOVE' | translate">{{ i + 1 }}. {{ e.name }} <span class="ui-icon ui-icon-x"></span></button>
                   }
                 </div>
                 <p class="ep-hint">{{ 'TIPS.EMPLOYEE_ORDER_HINT' | translate }}</p>
@@ -141,9 +141,9 @@
 
       @if (historyPageCount > 1) {
         <div class="ep-pager">
-          <button type="button" class="ep-btn" [disabled]="historyPage <= 1" (click)="prevHistoryPage()">‹</button>
+          <button type="button" class="ep-btn" [disabled]="historyPage <= 1" (click)="prevHistoryPage()"><span class="ui-icon ui-icon-chevron-left"></span></button>
           <span>{{ historyPage }} / {{ historyPageCount }}</span>
-          <button type="button" class="ep-btn" [disabled]="historyPage >= historyPageCount" (click)="nextHistoryPage()">›</button>
+          <button type="button" class="ep-btn" [disabled]="historyPage >= historyPageCount" (click)="nextHistoryPage()"><span class="ui-icon ui-icon-chevron-right"></span></button>
         </div>
       }
     </div>

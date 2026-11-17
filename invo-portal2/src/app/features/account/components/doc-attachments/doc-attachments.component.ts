@@ -81,7 +81,7 @@ const toAttachment = (m: any): DocAttachment => ({
                   </span>
                 </div>
               </div>
-              <button type="button" class="da__remove" [disabled]="busy()" (click)="remove(a)" aria-label="remove">✕</button>
+              <button type="button" class="da__remove" [disabled]="busy()" (click)="remove(a)" aria-label="remove"><span class="ui-icon ui-icon-x"></span></button>
             </li>
           }
         </ul>

@@ -74,7 +74,7 @@ interface AiAction {
           <div class="re-ai__group">Edit</div>
           @for (a of editActions; track a.id) {
             <button type="button" class="re-ai__act" (click)="runAction(a)">
-              <span class="re-ai__actIco">{{ a.icon }}</span> {{ a.label }}
+              <span class="re-ai__actIco ui-icon" [class]="a.icon"></span> {{ a.label }}
             </button>
           }
           <button type="button" class="re-ai__act" (click)="view.set('tone')">
@@ -85,7 +85,7 @@ interface AiAction {
           <div class="re-ai__group">Create content</div>
           @for (a of createActions; track a.id) {
             <button type="button" class="re-ai__act" (click)="runAction(a)">
-              <span class="re-ai__actIco">{{ a.icon }}</span> {{ a.label }}
+              <span class="re-ai__actIco ui-icon" [class]="a.icon"></span> {{ a.label }}
             </button>
           }
         </div>
@@ -182,18 +182,18 @@ export class RichAiPanelComponent {
   /** Edit actions — adjust existing copy (act on the selection, or the
    *  whole post when nothing is selected). */
   readonly editActions: AiAction[] = [
-    { id: 'improve',  label: 'Improve writing',        icon: '✦', task: 'improve', instruction: 'Improve the writing — clarity, flow and word choice — without changing the meaning.' },
-    { id: 'rephrase', label: 'Rephrase',               icon: '↻', task: 'rewrite', instruction: 'Rephrase the text while preserving its meaning.' },
-    { id: 'grammar',  label: 'Fix spelling & grammar', icon: '✓', task: 'custom',  instruction: 'Fix only the spelling and grammar mistakes. Keep the original wording and meaning.' },
-    { id: 'shorten',  label: 'Shorten',                icon: '↧', task: 'custom',  instruction: 'Make the text shorter and more concise while keeping the key points.' },
-    { id: 'expand',   label: 'Expand',                 icon: '↥', task: 'custom',  instruction: 'Expand the text with more detail and explanation, keeping the same tone.' },
+    { id: 'improve',  label: 'Improve writing',        icon: 'ui-icon-sparkle', task: 'improve', instruction: 'Improve the writing — clarity, flow and word choice — without changing the meaning.' },
+    { id: 'rephrase', label: 'Rephrase',               icon: 'ui-icon-refresh', task: 'rewrite', instruction: 'Rephrase the text while preserving its meaning.' },
+    { id: 'grammar',  label: 'Fix spelling & grammar', icon: 'ui-icon-check', task: 'custom',  instruction: 'Fix only the spelling and grammar mistakes. Keep the original wording and meaning.' },
+    { id: 'shorten',  label: 'Shorten',                icon: 'ui-icon-shrink', task: 'custom',  instruction: 'Make the text shorter and more concise while keeping the key points.' },
+    { id: 'expand',   label: 'Expand',                 icon: 'ui-icon-expand', task: 'custom',  instruction: 'Expand the text with more detail and explanation, keeping the same tone.' },
   ];
 
   /** Create-content actions — generate new copy from the post context. */
   readonly createActions: AiAction[] = [
-    { id: 'summarize', label: 'Summarize',         icon: '⊟', task: 'summarize', instruction: 'Summarize the text concisely.' },
-    { id: 'heading',   label: 'Create a heading',  icon: 'H', task: 'custom',    instruction: 'Write one concise, compelling heading for this content. Return only the heading text.' },
-    { id: 'continue',  label: 'Continue writing',  icon: '⤵', task: 'continue',  instruction: 'Continue writing naturally from where the text ends.' },
+    { id: 'summarize', label: 'Summarize',         icon: 'ui-icon-list', task: 'summarize', instruction: 'Summarize the text concisely.' },
+    { id: 'heading',   label: 'Create a heading',  icon: 'ui-icon-heading', task: 'custom',    instruction: 'Write one concise, compelling heading for this content. Return only the heading text.' },
+    { id: 'continue',  label: 'Continue writing',  icon: 'ui-icon-corner-down', task: 'continue',  instruction: 'Continue writing naturally from where the text ends.' },
   ];
 
   readonly tones = ['Professional', 'Casual', 'Funny', 'Confident', 'Enthusiastic'];

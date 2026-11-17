@@ -58,7 +58,7 @@
 
       @if (canSelectAccount) {
         <button type="button" class="tf-adv" (click)="advancedOpen = !advancedOpen">
-          {{ 'INVENTORY_TRANSFER.ADVANCED' | translate }} {{ advancedOpen ? '▲' : '▼' }}
+          {{ 'INVENTORY_TRANSFER.ADVANCED' | translate }} <span class="ui-chevron" [class.is-open]="advancedOpen"></span>
         </button>
         @if (advancedOpen) {
           <div class="df-row">
@@ -116,7 +116,7 @@
                 <tr>
                   <td>
                     @if (isUnitLine(l) && (l.batches.length || l.serials.length)) {
-                      <button type="button" class="tf-toggle" (click)="toggleExpand(l)">{{ expanded.has(l.productId) ? '▾' : '▸' }}</button>
+                      <button type="button" class="tf-toggle" (click)="toggleExpand(l)"><span class="ui-chevron" [style.transform]="expanded.has(l.productId) ? null : 'rotate(-90deg)'"></span></button>
                     }
                   </td>
                   <td>{{ l.barcode }}</td>

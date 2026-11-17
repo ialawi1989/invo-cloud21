@@ -1,185 +1,133 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  DestroyRef,
-  OnInit,
-  computed,
-  inject,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, ViewChild, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router, ActivatedRoute } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { map, debounceTime } from 'rxjs/operators';
-import { Subject } from 'rxjs';
 
 import { withTranslations } from '@core/i18n/with-translations';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
+import { ListPageComponent } from '@shared/components/list-page/components/list-page.component';
+import { ListCellTemplateDirective, ListRowActionsDirective } from '@shared/components/list-page/directives/list-template.directives';
+import type { ListQueryParams, TableColumn } from '@shared/components/list-page/interfaces/list-page.types';
+import { DropdownMenuBtnComponent, DropdownMenuBtnItem } from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
-import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
+import { ToastService } from '@shared/components/toast/toast.service';
 import { ErrorService } from '@core/http/error.service';
 import { ModalService } from '@shared/modal/modal.service';
 import { AssignTaxModalComponent } from '@shared/components/assign-tax-modal/assign-tax-modal.component';
 
 import { TaxSettingsService } from '../../services/tax-settings.service';
 
-import { TooltipDirective } from '@shared/directives/tooltip.directive';
+/** The built-in taxes: they can be neither edited nor are they offered an edit button. */
+const BUILT_IN = ['Exempt Tax', 'Zero Tax'];
+
+/**
+ * Settings > Tax Setting > Manage Tax (`/settings/tax`): the company's taxes in the shared list page
+ * (search, sort, paging in the URL). Add / Edit open the tax form; the row menu sets the default tax and
+ * assigns a tax to products.
+ */
 @Component({
   selector: 'app-tax-settings',
   standalone: true,
-  imports: [TooltipDirective, 
-    CommonModule,
-    RouterModule,
-    FormsModule,
-    TranslateModule,
-    BreadcrumbsComponent,
-    LoadingOverlayComponent,
-  ],
+  imports: [CommonModule, RouterModule, TranslateModule, ListPageComponent, ListCellTemplateDirective, ListRowActionsDirective, DropdownMenuBtnComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './tax-settings.component.html',
-  styleUrl: './tax-settings.component.scss',
 })
-export class TaxSettingsComponent implements OnInit {
-  private translate    = inject(TranslateService);
-  private destroyRef   = inject(DestroyRef);
-  private taxService   = inject(TaxSettingsService);
+export class TaxSettingsComponent {
+  private translate  = inject(TranslateService);
+  private destroyRef = inject(DestroyRef);
+  private taxService = inject(TaxSettingsService);
   private errorService = inject(ErrorService);
-  private router       = inject(Router);
-  private route        = inject(ActivatedRoute);
-  private modal        = inject(ModalService);
+  private router     = inject(Router);
+  private modal      = inject(ModalService);
+  private toast      = inject(ToastService);
 
-  private i18nTick      = signal(0);
-  private searchSubject = new Subject<string>();
+  @ViewChild(ListPageComponent) listPage?: ListPageComponent;
 
-  loading        = signal(false);
-  taxes          = signal<any[]>([]);
-  pageNum        = signal(1);
-  pageLimit      = signal(10);
-  searchTerm     = signal('');
-  openDropdownId = signal<string | null>(null);
+  private i18nTick = signal(0);
 
   constructor() {
     withTranslations('settings');
-
-    this.translate.onTranslationChange
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => this.i18nTick.update(n => n + 1));
-    this.translate.onLangChange
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => this.i18nTick.update(n => n + 1));
+    this.translate.onTranslationChange.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.i18nTick.update(n => n + 1));
+    this.translate.onLangChange.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.i18nTick.update(n => n + 1));
   }
+
+  private t = (k: string) => this.translate.instant(k);
+
+  columns = computed<TableColumn[]>(() => {
+    this.i18nTick();
+    return [
+      { key: 'name', label: this.t('SETTINGS.TAX.NAME'), sortable: true, primary: true, locked: true, customTemplate: true, visible: true, order: 0 },
+      { key: 'taxPercentage', label: this.t('SETTINGS.TAX.PERCENTAGE'), sortable: true, customTemplate: true, visible: true, order: 1 },
+      { key: 'taxType', label: this.t('SETTINGS.TAX.GROUP_TYPE'), customTemplate: true, visible: true, order: 2 },
+    ];
+  });
 
   breadcrumbs = computed<BreadcrumbItem[]>(() => {
     this.i18nTick();
     return [
-      { label: this.translate.instant('SETTINGS.TITLE'), routerLink: ['/settings'] },
-      { label: this.translate.instant('SETTINGS.ITEMS.TAX_SETTINGS') },
-    ];
+      { label: 'Home', routerLink: '/', icon: 'home', iconOnly: true },
+      { label: this.t('SETTINGS.TITLE'), routerLink: '/settings' },
+      { label: this.t('SETTINGS.ITEMS.TAX_SETTINGS') },
+    ] as BreadcrumbItem[];
   });
 
-  ngOnInit(): void {
-    this.searchSubject
-      .pipe(debounceTime(600), takeUntilDestroyed(this.destroyRef))
-      .subscribe(term => {
-        this.searchTerm.set(term);
-        this.pageNum.set(1);
-        this.updateQueryParams();
-      });
+  readonly paginationConfig = { enabled: true, pageLimits: [10, 25, 50, 100], default: 10 };
+  readonly sortingConfig = { enabled: true };
+  searchConfig = computed(() => { this.i18nTick(); return { enabled: true, placeholder: this.t('SETTINGS.SEARCH_PLACEHOLDER'), debounceMs: 500 }; });
+  emptyState = computed(() => { this.i18nTick(); return { title: this.t('MESSAGE.NO_DATA_FOUND'), message: '', icon: 'receipt' }; });
 
-    this.route.queryParamMap
-      .pipe(
-        map(params => ({
-          page:   parseInt(params.get('page')   ?? '1',  10),
-          limit:  parseInt(params.get('limit')  ?? '10', 10),
-          search: params.get('search') ?? '',
-        })),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe(params => {
-        this.pageNum.set(params.page);
-        this.pageLimit.set(params.limit);
-        this.searchTerm.set(params.search);
-        this.loadTaxes();
-      });
-  }
-
-  private async loadTaxes(): Promise<void> {
-    this.loading.set(true);
+  load = async (params: ListQueryParams) => {
     try {
       const res = await this.taxService.getTaxesList({
-        page:       this.pageNum(),
-        limit:      this.pageLimit(),
-        searchTerm: this.searchTerm(),
+        page: params.page,
+        limit: params.limit,
+        searchTerm: params.searchTerm || '',
+        sortBy: params.sortBy ? { sortValue: params.sortBy.sortValue, sortDirection: params.sortBy.sortDirection } : undefined,
       });
-      this.taxes.set(res.list || res || []);
+      const list: any[] = res?.list ?? (Array.isArray(res) ? res : []);
+      return { list, count: Number(res?.count ?? list.length), pageCount: Number(res?.pageCount ?? 1) || 1 };
     } catch (error) {
       await this.errorService.handleError(error);
-    } finally {
-      this.loading.set(false);
+      return { list: [], count: 0, pageCount: 1 };
     }
-  }
+  };
 
-  private updateQueryParams(): void {
-    const params: any = {
-      page:   this.pageNum()    > 1   ? this.pageNum()    : null,
-      limit:  this.pageLimit() !== 10 ? this.pageLimit()  : null,
-      search: this.searchTerm() || null,
-    };
-    this.router.navigate([], { relativeTo: this.route, queryParams: params });
-  }
+  isGroup = (tax: any): boolean => Array.isArray(tax?.taxes) && tax.taxes.length > 0;
+  canEdit = (tax: any): boolean => !BUILT_IN.includes(tax?.name) && !tax?.default;
 
-  async setAsDefault(taxId: string): Promise<void> {
-    try {
-      await this.taxService.setDefaultTax(taxId);
-      await this.loadTaxes();
-    } catch (error) {
-      await this.errorService.handleError(error);
-    }
-  }
-
-  onSearch(term: string): void { this.searchSubject.next(term); }
-
-  clearSearch(): void {
-    this.searchTerm.set('');
-    this.pageNum.set(1);
-    this.updateQueryParams();
-  }
-
-  nextPage(): void { this.pageNum.update(n => n + 1); this.updateQueryParams(); }
-  prevPage(): void { this.pageNum.update(n => Math.max(1, n - 1)); this.updateQueryParams(); }
-
-  addTax(): void {
-    this.router.navigate(['/settings/tax/new']);
-  }
+  addTax(): void { void this.router.navigate(['/settings/tax/new']); }
 
   editTax(tax: any): void {
-    if (tax.name === 'Exempt Tax' || tax.name === 'Zero Tax' || tax.default) return;
-    this.router.navigate(['/settings/tax', tax.id]);
+    if (this.canEdit(tax)) void this.router.navigate(['/settings/tax', tax.id]);
   }
 
-  toggleDropdown(taxId: string, event: Event): void {
-    event.stopPropagation();
-    this.openDropdownId.set(this.openDropdownId() === taxId ? null : taxId);
+  rowMenu(tax: any): DropdownMenuBtnItem[] {
+    this.i18nTick();
+    const items: DropdownMenuBtnItem[] = [];
+    if (!tax.default) items.push({ label: 'SETTINGS.BRANCHES.SET_AS_DEFAULT', click: () => void this.setAsDefault(tax.id) });
+    items.push({ label: 'SETTINGS.TAX.ASSIGN_TO', click: () => void this.assignTo(tax.id) });
+    return items;
   }
 
-  async assignTo(taxId: string): Promise<void> {
-    this.openDropdownId.set(null);
-    const ref = this.modal.open(AssignTaxModalComponent, {
-      size: 'md',
-      closeable: true,
-      closeOnBackdrop: true,
-      data: { taxId },
-    });
+  private async setAsDefault(taxId: string): Promise<void> {
+    try {
+      await this.taxService.setDefaultTax(taxId);
+      this.listPage?.refresh();
+    } catch (error) {
+      await this.errorService.handleError(error);
+    }
+  }
+
+  private async assignTo(taxId: string): Promise<void> {
+    const ref = this.modal.open(AssignTaxModalComponent, { size: 'md', closeable: true, closeOnBackdrop: true, data: { taxId } });
     const params = await ref.afterClosed();
-    if (params) {
-      try {
-        await this.taxService.assignTax(params);
-        await this.loadTaxes();
-      } catch (error) {
-        await this.errorService.handleError(error);
-      }
+    if (!params) return;
+    try {
+      await this.taxService.assignTax(params);
+      this.toast.success('COMMON.SAVED_OK');
+      this.listPage?.refresh();
+    } catch (error) {
+      await this.errorService.handleError(error);
     }
   }
 }

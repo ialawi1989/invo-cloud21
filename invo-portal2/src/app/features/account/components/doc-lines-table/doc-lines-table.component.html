@@ -5,7 +5,7 @@
       <label>{{ 'DOC_LINES.ITEM_DETAILS' | translate }}</label>
       <input #scan class="dl__scan-input" type="text" autofocus
         [placeholder]="'DOC_LINES.SCAN_PLACEHOLDER' | translate" (keydown.enter)="onScan(scan)"/>
-      <button type="button" class="dl__link dl__link--danger" (click)="scanOpen.set(false)">{{ 'DOC_LINES.CLOSE_SCAN' | translate }} ✕</button>
+      <button type="button" class="dl__link dl__link--danger" (click)="scanOpen.set(false)">{{ 'DOC_LINES.CLOSE_SCAN' | translate }} <span class="ui-icon ui-icon-x"></span></button>
     </div>
     @if (scanMessage()) { <div class="dl__scan-msg">{{ scanMessage() }}</div> }
   }
@@ -49,7 +49,7 @@
             <button type="button" class="dl__bulk-btn" [disabled]="!selected().size" (click)="runBulkAction(a)">{{ a.label | translate }}</button>
           }
         </div>
-        <button type="button" class="dl__x" (click)="closeBulk()" aria-label="close">✕</button>
+        <button type="button" class="dl__x" (click)="closeBulk()" aria-label="close"><span class="ui-icon ui-icon-x"></span></button>
       </div>
     }
 
@@ -83,9 +83,9 @@
                           <div class="dl__picked">
                             <span class="dl__item-name">{{ line.selectedItem.name }}</span>
                             <span class="dl__item-acts">
-                              <app-dropdown-menu-btn [items]="itemMenu(line)" [appendToBody]="true" [chevron]="false" align="end" triggerClass="dl__round">⋯</app-dropdown-menu-btn>
+                              <app-dropdown-menu-btn [items]="itemMenu(line)" [appendToBody]="true" [chevron]="false" align="end" triggerClass="dl__round"><span class="ui-icon ui-icon-more"></span></app-dropdown-menu-btn>
                               @if (canEditProduct(line)) {
-                                <button type="button" class="dl__round" (click)="clearProduct(line)" aria-label="clear">✕</button>
+                                <button type="button" class="dl__round" (click)="clearProduct(line)" aria-label="clear"><span class="ui-icon ui-icon-x"></span></button>
                               }
                             </span>
                           </div>
@@ -185,10 +185,10 @@
                       {{ 'DOC_LINES.UNDO' | translate }}
                     </button>
                   } @else {
-                    <app-dropdown-menu-btn [items]="rowMenu(line)" [appendToBody]="true" [chevron]="false" align="end" triggerClass="dl__round">⋯</app-dropdown-menu-btn>
+                    <app-dropdown-menu-btn [items]="rowMenu(line)" [appendToBody]="true" [chevron]="false" align="end" triggerClass="dl__round"><span class="ui-icon ui-icon-more"></span></app-dropdown-menu-btn>
                   }
                   @if (canRemove(line)) {
-                    <button type="button" class="dl__round dl__round--danger" (click)="removeLine(line)" aria-label="remove">✕</button>
+                    <button type="button" class="dl__round dl__round--danger" (click)="removeLine(line)" aria-label="remove"><span class="ui-icon ui-icon-x"></span></button>
                   }
                 </div>
               </td>

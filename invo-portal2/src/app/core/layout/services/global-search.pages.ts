@@ -105,6 +105,7 @@ export const I18N_FEATURE_BY_ROOT: Record<string, string> = {
   EMPLOYEES: 'employees', EMPLOYEE_PAYOUT: 'employees', TIPS: 'employees', COMMISSION_SETTINGS: 'employees',
   NAV: 'website/navigation', WEBSITE: 'website/page-types', DOMAIN_SETTINGS: 'domain-settings',
   PROMOTIONS: 'promotions', BLOG: 'blog',
+  REPORTS: 'reports',
   DASHBOARD: 'dashboard', ANALYTICS: 'analytics', APPOINTMENTS: 'appointments', FEEDBACKS: 'feedbacks',
   TRACKING_MAP: 'tracking-map',
   // Settings tiles whose i18nPrefix lives outside the base `settings` feature
@@ -119,3 +120,40 @@ export const I18N_FEATURE_BY_ROOT: Record<string, string> = {
 
 /** Sub-trees that hold messages, not labels; walking them only adds noise to the in-page corpus. */
 export const NOISE_KEY = /^(ERR|ERRORS?|TOASTS?|VALIDATION|CONFIRM\w*|MESSAGES?|MSG|TOUR)$/i;
+
+/** A routable page that has no sidebar item and no Settings tile (reached from buttons inside other pages). */
+export interface ExtraPage {
+  /** i18n key, with the English text used until the key exists. */
+  title: [key: string, fallback: string];
+  /** Breadcrumb trail, same key/fallback pairs. */
+  trail: [key: string, fallback: string][];
+  link: string;
+  icon: string;
+  /** Plain privilege path, checked like the sidebar's `requiredPermission`. */
+  permission?: string;
+  /** HR grant, checked like the sidebar's `requiredHrGrant`. */
+  hrGrant?: { group: string; action: string };
+}
+
+const PRODUCTS: [string, string] = ['MENU.PRODUCTS', 'Products'];
+const EMPLOYEES: [string, string] = ['MENU.EMPLOYEES', 'Employees'];
+const REPORTS: [string, string] = ['MENU.REPORTS', 'Reports'];
+
+export const EXTRA_PAGES: ExtraPage[] = [
+  { title: ['MENU.SUB.PRICE_CHANGE', 'Price Change'], trail: [PRODUCTS], link: '/products/price-change', icon: 'product', permission: 'priceChangeSecurity.actions.view.access' },
+  { title: ['MENU.SUB.TRANSLATION', 'Translation'], trail: [PRODUCTS], link: '/products/translation', icon: 'product', permission: 'productSecurity.actions.translation.access' },
+  { title: ['MENU.SUB.PRODUCTS_AVAILABILITY', 'Products Availability'], trail: [PRODUCTS], link: '/products/products-availability', icon: 'product', permission: 'productsAvailabilitySecurity.actions.view.access' },
+  { title: ['MENU.SUB.BULK_IMAGE', 'Bulk Image'], trail: [PRODUCTS], link: '/products/bulk-image', icon: 'product', permission: 'productSecurity.actions.bulkImage.access' },
+  { title: ['MENU.SUB.BULK_PRINT', 'Bulk Print Barcodes'], trail: [PRODUCTS], link: '/products/bulk-print', icon: 'product', permission: 'productSecurity.actions.printBarcode.access' },
+  { title: ['MENU.SUB.IMPORT_EXPORT', 'Import / Export Products'], trail: [PRODUCTS], link: '/products/import-export', icon: 'product', permission: 'productSecurity.actions.importExport.access' },
+  { title: ['MENU.SUB.EMPLOYEE_SERVICES', 'Employee Services'], trail: [PRODUCTS], link: '/products/employee-services', icon: 'product', permission: 'productSecurity.actions.view.access' },
+  { title: ['MENU.SUB.SERVICE_TEAM', 'Service Team'], trail: [EMPLOYEES], link: '/employees/service-team', icon: 'employee', permission: 'salonSecurity.actions.serviceTeam.access' },
+  { title: ['MENU.SUB.HOLIDAY_CALENDARS', 'Holiday Calendars'], trail: [EMPLOYEES], link: '/employees/holiday-calendars', icon: 'employee', permission: 'employeeLeaveSecurity.actions.view' },
+  { title: ['MENU.SUB.LEAVE_TYPES', 'Leave Types'], trail: [EMPLOYEES], link: '/employees/leave-types', icon: 'employee', hrGrant: { group: 'employeeLeaveSecurity', action: 'edit' } },
+  { title: ['MENU.SUB.GOSI_SETTINGS', 'GOSI Settings'], trail: [EMPLOYEES], link: '/employees/gosi-settings', icon: 'employee', hrGrant: { group: 'employeeGosiSecurity', action: 'view' } },
+  { title: ['MENU.SUB.CUSTOM_REPORTS', 'Custom Reports'], trail: [REPORTS], link: '/reports/custom', icon: 'bar_chart', permission: 'reportsSecurity.actions.view.access' },
+  { title: ['MENU.SUB.MCP_TOKENS', 'MCP Tokens'], trail: [REPORTS, ['MENU.SUB.CUSTOM_REPORTS', 'Custom Reports']], link: '/reports/custom/mcp-tokens', icon: 'bar_chart', permission: 'reportsSecurity.actions.view.access' },
+  { title: ['MENU.SUB.PRICE_MANAGEMENT', 'Price Management'], trail: [], link: '/price-management', icon: 'product' },
+  { title: ['MENU.SUB.BRANCH_PAYMENTS', 'Branch Payments'], trail: [], link: '/branch-payments', icon: 'account' },
+  { title: ['MENU.SUB.COMMENT_RULES', 'Comment Rules'], trail: [['MENU.SUB.BLOG', 'Blog'], ['MENU.SUB.BLOG_COMMENTS', 'Comments']], link: '/blog/comments/rules', icon: 'blog' },
+];

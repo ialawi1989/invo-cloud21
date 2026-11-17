@@ -1,6 +1,6 @@
 <div class="af">
   <div class="af__header">
-    <button class="af__back" (click)="back()">← {{ 'APPOINTMENTS.FORM.BACK' | translate }}</button>
+    <button class="af__back" (click)="back()"><span class="ui-icon ui-icon-arrow-left"></span> {{ 'APPOINTMENTS.FORM.BACK' | translate }}</button>
     <h1>{{ (isEditMode() ? 'APPOINTMENTS.FORM.EDIT_TITLE' : 'APPOINTMENTS.FORM.NEW_TITLE') | translate }}</h1>
   </div>
 
@@ -197,7 +197,7 @@
             }
 
             <button type="button" class="af__row-remove" (click)="removeRow(row)" [disabled]="rowLocked(row)"
-              [appTooltip]="'APPOINTMENTS.FORM.REMOVE' | translate">✕</button>
+              [appTooltip]="'APPOINTMENTS.FORM.REMOVE' | translate"><span class="ui-icon ui-icon-x"></span></button>
           </div>
         }
       </div>

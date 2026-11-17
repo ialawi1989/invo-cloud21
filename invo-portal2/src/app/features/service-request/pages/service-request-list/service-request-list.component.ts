@@ -1,3 +1,4 @@
+import { EmojiIconComponent } from '@shared/components/emoji-icon/emoji-icon.component';
 import { Component, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -23,7 +24,7 @@ import { ServiceRequestService } from '../../services/service-request.service';
 @Component({
   selector: 'app-service-request-list',
   standalone: true,
-  imports: [CommonModule, TranslateModule, ListPageComponent, ListCellTemplateDirective, ListRowActionsDirective],
+  imports: [CommonModule, TranslateModule, EmojiIconComponent, ListPageComponent, ListCellTemplateDirective, ListRowActionsDirective],
   templateUrl: './service-request-list.component.html',
 })
 export class ServiceRequestListComponent implements OnInit {

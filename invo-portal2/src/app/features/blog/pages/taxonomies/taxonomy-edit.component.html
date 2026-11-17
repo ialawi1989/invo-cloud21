@@ -5,7 +5,7 @@
       <a [routerLink]="['/blog/categories']" [queryParams]="isCategory() ? null : { tab: 'tag' }">
         {{ (isCategory() ? 'BLOG.TAXONOMIES.CRUMB_CATEGORIES' : 'BLOG.TAXONOMIES.CRUMB_TAGS') | translate }} ({{ lang() }})
       </a>
-      <span class="te__crumbSep">›</span>
+      <span class="te__crumbSep"><span class="ui-icon ui-icon-chevron-right"></span></span>
       <span>{{ pageTitle() }}</span>
     </nav>
     <div class="te__titleRow">

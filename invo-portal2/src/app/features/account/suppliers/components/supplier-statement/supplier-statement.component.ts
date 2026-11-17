@@ -40,7 +40,7 @@ const num = (v: unknown): number => {
         @if (filterType() === 'outstanding') {
           <span class="cs-tag">{{ 'SUPPLIERS.STATEMENT.OUTSTANDING_BILLS' | translate }}</span>
         }
-        <div class="cs-meta">{{ 'SUPPLIERS.STATEMENT.PERIOD' | translate }}: {{ from() }} → {{ to() }}</div>
+        <div class="cs-meta">{{ 'SUPPLIERS.STATEMENT.PERIOD' | translate }}: {{ from() }} <span class="ui-icon ui-icon-arrow-right"></span> {{ to() }}</div>
         <div class="cs-meta">{{ 'SUPPLIERS.STATEMENT.TO' | translate }}: {{ supplierName() }}</div>
       </div>
       <div class="cs-summary__box">

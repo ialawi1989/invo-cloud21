@@ -8,6 +8,8 @@ import {
   provideRouter, withComponentInputBinding, withInMemoryScrolling,
   withNavigationErrorHandler,
 } from '@angular/router';
+import { DATE_PIPE_DEFAULT_OPTIONS } from '@angular/common';
+import { UserPreferencesService } from './core/preferences/user-preferences.service';
 import { provideHttpClient, HttpClient, withInterceptors } from '@angular/common/http';
 import { TranslateModule, TranslateLoader, TranslationObject } from '@ngx-translate/core';
 import { Observable, of } from 'rxjs';
@@ -36,6 +38,15 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
+    // `date` pipes without a pattern of their own show the employee's date format in the employee's timezone
+    // (My Account > Preferences). Getters, so the values are read when each pipe runs and not frozen at startup.
+    {
+      provide: DATE_PIPE_DEFAULT_OPTIONS,
+      useFactory: () => {
+        const prefs = inject(UserPreferencesService);
+        return { get dateFormat() { return prefs.dateFormat() ?? 'mediumDate'; }, get timezone() { return prefs.timezone(); } };
+      },
+    },
     // `scrollPositionRestoration: 'top'` — every navigation starts at the
     // top of the new page instead of inheriting the scroll offset from the
     // page we just came from. `anchorScrolling: 'enabled'` honours `#hash`

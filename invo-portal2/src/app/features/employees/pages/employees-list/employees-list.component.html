@@ -63,13 +63,13 @@
   </ng-template>
 
   <ng-template listCellTemplate="superAdmin" let-row>
-    @if (row.superAdmin) { <span class="check">✓</span> } @else { <span class="text-slate-300">—</span> }
+    @if (row.superAdmin) { <span class="check"><span class="ui-icon ui-icon-check"></span></span> } @else { <span class="text-slate-300">—</span> }
   </ng-template>
   <ng-template listCellTemplate="admin" let-row>
-    @if (row.admin) { <span class="check">✓</span> } @else { <span class="text-slate-300">—</span> }
+    @if (row.admin) { <span class="check"><span class="ui-icon ui-icon-check"></span></span> } @else { <span class="text-slate-300">—</span> }
   </ng-template>
   <ng-template listCellTemplate="user" let-row>
-    @if (row.user) { <span class="check">✓</span> } @else { <span class="text-slate-300">—</span> }
+    @if (row.user) { <span class="check"><span class="ui-icon ui-icon-check"></span></span> } @else { <span class="text-slate-300">—</span> }
   </ng-template>
 
   <ng-template listRowActions let-row>

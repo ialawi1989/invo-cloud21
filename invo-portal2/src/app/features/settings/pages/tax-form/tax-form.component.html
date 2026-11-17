@@ -1,0 +1,102 @@
+<div class="tax-form-page" [formGroup]="form">
+  <header class="page-header">
+    <div class="page-header__titles">
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="page-title">{{ (isNew() ? 'SETTINGS.TAX.FORM_NEW' : 'SETTINGS.TAX.FORM_EDIT') | translate }}</h1>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <app-form-skeleton />
+  } @else {
+    <section class="card">
+      <header class="card__head">
+        <h2 class="card__title">{{ 'SETTINGS.TAX.FORM_DETAILS' | translate }}</h2>
+        <p class="card__sub">{{ 'SETTINGS.TAX.FORM_DETAILS_DESC' | translate }}</p>
+      </header>
+
+      <div class="card__body">
+        <div class="grid grid--2">
+          <div class="field">
+            <label class="field-label" for="tx-name">{{ 'SETTINGS.TAX.NAME' | translate }} <span class="required">*</span></label>
+            <input id="tx-name" type="text" class="input" formControlName="name"
+                   [class.input--invalid]="form.controls.name.touched && form.controls.name.invalid"/>
+            @if (form.controls.name.touched && form.controls.name.errors?.['required']) {
+              <p class="field-error">{{ 'SETTINGS.TAX.NAME_REQUIRED' | translate }}</p>
+            }
+          </div>
+
+          @if (!isGroup()) {
+            <div class="field">
+              <label class="field-label" for="tx-pct">{{ 'SETTINGS.TAX.PERCENTAGE' | translate }} (%)</label>
+              <input id="tx-pct" type="number" min="0" step="any" class="input" formControlName="percentage"
+                     [class.input--invalid]="form.controls.percentage.touched && form.controls.percentage.invalid"/>
+              @if (form.controls.percentage.touched && form.controls.percentage.invalid) {
+                <p class="field-error">{{ 'SETTINGS.TAX.PERCENTAGE_INVALID' | translate }}</p>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="grid grid--2" style="margin-top: 16px">
+          <app-toggle [ngModel]="isGroup()" [ngModelOptions]="{ standalone: true }" (ngModelChange)="onGroupChange($event)"
+            [label]="'SETTINGS.TAX.IS_GROUP' | translate" [hint]="'SETTINGS.TAX.IS_GROUP_HINT' | translate"/>
+
+          @if (isGroup()) {
+            <div class="field">
+              <label class="field-label">{{ 'SETTINGS.TAX.GROUP_TYPE' | translate }}</label>
+              <app-search-dropdown [items]="typeOptions" [displayWith]="typeLabel" [compareWith]="sameType" [searchable]="false" [clearable]="false"
+                [value]="{ value: taxType() }" (valueChange)="taxType.set($any($event)?.value ?? 'flat'); form.markAsDirty()"/>
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+
+    @if (isGroup()) {
+      <section class="card">
+        <header class="card__head">
+          <h2 class="card__title">{{ 'SETTINGS.TAX.CHILD_TAXES' | translate }}</h2>
+          <p class="card__sub">{{ 'SETTINGS.TAX.CHILD_TAXES_DESC' | translate }}</p>
+        </header>
+
+        <div class="card__body">
+          <div class="add-row">
+            <app-search-dropdown [items]="availableChildren()" [displayWith]="childLabel" [compareWith]="sameChild" [multiple]="true"
+              [placeholder]="'SETTINGS.TAX.PICK_TAXES' | translate" [value]="picked()" (valueChange)="picked.set($any($event) ?? [])"/>
+            <button type="button" class="btn btn-primary" [disabled]="!picked().length" (click)="addPicked()">
+              {{ 'SETTINGS.TAX.ADD_SELECTED' | translate }}
+            </button>
+          </div>
+
+          @if (children().length) {
+            <div class="child-list" cdkDropList (cdkDropListDropped)="drop($event)">
+              @for (c of children(); track c.taxId) {
+                <div class="child-item" cdkDrag>
+                  <span class="child-item__grip" cdkDragHandle aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="8" x2="20" y2="8"/><line x1="4" y1="16" x2="20" y2="16"/></svg>
+                  </span>
+                  <span class="child-item__name">{{ c.name }}</span>
+                  <span class="child-item__pct">{{ c.taxPercentage }}%</span>
+                  <button type="button" class="child-item__remove" (click)="remove(c.taxId)" [attr.aria-label]="'COMMON.REMOVE' | translate">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
+                </div>
+              }
+            </div>
+            <p class="note">{{ 'SETTINGS.TAX.TOTAL_IS' | translate }} <b>{{ totalPercentage() }}%</b></p>
+          } @else {
+            <p class="note">{{ 'SETTINGS.TAX.NO_CHILDREN' | translate }}</p>
+          }
+        </div>
+      </section>
+    }
+  }
+
+  <app-loading-overlay [show]="saving()" [message]="'COMMON.SAVING' | translate"/>
+
+  <app-form-sticky-footer>
+    <button type="button" class="btn btn-outline" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+    <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving() || loading()">{{ 'COMMON.SAVE' | translate }}</button>
+  </app-form-sticky-footer>
+</div>

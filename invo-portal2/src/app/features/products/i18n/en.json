@@ -457,16 +457,21 @@
     "PROMOTION_SETTINGS": "Promotion Settings",
     "VOUCHER_NAME": "Gift Voucher Name",
     "VOUCHER_AMOUNT": "Gift Voucher Amount",
+    "VOUCHER_COUNT": "Gift Voucher Count",
     "PROMOTION_NAME": "Promotion Name",
     "PROMOTION_AMOUNT": "Promotion Amount",
+    "PROMOTION_COUNT": "Promotion Count",
     "GIFT_VOUCHER": "Gift Voucher",
     "PROMOTION_FORM": {
       "ENTER_VOUCHER_NAME": "Enter voucher name",
       "ENTER_VOUCHER_AMOUNT": "Enter voucher amount",
+      "ENTER_VOUCHER_COUNT": "Enter voucher count",
       "ENTER_PROMOTION_NAME": "Enter promotion name",
       "ENTER_PROMOTION_AMOUNT": "Enter promotion amount",
+      "ENTER_PROMOTION_COUNT": "Enter promotion count",
       "THIS_VALUE_IS_REQUIRED": "This value is required",
-      "MINIMUM_VALUE": "The minimum value is {{value}}"
+      "MINIMUM_VALUE": "The minimum value is {{value}}",
+      "MAXIMUM_VALUE": "The maximum value is {{value}}"
     },
     "TYPES": {
       "INVENTORY": "Inventory",

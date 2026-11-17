@@ -7,8 +7,8 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { CommonModule, formatDate } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 import {
   FormBuilder,
   FormGroup,
@@ -27,6 +27,14 @@ import { LoadingOverlayComponent } from '@shared/components/spinner/loading-over
 import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 import { ToggleComponent } from '@shared/components/toggle/toggle.component';
 import { ToastService } from '@shared/components/toast/toast.service';
+import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
+import { SegmentedToggleComponent, SegmentedToggleOption } from '@shared/components/segmented-toggle/segmented-toggle.component';
+import { ModalService } from '@shared/modal/modal.service';
+import { MediaPickerModalComponent, MediaPickerConfig } from '@features/settings/media/components/media-picker/media-picker-modal.component';
+import { Media } from '@features/settings/media/models/media.model';
+import { LanguageService } from '@core/i18n/language.service';
+import { EmployeePreferences } from '@core/layout/services/employee-options.service';
+import { DATE_FORMATS, UserPreferencesService } from '@core/preferences/user-preferences.service';
 
 import { EmployeeService } from '../../services/employee.service';
 import { EmployeeDetails } from '../../models/employee.types';
@@ -50,6 +58,8 @@ import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton
  * Save stays on the page (it's self-service) and just toasts, matching
  * the settings-form convention of an in-place confirmation.
  */
+type MyAccountTab = 'profile' | 'security' | 'preferences' | 'info';
+
 @Component({
   selector: 'app-my-account',
   standalone: true,
@@ -61,6 +71,8 @@ import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton
     LoadingOverlayComponent,
     FormStickyFooterComponent,
     ToggleComponent,
+    SearchDropdownComponent,
+    SegmentedToggleComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './my-account.component.html',
@@ -73,7 +85,11 @@ export class MyAccountComponent implements OnInit, CanLeaveComponent {
   private translate  = inject(TranslateService);
   private destroyRef = inject(DestroyRef);
   private router     = inject(Router);
+  private route      = inject(ActivatedRoute);
   private toast      = inject(ToastService);
+  private userPrefs  = inject(UserPreferencesService);
+  private lang       = inject(LanguageService);
+  private modal      = inject(ModalService);
 
   loading = signal<boolean>(false);
   saving  = signal<boolean>(false);
@@ -91,7 +107,8 @@ export class MyAccountComponent implements OnInit, CanLeaveComponent {
   /** Preview data-URL for a freshly picked avatar (before save). Falls
    *  back to the server `mediaUrl.defaultUrl` in the template. */
   avatarPreview = signal<string | null>(null);
-  private base64Image = signal<string>('');
+  /** Media-library id of a freshly picked avatar (sent as `mediaId`); null = unchanged. */
+  private pickedMediaId = signal<string | null>(null);
 
   /** Non-form dirtiness — avatar pick or a change-toggle flip — so the
    *  unsaved-changes guard fires even when no FormControl is touched. */
@@ -99,6 +116,56 @@ export class MyAccountComponent implements OnInit, CanLeaveComponent {
 
   /** Re-translate computed labels when ngx-translate finishes loading. */
   private i18nTick = signal(0);
+
+  // ─── Tabs (kept in the URL, so a link or a refresh lands on the same tab) ───
+  readonly tabs: SegmentedToggleOption<MyAccountTab>[] = [
+    { value: 'profile',     label: 'EMPLOYEES.MY_ACCOUNT.TAB_PROFILE' },
+    { value: 'security',    label: 'EMPLOYEES.MY_ACCOUNT.TAB_SECURITY' },
+    { value: 'preferences', label: 'EMPLOYEES.MY_ACCOUNT.TAB_PREFERENCES' },
+    { value: 'info',        label: 'EMPLOYEES.MY_ACCOUNT.TAB_INFO' },
+  ];
+  tab = signal<MyAccountTab>(
+    (['profile', 'security', 'preferences', 'info'] as const).find(t => t === this.route.snapshot.queryParamMap.get('tab')) ?? 'profile',
+  );
+  setTab(t: MyAccountTab): void {
+    this.tab.set(t);
+    void this.router.navigate([], { relativeTo: this.route, queryParams: { tab: t === 'profile' ? null : t }, queryParamsHandling: 'merge', replaceUrl: true });
+  }
+
+  // ─── Preferences (saved with the employee's options, not with the employee record) ───
+  /** The draft being edited; written on Save. */
+  prefs = signal<EmployeePreferences>({});
+
+  /** `{ value: '' }` is "not set": the browser's timezone / the device's language. */
+  readonly timezoneItems: { value: string }[] = [
+    { value: '' },
+    ...(((Intl as any).supportedValuesOf?.('timeZone') as string[] | undefined) ?? ['UTC', 'Asia/Bahrain', 'Asia/Riyadh', 'Asia/Dubai']).map(value => ({ value })),
+  ];
+  /** `{ value: '' }` = not chosen: dates keep the pattern each screen was built with. */
+  readonly dateFormatItems = [{ value: '' }, ...DATE_FORMATS.map(value => ({ value }))];
+  readonly languageItems = [{ value: '' }, ...this.lang.available.map(l => ({ value: l.code }))];
+  readonly timeFormatOptions: SegmentedToggleOption<'12h' | '24h'>[] = [
+    { value: '24h', label: 'EMPLOYEES.MY_ACCOUNT.PREF_24H' },
+    { value: '12h', label: 'EMPLOYEES.MY_ACCOUNT.PREF_12H' },
+  ];
+  readonly weekStartOptions: SegmentedToggleOption<string>[] = [
+    { value: '0', label: 'EMPLOYEES.MY_ACCOUNT.PREF_SUNDAY' },
+    { value: '1', label: 'EMPLOYEES.MY_ACCOUNT.PREF_MONDAY' },
+    { value: '6', label: 'EMPLOYEES.MY_ACCOUNT.PREF_SATURDAY' },
+  ];
+
+  timezoneLabel = (i: { value: string }): string => i.value || this.translate.instant('EMPLOYEES.MY_ACCOUNT.PREF_BROWSER_DEFAULT');
+  languageLabel = (i: { value: string }): string =>
+    i.value ? (this.lang.available.find(l => l.code === i.value)?.nativeLabel ?? i.value) : this.translate.instant('EMPLOYEES.MY_ACCOUNT.PREF_DEVICE_DEFAULT');
+  /** The pattern shown with today's date, so the choice is obvious. */
+  dateFormatLabel = (i: { value: string }): string =>
+    i.value ? `${formatDate(new Date(), i.value, 'en')}  (${i.value})` : this.translate.instant('EMPLOYEES.MY_ACCOUNT.PREF_APP_DEFAULT');
+  sameItem = (a: { value: string }, b: { value: string }): boolean => a?.value === b?.value;
+
+  setPref<K extends keyof EmployeePreferences>(key: K, value: EmployeePreferences[K]): void {
+    this.prefs.update(p => ({ ...p, [key]: value }));
+    this.dirtyExtra.set(true);
+  }
 
   // ─── Form ───────────────────────────────────────────────────────────────
   form: FormGroup = this.fb.group({
@@ -152,6 +219,7 @@ export class MyAccountComponent implements OnInit, CanLeaveComponent {
   }
 
   async ngOnInit(): Promise<void> {
+    void this.userPrefs.load().then(() => this.prefs.set({ ...this.userPrefs.prefs() }));
     const id = this.auth.currentEmployee?.id;
     // No signed-in employee id → nothing to edit; bounce to the dashboard.
     if (!id) {
@@ -220,20 +288,26 @@ export class MyAccountComponent implements OnInit, CanLeaveComponent {
   }
 
   // ─── Avatar ─────────────────────────────────────────────────────────────
-  onAvatarPicked(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = String(reader.result ?? '');
-      this.avatarPreview.set(dataUrl);
-      this.base64Image.set(dataUrl);
-      this.dirtyExtra.set(true);
-    };
-    reader.readAsDataURL(file);
-    // Allow re-picking the same file to fire `change` again.
-    input.value = '';
+  /** Pick the avatar from the shared media library (uploads land there and can be reused), like the employee form. */
+  async chooseAvatar(): Promise<void> {
+    const currentId = this.pickedMediaId() ?? this.original()?.mediaId ?? null;
+    const ref = this.modal.open<MediaPickerModalComponent, MediaPickerConfig, Media | Media[] | undefined>(
+      MediaPickerModalComponent,
+      {
+        size: 'xl',
+        data: {
+          contentTypes: ['image'],
+          title: this.translate.instant('EMPLOYEES.FORM.CHOOSE_IMAGE'),
+          preSelectedIds: currentId ? [currentId] : [],
+        },
+      },
+    );
+    const result = await ref.afterClosed();
+    const media = Array.isArray(result) ? result[0] : result;
+    if (!media) return;
+    this.pickedMediaId.set(media.id);
+    this.avatarPreview.set(media.imageUrl ?? media.thumbUrl ?? null);
+    this.dirtyExtra.set(true);
   }
 
   // ─── Save ───────────────────────────────────────────────────────────────
@@ -257,7 +331,7 @@ export class MyAccountComponent implements OnInit, CanLeaveComponent {
       if (this.changePassword() && v.password) payload.password = v.password;
       if (this.changePasscode() && v.passCode) payload.passCode = v.passCode;
       if (this.changeMSR()      && v.MSR)      payload.MSR      = v.MSR;
-      if (this.base64Image())                  payload.base64Image = this.base64Image();
+      if (this.pickedMediaId())                payload.mediaId = this.pickedMediaId();
 
       const res = await this.service.save(payload);
       if (res?.success === false) {
@@ -268,6 +342,12 @@ export class MyAccountComponent implements OnInit, CanLeaveComponent {
       // Success — stay on the page (self-service). Reset the change
       // toggles/secret fields and clear dirty state before the guard
       // could see it.
+      await this.userPrefs.save(this.prefs());
+      // The top bar / account menu show this employee's name and picture: update the signed-in copy too.
+      this.auth.patchEmployee({
+        name: v.name, email: v.email,
+        ...(this.pickedMediaId() && this.avatarPreview() ? { mediaId: this.pickedMediaId(), mediaUrl: { defaultUrl: this.avatarPreview() } } : {}),
+      } as any);
       this.toast.success('EMPLOYEES.MY_ACCOUNT.SAVED');
       this.applySavedState(v);
     } catch (e: any) {
@@ -288,15 +368,14 @@ export class MyAccountComponent implements OnInit, CanLeaveComponent {
         name:     v.name,
         email:    v.email,
         apply2fa: !!v.apply2fa,
-        mediaUrl: this.base64Image()
-          ? { defaultUrl: this.base64Image() }
-          : orig.mediaUrl,
+        mediaId:  this.pickedMediaId() ?? orig.mediaId,
+        mediaUrl: this.avatarPreview() ? { defaultUrl: this.avatarPreview()! } : orig.mediaUrl,
       });
     }
     this.toggleChangePassword(false);
     this.toggleChangePasscode(false);
     this.toggleChangeMSR(false);
-    this.base64Image.set('');
+    this.pickedMediaId.set(null);
     this.avatarPreview.set(null);
     this.dirtyExtra.set(false);
     this.form.markAsPristine();

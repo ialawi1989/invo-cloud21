@@ -48,10 +48,10 @@
           [class.gp-segmented__btn--active]="value().direction === dir"
           (click)="setDirection(dir)">
           @switch (dir) {
-            @case ('to right')  { → }
-            @case ('to left')   { ← }
-            @case ('to bottom') { ↓ }
-            @case ('to top')    { ↑ }
+            @case ('to right')  { <span class="ui-icon ui-icon-arrow-right"></span> }
+            @case ('to left')   { <span class="ui-icon ui-icon-arrow-left"></span> }
+            @case ('to bottom') { <span class="ui-icon ui-icon-arrow-down"></span> }
+            @case ('to top')    { <span class="ui-icon ui-icon-arrow-up"></span> }
             @case ('angle')     { ° }
           }
         </button>

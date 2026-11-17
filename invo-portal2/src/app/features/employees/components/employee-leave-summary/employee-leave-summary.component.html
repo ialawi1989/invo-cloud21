@@ -18,7 +18,7 @@
             <span>{{ 'EMPLOYEES.LEAVE_SUMMARY.NEXT' | translate }}</span>
             <span class="chip" [class.chip--ok]="u.status === 'Approved'" [class.chip--wait]="u.status === 'Pending'">{{ u.status }}</span>
           </div>
-          <div class="row"><b>{{ u.leaveType }}</b><span>{{ u.startDate }} → {{ u.endDate }}</span></div>
+          <div class="row"><b>{{ u.leaveType }}</b><span>{{ u.startDate }} <span class="ui-icon ui-icon-arrow-right"></span> {{ u.endDate }}</span></div>
           @if (u.days) { <div class="row"><span>{{ 'EMPLOYEES.LEAVE_SUMMARY.DURATION' | translate }}</span><b>{{ u.days }}</b></div> }
         </div>
       } @else {

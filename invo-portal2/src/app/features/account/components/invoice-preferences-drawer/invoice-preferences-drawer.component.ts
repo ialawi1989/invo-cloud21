@@ -46,7 +46,7 @@ const slugify = (name: string) => name.trim().toLowerCase().replace(/\s+/g, '_')
           <button type="button" class="ipd__tab" [class.is-active]="tab() === 'fields'" (click)="openFieldsTab()">{{ 'INVOICES.PREFS.FIELDS' | translate }}</button>
         </div>
         <a class="ipd__all" href="/settings/invoice-options" target="_blank" rel="noopener">{{ 'INVOICES.PREFS.ALL_PREFERENCES' | translate }}</a>
-        <button type="button" class="ipd__close" (click)="ref.close()" aria-label="close">✕</button>
+        <button type="button" class="ipd__close" (click)="ref.close()" aria-label="close"><span class="ui-icon ui-icon-x"></span></button>
       </header>
 
       <div class="ipd__body">
@@ -88,8 +88,8 @@ const slugify = (name: string) => name.trim().toLowerCase().replace(/\s+/g, '_')
                   @if (editingId() === f.id) {
                     <input class="ipd__field-name" [(ngModel)]="editName" (keydown.enter)="commitEdit()" autofocus/>
                     <label class="ipd__req"><input type="checkbox" [(ngModel)]="editRequired"/> {{ 'COMMON.REQUIRED' | translate }}</label>
-                    <button type="button" class="ipd__icon-btn" (click)="commitEdit()" [attr.aria-label]="'COMMON.SAVE' | translate">✓</button>
-                    <button type="button" class="ipd__icon-btn" (click)="cancelEdit()" [attr.aria-label]="'COMMON.CANCEL' | translate">✕</button>
+                    <button type="button" class="ipd__icon-btn" (click)="commitEdit()" [attr.aria-label]="'COMMON.SAVE' | translate"><span class="ui-icon ui-icon-check"></span></button>
+                    <button type="button" class="ipd__icon-btn" (click)="cancelEdit()" [attr.aria-label]="'COMMON.CANCEL' | translate"><span class="ui-icon ui-icon-x"></span></button>
                   } @else {
                     <span class="ipd__field-name">{{ f.name || ('INVOICES.PREFS.UNNAMED_FIELD' | translate) }}</span>
                     <span class="ipd__field-type">{{ typeLabel(f.type) | translate }}</span>

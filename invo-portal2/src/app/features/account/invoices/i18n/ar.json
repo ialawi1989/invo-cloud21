@@ -48,6 +48,8 @@
       "Closed": "مغلقة",
       "Paid": "مدفوعة",
       "Partially Paid": "مدفوعة جزئياً",
+      "Pending Payments": "بانتظار الدفع",
+      "Payment Failed": "فشل الدفع",
       "Void": "ملغاة",
       "writeOff": "شطب",
       "merged": "مدمجة"

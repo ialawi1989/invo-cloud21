@@ -104,7 +104,7 @@
     <section class="sd-card">
       <button type="button" class="sd-card__head" (click)="toggleOpen()">
         <span>{{ 'PROMOTIONS.PROMOTIONS_POINTS.ACTIONS_LIST' | translate }}</span>
-        <span class="sd-chevron" [class.is-open]="open()">&#9662;</span>
+        <span class="sd-chevron ui-chevron" [class.is-open]="open()"></span>
       </button>
       @if (open()) {
         <div class="sd-table-wrap">

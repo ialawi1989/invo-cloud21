@@ -1687,7 +1687,7 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
   getSortIcon(column: TableColumn<T>): string {
     const current = this.sortBy();
     if (current?.sortValue !== column.key) return '';
-    return current.sortDirection === 'asc' ? '↑' : '↓';
+    return current.sortDirection === 'asc' ? 'ui-icon-arrow-up' : 'ui-icon-arrow-down';
   }
 
   /** True if any grouped sibling is marked `primary`. Used by the header

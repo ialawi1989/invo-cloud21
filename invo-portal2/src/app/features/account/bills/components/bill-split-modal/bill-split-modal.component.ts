@@ -85,7 +85,7 @@ const asDate = (v: any) => (v instanceof Date ? v : new Date(v ?? Date.now()));
                 }
                 <td class="bs__end">
                   @if (!r.isDeleted) {
-                    <button type="button" class="bs__x" [disabled]="!r.removable" (click)="remove(r)" aria-label="remove">✕</button>
+                    <button type="button" class="bs__x" [disabled]="!r.removable" (click)="remove(r)" aria-label="remove"><span class="ui-icon ui-icon-x"></span></button>
                   } @else {
                     <button type="button" class="bs__link" (click)="r.isDeleted = false; touch()">{{ 'BILLS.SPLIT.UNDO' | translate }}</button>
                   }

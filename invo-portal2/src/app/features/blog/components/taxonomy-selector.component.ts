@@ -86,7 +86,7 @@ import { TooltipDirective } from '@shared/directives/tooltip.directive';
                         class="ts__star"
                         [class.is-on]="id === mainId()"
                         [appTooltip]="'BLOG.COMPOSER.SET_MAIN' | translate"
-                        (click)="setMain.emit(id)">★</button>
+                        (click)="setMain.emit(id)"><span class="ui-icon ui-icon-star-fill"></span></button>
               }
               {{ nameOf(tax) }}
               <button type="button" class="ts__chipX" (click)="remove.emit(id)">×</button>
