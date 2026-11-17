@@ -47,6 +47,8 @@ import { TranslateModule } from '@ngx-translate/core';
       animation: sttIn 160ms ease;
       transition: background 120ms ease, transform 120ms ease;
     }
+    /* A page with the pinned Save / Cancel bar (form-sticky-footer): sit above it instead of on top of its buttons. */
+    :host-context(body:has(app-form-sticky-footer)) .stt { inset-block-end: 84px; }
     .stt:hover { background: var(--color-brand-600, #2691a4); transform: translateY(-1px); }
     .stt:active { transform: translateY(0); }
     .stt:focus-visible { outline: 2px solid var(--color-brand-700, #207484); outline-offset: 2px; }
@@ -56,6 +58,7 @@ import { TranslateModule } from '@ngx-translate/core';
 
     @media (max-width: 576px) {
       .stt { inset-block-end: 16px; inset-inline-end: 16px; width: 40px; height: 40px; }
+      :host-context(body:has(app-form-sticky-footer)) .stt { inset-block-end: 80px; }
     }
   `],
 })

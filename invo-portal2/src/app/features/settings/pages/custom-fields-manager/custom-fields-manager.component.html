@@ -41,7 +41,7 @@
             (cdkDropListDropped)="drop($event)"
           >
             @for (f of active(); track identify($index, f); let i = $index) {
-              <li class="field" cdkDrag [class.field--open]="f.isOpened">
+              <li class="field" cdkDrag [class.field--open]="f.isOpened" [attr.data-field-id]="f.id">
                 <!-- ── Header row ─────────────────────────────────── -->
                 <div class="field__head">
                   <button type="button" class="field__handle" cdkDragHandle [attr.aria-label]="'COMMON.REORDER' | translate">

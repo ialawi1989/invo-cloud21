@@ -172,6 +172,11 @@
     },
 
     "BRANCHES": {
+      "TAB_GENERAL": "General",
+      "TAB_OPERATIONS": "Operations",
+      "TAB_LOCATION": "Location",
+      "TAB_HOURS": "Working hours",
+      "TAB_DELIVERY": "Delivery times",
       "ADD_NEW":              "Add branch",
       "EDIT":                 "Edit branch",
       "SEARCH_PLACEHOLDER":   "Search branches…",

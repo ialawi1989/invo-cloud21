@@ -25,7 +25,6 @@ import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { ModalService } from '@shared/modal/modal.service';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { TimePickerComponent } from '@shared/components/time-picker/time-picker.component';
 
 import {
@@ -54,10 +53,11 @@ import {
 import { EntityCustomFieldsComponent } from '../../components/entity-custom-fields/entity-custom-fields.component';
 import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 import { ToastService } from '@shared/components/toast/toast.service';
+import { LocationMapComponent } from '../../components/location-map/location-map.component';
+import { SegmentedToggleComponent, SegmentedToggleOption } from '@shared/components/segmented-toggle/segmented-toggle.component';
 import { ToggleComponent } from '@shared/components/toggle/toggle.component';
 
 import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton.component';
-import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /**
  * Settings → Branch form (edit only)
  *
@@ -69,10 +69,12 @@ import { TooltipDirective } from '@shared/directives/tooltip.directive';
  * `original` snapshot so saving from this UI doesn't
  * silently wipe data managed by other parts of the system.
  */
+type BranchTab = 'general' | 'operations' | 'location' | 'hours' | 'delivery';
+
 @Component({
   selector: 'app-branch-form',
   standalone: true,
-  imports: [TooltipDirective, FormSkeletonComponent, 
+  imports: [FormSkeletonComponent, 
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
@@ -83,6 +85,8 @@ import { TooltipDirective } from '@shared/directives/tooltip.directive';
     EntityCustomFieldsComponent,
     FormStickyFooterComponent,
     ToggleComponent,
+    SegmentedToggleComponent,
+    LocationMapComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './branch-form.component.html',
@@ -94,10 +98,26 @@ export class BranchFormComponent implements OnInit, CanLeaveComponent {
   private translate  = inject(TranslateService);
   private destroyRef = inject(DestroyRef);
   private route      = inject(ActivatedRoute);
+
+  // ─── Side tabs (kept in the URL, so a link or a refresh lands on the same tab) ───
+  readonly tabs: SegmentedToggleOption<BranchTab>[] = [
+    { value: 'general',    label: 'SETTINGS.BRANCHES.TAB_GENERAL',    icon: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="11" r="2.5"/><path d="M14 9h4M14 13h4"/>' },
+    { value: 'operations', label: 'SETTINGS.BRANCHES.TAB_OPERATIONS', icon: '<line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="8" cy="18" r="2"/>' },
+    { value: 'location',   label: 'SETTINGS.BRANCHES.TAB_LOCATION',   icon: '<path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/>' },
+    { value: 'hours',      label: 'SETTINGS.BRANCHES.TAB_HOURS',      icon: '<circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/>' },
+    { value: 'delivery',   label: 'SETTINGS.BRANCHES.TAB_DELIVERY',   icon: '<path d="M1 6h13v10H1z"/><path d="M14 9h4l3 3v4h-7"/><circle cx="6" cy="18" r="2"/><circle cx="17" cy="18" r="2"/>' },
+  ];
+  tab = signal<BranchTab>(
+    (['general', 'operations', 'location', 'hours', 'delivery'] as const).find(t => t === this.route.snapshot.queryParamMap.get('tab')) ?? 'general',
+  );
+  setTab(t: BranchTab): void {
+    this.tab.set(t);
+    void this.router.navigate([], { relativeTo: this.route, queryParams: { tab: t === 'general' ? null : t }, queryParamsHandling: 'merge', replaceUrl: true });
+  }
+
   private router     = inject(Router);
   private companySvc = inject(CompanyService);
   private modal      = inject(ModalService);
-  private sanitizer  = inject(DomSanitizer);
   private toast      = inject(ToastService);
 
   loading = signal<boolean>(false);
@@ -178,17 +198,11 @@ export class BranchFormComponent implements OnInit, CanLeaveComponent {
    *  FormControl values are not tracked by signals automatically. */
   private formTick = signal(0);
 
-  /** Embed URL for the read-only Google-Maps preview on the form card.
-   *  Returns `null` when no coordinates are set so the template can show
-   *  the "no location" placeholder instead of a world-zoom map. */
-  mapPreviewUrl = computed<SafeResourceUrl | null>(() => {
+  /** True once the branch has coordinates, so the preview map is worth showing. */
+  hasCoords = computed<boolean>(() => {
     this.formTick();
-    const lat = String(this.form.controls['lat'].value ?? '').trim();
-    const lng = String(this.form.controls['lng'].value ?? '').trim();
-    if (!lat || !lng) return null;
-    return this.sanitizer.bypassSecurityTrustResourceUrl(
-      `https://www.google.com/maps?q=${encodeURIComponent(lat + ',' + lng)}&z=15&output=embed`,
-    );
+    const lat = Number(this.form.controls['lat'].value), lng = Number(this.form.controls['lng'].value);
+    return Number.isFinite(lat) && Number.isFinite(lng) && (lat !== 0 || lng !== 0);
   });
 
   constructor() {

@@ -159,7 +159,9 @@ export interface SegmentedToggleOption<T = string> {
     }
     .st__btn:disabled { cursor: not-allowed; }
     .st--sm .st__btn { padding: 4px 10px; font-size: 12px; }
-    .st--vertical .st__btn { padding: 8px 12px; }
+    /* Vertical (side tabs): every item spans the full width and starts at the same edge, so the icons and labels line up in two columns. */
+    .st--vertical { align-items: stretch; gap: 2px; }
+    .st--vertical .st__btn { display: flex; align-items: center; justify-content: flex-start; width: 100%; padding: 9px 12px; text-align: start; gap: 10px; }
 
     /* Rich variant — icon + label + count. Keeps the same pill
        visual but gives the contents room to breathe. Used by media

@@ -3,6 +3,8 @@ import {
   ChangeDetectorRef,
   Component,
   DestroyRef,
+  ElementRef,
+  HostListener,
   OnInit,
   computed,
   inject,
@@ -94,6 +96,7 @@ export class CustomFieldsManagerComponent implements OnInit, CanLeaveComponent {
   private route      = inject(ActivatedRoute);
   private router     = inject(Router);
   private cdr        = inject(ChangeDetectorRef);
+  private host      = inject<ElementRef<HTMLElement>>(ElementRef);
   private modal      = inject(ModalService);
   private toast      = inject(ToastService);
   private sanitizer  = inject(DomSanitizer);
@@ -282,6 +285,31 @@ export class CustomFieldsManagerComponent implements OnInit, CanLeaveComponent {
     fresh.isOpened = true;
     fresh.activeTab = 'general';
     this.active.update((list) => [...list, fresh]);
+    // Closing the type dialog restores the page scroll from before it opened; reveal the new row only after that.
+    void this.modal.scrollRestored().then(() => this.revealField(fresh.id));
+  }
+
+  /**
+   * Brings a field's row into view and puts the cursor in its first input (used right after adding one at the end of a long list).
+   * The row appears on a later change-detection pass (and the type dialog is still closing), so it is looked up again for up to
+   * about a second. It runs after the dialog's scroll restore (see `add()`), so the smooth scroll is not undone.
+   */
+  private revealField(id: string, attempt = 0): void {
+    const row = this.host.nativeElement.querySelector<HTMLElement>(`[data-field-id="${id}"]`);
+    if (!row) {
+      if (attempt < 20) setTimeout(() => this.revealField(id, attempt + 1), 50);
+      return;
+    }
+    const input = row.querySelector<HTMLInputElement>('input.input');
+    input?.focus({ preventScroll: true });
+    // Once the row has its final height (it opens with its form), bring it into the middle of the view.
+    requestAnimationFrame(() => requestAnimationFrame(() => row.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' })));
+  }
+
+  /** Closing or reloading the browser tab with unsaved fields asks first (in-app navigation is covered by the route guard). */
+  @HostListener('window:beforeunload', ['$event'])
+  onBeforeUnload(e: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) { e.preventDefault(); e.returnValue = ''; }
   }
 
   /** Open the type picker for an existing field. */

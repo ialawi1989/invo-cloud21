@@ -172,6 +172,11 @@
     },
 
     "BRANCHES": {
+      "TAB_GENERAL": "عام",
+      "TAB_OPERATIONS": "التشغيل",
+      "TAB_LOCATION": "الموقع",
+      "TAB_HOURS": "ساعات العمل",
+      "TAB_DELIVERY": "أوقات التوصيل",
       "ADD_NEW":              "إضافة فرع",
       "EDIT":                 "تعديل الفرع",
       "SEARCH_PLACEHOLDER":   "ابحث عن فرع…",

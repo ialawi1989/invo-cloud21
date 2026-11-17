@@ -264,9 +264,14 @@
 // ── Location summary card (read-only + Edit button → modal) ───────────
 .card__head--with-action {
   display: flex;
+  // `.card__head` stacks its children in a column; a header with an action keeps the title block at the start and the button at the end.
+  flex-direction: row;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+
+  > div { min-width: 0; flex: 1; text-align: start; }
+  > .btn { flex-shrink: 0; }
 }
 
 .btn-sm { padding: 5px 14px; font-size: 13px; }
@@ -408,4 +413,26 @@
   color: #475569;
   font-size: 11px;
   font-weight: 600;
+}
+
+// Section icon: the same soft teal tile the Custom fields card uses.
+.card__icon {
+  flex: none; width: 32px; height: 32px; border-radius: 8px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: #ecfeff; color: #0e7490;
+}
+.card__head--icon {
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+}
+.card__head-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+
+// ── Side tabs ──────────────────────────────────────────────────────────
+.tabs-layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 20px; align-items: start; }
+.tabs-side { position: sticky; top: 72px; }
+.tabs-main { min-width: 0; }
+@media (max-width: 900px) {
+  .tabs-layout { grid-template-columns: 1fr; }
+  .tabs-side { position: static; overflow-x: auto; }
 }

@@ -162,6 +162,14 @@ export class ModalService {
     setTimeout(apply, 120);
     setTimeout(() => { if (this.openModals.length === 0) this.scrollAtOpen = null; }, 400);
   }
+  /**
+   * Resolves once the page scroll that closing the last modal restores (see {@link restoreScroll}) has been applied. A caller that
+   * scrolls the page right after `afterClosed()` (e.g. to reveal what the dialog just added) must wait for this, or the restore
+   * puts the page back where it was when the dialog opened and undoes the scroll.
+   */
+  scrollRestored(): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, 420));
+  }
   private pendingHistoryBack: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {

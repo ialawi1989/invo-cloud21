@@ -9,11 +9,20 @@
   @if (loading()) {
     <app-form-skeleton />
   } @else {
+  <div class="tabs-layout">
+    <aside class="tabs-side">
+      <app-segmented-toggle [options]="tabs" [value]="tab()" [vertical]="true" (valueChange)="setTab($event)"/>
+    </aside>
+    <div class="tabs-main">
+    @if (tab() === 'general') {
     <!-- ═══ Identity ═══ -->
     <section class="card">
-      <header class="card__head">
-        <h2 class="card__title">{{ 'SETTINGS.BRANCHES.SECTION_IDENTITY' | translate }}</h2>
+      <header class="card__head card__head--icon">
+        <span class="card__icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="11" r="2.5"/><path d="M14 9h4M14 13h4M6.5 16.5c.6-1.4 1.7-2 2.5-2s1.9.6 2.5 2"/></svg></span>
+        <div class="card__head-text">
+          <h2 class="card__title">{{ 'SETTINGS.BRANCHES.SECTION_IDENTITY' | translate }}</h2>
         <p class="card__sub">{{ 'SETTINGS.BRANCHES.SECTION_IDENTITY_DESC' | translate }}</p>
+        </div>
       </header>
 
       <div class="card__body">
@@ -65,13 +74,18 @@
       [valueSource]="customFieldsRef()"
       idPrefix="bf-cf"
     />
+    }
 
+    @if (tab() === 'operations') {
     <!-- ═══ Operations (closing time stays here — it's not really a
          location field even though the OLD form bundled them) ═══ -->
     <section class="card">
-      <header class="card__head">
-        <h2 class="card__title">{{ 'SETTINGS.BRANCHES.SECTION_OPERATIONS' | translate }}</h2>
+      <header class="card__head card__head--icon">
+        <span class="card__icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="9" cy="6" r="2" fill="#fff"/><circle cx="15" cy="12" r="2" fill="#fff"/><circle cx="8" cy="18" r="2" fill="#fff"/></svg></span>
+        <div class="card__head-text">
+          <h2 class="card__title">{{ 'SETTINGS.BRANCHES.SECTION_OPERATIONS' | translate }}</h2>
         <p class="card__sub">{{ 'SETTINGS.BRANCHES.SECTION_OPERATIONS_DESC' | translate }}</p>
+        </div>
       </header>
       <div class="card__body">
         <div class="field">
@@ -87,27 +101,20 @@
 
     <!-- ═══ Settings (toggles) ═══ -->
     <section class="card">
-      <header class="card__head">
-        <h2 class="card__title">{{ 'SETTINGS.BRANCHES.SECTION_OPTIONS' | translate }}</h2>
+      <header class="card__head card__head--icon">
+        <span class="card__icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="10" rx="5"/><circle cx="16" cy="12" r="2.5"/></svg></span>
+        <div class="card__head-text">
+          <h2 class="card__title">{{ 'SETTINGS.BRANCHES.SECTION_OPTIONS' | translate }}</h2>
         <p class="card__sub">{{ 'SETTINGS.BRANCHES.SECTION_OPTIONS_DESC' | translate }}</p>
+        </div>
       </header>
 
       <div class="card__body toggles">
-        <!-- onlineAvailability — hint has a conditional `<em>` for the
-             "locked by default" message, so the toggle is used label-less
-             and the descriptive text lives in a sibling wrapper. -->
-        <div class="toggle-row">
-          <app-toggle formControlName="onlineAvailability"/>
-          <span class="toggle-row__text">
-            <span class="field-label">{{ 'SETTINGS.BRANCHES.ONLINE_AVAILABILITY' | translate }}</span>
-            <span class="field-hint">
-              {{ 'SETTINGS.BRANCHES.ONLINE_AVAILABILITY_HINT' | translate }}
-              @if (isEcommerceDefault()) {
-                <em class="locked"> {{ 'SETTINGS.BRANCHES.LOCKED_BY_DEFAULT' | translate }}</em>
-              }
-            </span>
-          </span>
-        </div>
+        <!-- Same label + hint layout as the toggle below; the "locked" note is appended to the hint. -->
+        <app-toggle
+          formControlName="onlineAvailability"
+          [label]="'SETTINGS.BRANCHES.ONLINE_AVAILABILITY' | translate"
+          [hint]="('SETTINGS.BRANCHES.ONLINE_AVAILABILITY_HINT' | translate) + (isEcommerceDefault() ? ' ' + ('SETTINGS.BRANCHES.LOCKED_BY_DEFAULT' | translate) : '')"/>
 
         <app-toggle
           formControlName="mainBranch"
@@ -115,10 +122,13 @@
           [hint]="'SETTINGS.BRANCHES.MAIN_BRANCH_HINT' | translate"/>
       </div>
     </section>
+    }
 
+    @if (tab() === 'location') {
     <!-- ═══ Location (read-only summary; Edit opens a modal) ═══ -->
     <section class="card">
       <header class="card__head card__head--with-action">
+        <span class="card__icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg></span>
         <div>
           <h2 class="card__title">{{ 'SETTINGS.BRANCHES.SECTION_LOCATION' | translate }}</h2>
         </div>
@@ -137,17 +147,9 @@
           }
         </div>
 
-        @if (mapPreviewUrl()) {
+        @if (hasCoords()) {
           <div class="location-summary__map">
-            <iframe
-              [src]="mapPreviewUrl()"
-              width="100%"
-              height="220"
-              style="border: 0;"
-              loading="lazy"
-              referrerpolicy="no-referrer-when-downgrade"
-              [appTooltip]="'SETTINGS.BRANCHES.MAP_LOCATION' | translate"
-            ></iframe>
+            <app-location-map [lat]="form.controls['lat'].value" [lng]="form.controls['lng'].value" [height]="220"/>
           </div>
         } @else {
           <p class="location-summary__no-coords">
@@ -156,10 +158,13 @@
         }
       </div>
     </section>
+    }
 
+    @if (tab() === 'hours') {
     <!-- ═══ Working Hours (read-only summary; Edit opens a modal) ═══ -->
     <section class="card">
       <header class="card__head card__head--with-action">
+        <span class="card__icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg></span>
         <div>
           <h2 class="card__title">{{ 'SETTINGS.BRANCHES.WORKING_HOURS' | translate }}</h2>
           <p class="card__sub">{{ 'SETTINGS.BRANCHES.WORKING_HOURS_DESC' | translate }}</p>
@@ -190,10 +195,13 @@
         </div>
       </div>
     </section>
+    }
 
+    @if (tab() === 'delivery') {
     <!-- ═══ Delivery Times (same pattern) ═══ -->
     <section class="card">
       <header class="card__head card__head--with-action">
+        <span class="card__icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6h13v10H1z"/><path d="M14 9h4l3 3v4h-7"/><circle cx="6" cy="18" r="2" fill="#fff"/><circle cx="17" cy="18" r="2" fill="#fff"/></svg></span>
         <div>
           <h2 class="card__title">{{ 'SETTINGS.BRANCHES.DELIVERY_TIMES' | translate }}</h2>
           <p class="card__sub">{{ 'SETTINGS.BRANCHES.DELIVERY_TIMES_DESC' | translate }}</p>
@@ -224,6 +232,9 @@
         </div>
       </div>
     </section>
+    }
+    </div>
+  </div>
   }
 
   <app-loading-overlay [show]="saving()" [message]="saveLabel()"/>

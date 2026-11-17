@@ -42,6 +42,13 @@ export class CustomFieldsService {
   /** Cached field arrays per entity type — invalidated on save. */
   private cache = new Map<string, CustomField[]>();
 
+  /**
+   * The id of each entity type's `CustomizationSettings` row, as `getCustomizationByKey` returns it (null / absent until the
+   * first save). Saving WITHOUT it is an insert, which the backend refuses once a row exists for the type ("product
+   * Settings Already Exists"); saving WITH it edits the `customFields` key of that row.
+   */
+  private rowIds = new Map<string, string>();
+
   /** Fetch all custom fields (active + deleted) for one entity type. */
   async getByType(type: string): Promise<CustomField[]> {
     if (this.cache.has(type)) return [...this.cache.get(type)!];
@@ -49,6 +56,7 @@ export class CustomFieldsService {
       this.api.get(`company/getCustomizationByKey/${type}/customFields`),
     );
     const data = res?.data ?? {};
+    if (data && !Array.isArray(data) && data.id) this.rowIds.set(type, String(data.id));
     // Wire shape varies — newer API: { customFields: [...] }; older: { value: [...] };
     // some endpoints just return the array directly.
     const raw: any[] = Array.isArray(data)
@@ -70,8 +78,16 @@ export class CustomFieldsService {
    * overwrite, which mirrors the legacy backend contract.
    */
   async save(type: string, fields: CustomField[]): Promise<boolean> {
+    // Make sure the row id is known even when the fields came from the cache of another page.
+    if (!this.rowIds.has(type)) {
+      const res = await this.api.request<any>(this.api.get(`company/getCustomizationByKey/${type}/customFields`));
+      const id = res?.data && !Array.isArray(res.data) ? res.data.id : null;
+      if (id) this.rowIds.set(type, String(id));
+    }
+    const id = this.rowIds.get(type);
     const payload = {
       data: {
+        ...(id ? { id } : {}),
         type,
         settings: { customFields: fields.map((f) => this.serialize(f)) },
       },
@@ -81,6 +97,8 @@ export class CustomFieldsService {
       this.api.post('company/saveCustomizations', payload),
     );
     if (res?.success) {
+      // The first save of a type creates its row: remember the id so the next save edits it instead of inserting again.
+      if (!id && res.data?.id) this.rowIds.set(type, String(res.data.id));
       this.cache.set(type, [...fields]);
       return true;
     }
@@ -110,8 +128,8 @@ export class CustomFieldsService {
 
   /** Drop the cached fields for one entity type (forces a reload). */
   invalidate(type?: string): void {
-    if (type) this.cache.delete(type);
-    else this.cache.clear();
+    if (type) { this.cache.delete(type); this.rowIds.delete(type); }
+    else { this.cache.clear(); this.rowIds.clear(); }
   }
 
   // ─── Helpers ───────────────────────────────────────────────────────────
