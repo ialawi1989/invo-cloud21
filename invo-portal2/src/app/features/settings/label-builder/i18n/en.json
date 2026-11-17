@@ -1,5 +1,10 @@
 {
   "LABEL_BUILDER": {
+    "NAME": "Name",
+    "TYPE_COLUMN": "Type",
+    "SIZE": "Size",
+    "DPI": "DPI",
+    "UPDATED": "Updated",
     "LIST_TITLE":         "Label templates",
     "LIST_SUBTITLE":      "Design Zebra-style print labels for products and kitchen tickets. Pick a template to edit, or create a new one.",
     "LIST_EMPTY":         "No templates yet. Create one to get started.",
