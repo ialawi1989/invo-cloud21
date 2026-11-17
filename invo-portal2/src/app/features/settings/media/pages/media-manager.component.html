@@ -323,6 +323,16 @@
       (cancelled)="closeDetachModal()" />
   }
 
+  <!-- Attach modal: shown after an edited image is saved, to put it on the entities that used the original -->
+  @if (attachTarget(); as t) {
+    <app-attach-media
+      [media]="t.media"
+      [entities]="t.entities"
+      (confirmed)="onAttachConfirmed($any($event))"
+      (cancelled)="closeAttachModal()" />
+  }
+  <app-loading-overlay [show]="attaching()" message="Attaching…" />
+
   <!-- Full-screen overlay during destructive saves (detach in flight) -->
   <app-loading-overlay [show]="detaching()" message="Detaching…" />
 

@@ -368,6 +368,19 @@ export class MediaService {
     }
   }
 
+  /**
+   * Point entities at a media item (the inverse of {@link unLinkMedia}): `POST media/linkMedia` with
+   * `[{ id, reference, mediaId }]` sets that media as each entity's image. Needs the matching backend route.
+   */
+  async linkMedia(items: { id: string; reference: string; mediaId: string }[]): Promise<any> {
+    try {
+      return await firstValueFrom(this.http.post<any>(`${this.baseUrl}media/linkMedia`, items));
+    } catch (error) {
+      console.error('linkMedia error:', error);
+      return { success: false, error };
+    }
+  }
+
   // ── Download ──────────────────────────────────────────────────────────────
 
   downloadImage(url: string, filename: string): void {

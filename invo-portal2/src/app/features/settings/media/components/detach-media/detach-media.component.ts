@@ -214,7 +214,7 @@ export interface LinkedEntity {
             }
 
             &.selected {
-              background: #EEF2FF;
+              background: var(--color-brand-50, #ecfeff);
             }
 
             input[type="checkbox"] {
@@ -233,7 +233,7 @@ export interface LinkedEntity {
 
               .badge {
                 padding: 0.25rem 0.75rem;
-                background: #4F46E5;
+                background: var(--color-brand-600, #2691a4);
                 color: white;
                 border-radius: 4px;
                 font-size: 0.75rem;
@@ -252,10 +252,10 @@ export interface LinkedEntity {
         .selection-summary {
           margin-top: 1rem;
           padding: 0.75rem;
-          background: #EEF2FF;
+          background: var(--color-brand-50, #ecfeff);
           border-radius: 8px;
           text-align: center;
-          color: #4F46E5;
+          color: var(--color-brand-700, #207484);
         }
       }
 

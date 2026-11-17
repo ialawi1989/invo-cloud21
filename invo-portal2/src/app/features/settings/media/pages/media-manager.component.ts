@@ -7,6 +7,7 @@ import { Media } from '../models/media.model';
 import { MediaGalleryComponent } from '../components/media-gallery';
 import { MediaPreviewComponent } from '../components/media-preview';
 import { DetachMediaComponent } from '../components/detach-media';
+import { AttachMediaComponent } from '../components/attach-media';
 import { UploadModalComponent } from '../components/upload-modal';
 import { MediaService } from '../services/media.service';
 import { ModalService } from '../../../../shared/modal/modal.service';
@@ -96,6 +97,7 @@ const TAB_META: Record<MediaTab, { label: string; icon: string }> = {
     FormsModule,
     MediaGalleryComponent,
     DetachMediaComponent,
+    AttachMediaComponent,
     SearchDropdownComponent,
     DatePickerComponent,
     PaginationComponent,
@@ -559,6 +561,10 @@ export class MediaManagerComponent implements OnInit, OnDestroy {
       const result = await this.mediaService.uploadFile(editedFile);
       if (result.success === false) throw new Error(result.error || result.message || 'Upload failed');
       await this.loadMedia({ refreshCounts: true });
+      // The edit is a new media item: offer to put it on the entities that used the original.
+      const savedId = result.data?.[0]?.id;
+      const used = (media.uploadTo as any[] | undefined)?.filter(e => e && e.id && e.reference) ?? [];
+      if (savedId && used.length && result.data?.[0]) this.attachTarget.set({ media: new Media({ ...result.data[0] }), entities: used });
     } catch (err: any) {
       console.error('Failed to upload edited image:', err);
       this.uploadToast.add({
@@ -571,6 +577,30 @@ export class MediaManagerComponent implements OnInit, OnDestroy {
       });
     } finally {
       this.savingEdit.set(false);
+    }
+  }
+
+  // ── Attach (the inverse of Detach) ──────────────────────────────────────────
+  /** The saved image and the entities offered to attach it to; null when the dialog is closed. */
+  attachTarget = signal<{ media: Media; entities: Array<{ id: string; name: string; reference: string }> } | null>(null);
+  attaching = signal<boolean>(false);
+
+  closeAttachModal(): void { this.attachTarget.set(null); }
+
+  async onAttachConfirmed(chosen: Array<{ id: string; reference: string }>): Promise<void> {
+    const t = this.attachTarget();
+    if (!t || chosen.length === 0) { this.closeAttachModal(); return; }
+    this.attaching.set(true);
+    try {
+      const result = await this.mediaService.linkMedia(chosen.map(e => ({ id: e.id, reference: e.reference, mediaId: t.media.id as string })));
+      if (result?.success === false) throw new Error(result.error?.error?.message || result.message || 'Could not attach the image');
+      this.closeAttachModal();
+      await this.loadMedia({ refreshCounts: true });
+    } catch (err: any) {
+      console.error('Attach error:', err);
+      this.uploadToast.add({ id: `error-${Date.now()}`, name: 'Attach failed', size: '', status: 'failed', progress: 0, error: err?.message ?? 'Could not attach the image' });
+    } finally {
+      this.attaching.set(false);
     }
   }
 
@@ -597,11 +627,12 @@ export class MediaManagerComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // The unLinkMedia API expects an array of { mediaId, referenceId, reference }.
+    // `media/unLinkMedia` (`MediaRepo.unlinkMedia`) reads `id` and `reference` of each item; `mediaId` / `referenceId` are kept for clarity.
     const payload = entities.map(e => ({
+      id: e.id,
+      reference: e.reference,
       mediaId: media.id,
       referenceId: e.id,
-      reference: e.reference,
     }));
 
     this.detaching.set(true);
