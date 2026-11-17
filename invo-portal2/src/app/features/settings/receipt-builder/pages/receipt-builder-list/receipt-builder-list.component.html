@@ -1,106 +1,54 @@
-<app-list-shell
-  [title]="'RECEIPT_BUILDER.TITLE' | translate"
-  [subtitle]="'RECEIPT_BUILDER.SUBTITLE' | translate"
+<app-list-page
+  [pageTitle]="'RECEIPT_BUILDER.TITLE' | translate"
+  [pageSubtitle]="'RECEIPT_BUILDER.SUBTITLE' | translate"
   [breadcrumbs]="breadcrumbs()"
-  [search]="search()"
-  [searchPlaceholder]="'RECEIPT_BUILDER.SEARCH_PLACEHOLDER' | translate"
-  [page]="page()"
-  [pageCount]="pageCount()"
-  [total]="total()"
-  [rangeLabel]="rangeLabel()"
-  [loading]="loading()"
-  [hasRows]="rows().length > 0"
-  [customLoading]="true"
-  [cardFlush]="true"
-  (searchChange)="onSearch($event)"
-  (searchClear)="clearSearch()"
-  (prevPage)="goPrev()"
-  (nextPage)="goNext()">
+  [columns]="columns()"
+  [dataSource]="load"
+  [pagination]="paginationConfig"
+  [search]="searchConfig()"
+  [sorting]="sortingConfig"
+  [headerActions]="[]"
+  [selectable]="false"
+  [fitContent]="true"
+  [emptyState]="emptyState()"
+  [entityType]="'receipt-builder'"
+  (rowClicked)="edit($event.row)">
 
-  <app-dropdown-menu-btn shellActions [items]="addMenuItems()" align="end" triggerClass="btn btn-primary">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-    </svg>
-    {{ 'RECEIPT_BUILDER.ADD_NEW' | translate }}
-  </app-dropdown-menu-btn>
-
-  <table shellLoading class="table table--skeleton" role="grid" aria-busy="true">
-    <thead>
-      <tr>
-        <th class="table__name">{{ 'RECEIPT_BUILDER.NAME' | translate }}</th>
-        <th class="table__type">{{ 'RECEIPT_BUILDER.TYPE' | translate }}</th>
-        <th class="table__count">{{ 'RECEIPT_BUILDER.ELEMENTS_COUNT' | translate }}</th>
-        <th class="table__updated">{{ 'RECEIPT_BUILDER.UPDATED' | translate }}</th>
-        <th class="table__actions"></th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (_ of [0,1,2,3,4]; track $index) {
-        <tr>
-          <td class="table__name"><app-skeleton variant="line" width="40%"/></td>
-          <td class="table__type"><app-skeleton variant="line" width="60px"/></td>
-          <td class="table__count"><app-skeleton variant="line" width="32px"/></td>
-          <td class="table__updated"><app-skeleton variant="line" width="80px"/></td>
-          <td class="table__actions"><app-skeleton variant="line" width="28px"/></td>
-        </tr>
-      }
-    </tbody>
-  </table>
-
-  <div shellEmpty>
-    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="6" y="2" width="12" height="20" rx="1"/>
-      <line x1="9" y1="7" x2="15" y2="7"/>
-      <line x1="9" y1="11" x2="15" y2="11"/>
-      <line x1="9" y1="15" x2="13" y2="15"/>
-    </svg>
-    <p>{{ (search() ? 'RECEIPT_BUILDER.NO_MATCH' : 'RECEIPT_BUILDER.EMPTY') | translate }}</p>
-    @if (!search()) {
-      <button type="button" class="btn btn-ghost btn-sm" (click)="addNew('recieptType')">{{ 'RECEIPT_BUILDER.ADD_NEW' | translate }}</button>
-    }
+  <div listHeaderActions class="flex items-center gap-3">
+    <app-dropdown-menu-btn [items]="addMenuItems()" align="end" triggerClass="btn btn-primary">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      {{ 'RECEIPT_BUILDER.ADD_NEW' | translate }}
+    </app-dropdown-menu-btn>
   </div>
 
-  <table class="table" role="grid">
-    <thead>
-      <tr>
-        <th class="table__name">{{ 'RECEIPT_BUILDER.NAME' | translate }}</th>
-        <th class="table__type">{{ 'RECEIPT_BUILDER.TYPE' | translate }}</th>
-        <th class="table__count">{{ 'RECEIPT_BUILDER.ELEMENTS_COUNT' | translate }}</th>
-        <th class="table__updated">{{ 'RECEIPT_BUILDER.UPDATED' | translate }}</th>
-        <th class="table__actions"></th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (t of rows(); track t.id) {
-        <tr (click)="edit(t)">
-          <td class="table__name"><span class="row-name">{{ t.name || '—' }}</span></td>
-          <td class="table__type">
-            <span class="type-chip" [class.type-chip--kitchen]="t.templateType === 'kitchen'">
-              {{ (t.templateType === 'kitchen' ? 'RECEIPT_BUILDER.TYPE_KITCHEN' : 'RECEIPT_BUILDER.TYPE_RECEIPT') | translate }}
-            </span>
-          </td>
-          <td class="table__count">
-            <span class="count-chip">{{ t.elementsCount }}</span>
-          </td>
-          <td class="table__updated">
-            {{ t.updatedDate ? (t.updatedDate | date:'mediumDate') : '—' }}
-          </td>
-          <td class="table__actions" (click)="$event.stopPropagation()">
-            <app-dropdown-menu-btn
-              [items]="rowMenuItems(t)"
-              [appendToBody]="true"
-              [chevron]="false"
-              align="end"
-              triggerClass="icon-btn">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <circle cx="5"  cy="12" r="1.75"/>
-                <circle cx="12" cy="12" r="1.75"/>
-                <circle cx="19" cy="12" r="1.75"/>
-              </svg>
-            </app-dropdown-menu-btn>
-          </td>
-        </tr>
-      }
-    </tbody>
-  </table>
-</app-list-shell>
+  <ng-template listCellTemplate="name" let-row>
+    <span class="font-medium text-slate-900">{{ row.name || '—' }}</span>
+  </ng-template>
+
+  <ng-template listCellTemplate="templateType" let-row>
+    <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold"
+          [class]="row.templateType === 'kitchen' ? 'bg-amber-100 text-amber-800' : 'bg-brand-50 text-brand-700'">
+      {{ (row.templateType === 'kitchen' ? 'RECEIPT_BUILDER.TYPE_KITCHEN' : 'RECEIPT_BUILDER.TYPE_RECEIPT') | translate }}
+    </span>
+  </ng-template>
+
+  <ng-template listCellTemplate="elementsCount" let-row>
+    <span class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600 tabular-nums">{{ row.elementsCount }}</span>
+  </ng-template>
+
+  <ng-template listCellTemplate="updatedDate" let-row>
+    <span class="text-sm text-slate-700">{{ row.updatedDate ? (row.updatedDate | date: 'mediumDate') : '—' }}</span>
+  </ng-template>
+
+  <ng-template listRowActions let-row>
+    <div class="inline-flex items-center justify-end" (click)="$event.stopPropagation()">
+      <app-dropdown-menu-btn [items]="rowMenuItems(row)" [appendToBody]="true" [chevron]="false" align="end" triggerClass="icon-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <circle cx="5" cy="12" r="1.75"/><circle cx="12" cy="12" r="1.75"/><circle cx="19" cy="12" r="1.75"/>
+        </svg>
+      </app-dropdown-menu-btn>
+    </div>
+  </ng-template>
+</app-list-page>

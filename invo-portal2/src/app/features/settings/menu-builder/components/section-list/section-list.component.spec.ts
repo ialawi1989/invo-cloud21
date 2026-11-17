@@ -57,7 +57,7 @@ describe('SectionListComponent', () => {
     expect(rows()[0].querySelector('.sl__handle')!.getAttribute('aria-label')).toBe('Drag to reorder Rice');
   });
 
-  it('marks the selected section by more than colour: aria-current and the bar class', () => {
+  it('marks the selected section by more than colour: aria-current and the selected class', () => {
     expect(rows()[1].getAttribute('aria-current')).toBe('true');
     expect(rows()[1].classList.contains('sl__row--on')).toBe(true);
     expect(rows()[0].getAttribute('aria-current')).toBeNull();
