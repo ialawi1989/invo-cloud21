@@ -1,100 +1,48 @@
-<app-list-shell
-  [title]="'PRICE_LABEL.LIST.TITLE' | translate"
-  [subtitle]="'PRICE_LABEL.LIST.SUBTITLE' | translate"
+<app-list-page
+  [pageTitle]="'PRICE_LABEL.LIST.TITLE' | translate"
+  [pageSubtitle]="'PRICE_LABEL.LIST.SUBTITLE' | translate"
   [breadcrumbs]="breadcrumbs()"
-  [search]="search()"
-  [searchPlaceholder]="'PRICE_LABEL.LIST.SEARCH_PLACEHOLDER' | translate"
-  [page]="page()"
-  [pageCount]="pageCount()"
-  [total]="total()"
-  [rangeLabel]="rangeLabel()"
-  [loading]="loading()"
-  [hasRows]="rows().length > 0"
-  [customLoading]="true"
-  [cardFlush]="true"
-  (searchChange)="onSearch($event)"
-  (searchClear)="clearSearch()"
-  (prevPage)="goPrev()"
-  (nextPage)="goNext()">
+  [columns]="columns()"
+  [dataSource]="load"
+  [pagination]="paginationConfig"
+  [search]="searchConfig()"
+  [sorting]="sortingConfig"
+  [headerActions]="[]"
+  [selectable]="false"
+  [fitContent]="true"
+  [emptyState]="emptyState()"
+  [entityType]="'price-label'"
+  (rowClicked)="edit($event.row)">
 
-  <button shellActions type="button" class="btn btn-primary" (click)="addNew()">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-    </svg>
-    {{ 'PRICE_LABEL.LIST.ADD_NEW' | translate }}
-  </button>
-
-  <table shellLoading class="table table--skeleton" role="grid" aria-busy="true">
-    <thead>
-      <tr>
-        <th class="table__name">{{ 'PRICE_LABEL.LIST.NAME' | translate }}</th>
-        <th class="table__count">{{ 'PRICE_LABEL.LIST.PRODUCTS' | translate }}</th>
-        <th class="table__count">{{ 'PRICE_LABEL.LIST.OPTIONS' | translate }}</th>
-        <th class="table__actions"></th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (_ of [0,1,2,3,4]; track $index) {
-        <tr>
-          <td class="table__name"><app-skeleton variant="line" width="40%"/></td>
-          <td class="table__count"><app-skeleton variant="line" width="32px"/></td>
-          <td class="table__count"><app-skeleton variant="line" width="32px"/></td>
-          <td class="table__actions"><app-skeleton variant="line" width="28px"/></td>
-        </tr>
-      }
-    </tbody>
-  </table>
-
-  <div shellEmpty>
-    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
-      <line x1="7" y1="7" x2="7.01" y2="7"/>
-    </svg>
-    <p>{{ (search() ? 'PRICE_LABEL.LIST.NO_MATCH' : 'PRICE_LABEL.LIST.EMPTY') | translate }}</p>
-    @if (!search()) {
-      <button type="button" class="btn btn-ghost btn-sm" (click)="addNew()">
-        {{ 'PRICE_LABEL.LIST.ADD_NEW' | translate }}
-      </button>
-    }
+  <div listHeaderActions class="flex items-center gap-3">
+    <button type="button" (click)="addNew()"
+      class="flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium bg-gradient-to-r from-brand-500 to-brand-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      {{ 'PRICE_LABEL.LIST.ADD_NEW' | translate }}
+    </button>
   </div>
 
-  <table class="table" role="grid">
-    <thead>
-      <tr>
-        <th class="table__name">{{ 'PRICE_LABEL.LIST.NAME' | translate }}</th>
-        <th class="table__count">{{ 'PRICE_LABEL.LIST.PRODUCTS' | translate }}</th>
-        <th class="table__count">{{ 'PRICE_LABEL.LIST.OPTIONS' | translate }}</th>
-        <th class="table__actions"></th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (row of rows(); track trackRow($index, row)) {
-        <tr (click)="edit(row)">
-          <td class="table__name"><span class="row-name">{{ row.name || '—' }}</span></td>
-          <td class="table__count">
-            <span class="count-chip">{{ row.productsCount ?? row.productsPrices?.length ?? 0 }}</span>
-          </td>
-          <td class="table__count">
-            <span class="count-chip count-chip--alt">{{ row.optionsCount ?? row.optionsPrices?.length ?? 0 }}</span>
-          </td>
-          <td class="table__actions" (click)="$event.stopPropagation()">
-            <app-dropdown-menu-btn
-              [items]="rowMenuItems(row)"
-              [appendToBody]="true"
-              [chevron]="false"
-              align="end"
-              triggerClass="icon-btn">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <circle cx="5"  cy="12" r="1.75"/>
-                <circle cx="12" cy="12" r="1.75"/>
-                <circle cx="19" cy="12" r="1.75"/>
-              </svg>
-            </app-dropdown-menu-btn>
-          </td>
-        </tr>
-      }
-    </tbody>
-  </table>
-</app-list-shell>
+  <ng-template listCellTemplate="name" let-row>
+    <span class="font-medium text-slate-900">{{ row.name || '—' }}</span>
+  </ng-template>
 
-<app-loading-overlay [show]="loading()"/>
+  <ng-template listCellTemplate="productsCount" let-row>
+    <span class="inline-flex items-center rounded-full bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand-700 tabular-nums">{{ productsCount(row) }}</span>
+  </ng-template>
+
+  <ng-template listCellTemplate="optionsCount" let-row>
+    <span class="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 tabular-nums">{{ optionsCount(row) }}</span>
+  </ng-template>
+
+  <ng-template listRowActions let-row>
+    <div class="inline-flex items-center justify-end" (click)="$event.stopPropagation()">
+      <app-dropdown-menu-btn [items]="rowMenuItems(row)" [appendToBody]="true" [chevron]="false" align="end" triggerClass="icon-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <circle cx="5" cy="12" r="1.75"/><circle cx="12" cy="12" r="1.75"/><circle cx="19" cy="12" r="1.75"/>
+        </svg>
+      </app-dropdown-menu-btn>
+    </div>
+  </ng-template>
+</app-list-page>
