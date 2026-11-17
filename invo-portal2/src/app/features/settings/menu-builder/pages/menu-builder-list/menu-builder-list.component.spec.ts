@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
+import { BehaviorSubject } from 'rxjs';
 import { ModalService } from '@shared/modal/modal.service';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -19,37 +20,44 @@ describe('MenuBuilderListComponent (logic)', () => {
   let getSummary: ReturnType<typeof vi.fn>;
   let navigate: ReturnType<typeof vi.fn>;
   let cmp: MenuBuilderListComponent;
+  let params: BehaviorSubject<ReturnType<typeof convertToParamMap>>;
+
+  function create(initial: Record<string, string> = {}) {
+    params = new BehaviorSubject(convertToParamMap(initial));
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [MenuBuilderListComponent, TranslateModule.forRoot()],
+      providers: [
+        { provide: Router, useValue: { navigate } },
+        { provide: ActivatedRoute, useValue: { queryParamMap: params, snapshot: { get queryParamMap() { return params.value; } } } },
+        { provide: MenuBuilderService, useValue: { getList, getSummary } },
+        { provide: ModalService, useValue: { open: () => ({ afterClosed: async () => true }) } },
+        { provide: UserPreferencesService, useValue: { timePattern: () => 'HH:mm' } },
+      ],
+    });
+    TestBed.overrideComponent(MenuBuilderListComponent, { set: { template: '', imports: [] } });
+    return TestBed.createComponent(MenuBuilderListComponent).componentInstance;
+  }
 
   beforeEach(() => {
     TestBed.resetTestingModule();
     getList = vi.fn().mockResolvedValue({ list: [row()], total: 41 });
     getSummary = vi.fn().mockResolvedValue({ total: 41, statusCounts: { ACTIVE: 40, SCHEDULED: 0, ENDED: 1, DISABLED: 0 }, active: [{ id: 'a', name: 'DineIn' }], branchTimeZone: 'Asia/Bahrain' });
     navigate = vi.fn().mockResolvedValue(true);
-    TestBed.configureTestingModule({
-      imports: [MenuBuilderListComponent, TranslateModule.forRoot()],
-      providers: [
-        { provide: Router, useValue: { navigate } },
-        { provide: MenuBuilderService, useValue: { getList, getSummary } },
-        { provide: ModalService, useValue: { open: () => ({ afterClosed: async () => true }) } },
-        { provide: UserPreferencesService, useValue: { timePattern: () => 'HH:mm' } },
-      ],
-    });
-    // Only the container's own logic is under test: the shared list page is replaced by an empty template.
-    TestBed.overrideComponent(MenuBuilderListComponent, { set: { template: '', imports: [] } });
-    cmp = TestBed.createComponent(MenuBuilderListComponent).componentInstance;
+    cmp = create();
   });
 
   it('loads a page with the search text trimmed, and works out the page count', async () => {
     const res = await cmp.load({ page: 2, limit: 20, searchTerm: ' lunch ' });
-    expect(getList).toHaveBeenCalledWith({ page: 2, limit: 20, search: 'lunch', sortBy: undefined });
+    expect(getList).toHaveBeenCalledWith({ page: 2, limit: 20, search: 'lunch', sortBy: undefined, status: undefined });
     expect(res).toEqual({ list: [row()], count: 41, pageCount: 3 });
   });
 
   it('sorts by the column chosen in the table (Hours = its start time); with none chosen it sends no sort so the default (priority) applies', async () => {
     await cmp.load({ page: 1, limit: 20, sortBy: { sortValue: 'hours', sortDirection: 'desc' } });
-    expect(getList).toHaveBeenLastCalledWith({ page: 1, limit: 20, search: '', sortBy: { sortValue: 'startAt', sortDirection: 'desc' } });
+    expect(getList).toHaveBeenLastCalledWith({ page: 1, limit: 20, search: '', sortBy: { sortValue: 'startAt', sortDirection: 'desc' }, status: undefined });
     await cmp.load({ page: 1, limit: 20 });
-    expect(getList).toHaveBeenLastCalledWith({ page: 1, limit: 20, search: '', sortBy: undefined });
+    expect(getList).toHaveBeenLastCalledWith({ page: 1, limit: 20, search: '', sortBy: undefined, status: undefined });
   });
 
   it('loads the summary with the list, and the list still loads when the summary fails', async () => {
@@ -59,6 +67,29 @@ describe('MenuBuilderListComponent (logic)', () => {
     const res = await cmp.load({ page: 1, limit: 20 });
     expect(res.list.length).toBe(1);
     expect(cmp.summary()).toBeNull();
+  });
+
+  it('reads the selected tab from the URL, and ignores nonsense', () => {
+    expect(create({ status: 'ended' }).status()).toBe('ENDED');
+    expect(create({ status: 'nonsense' }).status()).toBeNull();
+  });
+
+  it('picking a tab writes it to the URL and starts at page 1; All clears it', () => {
+    cmp.setStatus('ACTIVE');
+    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { status: 'active', page: null }, queryParamsHandling: 'merge' }));
+    cmp.setStatus(null);
+    expect(navigate).toHaveBeenLastCalledWith([], expect.objectContaining({ queryParams: { status: null, page: null } }));
+  });
+
+  it('follows the address bar', () => {
+    params.next(convertToParamMap({ status: 'scheduled' }));
+    expect(cmp.status()).toBe('SCHEDULED');
+  });
+
+  it('asks the backend for the chosen tab, with the search kept', async () => {
+    cmp = create({ status: 'ended' });
+    await cmp.load({ page: 1, limit: 20, searchTerm: 'a' });
+    expect(getList).toHaveBeenLastCalledWith({ page: 1, limit: 20, search: 'a', sortBy: undefined, status: ['ENDED'] });
   });
 
   it('formats the hours: no seconds, "all day", overnight', () => {

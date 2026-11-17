@@ -9,6 +9,7 @@ import {
   Menu,
   MenuListItem,
   MenuListPage,
+  MenuStatus,
   MenuSummary,
   MenuSection,
   MenuSectionColor,
@@ -54,11 +55,11 @@ export class MenuBuilderService {
   private translate = inject(TranslateService);
 
   // ─── List ────────────────────────────────────────────────────────────
-  async getList(params: { page?: number; limit?: number; search?: string; sortBy?: { sortValue: string; sortDirection: 'asc' | 'desc' } } = {}): Promise<MenuListPage> {
+  async getList(params: { page?: number; limit?: number; search?: string; sortBy?: { sortValue: string; sortDirection: 'asc' | 'desc' }; status?: MenuStatus[] } = {}): Promise<MenuListPage> {
     // Default order: the menu priority (`index`, set with the legacy Arrange), lowest first. A column chosen in the table replaces it;
     // clearing that sort brings this default back.
     const sortBy = params.sortBy ?? { sortValue: 'index', sortDirection: 'asc' };
-    const body = { page: params.page ?? 1, limit: params.limit ?? 50, searchTerm: params.search ?? '', sortBy };
+    const body = { page: params.page ?? 1, limit: params.limit ?? 50, searchTerm: params.search ?? '', sortBy, ...(params.status?.length ? { status: params.status } : {}) };
     const res = await this.api.request<any>(this.api.post('product/getMenuList', body));
     const raw = res?.data ?? res;
     const list: any[] = Array.isArray(raw?.list) ? raw.list : Array.isArray(raw) ? raw : [];
@@ -72,6 +73,7 @@ export class MenuBuilderService {
         availableOnline: m?.availableOnline !== false,
         index:           int(m?.index, 0),
         sectionsCount:   Array.isArray(m?.sections) ? m.sections.length : (m?.sectionsCount ?? undefined),
+        status:          ['ACTIVE', 'SCHEDULED', 'ENDED', 'DISABLED'].includes(m?.status) ? m.status : undefined,
       })),
       total: int(raw?.count ?? raw?.total ?? list.length, list.length),
     };

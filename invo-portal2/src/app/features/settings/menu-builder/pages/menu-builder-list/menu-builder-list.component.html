@@ -29,10 +29,27 @@
     </button>
   </div>
 
-  <div listSubHeader class="pb-3"><app-menu-list-summary [summary]="summary()"/></div>
+  <div listSubHeader class="flex flex-col gap-3 pb-3">
+    <app-menu-status-filter [value]="status()" [counts]="summary()?.statusCounts ?? { ACTIVE: 0, SCHEDULED: 0, ENDED: 0, DISABLED: 0 }"
+                            [total]="summary()?.total ?? 0" (valueChange)="setStatus($event)"/>
+    <app-menu-list-summary [summary]="summary()"/>
+  </div>
 
   <ng-template listCellTemplate="name" let-row>
     <span class="font-medium text-slate-900">{{ row.name || '—' }}</span>
+  </ng-template>
+
+  <ng-template listCellTemplate="status" let-row>
+    @if (row.status) {
+      <app-menu-status-badge [status]="row.status" [startAt]="row.startAt" [endAt]="row.endAt" [use12h]="use12h()" [locale]="locale()"/>
+    }
+  </ng-template>
+
+  <!-- The grid (card) view shows the same badge. -->
+  <ng-template listMobileChip let-row>
+    @if (row.status) {
+      <app-menu-status-badge [status]="row.status" [startAt]="row.startAt" [endAt]="row.endAt" [use12h]="use12h()" [locale]="locale()"/>
+    }
   </ng-template>
 
   <ng-template listCellTemplate="hours" let-row>

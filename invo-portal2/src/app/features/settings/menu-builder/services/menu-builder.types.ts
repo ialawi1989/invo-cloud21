@@ -75,6 +75,9 @@ export interface Menu {
   index: number;
 }
 
+/** A menu's state by its hours, worked out by the backend in the branch's time zone. */
+export type MenuStatus = 'ACTIVE' | 'SCHEDULED' | 'ENDED' | 'DISABLED';
+
 export interface MenuListItem {
   id: string;
   name: string;
@@ -85,6 +88,8 @@ export interface MenuListItem {
   index: number;
   /** Number of sections, surfaced in the list table. */
   sectionsCount?: number;
+  /** Live state by the hours (absent when the backend does not send it). */
+  status?: MenuStatus;
 }
 
 export interface MenuListPage {

@@ -22,6 +22,10 @@ export class ListUrlStateHelper {
     if (state.sortBy) {
       params['sortBy'] = state.sortBy.sortValue;
       params['sortDir'] = state.sortBy.sortDirection;
+    } else {
+      // Sort cleared: null removes the params from the address bar (the list merges query params, so leaving them out would keep the old sort in the URL).
+      params['sortBy'] = null;
+      params['sortDir'] = null;
     }
 
     if (state.filters) {

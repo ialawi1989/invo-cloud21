@@ -97,7 +97,18 @@
     },
     "STATUS": {
       "ALL_DAY": "All day",
-      "NEXT_DAY": "(next day)"
+      "NEXT_DAY": "(next day)",
+      "COLUMN": "Status",
+      "ACTIVE": "Active now",
+      "STARTS_AT": "Starts at {{time}}",
+      "ENDED_AT": "Ended at {{time}}",
+      "FILTER_LABEL": "Filter menus by status",
+      "FILTER": {
+        "ALL": "All",
+        "ACTIVE": "Active now",
+        "SCHEDULED": "Scheduled",
+        "ENDED": "Ended"
+      }
     },
     "DONE": "Done",
     "EDIT": "Edit",

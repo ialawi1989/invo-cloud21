@@ -35,11 +35,8 @@ describe('MenuListSummaryComponent', () => {
     expect(text().trim()).toBe('');
   });
 
-  it('shows the totals, the zone and who is live', () => {
+  it('shows the zone and who is live (the counts are in the tabs)', () => {
     set(summary(['DineIn', 'Delivery']));
-    expect(text()).toContain('41 menus');
-    expect(text()).toContain('2 active now');
-    expect(text()).toContain('1 ended');
     expect(text()).toContain('Times in Asia/Bahrain');
     expect(text()).toContain('Active now: DineIn, Delivery');
   });

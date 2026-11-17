@@ -1,28 +1,15 @@
 @if (summary(); as s) {
-  <div class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-700" role="status">
-    <span class="font-semibold text-slate-900">{{ 'MENU_BUILDER.SUMMARY.TOTAL' | translate: { n: s.total } }}</span>
-    <span class="inline-flex items-center gap-1.5 font-semibold text-emerald-700">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>
-      {{ 'MENU_BUILDER.SUMMARY.ACTIVE' | translate: { n: s.statusCounts.ACTIVE } }}
-    </span>
-    <span class="inline-flex items-center gap-1.5 text-sky-700">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg>
-      {{ 'MENU_BUILDER.SUMMARY.SCHEDULED' | translate: { n: s.statusCounts.SCHEDULED } }}
-    </span>
-    <span class="inline-flex items-center gap-1.5 text-slate-500">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><polyline points="8 12.5 11 15.5 16 9.5"/></svg>
-      {{ 'MENU_BUILDER.SUMMARY.ENDED' | translate: { n: s.statusCounts.ENDED } }}
-    </span>
+  <div class="flex flex-wrap items-center justify-between gap-x-6 gap-y-1">
+    @if (named().length > 0) {
+      <p class="m-0 text-sm text-slate-600" role="status">
+        <span class="font-semibold text-emerald-700">{{ 'MENU_BUILDER.SUMMARY.ACTIVE_LABEL' | translate }}</span>
+        {{ named()[0].name }}@for (m of named().slice(1); track m.id) {, {{ m.name }}}@if (more() > 0) { <span class="text-slate-500"> {{ 'MENU_BUILDER.MORE_N' | translate: { n: more() } }}</span> }
+      </p>
+    } @else {
+      <p class="m-0 text-sm text-amber-700" role="status">{{ 'MENU_BUILDER.SUMMARY.NONE_ACTIVE' | translate }}</p>
+    }
     @if (s.branchTimeZone) {
-      <span class="text-xs text-slate-500">{{ 'MENU_BUILDER.TIMES_IN' | translate: { zone: s.branchTimeZone } }}</span>
+      <p class="m-0 text-xs text-slate-500">{{ 'MENU_BUILDER.TIMES_IN' | translate: { zone: s.branchTimeZone } }}</p>
     }
   </div>
-  @if (named().length > 0) {
-    <p class="m-0 mt-1 text-sm text-slate-600">
-      <span class="font-semibold text-emerald-700">{{ 'MENU_BUILDER.SUMMARY.ACTIVE_LABEL' | translate }}</span>
-      {{ named()[0].name }}@for (m of named().slice(1); track m.id) {, {{ m.name }}}@if (more() > 0) { <span class="text-slate-500"> {{ 'MENU_BUILDER.MORE_N' | translate: { n: more() } }}</span> }
-    </p>
-  } @else {
-    <p class="m-0 mt-1 text-sm text-amber-700">{{ 'MENU_BUILDER.SUMMARY.NONE_ACTIVE' | translate }}</p>
-  }
 }

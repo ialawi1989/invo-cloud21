@@ -97,7 +97,18 @@
     },
     "STATUS": {
       "ALL_DAY": "طوال اليوم",
-      "NEXT_DAY": "(اليوم التالي)"
+      "NEXT_DAY": "(اليوم التالي)",
+      "COLUMN": "الحالة",
+      "ACTIVE": "نشطة الآن",
+      "STARTS_AT": "تبدأ في {{time}}",
+      "ENDED_AT": "انتهت في {{time}}",
+      "FILTER_LABEL": "تصفية القوائم حسب الحالة",
+      "FILTER": {
+        "ALL": "الكل",
+        "ACTIVE": "نشطة الآن",
+        "SCHEDULED": "مجدولة",
+        "ENDED": "منتهية"
+      }
     },
     "DONE": "تم",
     "EDIT": "تعديل",
