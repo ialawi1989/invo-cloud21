@@ -9,6 +9,10 @@ import {
   Menu,
   MenuListItem,
   MenuListPage,
+  MenuStatus,
+  MenuStatusCounts,
+  MenuSummary,
+  MENU_STATUSES,
   MenuSection,
   MenuSectionColor,
   MenuSectionProduct,
@@ -42,8 +46,14 @@ export class MenuBuilderService {
   private translate = inject(TranslateService);
 
   // ─── List ────────────────────────────────────────────────────────────
-  async getList(params: { page?: number; limit?: number; search?: string } = {}): Promise<MenuListPage> {
-    const body = { page: params.page ?? 1, limit: params.limit ?? 50, ...(params.search ? { search: params.search } : {}) };
+  async getList(params: { page?: number; limit?: number; search?: string; status?: MenuStatus[]; sort?: 'status' } = {}): Promise<MenuListPage> {
+    const body = {
+      page: params.page ?? 1,
+      limit: params.limit ?? 50,
+      ...(params.search ? { searchTerm: params.search } : {}),
+      ...(params.status?.length ? { status: params.status } : {}),
+      ...(params.sort ? { sort: params.sort } : {}),
+    };
     const res = await this.api.request<any>(this.api.post('product/getMenuList', body));
     const raw = res?.data ?? res;
     const list: any[] = Array.isArray(raw?.list) ? raw.list : Array.isArray(raw) ? raw : [];
@@ -57,8 +67,33 @@ export class MenuBuilderService {
         availableOnline: m?.availableOnline !== false,
         index:           int(m?.index, 0),
         sectionsCount:   Array.isArray(m?.sections) ? m.sections.length : (m?.sectionsCount ?? undefined),
+        status:          toStatus(m?.status),
+        nextChangeAt:    typeof m?.nextChangeAt === 'string' ? m.nextChangeAt : null,
+        allDay:          m?.allDay === true,
+        overnight:       m?.overnight === true,
+        days:            Array.isArray(m?.days) ? m.days.map(Number) : null,
+        hasOverlap:      m?.hasOverlap === true,
+        overlapsWith:    Array.isArray(m?.overlapsWith) ? m.overlapsWith.map((o: any) => ({ id: String(o?.id ?? ''), name: String(o?.name ?? '') })) : [],
+        warnings:        Array.isArray(m?.warnings) ? m.warnings : [],
       })),
-      total: int(raw?.total ?? raw?.count ?? list.length, list.length),
+      total: int(raw?.count ?? raw?.total ?? list.length, list.length),
+      statusCounts: toCounts(raw?.statusCounts),
+      branchTimeZone: String(raw?.branchTimeZone ?? ''),
+      serverNow: String(raw?.serverNow ?? ''),
+    };
+  }
+
+  /** Counts per status and the menus live right now. */
+  async getSummary(): Promise<MenuSummary> {
+    const res = await this.api.request<any>(this.api.get('product/getMenuSummary'));
+    const raw = res?.data ?? res ?? {};
+    return {
+      total: int(raw.total, 0),
+      statusCounts: toCounts(raw.statusCounts),
+      active: Array.isArray(raw.active) ? raw.active.map((a: any) => ({ id: String(a?.id ?? ''), name: String(a?.name ?? ''), nextChangeAt: a?.nextChangeAt ?? null })) : [],
+      nextChangeAt: raw.nextChangeAt ?? null,
+      branchTimeZone: String(raw.branchTimeZone ?? ''),
+      serverNow: String(raw.serverNow ?? ''),
     };
   }
 
@@ -278,6 +313,14 @@ function parseBranchIds(raw: unknown): string[] {
       return '';
     })
     .filter((s) => !!s);
+}
+
+function toStatus(v: unknown): MenuStatus {
+  return (MENU_STATUSES as readonly string[]).includes(String(v)) ? (v as MenuStatus) : 'DISABLED';
+}
+
+function toCounts(v: any): MenuStatusCounts {
+  return { ACTIVE: int(v?.ACTIVE, 0), SCHEDULED: int(v?.SCHEDULED, 0), ENDED: int(v?.ENDED, 0), DISABLED: int(v?.DISABLED, 0) };
 }
 
 function int(v: unknown, fb: number): number {

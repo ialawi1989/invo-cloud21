@@ -17,6 +17,7 @@ import { DatePickerComponent, formatDate } from '../../../../shared/components/d
 import { PaginationComponent } from '../../../../shared/components/pagination';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../shared/components/breadcrumbs';
 import { SpinnerComponent, LoadingOverlayComponent } from '../../../../shared/components/spinner';
+import { SkeletonComponent } from '../../../../shared/components/skeleton/skeleton.component';
 import { UploadToastService } from '../../../../shared/components/upload-toast';
 import { RangeSliderComponent, RangeSliderValue } from '../../../../shared/components/range-slider';
 import { SegmentedToggleComponent, SegmentedToggleOption } from '../../../../shared/components/segmented-toggle/segmented-toggle.component';
@@ -103,6 +104,7 @@ const TAB_META: Record<MediaTab, { label: string; icon: string }> = {
     PaginationComponent,
     BreadcrumbsComponent,
     SpinnerComponent,
+    SkeletonComponent,
     LoadingOverlayComponent,
     RangeSliderComponent,
     SegmentedToggleComponent,
@@ -136,6 +138,8 @@ export class MediaManagerComponent implements OnInit, OnDestroy {
   loading       = signal<boolean>(false);
   deleting      = signal<boolean>(false);
   detaching     = signal<boolean>(false);
+  /** Placeholder cards shown while the first page of media loads. */
+  readonly skeletonTiles = Array.from({ length: 8 }, (_, i) => i);
   savingEdit    = signal<boolean>(false);
 
   // ── Pagination state ────────────────────────────────────────────────────────

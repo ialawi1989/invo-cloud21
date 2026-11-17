@@ -288,18 +288,22 @@ export class MediaService {
   }
 
   /**
-   * Fetch the image bytes of a media item as a Blob that belongs to this page's own origin.
+   * Fetch a media file's bytes as a Blob that belongs to this page's own origin (so a canvas or a 3D viewer may read it).
    *
-   * The CDN / signed-S3 address carries no CORS headers, so an image drawn from it taints the Photo Editor's canvas and the browser
-   * refuses to export the edit ("image can't be exported"). The backend's authenticated `media/getMediabyId/:id` returns the same
-   * file inline as a base64 data URI (`data.media`); turning that into a Blob gives bytes the canvas may read, which is exactly the
-   * situation of an image just picked from the computer. (A `media/:id/raw` route was assumed here before; the backend has no such route.)
+   * The CDN / signed-S3 address carries no CORS headers, so an image drawn from it taints the Photo Editor's canvas and a 3D viewer
+   * cannot fetch a model from it. First choice is the streaming route `GET media/:id/raw` (any size, scoped to the company); an
+   * older backend without it falls back to `media/getMediabyId/:id`, which returns the file inline as a base64 data URI
+   * (`data.media`, small files only: the server gives up on storage after 2 seconds).
    */
   async getMediaRawBlob(mediaId: string): Promise<Blob> {
-    const res = await firstValueFrom(this.http.get<any>(`${this.baseUrl}media/getMediabyId/${mediaId}`));
-    const dataUri: string | null | undefined = res?.data?.media;
-    if (!dataUri || !dataUri.startsWith('data:')) throw new Error('The image could not be read from the server');
-    return (await fetch(dataUri)).blob();
+    try {
+      return await firstValueFrom(this.http.get(`${this.baseUrl}media/${mediaId}/raw`, { responseType: 'blob' }));
+    } catch {
+      const res = await firstValueFrom(this.http.get<any>(`${this.baseUrl}media/getMediabyId/${mediaId}`));
+      const dataUri: string | null | undefined = res?.data?.media;
+      if (!dataUri || !dataUri.startsWith('data:')) throw new Error('The file could not be read from the server');
+      return (await fetch(dataUri)).blob();
+    }
   }
 
   /** Download a media item's bytes through the authenticated backend (see {@link getMediaRawBlob}). */

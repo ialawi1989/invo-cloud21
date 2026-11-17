@@ -46,52 +46,7 @@
         <hr class="card__divider"/>
 
 
-        <div class="field-row">
-          <span class="field-label">{{ 'SETTINGS.POS_OPTIONS.OPTIONS.VOID_REASONS' | translate }}</span>
-          <p class="field-hint">{{ 'SETTINGS.POS_OPTIONS.OPTIONS.VOID_REASONS_HINT' | translate }}</p>
-
-          <div class="void-add">
-            <input
-              type="text"
-              class="input"
-              [placeholder]="'SETTINGS.POS_OPTIONS.OPTIONS.VOID_REASON_PLACEHOLDER' | translate"
-              [value]="voidReasonDraft()"
-              (input)="voidReasonDraft.set($any($event.target).value)"
-              (keydown.enter)="$event.preventDefault(); addVoidReason()"
-            />
-            <button
-              type="button"
-              class="btn btn-ghost btn-sm"
-              (click)="addVoidReason()"
-              [disabled]="!voidReasonDraft().trim()"
-            >
-              {{ 'COMMON.ADD' | translate }}
-            </button>
-          </div>
-
-          @if (voidReasons.length > 0) {
-            <ul class="void-list">
-              @for (r of voidReasons.controls; track $index; let i = $index) {
-                <li class="void-chip">
-                  <span class="void-chip__text">{{ r.value }}</span>
-                  <button
-                    type="button"
-                    class="void-chip__remove"
-                    (click)="removeVoidReason(i)"
-                    [attr.aria-label]="'COMMON.DELETE' | translate"
-                  >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
-                      <line x1="18" y1="6" x2="6" y2="18"/>
-                      <line x1="6" y1="6" x2="18" y2="18"/>
-                    </svg>
-                  </button>
-                </li>
-              }
-            </ul>
-          } @else {
-            <p class="void-empty">{{ 'SETTINGS.POS_OPTIONS.OPTIONS.VOID_REASONS_EMPTY' | translate }}</p>
-          }
-        </div>
+        <app-void-reasons [reasons]="voidReasonList()" (reasonsChange)="onVoidReasonsChange($event)"/>
       </div>
     </section>
 

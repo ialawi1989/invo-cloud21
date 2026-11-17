@@ -1,6 +1,6 @@
 import {
   Component, Input, Output, EventEmitter, HostListener,
-  inject, OnInit, computed, signal,
+  inject, OnInit, OnChanges, OnDestroy, SimpleChanges, computed, signal,
   ApplicationRef, createComponent, EnvironmentInjector
 
 } from '@angular/core';
@@ -475,11 +475,12 @@ interface FavoritePage { label: string; link: string; }
     /* Shell */
     aside.sidebar {
       position: fixed; top: 56px; left: 0;
-      height: calc(100vh - 56px); width: var(--w);
+      height: calc(100vh - 56px); height: calc(100dvh - 56px); width: var(--w);
       background: var(--bg);
       display: flex; flex-direction: column;
       transition: width .25s ease;
       z-index: 1000; overflow: hidden;
+      overscroll-behavior: contain;
     }
     aside.sidebar.collapsed { width: var(--w-col); }
 
@@ -647,7 +648,9 @@ interface FavoritePage { label: string; link: string; }
 
     /* Nav */
     .nav-scroll {
-      flex: 1; overflow-y: auto; overflow-x: hidden; padding: 6px 0;
+      flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 6px 0;
+      /* Scrolling past the end of the menu must not scroll the page behind it (the problem on phones). */
+      overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
       scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.07) transparent;
     }
     .menu-list { list-style: none; margin: 0; padding: 0; }
@@ -767,11 +770,11 @@ interface FavoritePage { label: string; link: string; }
       .menu-icon { width: 18px !important; height: 18px !important; }
       .menu-icon svg { width: 16px !important; height: 16px !important; }
     }
-    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 999; display: none; }
+    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 999; display: none; touch-action: none; }
     @media (max-width: 991px) { .overlay { display: block; } }
   `]
 })
-export class SidebarComponent implements OnInit {
+export class SidebarComponent implements OnInit, OnChanges, OnDestroy {
   @Input() collapsed = false;
   @Input() mobileOpen = false;
   @Output() collapsedChange = new EventEmitter<boolean>();
@@ -935,6 +938,27 @@ export class SidebarComponent implements OnInit {
     this.collapsed = !this.collapsed;
     this.collapsedChange.emit(this.collapsed);
     if (this.collapsed) { this.favOpen = false; this.closeQA(); }
+  }
+
+  /** The page's own scroll setting before the phone menu opened (restored when it closes). */
+  private pageOverflow: string | null = null;
+
+  /** While the phone menu is open the page behind it must not scroll: a drag on the menu would otherwise move the page. */
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['mobileOpen']) this.lockPageScroll(this.mobileOpen);
+  }
+
+  ngOnDestroy(): void { this.lockPageScroll(false); }
+
+  private lockPageScroll(lock: boolean): void {
+    const body = document.body;
+    if (lock && this.pageOverflow === null) {
+      this.pageOverflow = body.style.overflow;
+      body.style.overflow = 'hidden';
+    } else if (!lock && this.pageOverflow !== null) {
+      body.style.overflow = this.pageOverflow;
+      this.pageOverflow = null;
+    }
   }
 
   closeMobile(): void {

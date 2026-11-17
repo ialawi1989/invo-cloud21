@@ -63,16 +63,16 @@
 
       <div class="card__body card__body--list">
         @if (products().length === 0) {
-          <div class="empty">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-              <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
-            </svg>
-            <p>{{ 'SETTINGS.KITCHEN.PRODUCTS_EMPTY' | translate }}</p>
-            <button type="button" class="btn btn-ghost btn-sm" (click)="openPickProducts()">
+          <app-empty-state icon="box"
+            [title]="'SETTINGS.KITCHEN.PRODUCTS_EMPTY' | translate"
+            [body]="'SETTINGS.KITCHEN.PRODUCTS_EMPTY_HINT' | translate">
+            <button type="button" class="btn btn-primary btn-sm" (click)="openPickProducts()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
               {{ 'SETTINGS.KITCHEN.SELECT_PRODUCTS' | translate }}
             </button>
-          </div>
+          </app-empty-state>
         } @else {
           <label class="search">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

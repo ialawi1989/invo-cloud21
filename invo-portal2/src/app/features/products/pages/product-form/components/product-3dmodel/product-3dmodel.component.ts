@@ -17,6 +17,7 @@ import {
 } from '../../../../../settings/media/components/media-picker/media-picker-modal.component';
 import type { Media } from '../../../../../settings/media/models/media.model';
 
+import { ModelViewerComponent } from '../../../../../settings/media/components/model-viewer/model-viewer.component';
 import { Product, ProductImage as ProductImageModel } from '../../../../models/product-form.model';
 import { Fields } from '../../../../models/product-fields.model';
 
@@ -24,7 +25,7 @@ import { Fields } from '../../../../models/product-fields.model';
 @Component({
   selector: 'app-pf-product-3dmodel',
   standalone: true,
-  imports: [CommonModule, TranslateModule],
+  imports: [CommonModule, TranslateModule, ModelViewerComponent],
   templateUrl: './product-3dmodel.component.html',
   styleUrl: './product-3dmodel.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -45,6 +46,7 @@ export class Product3dModelComponent {
   current = signal<ProductImageModel | null>(null);
 
   hasModel  = computed<boolean>(() => !!this.current());
+  modelId   = computed<string>(() => this.current()?.id ?? '');
   currentUrl = computed<string>(() => this.current()?.defaultUrl ?? '');
   modelName  = computed<string>(() => this.current()?.name ?? '');
 

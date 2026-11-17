@@ -2,7 +2,7 @@
 @if (viewMode === 'grid') {
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
     @for (item of media; track item.id) {
-      <div class="group bg-white border border-slate-200 rounded-xl hover:border-brand-300 hover:shadow-xl transition-all overflow-hidden cursor-pointer flex flex-col">
+      <div class="group bg-white border border-slate-200 rounded-xl hover:border-brand-300 hover:shadow-xl transition-all overflow-hidden cursor-pointer flex flex-col" (click)="onEdit(item); $event.stopPropagation()">
 
         <!-- Media Image/Preview -->
         <div class="relative aspect-square bg-slate-100 overflow-hidden">
@@ -59,7 +59,7 @@
             [class]="'absolute top-3 end-3 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all z-10 ' +
               (isSelected(item.id || '')
                 ? 'bg-brand-600 border-brand-600 opacity-100'
-                : 'bg-white/90 border-white group-hover:opacity-100 opacity-0')">
+                : 'bg-white/90 border-white group-hover:opacity-100 [@media(hover:none)]:opacity-100 opacity-0')">
             @if (isSelected(item.id || '')) {
               <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
@@ -68,9 +68,9 @@
           </button>
 
           <!-- Action Buttons on Hover -->
-          <div class="absolute bottom-3 start-3 end-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
+          <div class="absolute bottom-3 start-3 end-3 flex gap-2 opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0 [@media(hover:none)]:translate-y-0">
             <button
-              (click)="onEdit(item)"
+              (click)="onEdit(item); $event.stopPropagation()"
               class="flex-1 flex items-center justify-center gap-2 bg-white/95 hover:bg-white text-slate-700 px-3 py-2 rounded-lg transition-colors">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <circle cx="12" cy="12" r="3"/>
@@ -81,7 +81,7 @@
 
             @if (item.uploadTo && item.uploadTo.length > 0) {
               <button
-                (click)="onDetach(item)"
+                (click)="onDetach(item); $event.stopPropagation()"
                 class="p-2 bg-white/95 hover:bg-white text-orange-600 rounded-lg transition-colors"
                 appTooltip="Detach">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -91,7 +91,7 @@
             }
 
             <button
-              (click)="onDelete(item)"
+              (click)="onDelete(item); $event.stopPropagation()"
               class="p-2 bg-white/95 hover:bg-white text-red-600 rounded-lg transition-colors"
               appTooltip="Delete">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -122,7 +122,7 @@
 @if (viewMode === 'list') {
   <div class="flex flex-col gap-4">
     @for (item of media; track item.id) {
-      <div class="group flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-lg hover:border-brand-300 hover:shadow-md transition-all cursor-pointer">
+      <div class="group flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-lg hover:border-brand-300 hover:shadow-md transition-all cursor-pointer" (click)="onEdit(item); $event.stopPropagation()">
 
         <!-- Thumbnail -->
         <div class="relative">
@@ -169,7 +169,7 @@
 
           <!-- Selection Checkbox -->
           <button
-            (click)="toggleSelection(item.id || '')"
+            (click)="toggleSelection(item.id || ''); $event.stopPropagation()"
             [class]="'absolute -top-2 -end-2 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ' +
               (isSelected(item.id || '')
                 ? 'bg-brand-600 border-brand-600'
@@ -197,7 +197,7 @@
         <!-- Action Buttons -->
         <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
-            (click)="onEdit(item)"
+            (click)="onEdit(item); $event.stopPropagation()"
             class="p-2 text-brand-600 hover:text-brand-700 hover:bg-brand-50 rounded-lg transition-colors"
             appTooltip="View">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
@@ -208,7 +208,7 @@
 
           @if (item.uploadTo && item.uploadTo.length > 0) {
             <button
-              (click)="onDetach(item)"
+              (click)="onDetach(item); $event.stopPropagation()"
               class="p-2 text-orange-600 hover:text-orange-700 hover:bg-orange-50 rounded-lg transition-colors"
               appTooltip="Detach">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
@@ -218,7 +218,7 @@
           }
 
           <button
-            (click)="onDelete(item)"
+            (click)="onDelete(item); $event.stopPropagation()"
             class="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
             appTooltip="Delete">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">

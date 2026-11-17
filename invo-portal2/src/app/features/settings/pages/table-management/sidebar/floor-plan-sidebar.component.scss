@@ -1,0 +1,183 @@
+// Docked to the right edge of the workspace, full height; the canvas takes the remaining width (the page sets --sb-w on the workspace).
+// Tablet and below: the canvas keeps only the rail's width, so the open sidebar overlays it like a drawer.
+:host {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  inset-inline-end: 0;
+  width: 340px;
+  max-width: 100%;
+  z-index: 8;
+  display: flex;
+  min-width: 0;
+  transition: width 0.2s ease;
+}
+:host(.sb-host--collapsed) { width: 44px; }
+
+.sb {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-inline-start: 1px solid #e2e8f0;
+  box-shadow: -8px 0 24px rgba(15, 23, 42, 0.06);
+}
+
+.sb__head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 8px 0 16px;
+  border-bottom: 1px solid #eef2f6;
+}
+.sb__title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #0f172a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sb__dot { color: #94a3b8; }
+.sb__back {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  margin-inline-start: -8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-brand-700, #207484);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  &:hover { background: #ecfeff; }
+}
+.sb__collapse {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  &:hover { background: #f1f5f9; color: #0f172a; }
+}
+:host-context([dir='rtl']) .sb__flip { transform: scaleX(-1); }
+
+.sb__back:focus-visible, .sb__collapse:focus-visible, .sb__tab:focus-visible, .sb__rail:focus-visible {
+  outline: 2px solid var(--color-brand-600, #2691a4);
+  outline-offset: -2px;
+}
+
+// Tabs
+.sb__tabs {
+  flex: none;
+  display: flex;
+  border-bottom: 1px solid #eef2f6;
+}
+.sb__tab {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 11px 6px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: #64748b;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  &:hover { color: #0f172a; }
+  &--active { color: var(--color-brand-700, #207484); border-bottom-color: var(--color-brand-600, #2691a4); }
+}
+.sb__count {
+  min-width: 18px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 11px;
+  line-height: 18px;
+}
+.sb__tab--active .sb__count { background: #ccf3f8; color: var(--color-brand-700, #207484); }
+
+// The one scroll area
+.sb__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 14px 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.sb__view {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: sb-in 180ms ease-out;
+}
+.sb__view--detail { animation-name: sb-in-detail; }
+@keyframes sb-in { from { opacity: 0; transform: translateX(-12px); } to { opacity: 1; transform: none; } }
+@keyframes sb-in-detail { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: none; } }
+:host-context([dir='rtl']) .sb__view { animation-name: sb-in-detail; }
+:host-context([dir='rtl']) .sb__view--detail { animation-name: sb-in; }
+@media (prefers-reduced-motion: reduce) {
+  .sb__view { animation: none; }
+  :host { transition: none; }
+}
+
+// Fixed footer (actions of the open table / object); hidden when empty
+.sb__footer {
+  flex: none;
+  display: flex;
+  gap: 8px;
+  padding: 10px 16px;
+  border-top: 1px solid #eef2f6;
+  background: #fff;
+  &:empty { display: none; }
+}
+
+// Collapsed: a thin rail
+.sb__rail {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  border: 0;
+  border-inline-start: 1px solid #e2e8f0;
+  background: #fff;
+  color: #475569;
+  cursor: pointer;
+  box-shadow: -8px 0 24px rgba(15, 23, 42, 0.06);
+  &:hover { background: #f8fafc; color: #0f172a; }
+}
+.sb__rail-label {
+  writing-mode: vertical-rl;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}

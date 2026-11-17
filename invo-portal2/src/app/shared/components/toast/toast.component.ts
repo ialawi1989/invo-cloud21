@@ -64,6 +64,10 @@ import { ToastService } from './toast.service';
               <div class="toast__detail">{{ t.detail | translate }}</div>
             }
           </div>
+          @if (t.action; as a) {
+            <button type="button" class="toast__action"
+              (click)="a.run(); svc.dismiss(t.id); $event.stopPropagation()">{{ a.label | translate }}</button>
+          }
           <button type="button" class="toast__close"
             (click)="svc.dismiss(t.id); $event.stopPropagation()"
             aria-label="Close">
@@ -206,6 +210,22 @@ import { ToastService } from './toast.service';
       color: #64748b;
       line-height: 1.5;
       word-break: break-word;
+    }
+
+    .toast__action {
+      appearance: none;
+      background: transparent;
+      border: 0;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--color-brand-700, #207484);
+      cursor: pointer;
+      flex-shrink: 0;
+
+      &:hover { background: #ecfeff; }
     }
 
     .toast__close {

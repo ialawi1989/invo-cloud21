@@ -1,0 +1,52 @@
+<div class="vr">
+  <span class="vr__title">{{ 'SETTINGS.POS_OPTIONS.OPTIONS.VOID_REASONS' | translate }}</span>
+  <p class="vr__hint">{{ 'SETTINGS.POS_OPTIONS.OPTIONS.VOID_REASONS_HINT' | translate }}</p>
+
+  @if (isEmpty()) {
+    <div class="vr__empty">
+      <p>{{ 'SETTINGS.POS_OPTIONS.VOID.EMPTY' | translate }}</p>
+    </div>
+  } @else {
+    <ul class="vr__list" role="list" cdkDropList [cdkDropListData]="items()" (cdkDropListDropped)="drop($event)"
+        [attr.aria-label]="'SETTINGS.POS_OPTIONS.OPTIONS.VOID_REASONS' | translate">
+      @for (item of items(); track item.id) {
+        <li app-reason-row cdkDrag [cdkDragData]="item"
+            [item]="item"
+            [editing]="editingId() === item.id"
+            [taken]="takenFor(item.id)"
+            (startEdit)="startEdit(item.id)"
+            (save)="saveEdit(item.id, $event)"
+            (cancel)="cancelEdit()"
+            (remove)="remove(item.id)"
+            (move)="moveBy(item.id, $event)">
+          <div class="vr__placeholder" *cdkDragPlaceholder></div>
+        </li>
+      }
+    </ul>
+    <p class="vr__note">{{ 'SETTINGS.POS_OPTIONS.VOID.PAST_NOTE' | translate }}</p>
+  }
+
+  <div class="vr__add">
+    <div class="vr__add-row">
+      <input #addField type="text" class="vr__input" autocomplete="off" spellcheck="false"
+             [formControl]="draft"
+             [attr.maxlength]="maxLength"
+             [placeholder]="'SETTINGS.POS_OPTIONS.OPTIONS.VOID_REASON_PLACEHOLDER' | translate"
+             [attr.aria-label]="'SETTINGS.POS_OPTIONS.OPTIONS.VOID_REASONS' | translate"
+             [attr.aria-invalid]="!!error()"
+             [attr.aria-describedby]="error() ? 'vr-add-error' : null"
+             (input)="onDraftInput()"
+             (keydown.enter)="$event.preventDefault(); add()"/>
+      <button type="button" class="vr__add-btn" (click)="add()" [disabled]="atLimit() || !draft.value.trim()">
+        {{ 'COMMON.ADD' | translate }}
+      </button>
+    </div>
+    @if (atLimit()) {
+      <p class="vr__error vr__error--info" role="status">{{ 'SETTINGS.POS_OPTIONS.VOID.ERR_LIMIT' | translate: { max: max } }}</p>
+    } @else if (error(); as e) {
+      <p id="vr-add-error" class="vr__error" role="alert">{{ 'SETTINGS.POS_OPTIONS.VOID.ERR_' + e.toUpperCase() | translate: { max: maxLength } }}</p>
+    }
+  </div>
+
+  <app-suggestion-chips [suggestions]="suggestions()" [label]="'SETTINGS.POS_OPTIONS.VOID.SUGGEST_LABEL' | translate" (pick)="addSuggestion($event)"/>
+</div>

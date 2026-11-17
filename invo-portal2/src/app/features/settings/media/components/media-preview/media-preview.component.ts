@@ -8,6 +8,7 @@ import { MODAL_REF, MODAL_DATA } from '../../../../../shared/modal/modal.tokens'
 import { ModalRef, ModalService } from '../../../../../shared/modal/modal.service';
 import { ImageEditorModalComponent, ImageEditorModalData } from '../../../../../shared/components/image-editor';
 
+import { ModelViewerComponent } from '../model-viewer/model-viewer.component';
 import { TooltipDirective } from '@shared/directives/tooltip.directive';
 interface PreviewModalData {
   media: Media;
@@ -23,7 +24,7 @@ interface PreviewModalData {
 @Component({
   selector: 'app-media-preview',
   standalone: true,
-  imports: [TooltipDirective, CommonModule],
+  imports: [TooltipDirective, CommonModule, ModelViewerComponent],
   templateUrl: './media-preview.component.html',
   styleUrls: ['./media-preview.component.scss']
 })
@@ -112,6 +113,10 @@ export class MediaPreviewComponent implements OnInit, OnDestroy {
 
   get isAudio(): boolean {
     return this.currentMedia.isAudio;
+  }
+
+  get isModel(): boolean {
+    return this.currentMedia.isModel;
   }
 
   get currentMedia(): Media {

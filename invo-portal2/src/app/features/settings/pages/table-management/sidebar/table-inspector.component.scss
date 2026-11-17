@@ -1,0 +1,74 @@
+:host { display: block; }
+.ti { display: flex; flex-direction: column; gap: 18px; }
+.ti__section { display: flex; flex-direction: column; gap: 12px; }
+.ti__label {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+.ti__field { display: flex; flex-direction: column; gap: 5px; }
+.ti__field-label { font-size: 12px; font-weight: 600; color: #475569; }
+.ti__readout { font-variant-numeric: tabular-nums; color: #0f172a; }
+.ti__hint { margin: 0; font-size: 11px; color: #94a3b8; line-height: 1.4; }
+.ti__error { margin: 0; font-size: 12px; color: #dc2626; }
+.ti__warn { margin: 0; font-size: 12px; color: #b45309; }
+
+.ti__input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  font-size: 13px;
+  color: #0f172a;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+  &:focus { outline: none; border-color: var(--color-brand-500, #32acc1); box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.14); }
+  &--invalid { border-color: #ef4444; }
+}
+
+// Seats stepper
+.ti__stepper { display: flex; align-items: stretch; gap: 6px; }
+.ti__input--seats { text-align: center; flex: 1; }
+.ti__step {
+  flex: none; width: 36px; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; color: #334155;
+  font-size: 18px; line-height: 1; cursor: pointer;
+  &:hover:not(:disabled) { background: #fff; border-color: var(--color-brand-500, #32acc1); }
+  &:disabled { opacity: 0.45; cursor: not-allowed; }
+}
+
+// Segmented controls (active segment filled teal)
+.ti__segmented { display: flex; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; background: #f8fafc; }
+.ti__seg {
+  flex: 1; padding: 7px 8px; border: 0; background: transparent; font: inherit; font-size: 12px; font-weight: 600; color: #64748b; cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+  &:hover:not(.ti__seg--on) { background: #fff; color: #0f172a; }
+  &--on { background: var(--color-brand-600, #2691a4); color: #fff; }
+  & + & { border-inline-start: 1px solid #e2e8f0; }
+}
+
+// Rotation
+.ti__rotate { display: flex; align-items: center; gap: 8px; }
+.ti__slider { flex: 1; accent-color: var(--color-brand-600, #2691a4); }
+.ti__btn {
+  flex: none; padding: 6px 10px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; font: inherit; font-size: 12px; font-weight: 600; color: #334155; cursor: pointer;
+  &:hover { background: #f8fafc; border-color: var(--color-brand-500, #32acc1); }
+}
+
+// Toggles
+.ti__toggle { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; position: relative; }
+.ti__toggle input { position: absolute; opacity: 0; pointer-events: none; }
+.ti__track { position: relative; width: 34px; height: 20px; border-radius: 999px; background: #cbd5e1; flex: none; transition: background 120ms ease; }
+.ti__thumb {
+  position: absolute; top: 3px; inset-inline-start: 3px; width: 14px; height: 14px; border-radius: 999px; background: #fff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.2); transition: inset-inline-start 120ms ease;
+}
+.ti__toggle input:checked + .ti__track { background: var(--color-brand-600, #2691a4); }
+.ti__toggle input:checked + .ti__track .ti__thumb { inset-inline-start: 17px; }
+.ti__toggle input:focus-visible + .ti__track { outline: 2px solid var(--color-brand-600, #2691a4); outline-offset: 2px; }
+.ti__toggle-label { font-size: 13px; color: #475569; }
+
+.ti__input:focus-visible, .ti__seg:focus-visible, .ti__btn:focus-visible, .ti__step:focus-visible { outline: 2px solid var(--color-brand-600, #2691a4); outline-offset: 1px; }

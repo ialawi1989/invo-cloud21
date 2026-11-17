@@ -1,0 +1,29 @@
+@if (loaded()) {
+  <div class="flex flex-wrap items-center justify-between gap-x-6 gap-y-1">
+    @if (active().length > 0) {
+      <p class="m-0 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-700" role="status">
+        <span class="inline-flex items-center gap-1.5 font-semibold text-emerald-700">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3" fill="currentColor"/>
+          </svg>
+          {{ 'MENU_BUILDER.STATUS.SUMMARY_ACTIVE' | translate }}
+        </span>
+        @for (m of active(); track m.id; let last = $last) {
+          <button type="button" class="font-medium text-brand-700 underline-offset-2 hover:underline focus-visible:underline" (click)="menuClick.emit(m.id)">{{ m.name }}</button>@if (!last) {<span aria-hidden="true">,</span>}
+        }
+        <span class="text-slate-500">&middot; {{ 'MENU_BUILDER.STATUS.SUMMARY_COUNT' | translate: { n: active().length, total: total() } }}</span>
+      </p>
+    } @else {
+      <p class="m-0 flex flex-wrap items-center gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900 ring-1 ring-inset ring-amber-200" role="alert">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        <span>{{ 'MENU_BUILDER.STATUS.NONE_ACTIVE' | translate }}</span>
+        <button type="button" class="font-semibold underline underline-offset-2" (click)="showScheduled.emit()">{{ 'MENU_BUILDER.STATUS.SEE_SCHEDULED' | translate }}</button>
+      </p>
+    }
+    @if (timeZone()) {
+      <p class="m-0 text-xs text-slate-500">{{ 'MENU_BUILDER.STATUS.TZ_HINT' | translate: { zone: timeZone() } }}</p>
+    }
+  </div>
+}

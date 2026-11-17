@@ -9,13 +9,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import {
-  FormArray,
-  FormBuilder,
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-} from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
@@ -29,6 +23,7 @@ import { ToastService } from '@shared/components/toast/toast.service';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { ToggleComponent } from '@shared/components/toggle/toggle.component';
 
+import { VoidReasonsComponent } from './void-reasons/void-reasons.component';
 import { BusinessSettingsService } from '../../services/business-settings.service';
 
 import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton.component';
@@ -100,6 +95,7 @@ const RECEIPT_COPIES_OPTIONS: { label: string; value: number }[] =
     FormStickyFooterComponent,
     SearchDropdownComponent,
     ToggleComponent,
+    VoidReasonsComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './pos-options.component.html',
@@ -149,7 +145,6 @@ export class PosOptionsComponent implements OnInit, CanLeaveComponent {
   form: FormGroup = this.fb.group({
     options:         this.fb.group(this.buildToggleGroup(POS_TOGGLES, {
       maxReferneceNumber: [99],
-      voidReasons:        this.fb.array([] as FormControl<string>[]),
     })),
     printingOptions: this.fb.group(this.buildToggleGroup(PRINT_TOGGLES, {
       numberOfReceiptWhenSent: [0],
@@ -158,13 +153,12 @@ export class PosOptionsComponent implements OnInit, CanLeaveComponent {
     })),
   });
 
-  /** New-void-reason scratch input — kept outside the form. */
-  voidReasonDraft = signal<string>('');
+  /** The void reasons, in the order cashiers see them. Edited by `<app-void-reasons>`; saved at the company root. */
+  voidReasonList = signal<string[]>([]);
 
   /** Convenience accessors for the template. */
   optionsGroup  = this.form.get('options')         as FormGroup;
   printingGroup = this.form.get('printingOptions') as FormGroup;
-  voidReasons   = this.optionsGroup.get('voidReasons') as FormArray<FormControl<string>>;
 
   // ─── Derived ───────────────────────────────────────────────────────────
   breadcrumbs = computed<BreadcrumbItem[]>(() => {
@@ -201,23 +195,9 @@ export class PosOptionsComponent implements OnInit, CanLeaveComponent {
     }
   }
 
-  // ─── Void-reasons FormArray handling ───────────────────────────────────
-  addVoidReason(): void {
-    const value = this.voidReasonDraft().trim();
-    if (!value) return;
-    // Skip duplicates (case-insensitive) — they'd just be visual noise.
-    const exists = this.voidReasons.controls.some(
-      (c) => c.value.trim().toLowerCase() === value.toLowerCase(),
-    );
-    if (!exists) {
-      this.voidReasons.push(this.fb.control(value, { nonNullable: true }));
-      this.form.markAsDirty();
-    }
-    this.voidReasonDraft.set('');
-  }
-
-  removeVoidReason(index: number): void {
-    this.voidReasons.removeAt(index);
+  // ─── Void reasons ──────────────────────────────────────────────────────
+  onVoidReasonsChange(list: string[]): void {
+    this.voidReasonList.set(list);
     this.form.markAsDirty();
   }
 
@@ -230,14 +210,16 @@ export class PosOptionsComponent implements OnInit, CanLeaveComponent {
     this.saving.set(true);
     try {
       const v = this.form.getRawValue() as {
-        options: Record<string, unknown> & { voidReasons: string[] };
+        options: Record<string, unknown>;
         printingOptions: Record<string, unknown>;
       };
+      const voidReasons = this.voidReasonList();
       // Spread the STORED options first, so anything this screen does not
       // render — a flag added by another release, say — survives the save.
       const mergedOptions: Record<string, unknown> = {
         ...(this.company()?.options ?? {}),
         ...v.options,
+        voidReasons,
       };
       const merged = {
         ...(this.company() ?? {}),
@@ -245,7 +227,7 @@ export class PosOptionsComponent implements OnInit, CanLeaveComponent {
         printingOptions: { ...(this.company()?.printingOptions ?? {}), ...v.printingOptions },
         // `voidReasons` lives at the company root in the legacy model —
         // mirror it so older readers still find it where they expect.
-        voidReasons: v.options.voidReasons ?? [],
+        voidReasons,
       };
       const res = await this.service.saveCompany(merged);
       if (res?.success) {
@@ -299,14 +281,14 @@ export class PosOptionsComponent implements OnInit, CanLeaveComponent {
     if (print.printVoidedItems == null) {
       this.form.get(['printingOptions', 'printVoidedItems'])?.setValue(true, { emitEvent: false });
     }
-    // Void reasons (FormArray)
-    while (this.voidReasons.length > 0) this.voidReasons.removeAt(0, { emitEvent: false });
-    const reasons: string[] = Array.isArray(c.voidReasons) ? c.voidReasons : [];
-    for (const r of reasons) {
-      if (typeof r === 'string' && r.trim()) {
-        this.voidReasons.push(this.fb.control(r, { nonNullable: true }), { emitEvent: false });
-      }
-    }
+    // Void reasons
+    const reasons: unknown[] = Array.isArray(c.voidReasons) ? c.voidReasons : [];
+    this.voidReasonList.set(
+      reasons
+        .filter((r): r is string => typeof r === 'string' && !!r.trim())
+        // An earlier build could save a quick-add suggestion as its raw translation key: show / keep it as the real text.
+        .map(r => (r.startsWith('SETTINGS.POS_OPTIONS.VOID.SUGGEST_') ? this.translate.instant(r) : r)),
+    );
     this.form.markAsPristine();
   }
 }

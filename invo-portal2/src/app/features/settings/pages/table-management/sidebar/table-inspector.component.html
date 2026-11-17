@@ -1,0 +1,105 @@
+<form class="ti" [formGroup]="form" (submit)="$event.preventDefault()" novalidate>
+
+  <!-- Basic -->
+  <section class="ti__section" aria-labelledby="ti-basic">
+    <h4 class="ti__label" id="ti-basic">{{ 'SETTINGS.TABLES.SECTION_BASIC' | translate }}</h4>
+
+    <div class="ti__field">
+      <label class="ti__field-label" for="ti-name">{{ 'SETTINGS.TABLES.NAME' | translate }}</label>
+      <input #nameField id="ti-name" type="text" class="ti__input" formControlName="name" autocomplete="off"
+             [class.ti__input--invalid]="form.controls.name.invalid"
+             [attr.aria-invalid]="form.controls.name.invalid"
+             [attr.aria-describedby]="duplicateName() ? 'ti-name-warn' : null"/>
+      @if (form.controls.name.invalid) {
+        <p class="ti__error" role="alert">{{ 'SETTINGS.TABLES.NAME_REQUIRED' | translate }}</p>
+      } @else if (duplicateName()) {
+        <p id="ti-name-warn" class="ti__warn" role="status">{{ 'SETTINGS.TABLES.NAME_DUPLICATE' | translate }}</p>
+      }
+    </div>
+
+    <div class="ti__field">
+      <label class="ti__field-label" for="ti-seats">{{ 'SETTINGS.TABLES.SEATS' | translate }}</label>
+      <div class="ti__stepper">
+        <button type="button" class="ti__step" (click)="stepSeats(-1)" [disabled]="form.controls.maxSeat.value <= 1"
+                [attr.aria-label]="'SETTINGS.TABLES.SEATS_LESS' | translate">−</button>
+        <input id="ti-seats" type="number" min="1" step="1" inputmode="numeric" class="ti__input ti__input--seats" formControlName="maxSeat"
+               [class.ti__input--invalid]="form.controls.maxSeat.invalid" [attr.aria-invalid]="form.controls.maxSeat.invalid"/>
+        <button type="button" class="ti__step" (click)="stepSeats(1)" [attr.aria-label]="'SETTINGS.TABLES.SEATS_MORE' | translate">+</button>
+      </div>
+      @if (form.controls.maxSeat.invalid) {
+        <p class="ti__error" role="alert">{{ 'SETTINGS.TABLES.SEATS_INVALID' | translate }}</p>
+      }
+    </div>
+  </section>
+
+  <!-- Appearance -->
+  <section class="ti__section" aria-labelledby="ti-look">
+    <h4 class="ti__label" id="ti-look">{{ 'SETTINGS.TABLES.SECTION_APPEARANCE' | translate }}</h4>
+
+    <div class="ti__field">
+      <span class="ti__field-label" id="ti-shape">{{ 'SETTINGS.TABLES.SHAPE' | translate }}</span>
+      <div class="ti__segmented" role="radiogroup" aria-labelledby="ti-shape">
+        @for (s of shapes; track s) {
+          <button type="button" role="radio" class="ti__seg" [class.ti__seg--on]="form.controls.type.value === s"
+                  [attr.aria-checked]="form.controls.type.value === s" (click)="setShape(s)">
+            {{ ('SETTINGS.TABLES.SHAPES.' + s.toUpperCase()) | translate }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="ti__field">
+      <span class="ti__field-label" id="ti-size">{{ 'SETTINGS.TABLES.SIZE' | translate }}</span>
+      <div class="ti__segmented" role="radiogroup" aria-labelledby="ti-size">
+        @for (s of sizes; track s) {
+          <button type="button" role="radio" class="ti__seg" [class.ti__seg--on]="form.controls.size.value === s"
+                  [attr.aria-checked]="form.controls.size.value === s" (click)="setSize(s)">
+            {{ ('SETTINGS.TABLES.SIZES.' + s.toUpperCase()) | translate }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="ti__field">
+      <label class="ti__field-label" for="ti-angle">{{ 'SETTINGS.TABLES.ROTATION' | translate }} · <span class="ti__readout">{{ form.controls.angle.value }}°</span></label>
+      <div class="ti__rotate">
+        <button type="button" class="ti__btn" (click)="rotateBy(-45)">-45°</button>
+        <input id="ti-angle" type="range" min="0" max="360" step="5" class="ti__slider" formControlName="angle"/>
+        <button type="button" class="ti__btn" (click)="rotateBy(45)">+45°</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Visibility -->
+  <section class="ti__section" aria-labelledby="ti-vis">
+    <h4 class="ti__label" id="ti-vis">{{ 'SETTINGS.TABLES.SECTION_VISIBILITY' | translate }}</h4>
+    <label class="ti__toggle">
+      <input type="checkbox" formControlName="showSeats"/>
+      <span class="ti__track" aria-hidden="true"><span class="ti__thumb"></span></span>
+      <span class="ti__toggle-label">{{ 'SETTINGS.TABLES.SHOW_SEATS' | translate }}</span>
+    </label>
+    <label class="ti__toggle">
+      <input type="checkbox" formControlName="visible"/>
+      <span class="ti__track" aria-hidden="true"><span class="ti__thumb"></span></span>
+      <span class="ti__toggle-label">{{ 'SETTINGS.TABLES.VISIBLE_ON_POS' | translate }}</span>
+    </label>
+  </section>
+
+  <!-- Billing -->
+  <section class="ti__section" aria-labelledby="ti-bill">
+    <h4 class="ti__label" id="ti-bill">{{ 'SETTINGS.TABLES.BILLING' | translate }}</h4>
+    <div class="ti__field">
+      <label class="ti__field-label" for="ti-min">{{ 'SETTINGS.TABLES.MIN_CHARGE' | translate }}</label>
+      <input id="ti-min" type="number" min="0" step="0.01" class="ti__input" formControlName="minimumCharge"/>
+    </div>
+    <div class="ti__field">
+      <label class="ti__field-label" for="ti-hour">{{ 'SETTINGS.TABLES.CHARGE_PER_HOUR' | translate }}</label>
+      <input id="ti-hour" type="number" min="0" step="0.01" class="ti__input" formControlName="chargePerHour"/>
+    </div>
+    <div class="ti__field">
+      <label class="ti__field-label" for="ti-after">{{ 'SETTINGS.TABLES.CHARGE_AFTER' | translate }}</label>
+      <input id="ti-after" type="number" min="0" class="ti__input" formControlName="chargeAfter"/>
+      <p class="ti__hint">{{ 'SETTINGS.TABLES.CHARGE_AFTER_HINT' | translate }}</p>
+    </div>
+  </section>
+</form>

@@ -2,7 +2,7 @@
   <!-- Header -->
   <div class="modal-header">
     <div class="header-left">
-      <h3 class="modal-title">{{ title }}</h3>
+      <h3 class="modal-title" [attr.title]="title">{{ title }}</h3>
       @if (mediaList.length > 1) {
         <span class="media-counter">{{ currentIndex() + 1 }} / {{ mediaList.length }}</span>
       }
@@ -110,6 +110,15 @@
         >
           Your browser does not support the video tag.
         </video>
+      </div>
+    }
+
+    <!-- 3D model preview (GLB / GLTF): rotate and zoom -->
+    @if (isModel && !hasError()) {
+      <div class="model-preview">
+        @for (id of [currentMedia.id]; track id) {
+          <app-model-viewer [mediaId]="id" [name]="currentMedia.name" [extension]="currentMedia.mediaType.extension" height="100%"/>
+        }
       </div>
     }
 

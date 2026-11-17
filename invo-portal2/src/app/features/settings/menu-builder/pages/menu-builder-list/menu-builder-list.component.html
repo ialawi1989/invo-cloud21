@@ -1,97 +1,99 @@
-<app-list-shell
-  [title]="'MENU_BUILDER.TITLE' | translate"
-  [subtitle]="'MENU_BUILDER.SUBTITLE' | translate"
+<app-list-page
+  [pageTitle]="'MENU_BUILDER.TITLE' | translate"
+  [pageSubtitle]="'MENU_BUILDER.SUBTITLE' | translate"
   [breadcrumbs]="breadcrumbs()"
-  [search]="search()"
-  [searchPlaceholder]="'MENU_BUILDER.SEARCH_PLACEHOLDER' | translate"
-  [page]="page()"
-  [pageCount]="pageCount()"
-  [total]="total()"
-  [rangeLabel]="rangeLabel()"
-  [loading]="loading()"
-  [hasRows]="rows().length > 0"
-  [customLoading]="true"
-  [cardFlush]="true"
-  (searchChange)="onSearch($event)"
-  (searchClear)="clearSearch()"
-  (prevPage)="goPrev()"
-  (nextPage)="goNext()">
+  [columns]="columns()"
+  [dataSource]="load"
+  [pagination]="paginationConfig"
+  [search]="searchConfig()"
+  [sorting]="sortingConfig"
+  [headerActions]="[]"
+  [selectable]="false"
+  [fitContent]="true"
+  [emptyState]="emptyState()"
+  [rowClass]="rowClass"
+  [mobileCardConfig]="{ showThumbnail: false, secondaryKey: 'hours' }"
+  [entityType]="'menu-builder'"
+  (rowClicked)="edit($event.row)">
 
-  <button shellActions type="button" class="btn btn-primary" (click)="addNew()">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-    </svg>
-    {{ 'MENU_BUILDER.ADD_NEW' | translate }}
-  </button>
-
-  <table shellLoading class="table table--skeleton" role="grid" aria-busy="true">
-    <thead>
-      <tr>
-        <th class="table__name">{{ 'MENU_BUILDER.NAME' | translate }}</th>
-        <th class="table__hours">{{ 'MENU_BUILDER.HOURS' | translate }}</th>
-        <th class="table__sections">{{ 'MENU_BUILDER.SECTIONS' | translate }}</th>
-        <th class="table__online">{{ 'MENU_BUILDER.ONLINE' | translate }}</th>
-        <th class="table__actions"></th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (_ of [0,1,2,3,4]; track $index) {
-        <tr>
-          <td class="table__name"><app-skeleton variant="line" width="40%"/></td>
-          <td class="table__hours"><app-skeleton variant="line" width="80px"/></td>
-          <td class="table__sections"><app-skeleton variant="line" width="32px"/></td>
-          <td class="table__online"><app-skeleton variant="line" width="48px"/></td>
-          <td class="table__actions"><app-skeleton variant="line" width="28px"/></td>
-        </tr>
-      }
-    </tbody>
-  </table>
-
-  <div shellEmpty>
-    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
-      <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
-    </svg>
-    <p>{{ (search() ? 'MENU_BUILDER.NO_MATCH' : 'MENU_BUILDER.EMPTY') | translate }}</p>
-    @if (!search()) {
-      <button type="button" class="btn btn-ghost btn-sm" (click)="addNew()">{{ 'MENU_BUILDER.ADD_NEW' | translate }}</button>
-    }
+  <div listHeaderActions class="flex items-center gap-3">
+    <button type="button" (click)="addNew()"
+      class="flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium bg-gradient-to-r from-brand-500 to-brand-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      {{ 'MENU_BUILDER.ADD_NEW' | translate }}
+    </button>
   </div>
 
-  <table class="table" role="grid">
-    <thead>
-      <tr>
-        <th class="table__name">{{ 'MENU_BUILDER.NAME' | translate }}</th>
-        <th class="table__hours">{{ 'MENU_BUILDER.HOURS' | translate }}</th>
-        <th class="table__sections">{{ 'MENU_BUILDER.SECTIONS' | translate }}</th>
-        <th class="table__online">{{ 'MENU_BUILDER.ONLINE' | translate }}</th>
-        <th class="table__actions"></th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (m of rows(); track m.id) {
-        <tr (click)="edit(m)">
-          <td class="table__name">
-            <span class="row-name">{{ m.name || '—' }}</span>
-          </td>
-          <td class="table__hours">
-            <span class="hours">{{ m.startAt }} – {{ m.endAt }}</span>
-          </td>
-          <td class="table__sections">
-            <span class="count-chip">{{ m.sectionsCount ?? 0 }}</span>
-          </td>
-          <td class="table__online">
-            <span class="status-dot" [class.status-dot--on]="m.availableOnline"></span>
-          </td>
-          <td class="table__actions">
-            <button type="button" class="icon-btn" (click)="$event.stopPropagation(); edit(m)" [attr.aria-label]="'COMMON.EDIT' | translate">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4z"/>
-              </svg>
-            </button>
-          </td>
-        </tr>
+  <!-- Above the table: who is live now, then the filter chips. -->
+  <div listSubHeader class="flex flex-col gap-3 pb-3">
+    <app-menu-status-summary
+      [active]="summary()?.active ?? []"
+      [total]="totalMenus()"
+      [timeZone]="timeZone()"
+      [loaded]="loaded()"
+      (menuClick)="showMenu($event)"
+      (showScheduled)="setStatus('SCHEDULED')"/>
+    <app-menu-status-filter [value]="status()" [counts]="counts()" (valueChange)="setStatus($event)"/>
+  </div>
+
+  <ng-template listCellTemplate="name" let-row>
+    <span class="inline-flex items-center gap-2" [attr.data-menu-id]="row.id">
+      <span class="font-medium text-slate-900">{{ row.name || '—' }}</span>
+      @if (row.status === 'ACTIVE') { <span class="cdk-visually-hidden">{{ 'MENU_BUILDER.STATUS.ACTIVE' | translate }}</span> }
+      @if (row.warnings.includes('NO_SECTIONS')) {
+        <span class="menu-warn text-amber-600 inline-flex" tabindex="0" role="img"
+              [appTooltip]="'MENU_BUILDER.STATUS.NO_SECTIONS' | translate" [attr.aria-label]="'MENU_BUILDER.STATUS.NO_SECTIONS' | translate"
+              (click)="$event.stopPropagation()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </span>
       }
-    </tbody>
-  </table>
-</app-list-shell>
+      @if (row.hasOverlap) {
+        <span class="menu-warn text-amber-600 inline-flex" tabindex="0" role="img"
+              [appTooltip]="overlapText(row)" [attr.aria-label]="overlapText(row)" (click)="$event.stopPropagation()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="9" cy="12" r="6"/><circle cx="15" cy="12" r="6"/>
+          </svg>
+        </span>
+      }
+    </span>
+  </ng-template>
+
+  <ng-template listCellTemplate="status" let-row>
+    <app-menu-status-badge [status]="row.status" [startAt]="row.startAt" [endAt]="row.endAt" [nextChangeAt]="row.nextChangeAt"
+                           [timeZone]="timeZone()" [use12h]="use12h()" [locale]="locale()"/>
+  </ng-template>
+
+  <ng-template listCellTemplate="hours" let-row>
+    @let h = hours(row);
+    <div class="flex flex-col leading-tight">
+      <span class="text-sm text-slate-700 tabular-nums">
+        @if (h.allDay) { {{ 'MENU_BUILDER.STATUS.ALL_DAY' | translate }} }
+        @else { {{ h.range }}@if (h.overnight) { <span class="text-xs text-slate-500"> {{ 'MENU_BUILDER.STATUS.NEXT_DAY' | translate }}</span> } }
+      </span>
+      @if (h.days) { <span class="text-xs text-slate-500">{{ h.days }}</span> }
+    </div>
+  </ng-template>
+
+  <ng-template listCellTemplate="sectionsCount" let-row>
+    <span class="inline-flex items-center text-xs font-semibold px-2.5 py-1 rounded-full bg-brand-50 text-brand-700">{{ row.sectionsCount ?? 0 }}</span>
+  </ng-template>
+
+  <!-- The grid (card) view shows the same badge. -->
+  <ng-template listMobileChip let-row>
+    <app-menu-status-badge [status]="row.status" [startAt]="row.startAt" [endAt]="row.endAt" [nextChangeAt]="row.nextChangeAt"
+                           [timeZone]="timeZone()" [use12h]="use12h()" [locale]="locale()"/>
+  </ng-template>
+
+  <ng-template listRowActions let-row>
+    <div class="inline-flex items-center justify-end gap-2" (click)="$event.stopPropagation()">
+      <button type="button" (click)="edit(row); $event.stopPropagation()"
+        class="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity px-4 h-9 inline-flex items-center rounded-full bg-brand-600 text-white text-sm font-medium shadow-sm hover:bg-brand-700">
+        {{ 'COMMON.EDIT' | translate }}
+      </button>
+    </div>
+  </ng-template>
+</app-list-page>

@@ -27,6 +27,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
   padding: 20px 24px;
   background: #f9fafb;
   border-bottom: 1px solid #e5e7eb;
@@ -37,6 +38,9 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  /* Takes the space the buttons leave, so a long file name is cut with an ellipsis instead of wrapping and squeezing the counter. */
+  flex: 1;
+  min-width: 0;
 }
 
 .modal-title {
@@ -44,9 +48,15 @@
   font-weight: 600;
   color: #111827;
   margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .media-counter {
+  flex-shrink: 0;
+  white-space: nowrap;
   font-size: 14px;
   color: #6b7280;
   padding: 4px 8px;
@@ -56,6 +66,7 @@
 
 .header-actions {
   display: flex;
+  flex-shrink: 0;
   gap: 8px;
 }
 
@@ -454,4 +465,12 @@
   .audio-preview audio {
     width: 100%;
   }
+}
+
+.model-preview {
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+  display: flex;
+  align-items: stretch;
 }

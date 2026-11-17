@@ -73,21 +73,52 @@ export interface Menu {
   index: number;
 }
 
+/** Live state of a menu, computed by the backend in the branch's time zone (see `getMenuStatus` there). */
+export type MenuStatus = 'ACTIVE' | 'SCHEDULED' | 'ENDED' | 'DISABLED';
+export const MENU_STATUSES: readonly MenuStatus[] = ['ACTIVE', 'SCHEDULED', 'ENDED', 'DISABLED'];
+export type MenuWarning = 'NO_SECTIONS';
+export type MenuStatusCounts = Record<MenuStatus, number>;
+
 export interface MenuListItem {
   id: string;
   name: string;
   branchIds: string[];
   startAt: string;
   endAt: string;
+  /** The user's enable toggle. NOT "serving now": see `status`. */
   availableOnline: boolean;
   index: number;
-  /** Number of sections — surfaced in the list table. */
+  /** Number of sections, surfaced in the list table. */
   sectionsCount?: number;
+  status: MenuStatus;
+  /** ISO instant of the next start or end, or null when nothing will change. */
+  nextChangeAt: string | null;
+  allDay: boolean;
+  overnight: boolean;
+  /** Days the menu runs (0 = Sunday); null = every day. The backend has no per-day schedule yet, so this is always null today. */
+  days: number[] | null;
+  hasOverlap: boolean;
+  overlapsWith: Array<{ id: string; name: string }>;
+  warnings: MenuWarning[];
 }
 
 export interface MenuListPage {
   list: MenuListItem[];
   total: number;
+  statusCounts: MenuStatusCounts;
+  /** IANA zone the hours are in. */
+  branchTimeZone: string;
+  /** The server's "now" (ISO), so the client can tick without trusting its own clock. */
+  serverNow: string;
+}
+
+export interface MenuSummary {
+  total: number;
+  statusCounts: MenuStatusCounts;
+  active: Array<{ id: string; name: string; nextChangeAt: string | null }>;
+  nextChangeAt: string | null;
+  branchTimeZone: string;
+  serverNow: string;
 }
 
 /** Full colour palette — ported verbatim from legacy

@@ -163,7 +163,7 @@ import type { FavPage as FavTab } from '../../services/favorites.service';
         </div>
 
         <!-- Settings -->
-        <button class="icon-action icon-action--mobile-hide" [routerLink]="'/settings'"
+        <button class="icon-action" [routerLink]="'/settings'"
                 [appTooltip]="'TOPBAR.SETTINGS' | translate">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="3"/>
@@ -404,12 +404,6 @@ import type { FavPage as FavTab } from '../../services/favorites.service';
     .topbar-right { display: flex; align-items: center; gap: 2px; overflow: visible; }
     .topbar-divider { width: 1px; height: 20px; background: #e9ecef; margin: 0 4px; }
 
-    @media (max-width: 767px) {
-      app-language-switcher,
-      .topbar-divider { display: none; }
-      .icon-action--mobile-hide,
-      .icon-action-wrap { display: none; }
-    }
     .icon-action {
       width: 34px; height: 34px;
       display: flex; align-items: center; justify-content: center;
@@ -612,6 +606,16 @@ import type { FavPage as FavTab } from '../../services/favorites.service';
     @media (max-width: 767px) {
       .desktop-actions { display: none; }
       .mobile-more-btn { display: flex; }
+    }
+
+    /* Phone top bar: only what is needed (menu, logo, quick actions, search, assistant, notifications, settings, avatar). Declared last so the
+       base .icon-action display rule above cannot win over the hide rules. */
+    @media (max-width: 767px) {
+      .topbar { padding-right: 8px; }
+      .topbar-right { gap: 0; }
+      .topbar-right app-language-switcher,
+      .topbar-right .topbar-divider,
+      .topbar-right .icon-action--mobile-hide { display: none; }
     }
   `]
 })

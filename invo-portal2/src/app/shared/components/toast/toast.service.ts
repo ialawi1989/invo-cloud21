@@ -14,6 +14,14 @@ export interface ToastItem {
   detail?:  string;
   /** ms before auto-dismiss. `0` keeps it open until clicked. */
   timeout:  number;
+  /** Optional button on the toast (e.g. "Undo"); clicking it runs `run` and closes the toast. */
+  action?:  ToastAction;
+}
+
+export interface ToastAction {
+  /** Button text: a translation key or a literal. */
+  label: string;
+  run:   () => void;
 }
 
 /**
@@ -53,8 +61,8 @@ export class ToastService {
   error(message: string, detail?: string, timeout?: number): number {
     return this.show('error', message, detail, timeout);
   }
-  info(message: string, detail?: string, timeout?: number): number {
-    return this.show('info', message, detail, timeout);
+  info(message: string, detail?: string, timeout?: number, action?: ToastAction): number {
+    return this.show('info', message, detail, timeout, action);
   }
   warning(message: string, detail?: string, timeout?: number): number {
     return this.show('warning', message, detail, timeout);
@@ -62,10 +70,10 @@ export class ToastService {
 
   /** Low-level entry point. Returns the toast id so callers can
    *  `dismiss(id)` early (e.g. when the next save kicks off). */
-  show(kind: ToastKind, message: string, detail?: string, timeout?: number): number {
+  show(kind: ToastKind, message: string, detail?: string, timeout?: number, action?: ToastAction): number {
     const id = this.nextId++;
     const t = timeout ?? this.defaultTimeouts[kind];
-    const item: ToastItem = { id, kind, message, detail, timeout: t };
+    const item: ToastItem = { id, kind, message, detail, timeout: t, action };
     this.items.update(list => [...list, item]);
     if (t > 0) {
       this.timers.set(id, setTimeout(() => this.dismiss(id), t));

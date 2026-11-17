@@ -21,7 +21,8 @@
 
     <!-- Media Type Tabs -->
     <div class="bg-white rounded-xl shadow-sm border border-slate-200 mb-6 overflow-hidden">
-      <div class="p-2 border-b border-slate-200">
+      <!-- The tab strip is wider than a phone: let it scroll sideways (swipe) instead of being clipped by the card. -->
+      <div class="p-2 border-b border-slate-200 overflow-x-auto overscroll-x-contain" style="scrollbar-width: thin; -webkit-overflow-scrolling: touch;">
         <app-segmented-toggle
           [options]="tabOptions()"
           [value]="currentTab()"
@@ -269,8 +270,24 @@
         </h2>
       </div>
 
-      <!-- Backdrop overlay during fetches — container mode (covers only this card) -->
-      <app-loading-overlay [show]="loading()" message="Loading media…" />
+      <!-- First load: skeleton placeholders shaped like the gallery (cards or rows). Later reloads dim the gallery instead. -->
+      @if (loading() && mediaData().length === 0) {
+        @if (viewMode() === 'grid') {
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" aria-busy="true">
+            @for (n of skeletonTiles; track n) {
+              <div class="rounded-xl border border-slate-200 p-3">
+                <app-skeleton variant="block" height="160px" />
+                <div class="mt-3 space-y-2">
+                  <app-skeleton variant="line" width="75%" />
+                  <app-skeleton variant="line" width="45%" />
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <app-skeleton variant="row" [count]="8" />
+        }
+      }
 
       <!-- Empty State -->
       @if (!loading() && mediaData().length === 0) {
@@ -290,6 +307,7 @@
       <!-- Media Gallery Component -->
       @if (mediaData().length > 0) {
         <app-media-gallery
+          class="block transition-opacity" [class.opacity-50]="loading()" [class.pointer-events-none]="loading()"
           [media]="mediaData()"
           [viewMode]="viewMode()"
           [selectedItems]="selectedItems()"

@@ -48,6 +48,8 @@
     min-width: 280px;
   }
 
+  &__end { display: flex; align-items: center; gap: 12px; justify-self: end; }
+
   &__label {
     font-size: 13px;
     font-weight: 500;
@@ -312,10 +314,13 @@
 
 .tm-canvas-wrap {
   // Fills the full workspace edge-to-edge. The canvas inside is
-  // 1800×1200 — when zoomed/panned the user navigates the workspace
+  // 1770×920 (the legacy builder's floor) — when zoomed/panned the user navigates the workspace
   // beneath every floating piece of chrome (panel, zoom FAB, ctx menu).
   position: absolute;
   inset: 0;
+  // Leaves room for the docked sidebar (the page sets --sb-w: 340px, or 44px when it is folded to its rail).
+  inset-inline-end: var(--sb-w, 0px);
+  transition: inset-inline-end 0.2s ease;
   background: #2a1f1c;
   overflow: auto;
   cursor: grab;
@@ -675,12 +680,9 @@
 // grip to relocate it anywhere inside the workspace. Clicking the
 // chevron in the header rolls the body up to header-only height.
 .tm-panel {
-  position: absolute;
-  top: 16px;
-  inset-inline-end: 16px;
-  bottom: 16px;
-  width: 340px;
-  z-index: 8;
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
   background: #fff;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
@@ -693,7 +695,7 @@
   // floating chip showing only its header strip. `auto`-sized so we
   // don't reserve unused vertical space.
   &--collapsed {
-    bottom: auto;
+    flex: 0 0 auto;
     height: auto;
 
     .tm-panel__tabs,
@@ -1242,4 +1244,25 @@
     background: #f1f5f9;
     margin: 4px 0;
   }
+}
+
+// Footer actions of the open table / object (inside the sidebar's fixed footer).
+.tm-sbfoot { display: contents; }
+.tm-sbfoot .btn { flex: 1; }
+
+// "Unsaved changes" next to Save.
+.tm-topbar__dirty {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 600;
+  color: #b45309;
+}
+.tm-topbar__dirty-dot { width: 7px; height: 7px; border-radius: 50%; background: #f59e0b; }
+
+// Tablet and below: the sidebar is a drawer over the canvas instead of taking its width.
+@media (max-width: 900px) {
+  .tm-workspace { --sb-w: 44px !important; }
 }

@@ -4,15 +4,23 @@ import {
   DestroyRef,
   ElementRef,
   HostListener,
+  Injector,
+  afterNextRender,
   OnInit,
   computed,
   effect,
   inject,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { LiveAnnouncer } from '@angular/cdk/a11y';
+import { ToastService } from '@shared/components/toast/toast.service';
+import { FloorPlanSidebarComponent, readSidebarCollapsed } from './sidebar/floor-plan-sidebar.component';
+import { TableEdit, TableInspectorComponent } from './sidebar/table-inspector.component';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -20,6 +28,7 @@ import {
   CdkDragDrop,
   CdkDragEnd,
   CdkDragMove,
+  CdkDragStart,
   DragDropModule,
   moveItemInArray,
 } from '@angular/cdk/drag-drop';
@@ -61,8 +70,15 @@ import {
 // cramped. The wrapper acts as a viewport (overflow: auto + pan/zoom)
 // so the user navigates around it like a real workspace, matching the
 // legacy pinch-zoom builder.
-const CANVAS_W = 1800;
-const CANVAS_H = 1200;
+/**
+ * A table's box (its "frame") is larger than the table top by this margin on every side: that margin is where the chairs sit.
+ * Mirrors `.tm-table { inset: 20px }` in the SCSS. The limits of where a table may be dropped are worked out from what it really
+ * shows (table top + its chairs), see `tableLimits`.
+ */
+const TABLE_INSET = 20;
+
+const CANVAS_W = 1770;
+const CANVAS_H = 920;
 
 const DEFAULT_TABLE: Omit<RestaurantTable, 'id' | 'name'> = {
   maxSeat: 4,
@@ -120,6 +136,8 @@ interface CtxMenu {
     RouterModule,
     FormsModule,
     TranslateModule,
+    FloorPlanSidebarComponent,
+    TableInspectorComponent,
     DragDropModule,
     LoadingOverlayComponent,
     DesktopOnlyNoticeComponent,
@@ -136,7 +154,11 @@ export class TableManagementComponent implements OnInit, CanLeaveComponent {
   private translate     = inject(TranslateService);
   private destroyRef    = inject(DestroyRef);
   private router        = inject(Router);
+  private route         = inject(ActivatedRoute);
   private modal         = inject(ModalService);
+  private toast         = inject(ToastService);
+  private injector      = inject(Injector);
+  private announcer     = inject(LiveAnnouncer);
 
   loading = signal<boolean>(false);
   saving  = signal<boolean>(false);
@@ -165,10 +187,75 @@ export class TableManagementComponent implements OnInit, CanLeaveComponent {
   /** Active tab on the right-hand panel. */
   panelTab = signal<PanelTab>('settings');
 
-  /** Right-hand panel collapsed → slides off the canvas so the
-   *  workspace reclaims the full width. Toggled by the chevron tab
-   *  on the panel's outer edge (matches the legacy `›` collapse). */
-  panelCollapsed = signal<boolean>(false);
+  /** The docked sidebar folded to its rail (remembered across visits by the sidebar itself). */
+  sidebarCollapsed = signal<boolean>(readSidebarCollapsed());
+
+  // ─── Sidebar: list / detail ────────────────────────────────────────────
+  /** The table open in the sidebar's detail view: exactly one table selected, on the Tables tab. */
+  tableDetail = computed<RestaurantTable | null>(() =>
+    this.panelTab() === 'tables' && this.selectedTableIds().size <= 1 ? this.selectedTable() : null);
+  /** The same for a decor object, on the Objects tab. */
+  objectDetail = computed<DecorObject | null>(() =>
+    this.panelTab() === 'objects' && this.selectedObjectIds().size <= 1 ? this.selectedObject() : null);
+  detailTitle = computed<string | null>(() => {
+    this.i18nTick();
+    const tbl = this.tableDetail();
+    if (tbl) return tbl.name || this.translate.instant('SETTINGS.TABLES.UNNAMED_TABLE');
+    const obj = this.objectDetail();
+    return obj ? this.translate.instant('SETTINGS.TABLES.OBJECTS_TYPES.' + obj.type.toUpperCase()) : null;
+  });
+  /** Names of the other tables of the floor (for the duplicate-name warning). */
+  otherTableNames = computed<string[]>(() => {
+    const open = this.selectedTableId();
+    return (this.selectedGroup()?.tables ?? []).filter(x => idOf(x) !== open).map(x => x.name);
+  });
+
+  /** Search box of the tables list (shown from 9 tables up). */
+  tableQuery = signal('');
+  filteredTables = computed<RestaurantTable[]>(() => {
+    const q = this.tableQuery().trim().toLowerCase();
+    const all = this.panelTables();
+    return q ? all.filter(x => x.name.toLowerCase().includes(q)) : all;
+  });
+
+  /** An edit made in the table inspector: applied to the canvas model through the existing patch methods. */
+  onInspectorEdit(id: string, e: TableEdit): void {
+    if (e.scope === 'table') this.patchTable(id, e.key as 'name' | 'maxSeat', e.value as never);
+    else if (e.scope === 'props') this.patchTableProps(id, e.key as keyof RestaurantTable['properties'], e.value as never);
+    else this.patchTableSettings(id, e.key as keyof RestaurantTable['settings'], e.value as never);
+  }
+
+  /** "← Tables": back to the list (the sidebar restores its scroll); focus goes to the row that was open. */
+  onSidebarBack(): void {
+    const id = this.selectedTableId() ?? this.selectedObjectId();
+    this.clearSelection();
+    if (id) afterNextRender(() => document.querySelector<HTMLElement>(`.tm-workspace [data-row-id="${CSS.escape(id)}"]`)?.focus(), { injector: this.injector });
+  }
+
+  /** Escape closes the open detail view (and clears the selection), unless the key is meant for a field or a dialog. */
+  @HostListener('document:keydown.escape', ['$event'])
+  onEscape(e: Event): void {
+    const el = e.target as HTMLElement | null;
+    if (el && /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName) && (el as HTMLInputElement).type !== 'range') return;
+    if (this.selectedTableIds().size || this.selectedObjectIds().size) this.clearSelection();
+  }
+
+  /** Deleting a decor object can be undone for a few seconds. */
+  removeObjectWithUndo(id: string): void {
+    const groupId = this.selectedGroupId();
+    const obj = this.selectedGroup()?.objects.find(o => idOf(o) === id);
+    if (!groupId || !obj) return;
+    this.removeObject(id);
+    this.toast.info('SETTINGS.TABLES.OBJECT_DELETED', undefined, 6000, {
+      label: 'SETTINGS.TABLES.UNDO',
+      run: () => {
+        this.groups.update(list => list.map(g => idOf(g) === groupId && !g.objects.some(o => idOf(o) === id) ? { ...g, objects: [...g.objects, obj] } : g));
+        this.selectedObjectId.set(id);
+        this.selectedObjectIds.set(new Set([id]));
+        this.panelTab.set('objects');
+      },
+    });
+  }
 
   /** Canvas zoom (0.5 → 1.5). */
   zoom = signal<number>(1);
@@ -268,6 +355,16 @@ export class TableManagementComponent implements OnInit, CanLeaveComponent {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.i18nTick.update((n) => n + 1));
 
+    // Screen readers hear which table / object opened (and when the list is shown again).
+    let lastDetail: string | null = null;
+    effect(() => {
+      const title = this.detailTitle();
+      untracked(() => {
+        if (title && title !== lastDetail) void this.announcer.announce(title, 'polite');
+        lastDetail = title;
+      });
+    });
+
     // Wheel-to-zoom on the canvas wrapper. Has to be a non-passive
     // listener so we can call `preventDefault()` and stop the page
     // (or the wrapper) from scrolling on every tick. Re-attaches
@@ -346,15 +443,35 @@ export class TableManagementComponent implements OnInit, CanLeaveComponent {
   async ngOnInit(): Promise<void> {
     this.loading.set(true);
     try {
+      const q = this.route.snapshot.queryParamMap;
       const res = await this.branchService.getList({ page: 1, limit: 100 });
       this.branches.set(res.list);
-      const first = res.list[0] ?? null;
+      // The branch, zone and panel tab come back from the URL (a refresh or a shared link lands on the same view).
+      const first = res.list.find(b => b.id === q.get('branch')) ?? res.list[0] ?? null;
       this.selectedBranch.set(first);
-      if (first) await this.loadGroups(first.id);
+      if (first) await this.loadGroups(first.id, q.get('group'));
+      const tab = q.get('tab');
+      if (tab === 'tables' || tab === 'objects') this.panelTab.set(tab);
     } finally {
       this.loading.set(false);
+      this.urlReady = true;
     }
   }
+
+  /** The URL mirrors the branch, the zone (group) and the panel tab. Starts once the first load has restored them. */
+  private urlReady = false;
+  private readonly syncUrl = effect(() => {
+    const branch = this.selectedBranch()?.id ?? null;
+    const group = this.selectedGroup()?.id ?? null;      // only saved zones have an id; a new, unsaved one is not in the URL
+    const tab = this.panelTab();
+    if (!this.urlReady) return;
+    untracked(() => {
+      void this.router.navigate([], {
+        relativeTo: this.route, replaceUrl: true, queryParamsHandling: 'merge',
+        queryParams: { branch, group, tab: tab === 'settings' ? null : tab },
+      });
+    });
+  });
 
   // ─── Branch ────────────────────────────────────────────────────────────
   async onBranchChange(b: BranchSummary | null): Promise<void> {
@@ -377,7 +494,7 @@ export class TableManagementComponent implements OnInit, CanLeaveComponent {
   branchEquals = (a: BranchSummary | null, b: BranchSummary | null) => (a?.id ?? a) === (b?.id ?? b);
 
   // ─── Groups ────────────────────────────────────────────────────────────
-  async loadGroups(branchId: string): Promise<void> {
+  async loadGroups(branchId: string, preferGroupId: string | null = null): Promise<void> {
     this.loading.set(true);
     try {
       const groups = await this.service.getGroups(branchId);
@@ -392,8 +509,11 @@ export class TableManagementComponent implements OnInit, CanLeaveComponent {
         for (const t of g.tables)  if (!t.id) (t as any).__tempId = tempId();
         for (const o of g.objects) if (!o.id) (o as any).__tempId = tempId();
       }
+      this.fitToCanvas(groups);
       this.groups.set(groups);
-      this.selectedGroupId.set(groups[0] ? idOf(groups[0]) : null);
+      const wanted = preferGroupId ? groups.find(g => g.id === preferGroupId) : null;
+      const start = wanted ?? groups[0] ?? null;
+      this.selectedGroupId.set(start ? idOf(start) : null);
       this.selectedTableId.set(null);
       this.selectedObjectId.set(null);
       this.selectedTableIds.set(new Set());
@@ -881,28 +1001,53 @@ export class TableManagementComponent implements OnInit, CanLeaveComponent {
     return `translate(${off.x}px, ${off.y}px)`;
   }
 
-  /** Wired to `(cdkDragStarted)`. If the dragged item is part of a
-   *  multi-selection, arm bulk-drag mode so its siblings begin
-   *  tracking the live offset. */
-  onTableDragStart(t: RestaurantTable): void {
+  /**
+   * Wired to `(cdkDragStarted)`. If the dragged item is part of a multi-selection, arm bulk-drag mode so its siblings track the live
+   * offset.
+   *
+   * The drag's `moved` stream is listened to ONLY here, for a multi-selection drag. A `(cdkDragMoved)` binding in the template would
+   * make Angular run change detection on every mouse move for every drag, re-evaluating the seats of every table on the floor: that
+   * was the slowdown. A single table or object moves purely through CDK's own transform and needs no change detection until the drop.
+   */
+  onTableDragStart(t: RestaurantTable, ev: CdkDragStart): void {
     const id = idOf(t);
     if (this.selectedTableIds().has(id) && this.selectedTableIds().size > 1) {
       this.dragOriginKind.set('table');
       this.dragOriginId.set(id);
       this.dragOffset.set({ x: 0, y: 0 });
+      this.followDrag(ev);
     }
   }
 
-  onObjectDragStart(o: DecorObject): void {
+  onObjectDragStart(o: DecorObject, ev: CdkDragStart): void {
     const id = idOf(o);
     if (this.selectedObjectIds().has(id) && this.selectedObjectIds().size > 1) {
       this.dragOriginKind.set('object');
       this.dragOriginId.set(id);
       this.dragOffset.set({ x: 0, y: 0 });
+      this.followDrag(ev);
     }
   }
 
-  /** Wired to `(cdkDragMoved)`. Live-update the offset siblings track. */
+  private dragSub: Subscription | null = null;
+  private dragFrame = 0;
+  private pendingMove: CdkDragMove | null = null;
+
+  /** Feeds the live drag offset to the other selected items, at most once per animation frame. */
+  private followDrag(ev: CdkDragStart): void {
+    this.dragSub?.unsubscribe();
+    this.dragSub = ev.source.moved.subscribe(move => {
+      this.pendingMove = move;
+      if (this.dragFrame) return;
+      this.dragFrame = requestAnimationFrame(() => {
+        this.dragFrame = 0;
+        if (this.pendingMove) this.onBulkDragMove(this.pendingMove);
+        this.pendingMove = null;
+      });
+    });
+  }
+
+  /** Live-update the offset siblings track. */
   onBulkDragMove(ev: CdkDragMove): void {
     if (!this.dragOriginId()) return;
     const z = this.zoom();
@@ -911,6 +1056,10 @@ export class TableManagementComponent implements OnInit, CanLeaveComponent {
 
   /** Wipe bulk-drag tracking after the drop is committed. */
   private clearBulkDrag(): void {
+    this.dragSub?.unsubscribe();
+    this.dragSub = null;
+    if (this.dragFrame) { cancelAnimationFrame(this.dragFrame); this.dragFrame = 0; }
+    this.pendingMove = null;
     if (this.dragOriginId() !== null) {
       this.dragOriginKind.set(null);
       this.dragOriginId.set(null);
@@ -952,8 +1101,9 @@ export class TableManagementComponent implements OnInit, CanLeaveComponent {
     } else {
       const w = this.tableW(table);
       const h = this.tableH(table);
-      const x = clamp(Math.round(table.properties.position.x + dx), 0, this.canvasW - w);
-      const y = clamp(Math.round(table.properties.position.y + dy), 0, this.canvasH - h);
+      const lim = this.tableLimits(table);
+      const x = clamp(Math.round(table.properties.position.x + dx), lim.minX, lim.maxX);
+      const y = clamp(Math.round(table.properties.position.y + dy), lim.minY, lim.maxY);
       this.patchTableProps(id, 'position', { x, y });
     }
     this.clearBulkDrag();
@@ -1003,8 +1153,8 @@ export class TableManagementComponent implements OnInit, CanLeaveComponent {
               properties: {
                 ...t.properties,
                 position: {
-                  x: clamp(Math.round(t.properties.position.x + dx), 0, this.canvasW - w),
-                  y: clamp(Math.round(t.properties.position.y + dy), 0, this.canvasH - h),
+                  x: clamp(Math.round(t.properties.position.x + dx), this.tableLimits(t).minX, this.tableLimits(t).maxX),
+                  y: clamp(Math.round(t.properties.position.y + dy), this.tableLimits(t).minY, this.tableLimits(t).maxY),
                 },
               },
             };
@@ -1132,6 +1282,28 @@ export class TableManagementComponent implements OnInit, CanLeaveComponent {
   zoomFit(): void { this.zoom.set(1); }
   zoomPercent = computed<number>(() => Math.round(this.zoom() * 100));
 
+  /**
+   * The canvas is 1770 x 920, the size of the legacy builder (and of the floor the POS shows). A floor saved while the canvas was
+   * taller can hold items below it, which would be out of reach: pull anything outside back in (in place, on freshly loaded data).
+   */
+  private fitToCanvas(groups: TableGroup[]): void {
+    for (const g of groups) {
+      for (const t of g.tables) {
+        const lim = this.tableLimits(t);
+        t.properties.position = {
+          x: clamp(t.properties.position.x, lim.minX, lim.maxX),
+          y: clamp(t.properties.position.y, lim.minY, lim.maxY),
+        };
+      }
+      for (const o of g.objects) {
+        o.position = {
+          x: clamp(o.position.x, 0, Math.max(0, this.canvasW - o.width)),
+          y: clamp(o.position.y, 0, Math.max(0, this.canvasH - o.height)),
+        };
+      }
+    }
+  }
+
   // ─── Geometry helpers used in the template ─────────────────────────────
   tableW(t: RestaurantTable): number { return TABLE_DIMENSIONS[t.properties.type][t.properties.size].w; }
   tableH(t: RestaurantTable): number { return TABLE_DIMENSIONS[t.properties.type][t.properties.size].h; }
@@ -1161,6 +1333,18 @@ export class TableManagementComponent implements OnInit, CanLeaveComponent {
    * / `horizontal-centering` / corner placements.
    */
   seatPositions(t: RestaurantTable): { leftPx: number; topPx: number; angle: number }[] {
+    // The template asks for every table's seats on every change-detection pass; the answer only changes with these fields, so reuse it.
+    const key = `${t.properties.type}|${t.properties.size}|${t.maxSeat ?? 0}|${t.properties.hideSeats ? 1 : 0}`;
+    const hit = this.seatCache.get(t);
+    if (hit && hit.key === key) return hit.seats;
+    const seats = this.computeSeatPositions(t);
+    this.seatCache.set(t, { key, seats });
+    return seats;
+  }
+
+  private seatCache = new WeakMap<RestaurantTable, { key: string; seats: { leftPx: number; topPx: number; angle: number }[] }>();
+
+  private computeSeatPositions(t: RestaurantTable): { leftPx: number; topPx: number; angle: number }[] {
     if (t.properties.hideSeats) return [];
     const n = Math.min(t.maxSeat ?? 0, 10);
     if (n <= 0) return [];
@@ -1216,6 +1400,42 @@ export class TableManagementComponent implements OnInit, CanLeaveComponent {
     for (let i = 0; i < Math.min(4, n); i++) out.push(cardinal[i]);
     for (let i = 0; i < Math.min(4, Math.max(0, n - 4)); i++) out.push(corners[i]);
     return out;
+  }
+
+  /**
+   * Where a table may be dropped. What counts as "the table" is what it shows: the table top plus its chairs (a chair is part of the
+   * table, so it can't be pushed off the canvas), at the table's rotation. A side with no chairs lets the table top itself reach the
+   * canvas edge; a side with chairs stops at the chairs. Returns the lowest / highest allowed top-left position of the table's box.
+   */
+  tableLimits(t: RestaurantTable): { minX: number; maxX: number; minY: number; maxY: number } {
+    const w = this.tableW(t), h = this.tableH(t);
+    const c = this.chairSize(t);
+    const rects: { l: number; t: number; r: number; b: number }[] = [
+      { l: TABLE_INSET, t: TABLE_INSET, r: w - TABLE_INSET, b: h - TABLE_INSET },     // the table top
+    ];
+    for (const s of this.seatPositions(t)) {
+      // A chair box turned by its own angle covers a square of this half-size around its centre.
+      const rad = (s.angle * Math.PI) / 180;
+      const half = (c / 2) * (Math.abs(Math.cos(rad)) + Math.abs(Math.sin(rad)));
+      const cx = s.leftPx + c / 2, cy = s.topPx + c / 2;
+      rects.push({ l: cx - half, t: cy - half, r: cx + half, b: cy + half });
+    }
+    // Everything turns with the table's frame, around the frame's centre.
+    const a = ((t.properties.angle || 0) * Math.PI) / 180;
+    const cos = Math.cos(a), sin = Math.sin(a), ox = w / 2, oy = h / 2;
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const r of rects) {
+      for (const [px, py] of [[r.l, r.t], [r.r, r.t], [r.r, r.b], [r.l, r.b]]) {
+        const x = ox + (px - ox) * cos - (py - oy) * sin;
+        const y = oy + (px - ox) * sin + (py - oy) * cos;
+        if (x < minX) minX = x; if (x > maxX) maxX = x;
+        if (y < minY) minY = y; if (y > maxY) maxY = y;
+      }
+    }
+    return {
+      minX: Math.ceil(-minX), maxX: Math.floor(this.canvasW - maxX),
+      minY: Math.ceil(-minY), maxY: Math.floor(this.canvasH - maxY),
+    };
   }
 
   /** identity for `@for (s of seatPositions(t); track trackSeat(...))` */

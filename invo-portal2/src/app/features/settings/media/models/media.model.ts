@@ -110,6 +110,12 @@ export class Media implements IMedia {
     return this.mediaType?.fileType === 'video' || this.contentType === 'video';
   }
 
+  /** A 3D model (GLB / GLTF / USDZ …). */
+  get isModel(): boolean {
+    return this.mediaType?.fileType === 'model' || this.contentType === 'model'
+      || ['glb', 'gltf', 'usdz'].includes((this.mediaType?.extension ?? '').toLowerCase());
+  }
+
   get isAudio(): boolean {
     return this.mediaType?.fileType === 'audio' || this.contentType === 'audio';
   }

@@ -733,3 +733,20 @@ input[type="checkbox"]:not(.no-custom):disabled:checked {
 .pf-card.is-collapsed > *:not([data-pf-card-header]):not(.pf-card__header) {
   display: none !important;
 }
+
+/* Screen-reader-only text. The CDK's LiveAnnouncer (and a few other a11y helpers) put their text in an element with this class and
+   rely on the app to hide it visually; without this rule the announcement shows up on the page. */
+.cdk-visually-hidden {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+  outline: 0;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}

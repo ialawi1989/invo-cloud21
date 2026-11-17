@@ -14,12 +14,14 @@ export class TooltipDirective implements OnDestroy {
   constructor(private host: ElementRef<HTMLElement>) {}
 
   @HostListener('mouseenter')
+  @HostListener('focus')
   onEnter(): void {
     if (!this.text?.trim()) return;
     this.showTimer = setTimeout(() => this.show(), 120);
   }
 
   @HostListener('mouseleave')
+  @HostListener('blur')
   @HostListener('click')
   onLeave(): void {
     clearTimeout(this.showTimer);
