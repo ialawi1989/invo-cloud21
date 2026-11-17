@@ -5,6 +5,7 @@
       <h1 class="page-title">{{ 'SETTINGS.ITEMS.PREFIX_SETTINGS' | translate }}</h1>
       <p class="page-sub">{{ 'SETTINGS.PREFIX.SUBTITLE' | translate }}</p>
     </div>
+    <app-segmented-toggle size="sm" [options]="viewOptions" [value]="view()" (valueChange)="setView($event)"/>
   </header>
 
   @if (loading()) {
@@ -33,6 +34,7 @@
     </aside>
 
     <!-- One card per document type. Always-editable inputs + live preview. -->
+    @if (view() === 'cards') {
     <div class="ps-grid">
       @for (r of rows(); track r.module) {
         <article class="ps-card" [class.ps-card--invalid]="!!r.prefixError || !!r.widthError">
@@ -92,6 +94,53 @@
         </article>
       }
     </div>
+    }
+
+    <!-- Table view: the same rows, one line per document type. -->
+    @if (view() === 'table') {
+      <div class="ps-table-wrap">
+        <table class="ps-table">
+          <thead>
+            <tr>
+              <th>{{ 'SETTINGS.PREFIX.DOCUMENT' | translate }}</th>
+              <th>{{ 'SETTINGS.PREFIX.PREFIX' | translate }}</th>
+              <th class="ps-table__num">{{ 'SETTINGS.PREFIX.WIDTH' | translate }}</th>
+              <th>{{ 'SETTINGS.PREFIX.PREVIEW' | translate }}</th>
+              <th class="ps-table__act"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of rows(); track r.module) {
+              <tr [class.ps-table__row--invalid]="!!r.prefixError || !!r.widthError">
+                <td class="ps-table__name">{{ r.label }}</td>
+                <td>
+                  <input type="text" class="ps-input" [class.ps-input--invalid]="!!r.prefixError"
+                    [ngModel]="r.prefix" (ngModelChange)="patchPrefix(r.module, $event)"
+                    placeholder="INV-" spellcheck="false" autocomplete="off"/>
+                  @if (r.prefixError === 'required') {
+                    <span class="ps-field__error">{{ 'SETTINGS.PREFIX.PREFIX_REQUIRED' | translate }}</span>
+                  } @else if (r.prefixError === 'duplicate') {
+                    <span class="ps-field__error">{{ 'SETTINGS.PREFIX.PREFIX_DUPLICATE' | translate }}</span>
+                  }
+                </td>
+                <td class="ps-table__num">
+                  <input type="number" min="1" max="10" class="ps-input" [class.ps-input--invalid]="!!r.widthError"
+                    [ngModel]="r.width" (ngModelChange)="patchWidth(r.module, $event)"/>
+                  @if (r.widthError === 'range') {
+                    <span class="ps-field__error">{{ 'SETTINGS.PREFIX.WIDTH_RANGE' | translate }}</span>
+                  }
+                </td>
+                <td><code class="ps-card__preview-value">{{ r.preview }}</code></td>
+                <td class="ps-table__act">
+                  <button type="button" class="ps-card__reset" (click)="revertRow(r.module)"
+                    [appTooltip]="'SETTINGS.PREFIX.REVERT_HINT' | translate">{{ 'SETTINGS.PREFIX.REVERT' | translate }}</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
   }
 
   <app-loading-overlay [show]="saving()" [message]="saveLabel()"/>

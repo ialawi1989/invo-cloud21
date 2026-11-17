@@ -113,6 +113,13 @@ export class BusinessSettingsComponent implements OnInit, CanLeaveComponent {
     return this.translate.instant('COMMON.SAVING');
   });
 
+  /** The rounding guide's rows: the example is a fixed illustration with a smallest currency of 0.05, not the company's own figures. */
+  readonly roundingGuide = [
+    { key: 'NORMAL',   example: '12.37 → 12.35' },
+    { key: 'POSITIVE', example: '12.37 → 12.40' },
+    { key: 'NEGATIVE', example: '12.37 → 12.35' },
+  ];
+
   /** Options for the Rounding Type dropdown — i18n-aware via i18nTick. */
   roundingOptions = computed<{ id: string; label: string }[]>(() => {
     this.i18nTick();

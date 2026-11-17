@@ -139,6 +139,22 @@
     },
 
     "BUSINESS": {
+      "GUIDE_TITLE": "Rounding Type Guide",
+      "GUIDE_SMALLEST_LABEL": "Smallest Currency:",
+      "GUIDE_SMALLEST_TEXT": "The increment the total is rounded to. E.g. 0.05 rounds to the nearest 5 cents; 0 turns rounding off.",
+      "GUIDE_TYPE": "Type",
+      "GUIDE_DIRECTION": "Direction",
+      "GUIDE_EFFECT": "Effect on Invoice Total",
+      "GUIDE_EXAMPLE": "Example (Smallest Currency = 0.05)",
+      "GUIDE_NORMAL_TYPE": "Normal",
+      "GUIDE_NORMAL_DIRECTION": "Nearest increment (standard rounding)",
+      "GUIDE_NORMAL_EFFECT": "Can go up or down — whichever is closer",
+      "GUIDE_POSITIVE_TYPE": "Positive",
+      "GUIDE_POSITIVE_DIRECTION": "Always rounds up",
+      "GUIDE_POSITIVE_EFFECT": "Total never decreases — rounding always favors the business",
+      "GUIDE_NEGATIVE_TYPE": "Negative",
+      "GUIDE_NEGATIVE_DIRECTION": "Always rounds down (toward zero)",
+      "GUIDE_NEGATIVE_EFFECT": "Total never increases — rounding always favors the customer",
       "IDENTITY":                "Identity",
       "IDENTITY_DESC":           "How your business appears across the app, on receipts, and in customer-facing pages.",
       "LOGO":                    "Logo",
@@ -455,6 +471,9 @@
     },
 
     "PREFIX": {
+      "VIEW_CARDS": "Cards",
+      "VIEW_TABLE": "Table",
+      "DOCUMENT": "Document",
       "SUBTITLE":          "Customize the prefix template and zero-padding width used to generate document numbers.",
       "HINT_TITLE":        "Tokens you can use",
       "HINT_TEXT":         "Use these tokens inside the prefix template — they expand at generation time.",

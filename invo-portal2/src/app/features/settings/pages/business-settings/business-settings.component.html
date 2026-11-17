@@ -127,6 +127,38 @@
         </div>
       </div>
     </section>
+
+    <!-- ═══ Rounding guide (what each rounding behaviour does) ═══ -->
+    <section class="card">
+      <header class="card__head">
+        <h2 class="card__title">{{ 'SETTINGS.BUSINESS.GUIDE_TITLE' | translate }}</h2>
+      </header>
+      <div class="card__body">
+        <p class="guide-note"><strong>{{ 'SETTINGS.BUSINESS.GUIDE_SMALLEST_LABEL' | translate }}</strong> {{ 'SETTINGS.BUSINESS.GUIDE_SMALLEST_TEXT' | translate }}</p>
+        <div class="guide-wrap">
+          <table class="guide-table">
+            <thead>
+              <tr>
+                <th>{{ 'SETTINGS.BUSINESS.GUIDE_TYPE' | translate }}</th>
+                <th>{{ 'SETTINGS.BUSINESS.GUIDE_DIRECTION' | translate }}</th>
+                <th>{{ 'SETTINGS.BUSINESS.GUIDE_EFFECT' | translate }}</th>
+                <th>{{ 'SETTINGS.BUSINESS.GUIDE_EXAMPLE' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (g of roundingGuide; track g.key) {
+                <tr>
+                  <td class="guide-table__type">{{ 'SETTINGS.BUSINESS.GUIDE_' + g.key + '_TYPE' | translate }}</td>
+                  <td>{{ 'SETTINGS.BUSINESS.GUIDE_' + g.key + '_DIRECTION' | translate }}</td>
+                  <td>{{ 'SETTINGS.BUSINESS.GUIDE_' + g.key + '_EFFECT' | translate }}</td>
+                  <td><code>{{ g.example }}</code></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
   }
 
   <app-loading-overlay [show]="saving()" [message]="saveLabel()"/>

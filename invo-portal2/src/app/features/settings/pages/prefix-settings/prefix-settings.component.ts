@@ -18,6 +18,7 @@ import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
+import { SegmentedToggleComponent, SegmentedToggleOption } from '@shared/components/segmented-toggle/segmented-toggle.component';
 import { ToastService } from '@shared/components/toast/toast.service';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
 
@@ -70,6 +71,7 @@ interface PrefixRow {
     BreadcrumbsComponent,
     LoadingOverlayComponent,
     FormStickyFooterComponent,
+    SegmentedToggleComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './prefix-settings.component.html',
@@ -81,6 +83,20 @@ export class PrefixSettingsComponent implements OnInit, CanLeaveComponent {
   private destroyRef = inject(DestroyRef);
   private router     = inject(Router);
   private toast      = inject(ToastService);
+
+  /** How the document types are laid out: cards (the default) or one table row each. Remembered in this browser only. */
+  readonly viewOptions: SegmentedToggleOption<'cards' | 'table'>[] = [
+    { value: 'cards', label: 'SETTINGS.PREFIX.VIEW_CARDS', icon: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>' },
+    { value: 'table', label: 'SETTINGS.PREFIX.VIEW_TABLE', icon: '<rect x="3" y="4" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="9" y1="10" x2="9" y2="20"/>' },
+  ];
+  view = signal<'cards' | 'table'>(this.readView());
+  setView(v: 'cards' | 'table'): void {
+    this.view.set(v);
+    try { localStorage.setItem('prefix-settings.view', v); } catch { /* private mode: just not remembered */ }
+  }
+  private readView(): 'cards' | 'table' {
+    try { return localStorage.getItem('prefix-settings.view') === 'table' ? 'table' : 'cards'; } catch { return 'cards'; }
+  }
 
   loading = signal<boolean>(false);
   saving  = signal<boolean>(false);
