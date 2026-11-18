@@ -1694,8 +1694,7 @@ export class LabelBuilderFormComponent implements OnInit, CanLeaveComponent {
       const t = this.template();
       const result = await this.service.save(t);
       if (!result) {
-        // Surface a generic toast — the API service already logs
-        // structured errors, no need to over-engineer here.
+        this.toast.error('COMMON.SAVE_FAILED');
         return;
       }
       // Clear dirty + persist server-assigned id. Saved state is
@@ -1705,13 +1704,13 @@ export class LabelBuilderFormComponent implements OnInit, CanLeaveComponent {
       t.isChanged = false;
       this.template.set(t);
       this.clearHistory();
+      this.isNew.set(false);
 
-      if (this.isNew()) {
-        this.isNew.set(false);
-        // Replace the URL so a refresh re-loads the template via
-        // `getById` instead of seeding a new blank one.
-        void this.router.navigate(['/settings/label-builder', result.id], { replaceUrl: true });
-      }
+      // Same as every other settings form: confirm with a toast, then go back to the list.
+      this.toast.success('COMMON.SAVED_OK');
+      void this.router.navigate(['/settings/label-builder']);
+    } catch (err: any) {
+      this.toast.error('COMMON.SAVE_FAILED', err?.message);
     } finally {
       this.saving.set(false);
     }
