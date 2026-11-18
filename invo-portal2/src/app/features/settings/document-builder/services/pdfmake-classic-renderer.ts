@@ -63,13 +63,28 @@ function fieldColumn(fields: PaperFieldConfig[], template: DocumentTemplate, dat
   };
 }
 
-/** Column-id → relative flex weight for the items table. Equal widths (the naive `'*'` for every
- *  column) squeeze the Description column too narrow, forcing multi-line wraps that can bloat a
- *  4-line invoice onto 2 printed pages — this mirrors the real visual proportions instead. */
-const COLUMN_WEIGHT: Record<string, number> = {
-  order: 0.4, description: 3, product: 3, qty: 0.7, uom: 0.7,
-  price: 1, unitCost: 1, taxPercantage: 0.8, tax: 0.9, discount: 0.9, amount: 1, total: 1, expense: 1,
-};
+/** Relative weight per column id for the all-auto layout — same values as the server PDF's
+ *  `COLUMN_WEIGHT` (utilts/pdf/columnWidths.ts): description widest, row number narrowest. */
+const COLUMN_WEIGHT: Record<string, number> = { order: 1, image: 2, description: 6, product: 5 };
+const DEFAULT_COLUMN_WEIGHT = 2;
+
+/** Port of the server's `normalizeColumnWidths()`: returns one `%` per column, always totalling 100. */
+function normalizeColumnWidthPcts(columns: { id: string; pct: number }[]): number[] {
+  if (columns.length === 0) return [];
+  const numericSum = columns.reduce((sum, c) => sum + c.pct, 0);
+  if (numericSum <= 0) {
+    const weightOf = (c: { id: string }) => COLUMN_WEIGHT[c.id.toLowerCase()] ?? DEFAULT_COLUMN_WEIGHT;
+    const weightSum = columns.reduce((sum, c) => sum + weightOf(c), 0);
+    return columns.map((c) => (weightOf(c) / weightSum) * 100);
+  }
+  const autoCount = columns.filter((c) => c.pct === 0).length;
+  if (autoCount > 0) {
+    const numericTarget = Math.min(numericSum, 100);
+    const autoEach = Math.max(0, 100 - numericTarget) / autoCount;
+    return columns.map((c) => (c.pct > 0 ? (c.pct / numericSum) * numericTarget : autoEach));
+  }
+  return columns.map((c) => (c.pct / numericSum) * 100);
+}
 
 /** Mirrors `document-paper.component.ts`'s `cellFor()` exactly — same column-id → line-field map. */
 function cellFor(line: Record<string, unknown>, colId: string): string {
@@ -260,28 +275,38 @@ export async function buildClassicPdfDocDefinition(template: DocumentTemplate, d
     // NOT the data path — every doc type's actual line items live under the flat `data['lines']`
     // key (confirmed against `document-paper.component.html`'s own single-paper renderer, which
     // always reads `data()['lines']` regardless of document type).
+    // Column widths — ported from the server PDF's `normalizeColumnWidths()` (utilts/pdf/columnWidths.ts)
+    // so this export lays the table out exactly like the real invoice PDF: `%` widths that always total
+    // 100% of the table. Numeric (user drag-resized) columns keep their relative share, `auto` (0)
+    // columns split what is left, over-specified tables are scaled down, and an all-auto table is split
+    // by per-column weight. pdfmake resolves `%` widths NET of cell padding/borders, so the table can
+    // never overshoot the margins (the old fixed-pt split did, clipping the last column).
     const lines = readArray(data, 'lines') as Record<string, unknown>[];
-    // pdfmake's `widths` only accepts a number, `'auto'`, or the literal string `'*'` — NOT a
-    // weighted multiplier string like `"3*"` (that's a different library's convention). Respect the
-    // user's own drag-resized column width (`tableCustomization[id].width`, a % of table width, 0 =
-    // auto) when set; split the REMAINING width proportionally (via `COLUMN_WEIGHT`) among the rest,
-    // matching `visibleColumns()`'s own `[style.width.%]` behaviour instead of a uniform guess.
-    const contentWidthPt = widthPt - pageMargins[0] - pageMargins[2];
-    const explicitWidths = cols.map((c) => Number((template.tableCustomization as any)[c.id]?.width) || 0);
-    const explicitTotalPt = explicitWidths.reduce((sum, pct) => sum + (pct / 100) * contentWidthPt, 0);
-    const remainingPt = Math.max(0, contentWidthPt - explicitTotalPt);
-    const autoWeights = cols.map((c, i) => (explicitWidths[i] > 0 ? 0 : COLUMN_WEIGHT[c.id] ?? 1));
-    const autoTotalWeight = autoWeights.reduce((sum, w) => sum + w, 0) || 1;
-    const widths = cols.map((c, i) => explicitWidths[i] > 0 ? (explicitWidths[i] / 100) * contentWidthPt : (autoWeights[i] / autoTotalWeight) * remainingPt);
+    const widthPcts = normalizeColumnWidthPcts(cols.map((c) => ({
+      id: c.id,
+      pct: Number((template.tableCustomization as any)[c.id]?.width) || 0,
+    })));
+    const widths = widthPcts.map((p) => p.toFixed(3) + '%');
 
     // Real configured header style (`transactionalDetailsCustomization[<type>TableHeader]`) —
     // mirrors `tableHeaderStyle()` exactly instead of a hardcoded navy-blue guess.
     const headerStyle = (template.transactionalDetailsCustomization as any)[TABLE_HEADER_FIELD[template.documentType]] as TextStyle | undefined;
     const headerBg = headerStyle?.backgroundColor || '#1e3a8a';
-    const headerRow = cols.map((c) => ({
-      text: (template.tableCustomization as any)[c.id]?.label || c.defaultLabel,
-      ...pdfTextStyle(headerStyle), color: headerStyle?.color || '#fff', fontSize: Number(headerStyle?.size) || 8.5,
-    }));
+    // Header cells follow the server PDF's `buildLinesTable()`: per-cell fill from the template, label
+    // colour forced to white if it would be invisible against that fill, bold, and `noWrap` so a long
+    // label in a narrow column isn't broken character-by-character.
+    const headerRow = cols.map((c) => {
+      const color = headerStyle?.color || '#fff';
+      return {
+        text: (template.tableCustomization as any)[c.id]?.label || c.defaultLabel,
+        ...pdfTextStyle(headerStyle),
+        fillColor: headerBg,
+        color: color.toLowerCase() === headerBg.toLowerCase() ? '#ffffff' : color,
+        fontSize: Number(headerStyle?.size) || 8.5,
+        bold: true,
+        noWrap: true,
+      };
+    });
     const body: any[] = [headerRow];
     lines.forEach((line, i) => {
       body.push(cols.map((c) => {
@@ -297,14 +322,20 @@ export async function buildClassicPdfDocDefinition(template: DocumentTemplate, d
         }));
       }
     });
+    // Table + layout ported from the server PDF's `buildLinesTable()`: light horizontal rules only
+    // (no vertical lines), 5pt side padding, rows are atomic and the header stays with its first row.
     content.push({
-      table: { headerRows: 1, widths, body },
+      table: { headerRows: 1, widths, heights: 'auto', dontBreakRows: true, keepWithHeaderRows: 1, body },
       layout: {
-        fillColor: (rowIndex: number) => (rowIndex === 0 ? '#1e3a8a' : (rowIndex % 2 ? '#fafafa' : null)),
-        paddingTop: () => 4, paddingBottom: () => 4,
+        hLineWidth: () => 1,
+        hLineColor: () => '#eff2f7',
+        vLineWidth: () => 0,
+        paddingLeft: () => 5,
+        paddingRight: () => 5,
+        paddingTop: (i: number) => (i === 0 ? 4 : 3),
+        paddingBottom: (i: number) => (i === 0 ? 4 : 8),
       },
-      fontSize: 8.5,
-      margin: [0, 0, 0, 12],
+      margin: [0, 0, 0, 20],
     });
   }
 
