@@ -101,6 +101,7 @@
 }
 
 .logo-thumb {
+  position: relative;
   width: 96px;
   height: 96px;
   flex-shrink: 0;
@@ -258,4 +259,23 @@
   td + td, th + th { border-inline-start: 1px solid #f1f5f9; }
   &__type { font-weight: 600; color: #0f172a; white-space: nowrap; }
   code { font-size: 12px; color: #db2777; white-space: nowrap; }
+}
+
+// Small pen badge on the logo's corner: opens the photo editor.
+.logo-thumb__edit {
+  position: absolute;
+  inset-inline-end: 6px;
+  inset-block-end: 6px;
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e2e8f0;
+  border-radius: 50%;
+  background: #fff;
+  color: #334155;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.18);
+  cursor: pointer;
+  &:hover { color: var(--color-brand-600, #0e7490); border-color: var(--color-brand-300, #67e8f9); }
 }

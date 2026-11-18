@@ -5,6 +5,8 @@ import { Subject, takeUntil } from 'rxjs';
 import { MediaService } from '../../services/media.service';
 import { FileUploadItem, Media, IMediaUploadConfig } from '../../models/media.model';
 import { UploadToastService } from '../../../../../shared/components/upload-toast';
+import { ModalService } from '../../../../../shared/modal/modal.service';
+import { ImageEditorModalComponent, ImageEditorModalData } from '../../../../../shared/components/image-editor';
 
 /**
  * Media Upload Component
@@ -36,6 +38,9 @@ export class MediaUploadComponent implements OnInit, OnDestroy {
   @Input() autoUpload = false;
   @Input() showProgress = true;
 
+  /** When set, a single browsed / dropped image opens the photo editor first (starting on `cropPreset`) and the edited result is what gets uploaded. */
+  @Input() editBeforeUpload: { cropPreset?: string } | null = null;
+
   @Output() filesSelected = new EventEmitter<File[]>();
   @Output() uploadComplete = new EventEmitter<Media[]>();
   @Output() uploadError = new EventEmitter<string>();
@@ -49,6 +54,7 @@ export class MediaUploadComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   private uploadToast = inject(UploadToastService);
+  private modal = inject(ModalService);
 
   constructor(public mediaService: MediaService) {}
 
@@ -101,9 +107,31 @@ export class MediaUploadComponent implements OnInit, OnDestroy {
 
   // ==================== FILE HANDLING ====================
 
-  private handleFiles(files: File[]): void {
+  /** Opens the photo editor on one image file. Closing it without saving keeps the original file. */
+  private async editImageFirst(file: File): Promise<File> {
+    const objectUrl = URL.createObjectURL(file);
+    try {
+      const ref = this.modal.open<ImageEditorModalComponent, ImageEditorModalData, Blob | undefined>(
+        ImageEditorModalComponent,
+        { size: 'fullscreen', closeable: false, data: { imageUrl: objectUrl, fileName: file.name, initialCropPreset: this.editBeforeUpload?.cropPreset ?? 'free' } },
+      );
+      const blob = await ref.afterClosed();
+      if (!blob) return file;
+      const type = blob.type || 'image/png';
+      const ext = type === 'image/jpeg' ? 'jpg' : type === 'image/webp' ? 'webp' : 'png';
+      return new File([blob], `${file.name.replace(/\.[^.]+$/, '')}.${ext}`, { type });
+    } finally {
+      URL.revokeObjectURL(objectUrl);
+    }
+  }
+
+  private async handleFiles(files: File[]): Promise<void> {
     if (!this.allowMultiple && files.length > 1) {
       files = [files[0]];
+    }
+    // SVG and GIF cannot be cropped on a canvas without losing what they are, so they go up as they are.
+    if (this.editBeforeUpload && files.length === 1 && /^image\/(png|jpe?g|webp|bmp)$/i.test(files[0].type)) {
+      files = [await this.editImageFirst(files[0])];
     }
 
     // Validate files

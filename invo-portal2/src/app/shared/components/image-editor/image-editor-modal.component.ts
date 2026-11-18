@@ -8,6 +8,8 @@ export interface ImageEditorModalData {
   imageUrl: string;
   /** Original file name (used for naming the saved blob). */
   fileName?: string;
+  /** Starting crop preset ('r0' = 1:1 square). */
+  initialCropPreset?: string;
 }
 
 /**
@@ -31,6 +33,7 @@ export interface ImageEditorModalData {
     <app-image-editor
       [imageUrl]="data.imageUrl"
       [fileName]="data.fileName ?? 'edited.png'"
+      [initialCropPreset]="data.initialCropPreset ?? 'free'"
       (save)="onSave($event)"
       (cancel)="ref.dismiss()" />
   `,

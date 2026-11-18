@@ -172,6 +172,8 @@
       "IDENTITY_DESC":           "How your business appears across the app, on receipts, and in customer-facing pages.",
       "LOGO":                    "Logo",
       "LOGO_HINT":               "Square images render best. Used in the sidebar, receipts, and exported invoices.",
+      "CROP_LOGO": "Crop to square",
+      "SMALLEST_CURRENCY_RANGE": "Enter a value from 0 to 0.99.",
       "CHOOSE_LOGO":             "Choose logo",
       "REPLACE_LOGO":            "Replace logo",
       "REMOVE_LOGO":             "Remove",

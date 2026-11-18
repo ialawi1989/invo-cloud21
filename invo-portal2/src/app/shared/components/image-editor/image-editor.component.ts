@@ -56,6 +56,9 @@ export class ImageEditorComponent implements OnInit, OnDestroy {
   /** File name (used for the saved blob). */
   fileName = input<string>('edited-image.png');
 
+  /** Crop preset selected when the editor opens: 'free' (default), 'original', or a ratio key such as 'r0' (1:1). */
+  initialCropPreset = input<string>('free');
+
   // ── Outputs ────────────────────────────────────────────────────────────────
   /** Fires with the edited image Blob when the user clicks Save. */
   save = output<Blob>();
@@ -221,6 +224,7 @@ export class ImageEditorComponent implements OnInit, OnDestroy {
       this.pushUndo();
       this.loading.set(false);
       // Crop is the default tool — show its live frame immediately.
+      if (this.initialCropPreset() !== 'free') this.cropSel.set(this.initialCropPreset());
       if (this.activeTool() === 'crop') this.startCrop();
     };
     this.img.onerror = () => {

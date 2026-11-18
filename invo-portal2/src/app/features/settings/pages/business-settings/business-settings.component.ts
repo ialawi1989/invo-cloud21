@@ -28,6 +28,9 @@ import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer
 import { ToastService } from '@shared/components/toast/toast.service';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
 import { ModalService } from '@shared/modal/modal.service';
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
+import { ImageEditorModalComponent, ImageEditorModalData } from '@shared/components/image-editor';
+import { MediaService } from '../../media/services/media.service';
 
 import { BusinessSettingsService } from '../../services/business-settings.service';
 import type { MediaPickerModalComponent as MediaPickerType } from '../../media/components/media-picker/media-picker-modal.component';
@@ -48,7 +51,7 @@ import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton
 @Component({
   selector: 'app-business-settings',
   standalone: true,
-  imports: [FormSkeletonComponent, 
+  imports: [TooltipDirective, FormSkeletonComponent, 
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
@@ -70,6 +73,7 @@ export class BusinessSettingsComponent implements OnInit, CanLeaveComponent {
   private destroyRef = inject(DestroyRef);
   private router     = inject(Router);
   private toast      = inject(ToastService);
+  private media      = inject(MediaService);
 
   loading = signal<boolean>(false);
   saving  = signal<boolean>(false);
@@ -159,6 +163,7 @@ export class BusinessSettingsComponent implements OnInit, CanLeaveComponent {
       });
       this.mediaId.set(data.mediaId ?? null);
       this.mediaUrl.set(data.mediaUrl?.defaultUrl ?? data.mediaUrl?.thumbnailUrl ?? null);
+      this.baseline = this.currentState();
     } finally {
       this.loading.set(false);
     }
@@ -178,6 +183,8 @@ export class BusinessSettingsComponent implements OnInit, CanLeaveComponent {
           title: this.translate.instant('SETTINGS.BUSINESS.CHOOSE_LOGO'),
           multiple: false,
           preSelectedIds: this.mediaId() ? [this.mediaId()!] : [],
+          // A file browsed from the computer opens the photo editor on the square crop BEFORE it is uploaded.
+          editBeforeUpload: { cropPreset: 'r0' },
         },
         closeOnBackdrop: true,
       },
@@ -199,6 +206,45 @@ export class BusinessSettingsComponent implements OnInit, CanLeaveComponent {
     this.mediaId.set(item.id ?? item._id ?? null);
     this.mediaUrl.set(url);
     this.form.markAsDirty();
+    // A logo prints and shows as a square. A file browsed from the computer was already cropped before upload (see
+    // `editBeforeUpload`); a picture picked from the library is used as it is. The pen on the logo crops it later.
+  }
+
+  /** Crop the current logo to a square (the editor opens on the 1:1 preset). The cropped picture is saved as a new media item. */
+  async cropLogo(): Promise<void> {
+    const id = this.mediaId();
+    const current = this.mediaUrl();
+    if (!id && !current) return;
+    let editorUrl = current ?? '';
+    let objectUrl: string | null = null;
+    if (id) {
+      try { objectUrl = URL.createObjectURL(await this.media.getMediaRawBlob(id)); editorUrl = objectUrl; }
+      catch { /* the editor falls back to the direct URL */ }
+    }
+    let blob: Blob | undefined;
+    try {
+      const ref = this.modal.open<ImageEditorModalComponent, ImageEditorModalData, Blob | undefined>(
+        ImageEditorModalComponent,
+        { size: 'fullscreen', closeable: false, data: { imageUrl: editorUrl, fileName: 'logo', initialCropPreset: 'r0' } },
+      );
+      blob = await ref.afterClosed();
+    } finally {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    }
+    if (!blob) return;
+    try {
+      const type = blob.type || 'image/png';
+      const ext = type === 'image/jpeg' ? 'jpg' : type === 'image/webp' ? 'webp' : 'png';
+      const result: any = await this.media.uploadFile(new File([blob], `logo.${ext}`, { type }));
+      if (result?.success === false) throw new Error(result.error || result.message || 'Upload failed');
+      const created = result?.data?.[0];
+      if (!created?.id) throw new Error('Upload failed');
+      this.mediaId.set(created.id);
+      this.mediaUrl.set(created.imageUrl || created.url?.defaultUrl || created.url?.original || created.url?.thumbnail || this.mediaUrl());
+      this.form.markAsDirty();
+    } catch (e: any) {
+      this.toast.error('COMMON.SAVE_FAILED', e?.message);
+    }
   }
 
   removeLogo(): void {
@@ -229,14 +275,33 @@ export class BusinessSettingsComponent implements OnInit, CanLeaveComponent {
     this.form.markAsDirty();
   }
 
+  /** The editable values as last loaded / saved. Save stays off until the current values differ from this. */
+  private baseline = '';
+
+  private currentState(): string {
+    const v = this.form.getRawValue();
+    return JSON.stringify({ name: String(v.name ?? '').trim(), smallestCurrency: Number(v.smallestCurrency ?? 0), roundingType: v.roundingType, mediaId: this.mediaId() });
+  }
+
+  /** True when something was actually changed (the name, the rounding fields or the logo). */
+  hasChanges(): boolean { return this.baseline !== '' && this.currentState() !== this.baseline; }
+
+  /** Save is allowed when something changed, the name is valid and the smallest-currency rule (0 to 0.99) holds. A value already stored on the
+   *  company that breaks that rule (older data, e.g. 10) does not block saving other changes; only a value the user typed does. */
+  canSave(): boolean {
+    const smallest = this.form.controls['smallestCurrency'];
+    const smallestBlocks = smallest.invalid && smallest.dirty;
+    return this.hasChanges() && this.form.controls['name'].valid && !smallestBlocks;
+  }
+
   /** CanDeactivate hook — guard prompts when the form is dirty. */
   hasUnsavedChanges(): boolean {
-    return this.form.dirty && !this.saving();
+    return this.hasChanges() && !this.saving();
   }
 
   async save(): Promise<void> {
     this.form.markAllAsTouched();
-    if (this.form.invalid) return;
+    if (!this.canSave()) return;
     this.saving.set(true);
     try {
       const v = this.form.getRawValue();
@@ -253,6 +318,7 @@ export class BusinessSettingsComponent implements OnInit, CanLeaveComponent {
       // Refresh the in-memory snapshot so subsequent edits diff correctly.
       this.company.set(await this.service.getCompany(true));
       this.form.markAsPristine();
+      this.baseline = this.currentState();
       this.toast.success('COMMON.SAVED_OK');
       this.router.navigate(['/settings']);
     } catch (e: any) {

@@ -18,6 +18,7 @@ import {
 } from '../../../../../shared/components/image-editor';
 
 import { SkeletonComponent } from '@shared/components/skeleton/skeleton.component';
+import { ConfirmModalComponent, ConfirmModalData } from '@shared/modal/demo/confirm-modal.component';
 export interface MediaPickerConfig {
   /** Filter to specific content types (e.g. ['image']). Empty = all. */
   contentTypes?: string[];
@@ -31,6 +32,8 @@ export interface MediaPickerConfig {
   autoUpload?: boolean;
   /** IDs of already-selected media to pre-select when opening. */
   preSelectedIds?: string[];
+  /** Opens the photo editor on a single browsed image before it is uploaded (e.g. `{ cropPreset: 'r0' }` for a square). */
+  editBeforeUpload?: { cropPreset?: string };
 }
 
 type PickerTab = 'library' | 'upload';
@@ -174,7 +177,7 @@ type PickerTab = 'library' | 'upload';
                 <strong>{{ selected().length }} files selected</strong>
               </div>
               <span class="multi-summary-size">Total size: {{ totalSelectedSize() }}</span>
-              <button class="multi-summary-delete" (click)="selected.set([])">
+              <button class="multi-summary-delete" (click)="clearSelection()">
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                   <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
                 </svg>
@@ -230,7 +233,7 @@ type PickerTab = 'library' | 'upload';
                 }
               </button>
             }
-            <button class="sidebar-delete-btn" (click)="selected.set([])" [disabled]="editing()">
+            <button class="sidebar-delete-btn" (click)="deleteActive()" [disabled]="editing()">
               <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
               </svg>
@@ -255,6 +258,7 @@ type PickerTab = 'library' | 'upload';
           [showPreview]="true"
           [autoUpload]="config.autoUpload ?? true"
           [showProgress]="false"
+          [editBeforeUpload]="config.editBeforeUpload ?? null"
           (uploadComplete)="onUploadComplete($event)"
           (uploadError)="onUploadError($event)" />
       </div>
@@ -674,11 +678,44 @@ export class MediaPickerModalComponent implements OnInit {
     }
   }
 
+  /** Remove / Clear selection: drops the selection AND the focused item, because the details sidebar shows the focused item first. */
+  clearSelection(): void {
+    this.selected.set([]);
+    this.focusedItem.set(null);
+  }
+
+  /** Remove = delete the file from the media library (after a confirmation), then clear it from the selection. */
+  async deleteActive(): Promise<void> {
+    const item = this.activeItem();
+    if (!item?.id) return;
+    const ref = this.modalService.open<ConfirmModalComponent, ConfirmModalData, boolean>(ConfirmModalComponent, {
+      size: 'sm',
+      closeOnBackdrop: false,
+      data: {
+        title: 'Delete file',
+        message: `Delete "${item.name}" from the media library? Anywhere it is used will lose the picture.`,
+        confirm: 'Delete',
+        danger: true,
+      },
+    });
+    if ((await ref.afterClosed()) !== true) return;
+    try {
+      const ok = await this.mediaService.deleteMedia(item.id);
+      if (!ok) throw new Error('The file could not be deleted.');
+      this.selected.set(this.selected().filter((m) => m.id !== item.id));
+      this.focusedItem.set(null);
+      await this.loadMedia(true);
+    } catch (e: any) {
+      this.uploadToast.add({ id: `error-${Date.now()}`, name: 'Delete failed', size: '', status: 'failed', progress: 0, error: e?.message ?? 'Delete failed' });
+    }
+  }
+
   /** Double click = confirm and close (single-select only). */
   confirmItem(item: Media): void {
     if (this.config.multiple) return;
     this.ref.close(item);
   }
+
 
   onUploadComplete(uploaded: Media[]): void {
     // Toast progress is already handled by MediaUploadComponent.
