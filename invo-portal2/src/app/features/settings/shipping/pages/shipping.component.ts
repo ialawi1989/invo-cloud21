@@ -39,6 +39,7 @@ import {
   Overlap,
   Rate,
   RateGroup,
+  RateService,
   RateType,
   Zone,
   emptyRate,
@@ -133,12 +134,25 @@ export class ShippingComponent implements OnInit, CanLeaveComponent {
   /** Per-zone, group rates by `name + type` and compute gap/
    *  overlap diagnostics. The result is a single signal so the
    *  template binds with @for once and gets the whole picture. */
-  groupedZones = computed<Array<Zone & { groups: RateGroup[] }>>(() => {
-    return this.zones().map(z => ({
-      ...z,
-      groups: this.groupRates(z.rates),
-    }));
+  groupedZones = computed<Array<Zone & { groups: RateGroup[]; services: RateService[] }>>(() => {
+    return this.zones().map(z => {
+      const groups = this.groupRates(z.rates);
+      return { ...z, groups, services: this.toServices(groups) };
+    });
   });
+
+  /** The legacy page's outer level: every type group that shares a rate name is one "service". */
+  private toServices(groups: RateGroup[]): RateService[] {
+    const byName = new Map<string, RateGroup[]>();
+    for (const g of groups) {
+      if (!byName.has(g.name)) byName.set(g.name, []);
+      byName.get(g.name)!.push(g);
+    }
+    return Array.from(byName, ([name, list]) => ({ name, groups: list }));
+  }
+
+  /** Rows the server refused on the last save, by rate id (cleared when that row is edited). */
+  rowErrors = signal<Record<number, string>>({});
 
   /** Aggregate "is the page invalid" flag — rolls per-zone, per-
    *  group, per-rate state into a single boolean for the save
@@ -150,8 +164,10 @@ export class ShippingComponent implements OnInit, CanLeaveComponent {
       for (const g of z.groups) {
         if (!g.name?.trim()) return true;
         for (const r of g.ranges) {
-          if (!this.isRangeValid(r)) return true;
+          if (!this.validateRange(r, g)) return true;
         }
+        // Ranges must touch exactly ([from, to)): an overlap cannot be saved (a gap is only a warning).
+        if (g.overlaps.length > 0) return true;
       }
     }
     // Duplicate zone names
@@ -353,7 +369,7 @@ export class ShippingComponent implements OnInit, CanLeaveComponent {
    *  appears blank and the edit panel opens automatically so the
    *  user can pick a name + type before continuing. */
   addRateGroup(zoneId: number): void {
-    const newRate = emptyRate('', 'weight', '');
+    const newRate = { ...emptyRate('', 'weight', ''), to: '0' };
     this.zones.update(list => list.map(z =>
       z.id === zoneId ? { ...z, rates: [...z.rates, newRate] } : z,
     ));
@@ -367,12 +383,13 @@ export class ShippingComponent implements OnInit, CanLeaveComponent {
   addRangeToGroup(zoneId: number, g: RateGroup): void {
     this.zones.update(list => list.map(z =>
       z.id === zoneId
-        ? { ...z, rates: [...z.rates, emptyRate(g.name, g.type, g.note)] }
+        ? { ...z, rates: [...z.rates, { ...emptyRate(g.name, g.type, g.note), to: '0' }] }
         : z,
     ));
   }
 
   setRange<K extends keyof Rate>(zoneId: number, rateId: number, key: K, value: Rate[K]): void {
+    if (this.rowErrors()[rateId]) this.rowErrors.update(({ [rateId]: _gone, ...rest }) => rest);
     this.zones.update(list => list.map(z => {
       if (z.id !== zoneId) return z;
       return { ...z, rates: z.rates.map(r => r.id === rateId ? { ...r, [key]: value } : r) };
@@ -386,10 +403,47 @@ export class ShippingComponent implements OnInit, CanLeaveComponent {
   }
 
   // ─── Validation primitives ──────────────────────────────────────
-  isRangeValid(r: Rate): boolean {
-    const from = parseFloat(r.from);
-    const to   = parseFloat(r.to);
-    return Number.isFinite(from) && Number.isFinite(to) && from >= 0 && to > from;
+  // THE RULE (the same one the backend enforces in `validateShippingSetting`): the lower bound is inclusive and the upper bound
+  // exclusive, [from, to). An empty `to` means "no upper limit" and is only valid on the tier with the highest `from` in its group.
+  // Sorted by `from`, a valid group has next.from === prev.to for every neighbouring pair.
+
+  /** The one place a typed string becomes a number. */
+  toNumber(v: string | number | null | undefined): number {
+    if (v === '' || v === null || v === undefined) return NaN;
+    return typeof v === 'number' ? v : parseFloat(v);
+  }
+
+  isUnbounded(r: Rate): boolean { return r.to === '' || r.to === null || r.to === undefined; }
+
+  /** No OTHER range in the group has a strictly greater valid `from`. */
+  private isHighestFromTier(r: Rate, g: RateGroup): boolean {
+    const from = this.toNumber(r.from);
+    if (Number.isNaN(from)) return false;
+    return g.ranges.every(o => o === r || Number.isNaN(this.toNumber(o.from)) || this.toNumber(o.from) <= from);
+  }
+
+  validateRange(r: Rate, g: RateGroup): boolean {
+    const from = this.toNumber(r.from);
+    if (Number.isNaN(from) || from < 0) return false;
+    if (this.isUnbounded(r)) return this.isHighestFromTier(r, g);
+    const to = this.toNumber(r.to);
+    return !Number.isNaN(to) && to > from;
+  }
+  isRangeValid(r: Rate, g: RateGroup): boolean { return this.validateRange(r, g); }
+
+  /** Translation key explaining why a range is invalid. */
+  rangeErrorKey(r: Rate, g: RateGroup): string {
+    const from = this.toNumber(r.from);
+    if (Number.isNaN(from) || from < 0) return 'SHIPPING.RATES.ERR_FROM';
+    if (this.isUnbounded(r)) return 'SHIPPING.RATES.ERR_UNBOUNDED';
+    if (Number.isNaN(this.toNumber(r.to))) return 'SHIPPING.RATES.ERR_TO_NUMBER';
+    return 'SHIPPING.RATES.ERR_TO_GREATER';
+  }
+
+  /** "No upper limit" checkbox. Unchecking seeds `to` with `from`: a real number, so the field becomes editable, and deliberately
+   *  invalid (to === from) until a real upper bound is typed. */
+  toggleUnbounded(zoneId: number, r: Rate, checked: boolean): void {
+    this.setRange(zoneId, r.id, 'to', checked ? '' : r.from);
   }
 
   /** True when this range participates in any overlap detected for
@@ -409,14 +463,24 @@ export class ShippingComponent implements OnInit, CanLeaveComponent {
       else if (this.hasErrors())        this.toast.warning('SHIPPING.ERR_VALIDATION');
       return;
     }
+    this.rowErrors.set({});
     this.saving.set(true);
     try {
       const res = await this.service.saveZones(this.zones());
       if (res.success) {
+        this.rowErrors.set({});
         this.cleanSnapshot.set(this.snapshot());
         this.toast.success('COMMON.SAVED_OK');
       } else {
-        this.toast.error('COMMON.SAVE_FAILED', res.msg);
+        // Mark each refused row with its own message (rowIndex = position in that zone's flat rate list).
+        const marks: Record<number, string> = {};
+        for (const v of res.violations ?? []) {
+          const rate = this.zones().find(z => z.name === v.zone)?.rates[v.rowIndex];
+          if (rate) marks[rate.id] = v.message;
+        }
+        this.rowErrors.set(marks);
+        const detail = (res.violations ?? []).map(v => `${v.zone} / ${v.name} (#${v.rowIndex + 1}): ${v.message}`).join('\n') || res.msg;
+        this.toast.error('COMMON.SAVE_FAILED', detail);
       }
     } catch (err: any) {
       this.toast.error('COMMON.SAVE_FAILED', err?.message);
@@ -509,42 +573,63 @@ export class ShippingComponent implements OnInit, CanLeaveComponent {
     }));
   }
 
-  /** Reorder rate groups within a zone. Implemented by re-emitting
-   *  `z.rates` with the groups concatenated in the new order
-   *  (preserving each group's internal range order). */
-  dropGroup(zoneId: number, ev: CdkDragDrop<RateGroup[]>): void {
+  /** One pass over the ranges sorted by `from`: next.from === prev.to is valid, a larger next.from is a gap, a smaller one an overlap. */
+  private classifyBoundaries(ranges: Rate[]): { gaps: Gap[]; overlaps: Overlap[] } {
+    const gaps: Gap[] = [];
+    const overlaps: Overlap[] = [];
+    const sorted = [...ranges].sort((a, b) => this.toNumber(a.from) - this.toNumber(b.from));
+    for (let i = 0; i < sorted.length - 1; i++) {
+      const prev = sorted[i];
+      const next = sorted[i + 1];
+      if (this.isUnbounded(prev)) continue; // nothing to compare with an infinite upper bound
+      const prevTo = this.toNumber(prev.to);
+      const nextFrom = this.toNumber(next.from);
+      if (Number.isNaN(prevTo) || Number.isNaN(nextFrom) || nextFrom === prevTo) continue;
+      if (nextFrom > prevTo) gaps.push({ from: prevTo, to: nextFrom, afterRange: i });
+      else overlaps.push({ range1: prev, range2: next });
+    }
+    return { gaps, overlaps };
+  }
+  private detectGaps(ranges: Rate[]): Gap[] { return this.classifyBoundaries(ranges).gaps; }
+  private detectOverlaps(ranges: Rate[]): Overlap[] { return this.classifyBoundaries(ranges).overlaps; }
+
+  // ─── Services (the legacy page's outer level) ───────────────────
+  /** Types not yet configured for this rate name in this zone: what "Add another type" can offer. */
+  availableTypes(zone: { rates: Rate[] }, serviceName: string): RateType[] {
+    const used = new Set(zone.rates.filter(r => r.name === serviceName).map(r => r.type));
+    return (['weight', 'total', 'dimension'] as RateType[]).filter(t => !used.has(t));
+  }
+
+  /** Adds the next unused type to an existing service, with its name filled in, and opens its edit panel. */
+  addTypeToService(zoneId: number, serviceName: string): void {
+    const zone = this.zones().find(z => z.id === zoneId);
+    if (!zone) return;
+    const [type] = this.availableTypes(zone, serviceName);
+    if (!type) return;
+    const rate = { ...emptyRate(serviceName, type, ''), to: '0' };
+    this.zones.update(list => list.map(z => (z.id === zoneId ? { ...z, rates: [...z.rates, rate] } : z)));
+    this.editingGroup.set(this.groupKey(zoneId, { name: serviceName, type }));
+    this.editingDraft.set({ name: serviceName, type, note: '' });
+  }
+
+  /** On a service with several types the storefront shows the note of the type that wins, so a type left without a note
+   *  silently drops the explanation: flagged as a hint, not an error. */
+  hasMixedNotes(groups: RateGroup[]): boolean {
+    if (groups.length < 2) return false;
+    const withNote = groups.some(g => !!g.note?.trim());
+    const withoutNote = groups.some(g => !g.note?.trim());
+    return withNote && withoutNote;
+  }
+
+  /** Reorder services within a zone (a service keeps its type groups together). */
+  dropService(zoneId: number, ev: CdkDragDrop<RateService[]>): void {
     if (ev.previousIndex === ev.currentIndex) return;
     this.zones.update(list => list.map(z => {
       if (z.id !== zoneId) return z;
-      const groups = this.groupRates(z.rates);
-      moveItemInArray(groups, ev.previousIndex, ev.currentIndex);
-      const next = groups.flatMap(g => g.ranges);
-      return { ...z, rates: next };
+      const services = this.toServices(this.groupRates(z.rates));
+      moveItemInArray(services, ev.previousIndex, ev.currentIndex);
+      return { ...z, rates: services.flatMap(s => s.groups.flatMap(g => g.ranges)) };
     }));
-  }
-
-  private detectGaps(ranges: Rate[]): Gap[] {
-    const out: Gap[] = [];
-    for (let i = 0; i < ranges.length - 1; i++) {
-      const cTo = parseFloat(ranges[i].to);
-      const nFrom = parseFloat(ranges[i + 1].from);
-      if (Number.isFinite(cTo) && Number.isFinite(nFrom) && cTo < nFrom) {
-        out.push({ from: cTo, to: nFrom, afterRange: i });
-      }
-    }
-    return out;
-  }
-
-  private detectOverlaps(ranges: Rate[]): Overlap[] {
-    const out: Overlap[] = [];
-    for (let i = 0; i < ranges.length - 1; i++) {
-      const cTo = parseFloat(ranges[i].to);
-      const nFrom = parseFloat(ranges[i + 1].from);
-      if (Number.isFinite(cTo) && Number.isFinite(nFrom) && cTo > nFrom) {
-        out.push({ range1: ranges[i], range2: ranges[i + 1] });
-      }
-    }
-    return out;
   }
 
   /** Helper takes everything the picker needs *except* the
@@ -575,5 +660,6 @@ export class ShippingComponent implements OnInit, CanLeaveComponent {
 
   trackZone  = (_: number, z: Zone) => z.id;
   trackGroup = (_: number, g: RateGroup) => `${g.name}::${g.type}`;
+  trackService = (_: number, s: RateService) => s.name;
   trackRate  = (_: number, r: Rate) => r.id;
 }

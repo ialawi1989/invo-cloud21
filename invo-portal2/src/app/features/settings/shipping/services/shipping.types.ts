@@ -45,6 +45,12 @@ export interface Zone {
 /** UI-only — derived from `rates` by grouping on `name + type`.
  *  Drives the per-group rendering with gap/overlap chips and
  *  inline-edit controls. */
+/** UI-only: every type group that shares a rate name ("Standard"), i.e. what the legacy page calls a service. */
+export interface RateService {
+  name:   string;
+  groups: RateGroup[];
+}
+
 export interface RateGroup {
   name:      string;
   type:      RateType;
@@ -83,6 +89,16 @@ export interface ShippingSettingWire {
     note:  string;
     name:  string;
   }>;
+}
+
+/** One row the server refused when saving (see `company/setShippingSetting`). */
+export interface ShippingViolation {
+  zone: string;
+  type: string;
+  name: string;
+  /** Position in the zone's flat rate list, as it was sent. */
+  rowIndex: number;
+  message: string;
 }
 
 /** A single entry from `public/Countries.json`. */

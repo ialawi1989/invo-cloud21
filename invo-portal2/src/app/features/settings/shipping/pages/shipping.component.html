@@ -99,171 +99,191 @@
           <p class="zone__rates-empty">{{ 'SHIPPING.RATES.EMPTY' | translate }}</p>
         }
 
+        <!-- Services: every type group that shares a rate name (Standard, Express...) sits together, as in the legacy page. -->
         <div class="zone__groups"
           cdkDropList
           cdkDropListAutoScrollDisabled
-          [cdkDropListData]="zone.groups"
-          (cdkDropListDropped)="dropGroup(zone.id, $event)">
-        @for (group of zone.groups; track trackGroup($index, group)) {
-          <article class="rg" cdkDrag [cdkDragDisabled]="editingGroup() === groupKey(zone.id, group)"
-            [class.is-editing]="editingGroup() === groupKey(zone.id, group)">
-            <!-- Group header — display vs. edit modes -->
-            @if (editingGroup() === groupKey(zone.id, group)) {
-              @if (editingDraft(); as draft) {
-                <div class="rg__edit">
-                  <label class="field">
-                    <span class="field__label">{{ 'SHIPPING.RATES.GROUP_NAME' | translate }}</span>
-                    <input class="field__input"
-                      type="text"
-                      [ngModel]="draft.name"
-                      (ngModelChange)="setEditDraft('name', $event)"
-                      [placeholder]="'SHIPPING.RATES.GROUP_NAME_PH' | translate"/>
-                  </label>
-                  <label class="field">
-                    <span class="field__label">{{ 'SHIPPING.RATES.GROUP_TYPE' | translate }}</span>
-                    <app-search-dropdown
-                      [items]="typeOptions()"
-                      [displayWith]="optDisplay"
-                      [compareWith]="optCompare"
-                      [toValue]="optToValue"
-                      [value]="selectedTypeOption()"
-                      [searchable]="false"
-                      [clearable]="false"
-                      [placeholder]="'SHIPPING.RATES.GROUP_TYPE' | translate"
-                      (valueChange)="onEditTypeChange($event)"/>
-                  </label>
-                  <label class="field field--wide">
-                    <span class="field__label">{{ 'SHIPPING.RATES.GROUP_NOTE' | translate }}</span>
-                    <input class="field__input"
-                      type="text"
-                      [ngModel]="draft.note"
-                      (ngModelChange)="setEditDraft('note', $event)"
-                      [placeholder]="'SHIPPING.RATES.GROUP_NOTE_PH' | translate"/>
-                  </label>
-                  <div class="rg__edit-actions">
-                    <button type="button" class="btn btn-ghost btn-sm" (click)="cancelEditGroup()">
-                      {{ 'SHIPPING.RATES.CANCEL_GROUP' | translate }}
-                    </button>
-                    <button type="button" class="btn btn-primary btn-sm" (click)="saveEditGroup(zone.id, group)">
-                      {{ 'SHIPPING.RATES.SAVE_GROUP' | translate }}
-                    </button>
-                  </div>
-                </div>
-              }
-            } @else {
-              <header class="rg__head">
-                <button type="button" class="rg__handle" cdkDragHandle
-                  [attr.aria-label]="'COMMON.DRAG_TO_REORDER' | translate"
-                  [appTooltip]="'COMMON.DRAG_TO_REORDER' | translate">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="9"  cy="6"  r="1"/>
-                    <circle cx="15" cy="6"  r="1"/>
-                    <circle cx="9"  cy="12" r="1"/>
-                    <circle cx="15" cy="12" r="1"/>
-                    <circle cx="9"  cy="18" r="1"/>
-                    <circle cx="15" cy="18" r="1"/>
-                  </svg>
+          [cdkDropListData]="zone.services"
+          (cdkDropListDropped)="dropService(zone.id, $event)">
+        @for (service of zone.services; track trackService($index, service)) {
+          <section class="svc" cdkDrag [cdkDragDisabled]="editingGroup() !== null">
+            <header class="svc__head">
+              <button type="button" class="rg__handle" cdkDragHandle
+                [attr.aria-label]="'COMMON.DRAG_TO_REORDER' | translate"
+                [appTooltip]="'COMMON.DRAG_TO_REORDER' | translate">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/>
+                </svg>
+              </button>
+              <strong class="svc__name">{{ service.name || '—' }}</strong>
+              @if (availableTypes(zone, service.name).length > 0 && service.name) {
+                <button type="button" class="btn btn-default btn-sm" (click)="addTypeToService(zone.id, service.name)">
+                  {{ 'SHIPPING.RATES.ADD_TYPE' | translate }}
                 </button>
-                <div class="rg__head-info">
-                  <span class="rg__name">{{ group.name || ('—') }}</span>
-                  <span class="rg__type">
-                    {{ (group.type === 'weight' ? 'SHIPPING.RATES.TYPE_WEIGHT' : 'SHIPPING.RATES.TYPE_TOTAL') | translate }}
-                  </span>
-                  @if (group.note) {
-                    <span class="rg__note">· {{ group.note }}</span>
+              }
+            </header>
+            @if (service.groups.length > 1 && hasMixedNotes(service.groups)) {
+              <p class="svc__hint">{{ 'SHIPPING.RATES.MIXED_NOTES' | translate }}</p>
+            }
+            @for (group of service.groups; track trackGroup($index, group)) {
+            <article class="rg"
+              [class.is-editing]="editingGroup() === groupKey(zone.id, group)">
+              <!-- Group header — display vs. edit modes -->
+              @if (editingGroup() === groupKey(zone.id, group)) {
+                @if (editingDraft(); as draft) {
+                  <div class="rg__edit">
+                    <label class="field">
+                      <span class="field__label">{{ 'SHIPPING.RATES.GROUP_NAME' | translate }}</span>
+                      <input class="field__input"
+                        type="text"
+                        [ngModel]="draft.name"
+                        (ngModelChange)="setEditDraft('name', $event)"
+                        [placeholder]="'SHIPPING.RATES.GROUP_NAME_PH' | translate"/>
+                    </label>
+                    <label class="field">
+                      <span class="field__label">{{ 'SHIPPING.RATES.GROUP_TYPE' | translate }}</span>
+                      <app-search-dropdown
+                        [items]="typeOptions()"
+                        [displayWith]="optDisplay"
+                        [compareWith]="optCompare"
+                        [toValue]="optToValue"
+                        [value]="selectedTypeOption()"
+                        [searchable]="false"
+                        [clearable]="false"
+                        [placeholder]="'SHIPPING.RATES.GROUP_TYPE' | translate"
+                        (valueChange)="onEditTypeChange($event)"/>
+                    </label>
+                    <label class="field field--wide">
+                      <span class="field__label">{{ 'SHIPPING.RATES.GROUP_NOTE' | translate }}</span>
+                      <input class="field__input"
+                        type="text"
+                        [ngModel]="draft.note"
+                        (ngModelChange)="setEditDraft('note', $event)"
+                        [placeholder]="'SHIPPING.RATES.GROUP_NOTE_PH' | translate"/>
+                    </label>
+                    <div class="rg__edit-actions">
+                      <button type="button" class="btn btn-ghost btn-sm" (click)="cancelEditGroup()">
+                        {{ 'SHIPPING.RATES.CANCEL_GROUP' | translate }}
+                      </button>
+                      <button type="button" class="btn btn-primary btn-sm" (click)="saveEditGroup(zone.id, group)">
+                        {{ 'SHIPPING.RATES.SAVE_GROUP' | translate }}
+                      </button>
+                    </div>
+                  </div>
+                }
+              } @else {
+                <header class="rg__head">
+                  <div class="rg__head-info">
+                    <span class="rg__name">{{ group.name || ('—') }}</span>
+                    <span class="rg__type">
+                      {{ ('SHIPPING.RATES.TYPE_' + group.type.toUpperCase()) | translate }}
+                    </span>
+                    @if (group.note) {
+                      <span class="rg__note">· {{ group.note }}</span>
+                    }
+                  </div>
+                  <button type="button" class="icon-btn" (click)="startEditGroup(zone.id, group)"
+                    [attr.aria-label]="'SHIPPING.RATES.EDIT_GROUP' | translate"
+                    [appTooltip]="'SHIPPING.RATES.EDIT_GROUP' | translate">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5"/>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                  </button>
+                </header>
+              }
+
+              <!-- Diagnostics chips -->
+              @if (group.gaps.length > 0 || group.overlaps.length > 0) {
+                <div class="rg__diag">
+                  @for (gap of group.gaps; track $index) {
+                    <span class="rg__diag-chip rg__diag-chip--gap">
+                      {{ 'SHIPPING.RATES.GAP' | translate:{ from: gap.from, to: gap.to } }}
+                    </span>
+                  }
+                  @for (ov of group.overlaps; track $index) {
+                    <span class="rg__diag-chip rg__diag-chip--overlap">
+                      {{ 'SHIPPING.RATES.OVERLAP' | translate }}
+                    </span>
                   }
                 </div>
-                <button type="button" class="icon-btn" (click)="startEditGroup(zone.id, group)"
-                  [attr.aria-label]="'SHIPPING.RATES.EDIT_GROUP' | translate"
-                  [appTooltip]="'SHIPPING.RATES.EDIT_GROUP' | translate">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5"/>
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                  </svg>
-                </button>
-              </header>
-            }
-
-            <!-- Diagnostics chips -->
-            @if (group.gaps.length > 0 || group.overlaps.length > 0) {
-              <div class="rg__diag">
-                @for (gap of group.gaps; track $index) {
-                  <span class="rg__diag-chip rg__diag-chip--gap">
-                    {{ 'SHIPPING.RATES.GAP' | translate:{ from: gap.from, to: gap.to } }}
-                  </span>
-                }
-                @for (ov of group.overlaps; track $index) {
-                  <span class="rg__diag-chip rg__diag-chip--overlap">
-                    {{ 'SHIPPING.RATES.OVERLAP' | translate }}
-                  </span>
-                }
-              </div>
-            }
-
-            <!-- Range rows -->
-            <div class="rg__ranges"
-              cdkDropList
-              cdkDropListAutoScrollDisabled
-              [cdkDropListData]="group.ranges"
-              (cdkDropListDropped)="dropRange(zone.id, group, $event)">
-              <div class="rg__range-head">
-                <span></span>
-                <span>{{ 'SHIPPING.RATES.RANGE_FROM' | translate }}{{ unitFor(group.type) ? ' (' + unitFor(group.type) + ')' : '' }}</span>
-                <span>{{ 'SHIPPING.RATES.RANGE_TO' | translate }}{{ unitFor(group.type) ? ' (' + unitFor(group.type) + ')' : '' }}</span>
-                <span>{{ 'SHIPPING.RATES.RANGE_PRICE' | translate }}{{ currencySymbol() ? ' (' + currencySymbol() + ')' : '' }}</span>
-                <span></span>
-              </div>
-              @for (r of group.ranges; track trackRate($index, r)) {
-                <div class="rg__range" cdkDrag
-                  [class.is-err]="!isRangeValid(r)"
-                  [class.is-overlap]="isOverlapping(group, r)">
-                  <button type="button" class="rg__row-handle" cdkDragHandle
-                    [attr.aria-label]="'COMMON.DRAG_TO_REORDER' | translate"
-                    [appTooltip]="'COMMON.DRAG_TO_REORDER' | translate">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <circle cx="9"  cy="6"  r="1"/>
-                      <circle cx="15" cy="6"  r="1"/>
-                      <circle cx="9"  cy="12" r="1"/>
-                      <circle cx="15" cy="12" r="1"/>
-                      <circle cx="9"  cy="18" r="1"/>
-                      <circle cx="15" cy="18" r="1"/>
-                    </svg>
-                  </button>
-                  <input class="cell-input cell-input--num"
-                    type="number" min="0" step="0.001"
-                    [ngModel]="r.from"
-                    (ngModelChange)="setRange(zone.id, r.id, 'from', $event)"/>
-                  <input class="cell-input cell-input--num"
-                    type="number" min="0" step="0.001"
-                    [ngModel]="r.to"
-                    (ngModelChange)="setRange(zone.id, r.id, 'to', $event)"/>
-                  <input class="cell-input cell-input--num"
-                    type="number" min="0" step="0.001"
-                    [ngModel]="r.price"
-                    (ngModelChange)="setRange(zone.id, r.id, 'price', $event)"/>
-                  <button type="button" class="icon-btn icon-btn--danger"
-                    (click)="deleteRange(zone.id, r.id)"
-                    [attr.aria-label]="'SHIPPING.RATES.DELETE_RANGE' | translate"
-                    [appTooltip]="'SHIPPING.RATES.DELETE_RANGE' | translate">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="3 6 5 6 21 6"/>
-                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                    </svg>
-                  </button>
-                </div>
-                @if (!isRangeValid(r)) {
-                  <span class="rg__range-err">{{ 'SHIPPING.RATES.ERR_RANGE' | translate }}</span>
-                }
               }
-            </div>
 
-            <button type="button" class="rg__add-range" (click)="addRangeToGroup(zone.id, group)">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-              </svg>
-              {{ 'SHIPPING.RATES.ADD_RANGE' | translate }}
-            </button>
-          </article>
+              <!-- Range rows -->
+              <div class="rg__ranges"
+                cdkDropList
+                cdkDropListAutoScrollDisabled
+                [cdkDropListData]="group.ranges"
+                (cdkDropListDropped)="dropRange(zone.id, group, $event)">
+                <div class="rg__range-head">
+                  <span></span>
+                  <span>{{ 'SHIPPING.RATES.RANGE_FROM' | translate }}{{ unitFor(group.type) ? ' (' + unitFor(group.type) + ')' : '' }}</span>
+                  <span>{{ 'SHIPPING.RATES.RANGE_TO' | translate }}{{ unitFor(group.type) ? ' (' + unitFor(group.type) + ')' : '' }}</span>
+                  <span>{{ 'SHIPPING.RATES.RANGE_PRICE' | translate }}{{ currencySymbol() ? ' (' + currencySymbol() + ')' : '' }}</span>
+                  <span></span>
+                </div>
+                @for (r of group.ranges; track trackRate($index, r)) {
+                  <div class="rg__range" cdkDrag
+                    [class.is-err]="!isRangeValid(r, group) || rowErrors()[r.id]"
+                    [class.is-overlap]="isOverlapping(group, r)">
+                    <button type="button" class="rg__row-handle" cdkDragHandle
+                      [attr.aria-label]="'COMMON.DRAG_TO_REORDER' | translate"
+                      [appTooltip]="'COMMON.DRAG_TO_REORDER' | translate">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="9"  cy="6"  r="1"/>
+                        <circle cx="15" cy="6"  r="1"/>
+                        <circle cx="9"  cy="12" r="1"/>
+                        <circle cx="15" cy="12" r="1"/>
+                        <circle cx="9"  cy="18" r="1"/>
+                        <circle cx="15" cy="18" r="1"/>
+                      </svg>
+                    </button>
+                    <input class="cell-input cell-input--num"
+                      type="number" min="0" step="0.001"
+                      [ngModel]="r.from"
+                      (ngModelChange)="setRange(zone.id, r.id, 'from', $event)"/>
+                    <div class="rg__to">
+                      <input class="cell-input cell-input--num"
+                        type="number" min="0" step="0.001"
+                        [disabled]="isUnbounded(r)"
+                        [ngModel]="r.to"
+                        (ngModelChange)="setRange(zone.id, r.id, 'to', $event)"/>
+                      <label class="rg__unbounded">
+                        <input type="checkbox" [checked]="isUnbounded(r)" (change)="toggleUnbounded(zone.id, r, $any($event.target).checked)"/>
+                        {{ 'SHIPPING.RATES.NO_UPPER_LIMIT' | translate }}
+                      </label>
+                    </div>
+                    <input class="cell-input cell-input--num"
+                      type="number" min="0" step="0.001"
+                      [ngModel]="r.price"
+                      (ngModelChange)="setRange(zone.id, r.id, 'price', $event)"/>
+                    <button type="button" class="icon-btn icon-btn--danger"
+                      (click)="deleteRange(zone.id, r.id)"
+                      [attr.aria-label]="'SHIPPING.RATES.DELETE_RANGE' | translate"
+                      [appTooltip]="'SHIPPING.RATES.DELETE_RANGE' | translate">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                      </svg>
+                    </button>
+                  </div>
+                  @if (!isRangeValid(r, group)) {
+                    <span class="rg__range-err">{{ rangeErrorKey(r, group) | translate }}</span>
+                  } @else if (rowErrors()[r.id]; as serverError) {
+                    <span class="rg__range-err">{{ serverError }}</span>
+                  }
+                }
+              </div>
+
+              <button type="button" class="rg__add-range" (click)="addRangeToGroup(zone.id, group)">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                {{ 'SHIPPING.RATES.ADD_RANGE' | translate }}
+              </button>
+            </article>
+            }
+          </section>
         }
         </div>
       </div>

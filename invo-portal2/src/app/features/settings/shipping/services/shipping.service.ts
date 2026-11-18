@@ -7,6 +7,7 @@ import {
   Rate,
   ShippingOptions,
   ShippingSettingWire,
+  ShippingViolation,
   TaxOption,
   Zone,
   emptyShippingOptions,
@@ -63,7 +64,7 @@ export class ShippingService {
 
   /** Persist. Strips the UI ids and converts country names →
    *  ISO codes before the wire round-trip. */
-  async saveZones(zones: Zone[]): Promise<{ success: boolean; msg?: string }> {
+  async saveZones(zones: Zone[]): Promise<{ success: boolean; msg?: string; violations?: ShippingViolation[] }> {
     const countries = await this.loadCountries();
     const byName = new Map(countries.map(c => [c.name, c.code]));
     const payload: ShippingSettingWire[] = zones.map(z => ({
@@ -85,7 +86,12 @@ export class ShippingService {
     const res = await this.api.request<any>(
       this.api.post('company/setShippingSetting', payload),
     );
-    return { success: !!res?.success, msg: res?.msg };
+    // A refused save carries one entry per offending row: { zone, type, name, rowIndex, message } (rowIndex = the row's
+    // position in that zone's flat rate list, as sent). The page marks each row with its own message.
+    const violations: ShippingViolation[] = !res?.success && Array.isArray(res?.data)
+      ? res.data.filter((v: any) => v && typeof v.message === 'string')
+      : [];
+    return { success: !!res?.success, msg: typeof res?.msg === 'string' ? res.msg : undefined, violations };
   }
 
   // ─── Shipping Options ──────────────────────────────────────────

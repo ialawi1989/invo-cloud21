@@ -415,3 +415,15 @@ select.field__input {
 }
 @keyframes shp-spin { to { transform: rotate(360deg); } }
 .zone__taxx { display: inline-flex; align-items: center; gap: 8px; margin: 0 16px 8px; font-size: 13.5px; font-weight: 600; color: #334155; cursor: pointer; }
+
+
+// ── Services (rate name) wrapping the type groups ──
+.svc { display: flex; flex-direction: column; gap: 10px; padding: 12px; margin-bottom: 12px; border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc; }
+.svc__head { display: flex; align-items: center; gap: 10px; }
+.svc__name { flex: 1; min-width: 0; font-size: 14px; color: #0f172a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.svc__hint { margin: 0; font-size: 12px; color: #b45309; }
+.svc .rg { background: #fff; }
+
+// ── "No upper limit" under the To input ──
+.rg__to { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.rg__unbounded { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: #64748b; cursor: pointer; }
