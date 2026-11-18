@@ -488,7 +488,7 @@
                     }
                     <div class="qr-presets">
                       @if (!isZatcaQr(q.value)) {
-                        <button type="button" class="hint hint--link" (click)="emit('value', ZATCA_BINDING)">
+                        <button type="button" class="hint hint--link" (click)="useZatca()">
                           {{ 'RECEIPT_BUILDER.EDITOR.USE_ZATCA' | translate }}
                         </button>
                       }

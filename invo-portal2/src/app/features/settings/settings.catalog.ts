@@ -182,12 +182,15 @@ export const SETTINGS_GROUPS: SettingGroup[] = [
     id: 'shipping', title: 'SETTINGS.GROUPS.SHIPPING', color: '#0ea5e9',
     icon: `<path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>`,
     items: [
-      // Single hub page — picks between shipping (country zones),
-      // delivery-by-address, and delivery-by-radius, then embeds
-      // the matching editor. Supersedes the four separate tiles
-      // (Covered Address, Covered Zone, Shipping, Shipping Options).
-      { label: 'SETTINGS.ITEMS.SHIPPING_DELIVERY', description: 'SETTINGS.ITEMS.SHIPPING_DELIVERY_DESC', link: '/settings/shipping-delivery', privilege: 'coveredAddress.actions.view.access',
-        i18nPrefix: 'SHIPPING_DELIVERY' },
+      // Four separate pages, as in the legacy app.
+      { label: 'SETTINGS.ITEMS.COVERED_ADDRESS', description: 'SETTINGS.ITEMS.COVERED_ADDRESS_DESC', link: '/settings/covered-address', privilege: 'coveredAddress.actions.view.access',
+        i18nPrefix: 'COVERED_ADDRESS' },
+      { label: 'SETTINGS.ITEMS.COVERED_ZONE', description: 'SETTINGS.ITEMS.COVERED_ZONE_DESC', link: '/settings/covered-zone', privilege: 'coveredZone.actions.view.access',
+        i18nPrefix: 'COVERED_ZONE' },
+      { label: 'SETTINGS.ITEMS.SHIPPING', description: 'SETTINGS.ITEMS.SHIPPING_DESC', link: '/settings/shipping', privilege: 'shippingSecurity.actions.view.access',
+        i18nPrefix: 'SHIPPING' },
+      { label: 'SETTINGS.ITEMS.SHIPPING_OPTIONS', description: 'SETTINGS.ITEMS.SHIPPING_OPTIONS_DESC', link: '/settings/shipping-options', privilege: 'shippingSecurity.actions.view.access',
+        i18nPrefix: 'SHIPPING_OPTIONS' },
     ],
   },
   {

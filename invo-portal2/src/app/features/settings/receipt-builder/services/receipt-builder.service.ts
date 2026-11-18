@@ -8,6 +8,7 @@ import {
   ReceiptTemplateSummary,
   TemplateType,
 } from './receipt-builder.types';
+import { elementFromWire, elementToWire } from './receipt-wire';
 
 /**
  * Wraps the legacy receipt-builder endpoints. Same wire shape as the
@@ -86,7 +87,7 @@ export class ReceiptBuilderService {
       name:            String(raw?.name ?? ''),
       templateType:    normaliseTemplateType(raw?.templateType),
       recieptTemplate: Array.isArray(raw?.recieptTemplate)
-        ? raw.recieptTemplate.map((e: any) => ({ ...e, type: e?.type } as PrintElement))
+        ? raw.recieptTemplate.map((e: any) => elementFromWire(e))
         : [],
       updatedDate:     raw?.updatedDate ? String(raw.updatedDate) : undefined,
     };
@@ -98,13 +99,15 @@ export class ReceiptBuilderService {
       companyId:       t.companyId,
       name:            t.name,
       templateType:    t.templateType,
-      recieptTemplate: t.recieptTemplate,
+      recieptTemplate: t.recieptTemplate.map(elementToWire),
     };
   }
 }
 
 function normaliseTemplateType(v: unknown): TemplateType {
-  return v === 'kitchen' ? 'kitchen' : 'recieptType';
+  // The legacy value is 'reciept'. An earlier build of this editor wrote 'recieptType', so that reads as a receipt too and is
+  // corrected to 'reciept' the next time the template is saved.
+  return v === 'kitchen' ? 'kitchen' : 'reciept';
 }
 
 function int(v: unknown, fb: number): number {

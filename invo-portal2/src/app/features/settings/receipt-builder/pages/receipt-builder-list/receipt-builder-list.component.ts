@@ -5,6 +5,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { withTranslations } from '@core/i18n/with-translations';
+import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { ListPageComponent } from '@shared/components/list-page/components/list-page.component';
 import { ListCellTemplateDirective, ListRowActionsDirective } from '@shared/components/list-page/directives/list-template.directives';
 import type { ListQueryParams, TableColumn } from '@shared/components/list-page/interfaces/list-page.types';
@@ -35,6 +36,7 @@ export class ReceiptBuilderListComponent {
   private destroyRef = inject(DestroyRef);
   private router     = inject(Router);
   private modal      = inject(ModalService);
+  private privileges = inject(PrivilegeService);
   private listPage   = viewChild(ListPageComponent);
 
   private i18nTick = signal(0);
@@ -50,8 +52,8 @@ export class ReceiptBuilderListComponent {
   columns = computed<TableColumn[]>(() => {
     this.i18nTick();
     return [
-      { key: 'name', label: this.t('RECEIPT_BUILDER.NAME'), primary: true, locked: true, customTemplate: true, visible: true, order: 0 },
-      { key: 'templateType', label: this.t('RECEIPT_BUILDER.TYPE'), customTemplate: true, visible: true, order: 1 },
+      { key: 'name', label: this.t('RECEIPT_BUILDER.NAME'), sortable: true, primary: true, locked: true, customTemplate: true, visible: true, order: 0 },
+      { key: 'templateType', label: this.t('RECEIPT_BUILDER.TYPE'), sortable: true, customTemplate: true, visible: true, order: 1 },
       { key: 'elementsCount', label: this.t('RECEIPT_BUILDER.ELEMENTS_COUNT'), customTemplate: true, visible: true, order: 2 },
       { key: 'updatedDate', label: this.t('RECEIPT_BUILDER.UPDATED'), customTemplate: true, visible: true, order: 3 },
     ];
@@ -67,30 +69,36 @@ export class ReceiptBuilderListComponent {
   });
 
   readonly paginationConfig = { enabled: true, pageLimits: [20, 50, 100], default: 20 };
-  readonly sortingConfig = { enabled: false };
+  readonly sortingConfig = { enabled: true };
   searchConfig = computed(() => { this.i18nTick(); return { enabled: true, placeholder: this.t('RECEIPT_BUILDER.SEARCH_PLACEHOLDER'), debounceMs: 500 }; });
   emptyState = computed(() => { this.i18nTick(); return { title: this.t('RECEIPT_BUILDER.EMPTY'), message: '', icon: 'box' }; });
 
   load = async (params: ListQueryParams) => {
-    const res = await this.service.getList({ page: params.page, limit: params.limit, searchTerm: (params.searchTerm || '').trim() });
+    const res = await this.service.getList({ page: params.page, limit: params.limit, searchTerm: (params.searchTerm || '').trim(),
+      // The legacy list sorts by name or type; the server reads the same `sortBy` shape.
+      sortBy: params.sortBy && ['name', 'templateType'].includes(params.sortBy.sortValue) ? params.sortBy : null });
     return { list: res.list, count: res.total, pageCount: Math.max(1, Math.ceil(res.total / (params.limit || 20))) };
   };
 
   /** "Add new" asks which flavour: the same list shows receipt and kitchen templates. */
   addMenuItems(): DropdownMenuBtnItem[] {
     return [
-      { label: 'RECEIPT_BUILDER.TYPE_RECEIPT', click: () => this.addNew('recieptType') },
+      { label: 'RECEIPT_BUILDER.TYPE_RECEIPT', click: () => this.addNew('reciept') },
       { label: 'RECEIPT_BUILDER.TYPE_KITCHEN', click: () => this.addNew('kitchen') },
     ];
   }
 
   /** The "..." menu of a row. */
   rowMenuItems(t: ReceiptTemplateSummary): DropdownMenuBtnItem[] {
-    return [
+    const items: DropdownMenuBtnItem[] = [
       { label: 'COMMON.EDIT', click: () => this.edit(t) },
       { label: 'RECEIPT_BUILDER.RENAME.TITLE', click: () => void this.renameRow(t) },
-      { label: 'COMMON.DELETE', danger: true, separator: true, click: () => void this.removeRow(t) },
     ];
+    // The legacy list hides Delete without the delete privilege.
+    if (this.privileges.check('recieptBuilderSecurity.actions.delete.access')) {
+      items.push({ label: 'COMMON.DELETE', danger: true, separator: true, click: () => void this.removeRow(t) });
+    }
+    return items;
   }
 
   edit(row: ReceiptTemplateSummary): void { void this.router.navigate(['/settings/receipt-builder', row.id]); }

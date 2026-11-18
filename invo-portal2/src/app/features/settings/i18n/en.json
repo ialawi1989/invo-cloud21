@@ -107,8 +107,21 @@
       "SURCHARGE":                 "Surcharge Setting",
       "SURCHARGE_DESC":            "Configure surcharge rules, amounts, and application methods.",
 
-      "SHIPPING_DELIVERY":         "Manage",
-      "SHIPPING_DELIVERY_DESC":    "Choose between cross-border shipping zones and local delivery (by address or radius), and configure rates for the selected mode.",
+      "COVERED_ADDRESS": "Covered Address",
+
+      "COVERED_ADDRESS_DESC": "Define and manage the addresses where your business provides delivery or service coverage.",
+
+      "COVERED_ZONE": "Covered Zone",
+
+      "COVERED_ZONE_DESC": "Set up and manage specific geographic areas (zones) for delivery or service.",
+
+      "SHIPPING": "Shipping",
+
+      "SHIPPING_DESC": "Set up and manage how shipping works, what methods and rates are available, and which areas are covered for delivery",
+
+      "SHIPPING_OPTIONS": "Shipping Options",
+
+      "SHIPPING_OPTIONS_DESC": "Set the shipping type and way",
 
       "DISCOUNT":                  "Discount",
       "DISCOUNT_DESC":             "Configure discount rules and campaigns.",

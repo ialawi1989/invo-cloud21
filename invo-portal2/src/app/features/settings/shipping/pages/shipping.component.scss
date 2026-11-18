@@ -427,3 +427,23 @@ select.field__input {
 // ── "No upper limit" under the To input ──
 .rg__to { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .rg__unbounded { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: #64748b; cursor: pointer; }
+
+
+// ── Icons and colour (the legacy page is colourful: globe, pin, truck, parcel, note) ──
+.ico { flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 8px; }
+.ico--lg { width: 40px; height: 40px; border-radius: 12px; }
+.ico--blue  { background: #dbeafe; color: #1d4ed8; }
+.ico--teal  { background: #ccfbf1; color: #0f766e; }
+.ico--amber { background: #fef3c7; color: #b45309; }
+.zone__title { display: inline-flex; align-items: center; gap: 8px; }
+.zone__head { align-items: center; gap: 12px; background: linear-gradient(180deg, #f0f9ff, #fff); }
+.zone__head .zone__name-wrap { flex: 1; min-width: 0; }
+.svc { background: linear-gradient(180deg, #f0fdfa, #f8fafc); border-color: #ccfbf1; }
+.svc .rg { border-color: #e2e8f0; }
+.rg__type { padding: 2px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; background: #f1f5f9; color: #475569; }
+.rg__type[data-type='weight']    { background: #fef3c7; color: #92400e; }
+.rg__type[data-type='total']     { background: #dcfce7; color: #166534; }
+.rg__type[data-type='dimension'] { background: #ede9fe; color: #5b21b6; }
+.rg__note { display: inline-flex; align-items: center; gap: 4px; color: #64748b; }
+.rg__diag-chip--gap { background: #fef3c7; color: #92400e; }
+.rg__diag-chip--overlap { background: #fee2e2; color: #b91c1c; }

@@ -87,13 +87,13 @@ export class ElementEditorComponent {
    *  this component just renders nothing. */
   element = input<PrintElement | null>(null);
 
-  /** Template-type context (`'recieptType' | 'kitchen'`). Drives a
+  /** Template-type context (`'reciept' | 'kitchen'`). Drives a
    *  handful of UI bits that differ between receipt and kitchen
    *  templates — currently the `option.kitchenName` toggle, which is
    *  kitchen-only per the legacy receipt-builder. Defaults to
    *  receipt so the editor is conservative when the parent doesn't
    *  specify. */
-  templateType = input<TemplateType>('recieptType');
+  templateType = input<TemplateType>('reciept');
 
   /** Single emitter for every field edit. Parent funnels these into
    *  `patchSelectedElement(key, value)` so all per-element edits
@@ -541,6 +541,13 @@ export class ElementEditorComponent {
    *  otherwise have to remember the spelling. */
   readonly ZATCA_BINDING = '!invoice.zatcaCode';
 
+  /** Same result as the legacy ZATCA palette tile: the binding plus the markers the POS uses to print it as an image. */
+  useZatca(): void {
+    this.emit('value', this.ZATCA_BINDING);
+    this.emit('childType', 'ZatcaQrCode');
+    this.emit('printAsImage', true);
+  }
+
   /**
    * Build the customer-feedback URL the QR encodes when the user picks
    * the "Use Feedback link" preset. Delegates the host resolution to
@@ -646,6 +653,7 @@ export class ElementEditorComponent {
     { key: 'serialNo',                      label: 'Serial #' },
     { key: 'subTotal',                      label: 'Subtotal' },
     { key: 'subTotalWithoutTax.number()',   label: 'Subtotal (excl. tax)' },
+    { key: 'discountTotal.number()',        label: 'Discount' },
     { key: 'product.barcode',               label: 'Barcode' },
     { key: 'product.secondaryName',         label: 'Secondary name' },
     { key: 'product.kitchenName',           label: 'Kitchen name' },
@@ -653,8 +661,8 @@ export class ElementEditorComponent {
   ];
 
   private readonly TAXES_CATALOG: ColumnSuggestion[] = [
-    { key: 'name',           label: 'Name' },
-    { key: 'total.number()', label: 'Total' },
+    { key: 'name',  label: 'Name' },
+    { key: 'total', label: 'Total' },
     { key: '',               label: 'Empty column' },
   ];
 

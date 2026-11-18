@@ -497,12 +497,17 @@ export const routes: Routes = [
           import('./features/settings/shipping/shipping.routes').then(m => m.SHIPPING_ROUTES)
       },
       {
-        // Shipping & Delivery hub — single page that picks between
-        // shipping (country zones), delivery-by-address, or
-        // delivery-by-radius and embeds the matching editor.
-        path: 'settings/shipping-delivery',
+        // Shipping Options — shipping type, weight / dimension units and
+        // delivery-charge tax, its own page as in the legacy app.
+        path: 'settings/shipping-options',
         loadChildren: () =>
-          import('./features/settings/shipping-delivery/shipping-delivery.routes').then(m => m.SHIPPING_DELIVERY_ROUTES)
+          import('./features/settings/shipping-options/shipping-options.routes').then(m => m.SHIPPING_OPTIONS_ROUTES)
+      },
+      {
+        // The old combined hub page no longer exists; keep bookmarks working.
+        path: 'settings/shipping-delivery',
+        redirectTo: 'settings/shipping',
+        pathMatch: 'full'
       },
       {
         // Discounts — named per-company discounts applied at POS /

@@ -35,8 +35,22 @@
     &--row    { align-items: center; }
   }
 
-  &__title { margin: 0; font-size: 14px; font-weight: 700; color: #0f172a; }
+  &__title { margin: 0; font-size: 15px; font-weight: 700; color: #0f172a; }
   &__sub   { margin: 4px 0 0; font-size: 12px; color: #64748b; line-height: 1.5; max-width: 80ch; }
+  &__head > div { flex: 1; min-width: 0; }
+  &__head--toggle:hover { background: #fafbfc; }
+
+  // Tinted icon badge in each card header, one colour per section.
+  &__icon {
+    flex-shrink: 0;
+    width: 36px; height: 36px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 10px;
+    &--teal   { background: #ccfbf1; color: #0f766e; }
+    &--amber  { background: #fef3c7; color: #b45309; }
+    &--violet { background: #ede9fe; color: #6d28d9; }
+    &--blue   { background: #dbeafe; color: #1d4ed8; }
+  }
 
   &__chev {
     appearance: none;
@@ -78,11 +92,23 @@
     &:last-child { border-bottom: 0; }
   }
 
+  &__pin {
+    flex-shrink: 0;
+    width: 32px; height: 32px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    background: #fef3c7; color: #b45309;
+    &--ok { background: #dcfce7; color: #15803d; }
+  }
+
+  &__row:hover { background: #fafbfc; }
+
   &__name {
     display: flex;
     flex-direction: column;
     gap: 2px;
     min-width: 0;
+    flex: 1;
 
     strong { font-size: 13px; color: #0f172a; }
   }
@@ -175,7 +201,7 @@
   thead th {
     position: sticky;
     top: 0;
-    background: #f8fafc;
+    background: #f1f5f9;
     color: #475569;
     font-size: 11px;
     font-weight: 700;
@@ -184,6 +210,8 @@
     z-index: 1;
   }
   tbody tr:last-child td { border-bottom: 0; }
+  tbody tr:nth-child(even) { background: #fafbfc; }
+  tbody tr:hover { background: #f0f9ff; }
 
   &__radius   { width: 140px; }
   &__num      { width: 130px; text-align: end; }

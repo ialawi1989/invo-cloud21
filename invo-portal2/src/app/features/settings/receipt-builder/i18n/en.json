@@ -48,6 +48,22 @@
     "WIDGET_DRAG_HINT":         "Drag up/down to reorder · drop on another header to merge as a tab",
     "RESIZE_PANEL":             "Drag to resize panel",
 
+    "JSON": {
+
+      "EXPORT": "Export JSON",
+
+      "IMPORT": "Import JSON",
+
+      "CONFIRM_REPLACE": "You have unsaved changes. Importing replaces every element of this template.",
+
+      "NOT_JSON": "Please choose a .json file.",
+
+      "INVALID": "This file is not a valid receipt template.",
+
+      "IMPORTED": "Template imported"
+
+    },
+
     "ELEMENTS": {
       "SideText":      "Side text",
       "Text":          "Text",
@@ -60,7 +76,8 @@
       "Table":         "Table",
       "TableLines":    "Lines table",
       "TableTaxes":    "Taxes table",
-      "TablePayments": "Payments table"
+      "TablePayments": "Payments table",
+      "ZatcaQrCode": "ZATCA QR code"
     },
 
     "PREVIEW": {

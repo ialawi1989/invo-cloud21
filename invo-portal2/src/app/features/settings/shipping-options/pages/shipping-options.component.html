@@ -1,0 +1,61 @@
+<div class="sop-page">
+  <header class="page-header">
+    <div class="page-header__titles">
+      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
+      <h1 class="page-title">{{ 'SHIPPING.OPTIONS.ACTION' | translate }}</h1>
+      <p class="page-sub">{{ 'SHIPPING.OPTIONS.PAGE_SUBTITLE' | translate }}</p>
+    </div>
+  </header>
+
+  @if (!loading()) {
+    <section class="sop-card">
+      <label class="sop-field">
+        <span class="sop-label">{{ 'SHIPPING.OPTIONS.TYPE' | translate }}</span>
+        <app-search-dropdown
+          [items]="typeOptions()" [displayWith]="optDisplay" [compareWith]="optCompare" [toValue]="optToValue"
+          [value]="selectedType()" [searchable]="false" [clearable]="false" (valueChange)="setType($event)"/>
+      </label>
+
+      @if (options().type === 'delivery') {
+        <label class="sop-field">
+          <span class="sop-label">{{ 'SHIPPING.OPTIONS.METHOD' | translate }}</span>
+          <app-search-dropdown
+            [items]="methodOptions()" [displayWith]="optDisplay" [compareWith]="optCompare" [toValue]="optToValue"
+            [value]="selectedMethod()" [searchable]="false" [clearable]="false" (valueChange)="setMethod($event)"/>
+        </label>
+      }
+
+      <label class="sop-field">
+        <span class="sop-label">{{ 'SHIPPING.OPTIONS.WEIGHT_UOM' | translate }}</span>
+        <app-search-dropdown
+          [items]="weightOptions()" [displayWith]="optDisplay" [compareWith]="optCompare" [toValue]="optToValue"
+          [value]="selectedWeight()" [searchable]="false" [clearable]="false" (valueChange)="setWeight($event)"/>
+      </label>
+
+      <label class="sop-field">
+        <span class="sop-label">{{ 'SHIPPING.OPTIONS.DIMENSION_UOM' | translate }}</span>
+        <app-search-dropdown
+          [items]="dimensionOptions()" [displayWith]="optDisplay" [compareWith]="optCompare" [toValue]="optToValue"
+          [value]="selectedDimension()" [searchable]="false" [clearable]="false" (valueChange)="setDimension($event)"/>
+      </label>
+
+      <label class="sop-field">
+        <span class="sop-label">{{ 'SHIPPING.OPTIONS.DELIVERY_TAX' | translate }}</span>
+        <app-search-dropdown
+          [items]="taxes()" [displayWith]="taxDisplay" [compareWith]="taxCompare" [toValue]="taxToValue"
+          [value]="selectedTax()" [searchable]="taxes().length > 6" [clearable]="true"
+          [placeholder]="'SHIPPING.OPTIONS.NO_TAX' | translate" (valueChange)="setTax($event)"/>
+      </label>
+    </section>
+  }
+
+  <footer class="save-bar">
+    <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">{{ 'COMMON.CANCEL' | translate }}</button>
+    <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving() || !isDirty()">
+      @if (saving()) { <span class="spinner" aria-hidden="true"></span> }
+      {{ saving() ? ('COMMON.SAVING' | translate) : ('COMMON.SAVE' | translate) }}
+    </button>
+  </footer>
+
+  <app-loading-overlay [show]="loading()"/>
+</div>

@@ -115,7 +115,7 @@ export const I18N_FEATURE_BY_ROOT: Record<string, string> = {
   DISCOUNT: 'settings/discount', DOCUMENT_BUILDER: 'settings/document-builder',
   RECEIPT_BUILDER: 'settings/receipt-builder', LABEL_BUILDER: 'settings/label-builder',
   PRICE_LABEL: 'settings/price-label', MENU_BUILDER: 'settings/menu-builder',
-  COVERED_ZONE: 'settings/covered-zone', COVERED_ADDRESS: 'settings/covered-address',
+  COVERED_ZONE: 'settings/covered-zone', COVERED_ADDRESS: 'settings/covered-address', SHIPPING_OPTIONS: 'settings/shipping-options',
 };
 
 /** Sub-trees that hold messages, not labels; walking them only adds noise to the in-page corpus. */

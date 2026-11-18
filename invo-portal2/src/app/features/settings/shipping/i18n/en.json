@@ -83,27 +83,11 @@
       "UOM_OUNCE":      "Ounce",
       "UOM_POUND":      "Pound",
       "DELIVERY_TAX":   "Delivery charge tax",
-      "NO_TAX":         "No tax"
+      "NO_TAX":         "No tax",
+      "PAGE_SUBTITLE": "Choose how the storefront fulfils orders, and set the measurement units and the tax on delivery charges.",
+      "METHOD": "Delivery method",
+      "METHOD_ADDRESS": "By address",
+      "METHOD_ZONE": "By radius"
     }
-  },
-
-  "SHIPPING_DELIVERY": {
-    "TITLE":    "Shipping & Delivery",
-    "SUBTITLE": "Pick how the storefront fulfils orders, then configure rates for the active mode. Only the active mode is used at checkout — the other editors stay accessible so you can prepare them in advance.",
-
-    "MORE_OPTIONS":   "More options",
-
-    "TYPE_LABEL":     "Fulfilment type",
-    "TYPE_DELIVERY":  "Delivery",
-    "TYPE_SHIPPING":  "Shipping",
-
-    "METHOD_LABEL":   "Delivery method",
-    "METHOD_ADDRESS": "By address",
-    "METHOD_ZONE":    "By radius",
-
-    "HINT_SHIPPING":         "Country-based zones with weight or order-total ranges. Used when you ship across borders.",
-    "HINT_DELIVERY_ADDRESS": "Per-area delivery economics keyed by Governorate / City / Block. Best when areas are well-defined administrative units.",
-    "HINT_DELIVERY_ZONE":    "Radius-based zones around each branch's pinned location. Best when areas are defined by distance from the branch.",
-    "UNSAVED_HINT":          "You have unsaved changes to the fulfilment mode."
   }
 }

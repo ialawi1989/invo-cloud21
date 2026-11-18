@@ -2,7 +2,7 @@
 //
 // A `ReceiptTemplate` is an ordered list of print elements that the
 // POS feeds through a thermal printer. Two flavours: the customer
-// receipt (`recieptType`) and the kitchen ticket (`kitchen`). Both
+// receipt (`reciept`) and the kitchen ticket (`kitchen`). Both
 // share the same element vocabulary; only the source bindings (which
 // invoice / order field a given Text or QR pulls from) differ.
 //
@@ -16,14 +16,12 @@
 /**
  * The two template flavours the POS supports. The wire uses these
  * exact strings.
- *   - `recieptType` — customer-facing sales receipt
+ *   - `reciept`     — customer-facing sales receipt
  *   - `kitchen`     — kitchen ticket sent to back-of-house printers
  *
- * (Yes, the spelling `recieptType` matches the legacy schema. We
- * normalise it to a tagged union here but keep the wire string
- * unchanged so existing rows round-trip cleanly.)
+ * (The misspelling `reciept` is the legacy wire value, read by the live POS. Do not "fix" it.)
  */
-export type TemplateType = 'recieptType' | 'kitchen';
+export type TemplateType = 'reciept' | 'kitchen';
 
 /** Discriminator string the legacy `parseType` switch reads. */
 export type PrintElementType =
@@ -119,6 +117,9 @@ export interface QrCodeElement extends PrintElementBase {
   type: 'QrCode';
   value: string;
   size: number;
+  /** Legacy `ZatcaQrCode` marker: the POS prints it as an image. */
+  childType?: 'ZatcaQrCode';
+  printAsImage?: boolean;
   visibility: 'Visible' | 'Hidden';
   condition: { data: string; equals: string };
 }
@@ -266,6 +267,19 @@ export const PALETTE_ITEMS: PaletteItem[] = [
   { id: 'TablePayments', iconId: 'TablePayments', labelKey: 'TablePayments', factory: makeTablePayments },
 ];
 
+/** Legacy `ZatcaQrCode` palette tile, offered only to Saudi Arabia companies. The POS prints it as an image, hence `printAsImage`. */
+export function makeZatcaQr(): QrCodeElement {
+  return {
+    type: 'QrCode', __key: nextKey(), childType: 'ZatcaQrCode',
+    value: '!invoice.zatcaCode', size: 8, printAsImage: true,
+    visibility: 'Hidden', condition: { data: '!invoice.zatcaCode', equals: '' },
+  };
+}
+
+export const ZATCA_PALETTE_ITEM: PaletteItem = {
+  id: 'ZatcaQrCode', iconId: 'QrCode', labelKey: 'ZatcaQrCode', factory: makeZatcaQr,
+};
+
 let __keyCounter = 0;
 function nextKey(): string { return 'el_' + (++__keyCounter).toString(36); }
 
@@ -370,8 +384,8 @@ export function makeTableTaxes(): TableElement {
       __key: nextKey(),
       rows: [
         { __key: nextKey(), rowType: 'static', cells: [
-          { __key: nextKey(), key: 'name',           value: 'Name',  width: 50, alignment: 'left',  isVisible: true },
-          { __key: nextKey(), key: 'total.number()', value: 'Total', width: 50, alignment: 'right', isVisible: true },
+          { __key: nextKey(), key: 'name',  value: '!name',           width: 50, alignment: 'left',  isVisible: true },
+          { __key: nextKey(), key: 'total', value: '!total.number()', width: 50, alignment: 'right', isVisible: true },
         ]},
       ],
     }],
@@ -388,8 +402,8 @@ export function makeTablePayments(): TableElement {
       __key: nextKey(),
       rows: [
         { __key: nextKey(), rowType: 'static', cells: [
-          { __key: nextKey(), key: 'paymentMethod', value: 'Method', width: 50, alignment: 'left',  isVisible: true, isRequired: true },
-          { __key: nextKey(), key: 'tenderAmount',  value: 'Amount', width: 50, alignment: 'right', isVisible: true },
+          { __key: nextKey(), key: 'paymentMethod', value: '!paymentMethod.name',                          width: 50, alignment: 'left',  isVisible: true, isRequired: true },
+          { __key: nextKey(), key: 'amount',        value: '!tenderAmount (!tenderEquivalent.currency())', width: 50, alignment: 'right', isVisible: true },
         ]},
       ],
     }],
@@ -440,6 +454,7 @@ export function defaultReceiptElements(): PrintElement[] {
           { __key: nextKey(), key: 'qty.numberTrim()',            value: 'Qty',          width: 13, alignment: 'left',   isVisible: true,  isRequired: true },
           { __key: nextKey(), key: 'product.name',                value: 'Product Name', width: 67, alignment: 'left',   isVisible: true },
           { __key: nextKey(), key: 'subTotalWithoutTax.number()', value: 'Sub Total',    width: 20, alignment: 'right',  isVisible: true },
+          { __key: nextKey(), key: 'discountTotal.number()',      value: 'Disc',         width: 16, alignment: 'Center', isVisible: false },
           { __key: nextKey(), key: 'taxTotal.number()',           value: 'Tax total',    width: 16, alignment: 'Center', isVisible: false },
           { __key: nextKey(), key: 'total.number()',              value: 'Total',        width: 16, alignment: 'right',  isVisible: false },
           { __key: nextKey(), key: 'taxPercentage',               value: 'Tax %',        width: 20, alignment: 'Center', isVisible: false },
@@ -455,8 +470,8 @@ export function defaultReceiptElements(): PrintElement[] {
     groups: [{
       __key: nextKey(),
       rows: [{ __key: nextKey(), rowType: 'static', cells: [
-        { __key: nextKey(), key: 'name',           value: 'Name',  width: 50, alignment: 'left',  isVisible: true },
-        { __key: nextKey(), key: 'total.number()', value: 'Total', width: 50, alignment: 'right', isVisible: true },
+        { __key: nextKey(), key: 'name',  value: '!name',           width: 50, alignment: 'left',  isVisible: true },
+        { __key: nextKey(), key: 'total', value: '!total.number()', width: 50, alignment: 'right', isVisible: true },
       ]}],
     }],
   };

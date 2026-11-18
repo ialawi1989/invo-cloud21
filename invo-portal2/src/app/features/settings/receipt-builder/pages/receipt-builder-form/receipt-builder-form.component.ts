@@ -40,8 +40,10 @@ import { ConfirmModalComponent, ConfirmModalData } from '@shared/modal/demo/conf
 import { CompanyService } from '@core/auth/company.service';
 
 import { ReceiptBuilderService } from '../../services/receipt-builder.service';
+import { elementFromWire, elementToWire } from '../../services/receipt-wire';
 import {
   PALETTE_ITEMS,
+  ZATCA_PALETTE_ITEM,
   PaletteItem,
   PrintElement,
   ReceiptTemplate,
@@ -149,7 +151,7 @@ export class ReceiptBuilderFormComponent implements OnInit, CanLeaveComponent {
   loading = signal<boolean>(false);
   saving  = signal<boolean>(false);
 
-  template = signal<ReceiptTemplate>(EMPTY_TEMPLATE('recieptType'));
+  template = signal<ReceiptTemplate>(EMPTY_TEMPLATE('reciept'));
   /** Snapshot the saved state so `isDirty` is just a string compare. */
   private snapshot = signal<string>('');
 
@@ -205,7 +207,7 @@ export class ReceiptBuilderFormComponent implements OnInit, CanLeaveComponent {
    *  templates only; the saved chip stays read-only). Labels are
    *  i18n keys piped through the toggle's `translate` pipe. */
   readonly templateTypeOptions: SegmentedToggleOption<TemplateType>[] = [
-    { value: 'recieptType', label: 'RECEIPT_BUILDER.TYPE_RECEIPT' },
+    { value: 'reciept', label: 'RECEIPT_BUILDER.TYPE_RECEIPT' },
     { value: 'kitchen',     label: 'RECEIPT_BUILDER.TYPE_KITCHEN' },
   ];
 
@@ -246,7 +248,11 @@ export class ReceiptBuilderFormComponent implements OnInit, CanLeaveComponent {
     };
   });
 
-  readonly paletteItems = PALETTE_ITEMS;
+  /** The legacy builder adds the ZATCA QR tile only for Saudi Arabia companies. */
+  readonly paletteItems = computed(() =>
+    (this.companies.settings() as { country?: string } | null)?.country === 'Saudi Arabia'
+      ? [...PALETTE_ITEMS, ZATCA_PALETTE_ITEM]
+      : PALETTE_ITEMS);
 
   private i18nTick = signal(0);
 
@@ -337,7 +343,7 @@ export class ReceiptBuilderFormComponent implements OnInit, CanLeaveComponent {
       // initial snapshot is captured below, so the seeded template
       // reads as the not-dirty baseline; only edits the user makes
       // afterwards flip `isDirty` on.
-      this.template.set(DEFAULT_TEMPLATE(queryType === 'kitchen' ? 'kitchen' : 'recieptType'));
+      this.template.set(DEFAULT_TEMPLATE(queryType === 'kitchen' ? 'kitchen' : 'reciept'));
     }
     this.snapshot.set(JSON.stringify(this.template()));
     // Drop selection + history — the loaded state is the new "epoch"
@@ -476,7 +482,7 @@ export class ReceiptBuilderFormComponent implements OnInit, CanLeaveComponent {
     catch { /* swallow */ }
   }
 
-  /** Switch the new template's type (recieptType ↔ kitchen). Always
+  /** Switch the new template's type (reciept ↔ kitchen). Always
    *  destructive — the saved data shape diverges between the two
    *  (kitchen has its own default elements + the line-options block
    *  carries different toggles), so we don't try to migrate. The
@@ -661,6 +667,10 @@ export class ReceiptBuilderFormComponent implements OnInit, CanLeaveComponent {
     const k = ev.key.toLowerCase();
     if (k === 'z' && !ev.shiftKey)               { ev.preventDefault(); this.undo(); }
     else if ((k === 'z' && ev.shiftKey) || k === 'y') { ev.preventDefault(); this.redo(); }
+    else if (k === 's') {
+      ev.preventDefault();
+      if (!this.saving() && !this.loading() && this.isDirty() && this.template().name.trim()) void this.save();
+    }
   }
 
   /** CDK drop on the canvas list. Two flows fold into one handler:
@@ -706,7 +716,7 @@ export class ReceiptBuilderFormComponent implements OnInit, CanLeaveComponent {
     // splice a fresh element in at the drop position so the user
     // lands the new tile exactly where they let go.
     const data = event.item.data as { paletteId?: string } | undefined;
-    const item = this.paletteItems.find((p) => p.id === data?.paletteId);
+    const item = this.paletteItems().find((p) => p.id === data?.paletteId);
     if (!item) return;
     this.captureBefore(`Add ${item.id}`, `add:${Date.now()}`);
     const fresh = item.factory();
@@ -764,6 +774,57 @@ export class ReceiptBuilderFormComponent implements OnInit, CanLeaveComponent {
     } finally {
       this.saving.set(false);
     }
+  }
+
+  /** Download the elements as a plain JSON array, the same file the legacy builder exports. */
+  exportJson(): void {
+    const json = JSON.stringify(this.template().recieptTemplate.map(elementToWire));
+    const a = document.createElement('a');
+    a.href = 'data:text/json;charset=UTF-8,' + encodeURIComponent(json);
+    a.download = 'receipt-template.json';
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  /** Opens the file picker; asks first when there are unsaved changes, as the legacy builder does. */
+  async importJson(input: HTMLInputElement): Promise<void> {
+    if (this.isDirty()) {
+      const ok = await this.confirm({
+        title:   this.translate.instant('COMMON.UNSAVED_TITLE'),
+        message: this.translate.instant('RECEIPT_BUILDER.JSON.CONFIRM_REPLACE'),
+        confirm: this.translate.instant('RECEIPT_BUILDER.JSON.IMPORT'),
+        danger:  true,
+      });
+      if (!ok) return;
+    }
+    input.click();
+  }
+
+  onJsonFileSelected(ev: Event): void {
+    const input = ev.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    const reset = () => { input.value = ''; };
+    if (!file.name.toLowerCase().endsWith('.json')) { this.toast.error('RECEIPT_BUILDER.JSON.NOT_JSON'); reset(); return; }
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(String(reader.result));
+        if (!Array.isArray(data) || data.length === 0) throw new Error('empty');
+        const elements = parseElements(data.map(elementFromWire));
+        this.captureBefore('Imported JSON template', `import:${Date.now()}`);
+        this.template.update((t) => ({ ...t, recieptTemplate: elements }));
+        this.selectedKey.set('');
+        this.toast.success('RECEIPT_BUILDER.JSON.IMPORTED');
+      } catch {
+        this.toast.error('RECEIPT_BUILDER.JSON.INVALID');
+      }
+      reset();
+    };
+    reader.onerror = () => { this.toast.error('RECEIPT_BUILDER.JSON.INVALID'); reset(); };
+    reader.readAsText(file);
   }
 
   async cancel(): Promise<void> {

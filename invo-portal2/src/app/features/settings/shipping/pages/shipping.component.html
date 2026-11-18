@@ -32,6 +32,7 @@
   @for (zone of groupedZones(); track trackZone($index, zone)) {
     <section class="zone">
       <header class="zone__head">
+        <span class="ico ico--blue ico--lg" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>
         <div class="zone__name-wrap">
           <label class="field">
             <span class="field__label">{{ 'SHIPPING.ZONE.NAME' | translate }}</span>
@@ -64,7 +65,7 @@
       <!-- Countries strip -->
       <div class="zone__countries">
         <div class="zone__countries-row">
-          <strong>{{ 'SHIPPING.ZONE.COUNTRIES' | translate }}</strong>
+          <strong class="zone__title"><span class="ico ico--teal" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>{{ 'SHIPPING.ZONE.COUNTRIES' | translate }}</strong>
           <button type="button" class="btn btn-default btn-sm" (click)="editCountries(zone.id)">
             {{ (zone.countries.length === 0 ? 'SHIPPING.ZONE.PICK_COUNTRIES' : 'SHIPPING.ZONE.EDIT_COUNTRIES') | translate }}
           </button>
@@ -86,7 +87,7 @@
       <!-- Rates -->
       <div class="zone__rates">
         <header class="zone__rates-head">
-          <strong>{{ 'SHIPPING.RATES.TITLE' | translate }}</strong>
+          <strong class="zone__title"><span class="ico ico--amber" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></span>{{ 'SHIPPING.RATES.TITLE' | translate }}</strong>
           <button type="button" class="btn btn-default btn-sm" (click)="addRateGroup(zone.id)">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
@@ -115,6 +116,7 @@
                   <circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/>
                 </svg>
               </button>
+              <span class="ico ico--teal" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></span>
               <strong class="svc__name">{{ service.name || '—' }}</strong>
               @if (availableTypes(zone, service.name).length > 0 && service.name) {
                 <button type="button" class="btn btn-default btn-sm" (click)="addTypeToService(zone.id, service.name)">
@@ -175,11 +177,11 @@
                 <header class="rg__head">
                   <div class="rg__head-info">
                     <span class="rg__name">{{ group.name || ('—') }}</span>
-                    <span class="rg__type">
+                    <span class="rg__type" [attr.data-type]="group.type">
                       {{ ('SHIPPING.RATES.TYPE_' + group.type.toUpperCase()) | translate }}
                     </span>
                     @if (group.note) {
-                      <span class="rg__note">· {{ group.note }}</span>
+                      <span class="rg__note"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.5 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.5z"/><polyline points="15 3 15 9 21 9"/></svg> {{ group.note }}</span>
                     }
                   </div>
                   <button type="button" class="icon-btn" (click)="startEditGroup(zone.id, group)"
