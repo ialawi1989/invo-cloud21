@@ -30,7 +30,7 @@
   // sections.
   &--classic {
     padding: 1cm;
-    overflow: hidden;     // ribbon clips to the corner
+    overflow: visible;    // the ribbon's folded corners sit 5px past the corner
   }
 
   // Terms & Conditions as its own separate page (footerCustomization.termAsSeparatePage) — a
@@ -57,57 +57,109 @@
     overflow: visible !important;
   }
 
-  // ── Status ribbon (top-right corner) ─────────────────────────
-  // Diagonal banner used by the legacy paper to flag Issued/Paid/
-  // Voided status. Pinned to the top-right; the parent `.dp` clips.
+  // ── Status ribbon (top-left corner, as the legacy paper) ─────
+  // Legacy `status-ribbon`: a 96x94 box pinned 5px past the paper's corner, holding a 135px band turned -45deg, with a folded
+  // corner at each end. The band is 20px thick, so where it crosses the box's top and left edges the geometry is fixed:
+  // its lower edge meets the top edge at x = 84.64 and the left edge at y = 84.64. Each fold is a 5px dark right triangle
+  // tucked there (the 5px the box overhangs the paper). The paper must not clip it. In a right-to-left paper it mirrors.
   &__ribbon {
+    --fold: #3047b5;
     position: absolute;
-    top: 18px;
-    inset-inline-end: -42px;
-    width: 160px;
-    padding: 4px 0;
-    background: var(--color-brand-500);
-    color: #fff;
-    text-align: center;
-    font-size: 9.5pt;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    transform: rotate(40deg);
-    z-index: 5;
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.18);
+    top: -5px;
+    left: -5px;
+    width: 96px;
+    height: 94px;
+    z-index: 55;
+    pointer-events: none;
 
-    &--paid   { background: #16a34a; }
-    &--voided { background: #b91c1c; }
+    &::before, &::after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 0;
+      border-left: 5px solid transparent;
+      border-bottom: 5px solid var(--fold);
+    }
+    &::before { top: 0; left: 79.64px; }
+    &::after { top: 79.64px; left: 0; }
+
+    &.dp__ribbon--draft { --fold: #1a1f24; }
+    &.dp__ribbon--paid { --fold: #538f16; }
+    &.dp__ribbon--partial { --fold: #c58d2d; }
+    &.dp__ribbon--partconv { --fold: #1d4ed8; }
+    &.dp__ribbon--fullconv { --fold: #166534; }
+    &.dp__ribbon--open { --fold: #3047b5; }
+    &.dp__ribbon--void { --fold: #3787cc; }
+    &.dp__ribbon--closed { --fold: #c44141; }
+    &.dp__ribbon--writeoff { --fold: #474c63; }
   }
+  // The band: clipped to the box's edges, so it ends exactly where the folds start.
+  &__ribbon-clip {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+  &__ribbon-inner {
+    position: absolute;
+    top: 24px;
+    left: -31px;
+    width: 135px;
+    height: 20px;
+    line-height: 20px;
+    padding: 0;
+    text-align: center;
+    color: #fff;
+    font-size: 9.5pt;
+    transform: rotate(-45deg);
+    background-color: #32acc1;
+
+    &.dp__ribbon--draft { background-color: #495057; }
+    &.dp__ribbon--paid { background-color: #74b72e; }
+    &.dp__ribbon--partial { background-color: #f1b44c; }
+    &.dp__ribbon--partconv { background-color: #dbeafe; color: #1d4ed8; }
+    &.dp__ribbon--fullconv { background-color: #dcfce7; color: #166534; }
+    &.dp__ribbon--open { background-color: #32acc1; }
+    &.dp__ribbon--void { background-color: #50a5f1; }
+    &.dp__ribbon--closed { background-color: #f46a6a; }
+    &.dp__ribbon--writeoff { background-color: #74788d; }
+  }
+  // Right-to-left paper: the ribbon mirrors to the top-right corner.
+  :host-context([dir='rtl']) &__ribbon { left: auto; right: -5px; }
+  :host-context([dir='rtl']) &__ribbon::before { left: auto; right: 79.64px; border-left: 0; border-right: 5px solid transparent; }
+  :host-context([dir='rtl']) &__ribbon::after { left: auto; right: 0; border-left: 0; border-right: 5px solid transparent; }
+  :host-context([dir='rtl']) &__ribbon-inner { left: auto; right: -31px; transform: rotate(45deg); }
 
   // ── Header ────────────────────────────────────────────────────
   &__header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    gap: 16px;
-    padding-bottom: 12px;
-    border-bottom: 2px solid var(--color-brand-500);
+    gap: 24px;
+    // The legacy rule under the header: a thin, light line (Bootstrap `hr`) with a rem of air around it.
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.25);
   }
 
+  // Logo, company name and VAT number stack on the leading side.
   &__header-left {
     display: flex;
-    gap: 16px;
-    flex: 1;
+    flex-direction: column;
+    align-items: flex-start;
+    flex: 0 1 auto;
     min-width: 0;
+    > .dp__logo { margin-bottom: 1rem; }
   }
 
+  // Title, branch name, address and phone stack on the trailing side (about half the width, as legacy `w-50`).
   &__header-right {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 6px;
     text-align: end;
-    font-size: 9pt;
-    color: #64748b;
-    flex-shrink: 0;
+    flex: 0 1 50%;
     min-width: 0;
+    color: inherit;
   }
 
   // ── Paginated print preview ─────────────────────────────────
@@ -260,7 +312,7 @@
     flex-direction: column;
     gap: 2px;
 
-    &-name { font-weight: 700; }
+    &-name { margin: 0; }
   }
 
   // ── Title ────────────────────────────────────────────────────
@@ -360,9 +412,9 @@
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    margin: 16px 0 6px;
-    padding-bottom: 4px;
-    border-bottom: 1px solid #e5e7eb;
+    // Legacy: `py-2 mt-3` — a rem above, half a rem of padding, and no rule under it.
+    margin: 1rem 0 0;
+    padding: 0.5rem 0;
     font-size: 10pt;
 
     > strong { color: #1f2937; }
@@ -390,12 +442,15 @@
       text-align: start;
       font-weight: 600;
       font-size: 9pt;
+      vertical-align: middle;
     }
+    // Legacy (Bootstrap `.table`): cells align to the TOP, so the row number, qty and amounts line up with the item name
+    // instead of floating in the middle of a tall description; no zebra stripes.
     td {
       padding: 8px 10px;
-      border-bottom: 1px solid #f3f4f6;
+      border-bottom: 1px solid #eff2f7;
+      vertical-align: top;
     }
-    tbody tr:nth-child(even) { background: #fafafa; }
   }
 
   &__col-num { text-align: end; }
@@ -428,6 +483,8 @@
 
     &-name { color: inherit; }
 
+    &-created { color: #6c757d; font-size: 80%; }
+
     &-options {
       display: flex;
       flex-wrap: wrap;
@@ -443,8 +500,9 @@
     margin-inline-start: auto;
     width: 41.666667%;
     padding: 1rem;
-    border: 1px solid #eff2f7;
-    border-radius: 0.25rem;
+    border: 1px solid #d3d3d3;
+    border-radius: 0.75rem;
+    box-shadow: 0 0.0625rem 0 0 #1a1a1a12;
     font-size: 9.5pt;
   }
 
@@ -464,8 +522,9 @@
     width: 41.666667%;
     padding: 1rem;
     background: #fcf0da;
-    border: 1px solid #eff2f7;
-    border-radius: 0.25rem;
+    border: 1px solid #d3d3d3;
+    border-radius: 0.75rem;
+    box-shadow: 0 0.0625rem 0 0 #1a1a1a12;
     color: #1f2937;
     font-size: 9.5pt;
   }
@@ -655,3 +714,8 @@
     &--striped { background: #fafafa; }
   }
 }
+
+// Screen-only notes (legacy `d-print-none`) and the package / menu sub-items under a line.
+.dp__no-print { @media print { display: none !important; } }
+.dp__subitems { display: flex; flex-direction: column; gap: 0.25rem; margin-top: 0.25rem; }
+.dp__subitem { font-size: 13px; }

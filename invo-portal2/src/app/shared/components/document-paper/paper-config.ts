@@ -234,13 +234,9 @@ export const PAPER_LAYOUT: Record<DocumentType, PaperLayoutConfig> = {
     // Tax-exclusive invoices also lose the "TAX" prefix so the legal
     // wording matches the actual line treatment.
     getDynamicTitle: (data) => {
-      const inv = (data['invoice'] as Record<string, unknown>) ?? {};
-      const status = String(inv['status'] ?? '').toUpperCase();
-      const isInclusive = inv['isInclusiveTax'] === true;
-      const base = isInclusive ? 'INVOICE' : 'TAX INVOICE';
-      if (status === 'VOIDED' || status === 'CANCELLED') return `${base} — VOIDED`;
-      if (status === 'PAID') return `${base} — PAID`;
-      return base;
+      // Legacy: a tax invoice when any line carries a tax, a plain invoice otherwise (the status shows in the ribbon).
+      const lines = Array.isArray(data['lines']) ? (data['lines'] as Array<Record<string, unknown>>) : [];
+      return lines.some((l) => !!l['taxId']) ? 'Tax Invoice' : 'Invoice';
     },
     dataModel: {
       documentNumberField: 'invoiceNumber',

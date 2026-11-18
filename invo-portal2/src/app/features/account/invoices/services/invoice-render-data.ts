@@ -17,6 +17,7 @@ const mapLine = (l: InvoiceLine): Record<string, unknown> => ({
   price: l.price,
   taxRate: l.taxPercentage,
   tax: l.taxTotal,
+  taxId: l.taxId ?? '',
   discount: l.discountedAmount,
   total: l.total,
   barcode: l.selectedItem?.barcode ?? '',
@@ -24,6 +25,14 @@ const mapLine = (l: InvoiceLine): Record<string, unknown> => ({
   options: (l.options ?? []).map(o => ({ name: o.optionName || o.note, price: o.price })),
   discountedByCoupon: !!l.discountedByCoupon,
   voidedItems: (l.voidedItems ?? []).map(mapLine),
+  // shown under the item as the legacy paper does: when the line was added, batch / serial, and a package's picked items
+  createdAt: l.lineCreatedAt ? new Date(l.lineCreatedAt).toISOString() : '',
+  batch: l.batch ?? '',
+  serial: l.serial ?? '',
+  subItems: (l.subItems ?? []).map((s: any) => ({
+    name: s.selectedItem?.name || s.note || '',
+    options: (s.options ?? []).map((o: any) => ({ name: o.optionName || o.note || '' })),
+  })),
 });
 
 /**
@@ -71,8 +80,9 @@ export function invoiceToRenderData(inv: Invoice): DocumentRenderData {
       referenceNumber: p.referenceNumber ?? '',
     })),
     totals: {
-      subtotal: inv.itemTotalWithoutTax,
-      discount: inv.discountTotal,
+      // An inclusive-tax invoice prints its items total and discount with the tax in them (the labels then say "(inc)").
+      subtotal: inv.isInclusiveTax ? (inv.itemTotalWithTax ?? inv.itemTotalWithoutTax) : inv.itemTotalWithoutTax,
+      discount: inv.isInclusiveTax ? (inv.discountTotalWithTax ?? inv.discountTotal) : inv.discountTotal,
       vat: inv.invoiceTaxTotal,
       charge: inv.chargeTotal,
       delivery: inv.deliveryCharge,

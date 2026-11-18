@@ -174,7 +174,7 @@ export class DocumentPaperComponent {
   private mergedData = computed<DocumentRenderData>(() => {
     const base = this.data() ?? {};
     const company = this.companies.currentCompany() as
-      | { name?: string; vat?: string; address?: string; phone?: string;
+      | { name?: string; vat?: string; vatNumber?: string; address?: string; phone?: string;
           logo?: string; logoUrl?: string; mediaUrl?: { defaultUrl?: string } }
       | null;
     if (!company) return base;
@@ -189,7 +189,7 @@ export class DocumentPaperComponent {
       company: {
         ...sampleCompany,
         name:    company.name    || sampleCompany['name']    || '',
-        vat:     company.vat     || sampleCompany['vat']     || '',
+        vat:     company.vat     || company.vatNumber || (this.companies.settings() as any)?.vatNumber || sampleCompany['vat'] || '',
         address: company.address || sampleCompany['address'] || '',
         phone:   company.phone   || sampleCompany['phone']   || '',
         logo:    realLogo        || sampleCompany['logo']    || '',
@@ -202,6 +202,9 @@ export class DocumentPaperComponent {
    *  the *other* renderer would look without flipping the saved
    *  flag. Defaults to `null` (use template's flag). */
   forceMode = input<'classic' | 'designer' | null>(null);
+
+  /** The builder's live preview shows every configured total row; a real document hides the empty (zero) ones, as the legacy paper does. */
+  builderMode = input<boolean>(false);
 
   /** Render the Classic content as paginated A4 pages — Word/PDF
    *  viewer style. The company header repeats on every page; the
@@ -364,6 +367,24 @@ export class DocumentPaperComponent {
 
   /** Style helper for a TextStyle block — same shape both renderers
    *  use. Keeps the inline-style noise out of the template. */
+  /** `dd/MM/yyyy HH:mm`, as the legacy paper prints a line's creation time. */
+  fmtDateTime(v: unknown): string {
+    const d = new Date(v as string);
+    if (isNaN(d.getTime())) return '';
+    const p = (n: number) => String(n).padStart(2, '0');
+    return `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`;
+  }
+
+  /** The picked items of a package / menu line, with the names of their options. */
+  subItemsOf(line: Record<string, unknown>): Array<{ name: string; options: string[] }> {
+    const list = line['subItems'];
+    if (!Array.isArray(list)) return [];
+    return list.map((s: any) => ({
+      name: String(s?.name ?? ''),
+      options: Array.isArray(s?.options) ? s.options.map((o: any) => String(o?.name ?? '')).filter(Boolean) : [],
+    }));
+  }
+
   /** The barcode badge style of the template (colours, size), as the legacy paper applied it. */
   barcodeCfg(): any { return (this.template() as any).transactionalDetailsCustomization?.['barcode']; }
 
@@ -404,6 +425,8 @@ export class DocumentPaperComponent {
     const label = (style.label && style.label.trim()) || cfg.label;
     const token = FIELD_TOKEN[cfg.id];
     const value = token ? this.r(token) : '';
+    // Legacy `shouldShowField`: on a real document a field with no value is not printed (Reference, Sales Person, Customer VAT…).
+    if (!this.builderMode() && (value == null || String(value).trim() === '')) return null;
     return { id: cfg.id, label, value, style };
   }
 
@@ -437,6 +460,7 @@ export class DocumentPaperComponent {
     const list = this.template().headerCustomization.customFields ?? [];
     return list
       .filter((e) => e.style.show !== false)
+      .filter((e) => this.builderMode() || this.cfValueFor('branch', e.abbr) !== '')
       .map((e) => this.buildCustomFieldRow('branch', e));
   });
 
@@ -444,6 +468,7 @@ export class DocumentPaperComponent {
     const list = this.template().transactionalDetailsCustomization.customFields ?? [];
     return list
       .filter((e) => e.style.show !== false)
+      .filter((e) => this.builderMode() || this.cfValueFor('entity', e.abbr) !== '')
       .map((e) => this.buildCustomFieldRow('entity', e));
   });
 
@@ -543,8 +568,13 @@ export class DocumentPaperComponent {
       if (allow.size > 0 && !allow.has(String(c.id))) continue;
       const style = tt[c.id] as TextStyle;
       if (!style || !style.show) continue;
-      const label = (style.label && style.label.trim()) || c.defaultLabel;
-      out.push({ id: String(c.id), label, value: 'BHD ' + num(totals[c.sourceKey]), style });
+      let label = (style.label && style.label.trim()) || c.defaultLabel;
+      // An empty row is not printed on a real document (legacy `value != null && value !== 0`).
+      const raw = totals[c.sourceKey];
+      if (!this.builderMode() && (raw == null || Number(raw) === 0)) continue;
+      // An inclusive-tax invoice shows its items total, tax and discount with the tax in them.
+      if (this.isInclusiveTax() && this.template().documentType === 'invoice' && ['itemTotal', 'taxTotal', 'discount'].includes(String(c.id))) label += ' (inc)';
+      out.push({ id: String(c.id), label, value: 'BHD ' + num(raw), style });
     }
     return out;
   });
@@ -563,6 +593,8 @@ export class DocumentPaperComponent {
     ];
     const out: PaperTotalRow[] = [];
     for (const c of candidates) {
+      // Legacy prints one row per actual payment (rendered from `paymentEntries()`), never a summary "Payment Methods" line.
+      if (c.id === 'paymentMethods') continue;
       const style = pt[c.id] as TextStyle;
       if (!style || !style.show) continue;
       const label = (style.label && style.label.trim()) || c.defaultLabel;
@@ -729,6 +761,21 @@ export class DocumentPaperComponent {
   /** Document status (`Issued` / `Paid` / `Voided` / …) — drives the
    *  status ribbon in the top-right corner. Matches legacy
    *  `data.status`. */
+  /** The ribbon colour class of the status, as the legacy `status-ribbon` maps it. */
+  ribbonClass(): string {
+    switch (this.documentStatus().trim().toLowerCase()) {
+      case 'draft': return 'dp__ribbon--draft';
+      case 'paid': return 'dp__ribbon--paid';
+      case 'partially paid': return 'dp__ribbon--partial';
+      case 'partially converted': return 'dp__ribbon--partconv';
+      case 'fully converted': return 'dp__ribbon--fullconv';
+      case 'void': case 'voided': return 'dp__ribbon--void';
+      case 'closed': return 'dp__ribbon--closed';
+      case 'writeoff': return 'dp__ribbon--writeoff';
+      default: return 'dp__ribbon--open';
+    }
+  }
+
   documentStatus = computed<string>(() =>
     String((this.data()['invoice'] as Record<string, unknown> | undefined)?.['status'] ?? ''),
   );

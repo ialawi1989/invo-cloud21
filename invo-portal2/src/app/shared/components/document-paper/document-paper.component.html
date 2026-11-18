@@ -64,11 +64,7 @@
                [style.background]="template().BackgroundColor || '#fff'">
 
             @if (page.isFirst && documentStatus()) {
-              <div class="dp__ribbon"
-                   [class.dp__ribbon--paid]="documentStatus().toLowerCase() === 'paid'"
-                   [class.dp__ribbon--voided]="documentStatus().toLowerCase() === 'voided'">
-                {{ documentStatus() }}
-              </div>
+              <div class="dp__ribbon" [class]="'dp__ribbon ' + ribbonClass()"><div class="dp__ribbon-clip"><div class="dp__ribbon-inner" [class]="'dp__ribbon-inner ' + ribbonClass()">{{ documentStatus() }}</div></div></div>
             }
 
             <!-- Page header — repeats on every printed page. -->
@@ -128,11 +124,7 @@
     } @else {
       <!-- ═══ Single-paper Classic (default) ═════════════════════ -->
       @if (documentStatus()) {
-        <div class="dp__ribbon"
-             [class.dp__ribbon--paid]="documentStatus().toLowerCase() === 'paid'"
-             [class.dp__ribbon--voided]="documentStatus().toLowerCase() === 'voided'">
-          {{ documentStatus() }}
-        </div>
+        <div class="dp__ribbon" [class]="'dp__ribbon ' + ribbonClass()"><div class="dp__ribbon-clip"><div class="dp__ribbon-inner" [class]="'dp__ribbon-inner ' + ribbonClass()">{{ documentStatus() }}</div></div></div>
       }
       <ng-container *ngTemplateOutlet="classicHeaderTpl"/>
       <ng-container *ngTemplateOutlet="classicMetaFieldsTpl"/>
@@ -315,7 +307,8 @@
      full component split. -->
 
 <ng-template #classicHeaderTpl>
-    <!-- Header -->
+    <!-- Header — the legacy `paper-header`: logo with the company name and VAT number under it on the leading side; the title
+         with the branch name, address and phone on the trailing side; a thin rule below. -->
     @if (template().headerCustomization.visibility.visible) {
       <header class="dp__header">
         <div class="dp__header-left">
@@ -331,71 +324,47 @@
               }
             </div>
           }
-          <div class="dp__company">
-            @if (template().headerCustomization.companyName.show) {
-              <div class="dp__company-name" [ngStyle]="textStyle(template().headerCustomization.companyName)">{{ r('{{company.name}}') }}</div>
-            }
-            @if (template().headerCustomization.vatNumber.show) {
-              <div [ngStyle]="textStyle(template().headerCustomization.vatNumber)">
-                @if (template().headerCustomization.vatNumber.showLabel !== false) {
-                  <strong [style.color]="template().headerCustomization.vatNumber.labelColor || 'inherit'">{{ (template().headerCustomization.vatNumber.label && template().headerCustomization.vatNumber.label.trim()) || 'VAT' }}:</strong>
-                }
-                {{ r('{{company.vat}}') }}
-              </div>
-            }
-            <!-- Branch name — labelled separately from the company line
-                 so a tenant with multiple branches surfaces "Branch: Main"
-                 cleanly. Reads `{{branch.name}}` from data; falls back to
-                 the company name token when no branch data is present. -->
-            @if (template().headerCustomization.name.show) {
-              <div [ngStyle]="textStyle(template().headerCustomization.name)">
-                @if (template().headerCustomization.name.showLabel !== false) {
-                  <strong [style.color]="template().headerCustomization.name.labelColor || 'inherit'">{{ (template().headerCustomization.name.label && template().headerCustomization.name.label.trim()) || 'Branch' }}:</strong>
-                }
-                {{ r('{{branch.name}}') || r('{{company.name}}') }}
-              </div>
-            }
-            @if (template().headerCustomization.address.show) {
-              <div [ngStyle]="textStyle(template().headerCustomization.address)">
-                @if (template().headerCustomization.address.showLabel !== false && template().headerCustomization.address.label && template().headerCustomization.address.label.trim()) {
-                  <strong [style.color]="template().headerCustomization.address.labelColor || 'inherit'">{{ template().headerCustomization.address.label }}:</strong>
-                }
-                {{ r('{{company.address}}') }}
-              </div>
-            }
-            @if (template().headerCustomization.phone.show) {
-              <div [ngStyle]="textStyle(template().headerCustomization.phone)">
-                <strong [style.color]="template().headerCustomization.phone.labelColor || 'inherit'">{{ (template().headerCustomization.phone.label && template().headerCustomization.phone.label.trim()) || 'Tel' }}:</strong>
-                {{ r('{{company.phone}}') }}
-              </div>
-            }
-            <!-- Branch custom fields — tenant-defined extras (e.g.
-                 "Tax Office", "Branch License") that sit alongside
-                 the company info. Styled per-row from the template. -->
-            @for (cf of branchCustomFieldRows(); track cf.abbr) {
-              <div [ngStyle]="textStyle(cf.style)">
-                @if (cf.style.showLabel !== false) {
-                  <strong [style.color]="cf.style.labelColor || 'inherit'">{{ cf.label }}:</strong>
-                }
-                <span>{{ cf.value }}</span>
-              </div>
-            }
-          </div>
+          @if (template().headerCustomization.companyName.show) {
+            <h4 class="dp__company-name" [ngStyle]="textStyle(template().headerCustomization.companyName)">{{ r('{{company.name}}') }}</h4>
+          }
+          @if (template().headerCustomization.vatNumber.show && r('{{company.vat}}')) {
+            <div [ngStyle]="textStyle(template().headerCustomization.vatNumber)">
+              <strong [style.color]="template().headerCustomization.vatNumber.labelColor || 'inherit'">{{ (template().headerCustomization.vatNumber.label && template().headerCustomization.vatNumber.label.trim()) || 'Vat number' }}: </strong>
+              {{ r('{{company.vat}}') }}
+            </div>
+          }
         </div>
         <div class="dp__header-right">
-          <!-- Document title sits inside the header row on the trailing
-               edge — matches the legacy paper where "Invoice" /
-               "Tax Invoice" / etc. is the prominent banner at the top
-               next to the logo, not a centred subhead below the
-               company info. The user can re-style / re-align via
-               Header → Title in the form. -->
           @if (template().headerCustomization.title.show) {
-            <h1 class="dp__title" [ngStyle]="textStyle(template().headerCustomization.title)">{{ titleLabel() }}</h1>
+            <h4 class="dp__title" [ngStyle]="textStyle(template().headerCustomization.title)">{{ titleLabel() }}</h4>
           }
-          <div class="dp__header-meta">
-            <div><strong>#{{ r('{{invoice.number}}') }}</strong></div>
-            <div>{{ r('{{invoice.date}}') }}</div>
-          </div>
+          @if (template().headerCustomization.name.show && r('{{branch.name}}')) {
+            <div [ngStyle]="textStyle(template().headerCustomization.name)">
+              <strong [style.color]="template().headerCustomization.name.labelColor || 'inherit'">{{ (template().headerCustomization.name.label && template().headerCustomization.name.label.trim()) || 'Branch' }}: </strong>
+              {{ r('{{branch.name}}') }}
+            </div>
+          }
+          @if (template().headerCustomization.address.show && r('{{branch.address}}')) {
+            <div [ngStyle]="textStyle(template().headerCustomization.address)">
+              <strong [style.color]="template().headerCustomization.address.labelColor || 'inherit'">{{ (template().headerCustomization.address.label && template().headerCustomization.address.label.trim()) || 'Branch Address' }}: </strong>
+              {{ r('{{branch.address}}') }}
+            </div>
+          }
+          @if (template().headerCustomization.phone.show && r('{{branch.phone}}')) {
+            <div [ngStyle]="textStyle(template().headerCustomization.phone)">
+              <strong [style.color]="template().headerCustomization.phone.labelColor || 'inherit'">{{ (template().headerCustomization.phone.label && template().headerCustomization.phone.label.trim()) || 'Phone' }}: </strong>
+              {{ r('{{branch.phone}}') }}
+            </div>
+          }
+          <!-- Branch custom fields — tenant-defined extras that sit with the branch info. -->
+          @for (cf of branchCustomFieldRows(); track cf.abbr) {
+            <div [ngStyle]="textStyle(cf.style)">
+              @if (cf.style.showLabel !== false) {
+                <strong [style.color]="cf.style.labelColor || 'inherit'">{{ cf.label }}: </strong>
+              }
+              <span>{{ cf.value }}</span>
+            </div>
+          }
         </div>
       </header>
     } @else {
@@ -533,6 +502,9 @@
                       @if (ln['uom']) {
                         <span class="dp__badge dp__badge--info">{{ ln['uom'] }}</span>
                       }
+                      @if (ln['createdAt'] && template().documentType === 'invoice') {
+                        <small class="dp__no-print dp__line-created">Created At: {{ fmtDateTime(ln['createdAt']) }}</small>
+                      }
                       @if (ln.options && ln.options.length) {
                         <div class="dp__line-options">
                           @for (opt of ln.options; track $index) {
@@ -547,6 +519,27 @@
                       }
                       @if (ln.note) {
                         <small class="app-product-note">{{ ln.note }}</small>
+                      }
+                      @if (ln['batch'] || ln['serial']) {
+                        <div class="dp__line-options">
+                          @if (ln['batch']) { <span class="dp__badge dp__badge--info">{{ ln['batch'] }}</span> }
+                          @if (ln['serial']) { <span class="dp__badge dp__badge--info">{{ ln['serial'] }}</span> }
+                        </div>
+                      }
+                      <!-- Package / menu selection: the picked items, each with its options as pills (legacy `line.subItems`). -->
+                      @if (subItemsOf(ln).length) {
+                        <div class="dp__subitems">
+                          @for (s of subItemsOf(ln); track $index) {
+                            <span class="dp__subitem">- {{ s.name }}</span>
+                            @if (s.options.length) {
+                              <div class="dp__line-options">
+                                @for (o of s.options; track $index) {
+                                  <span class="dp__badge dp__badge--info dp__badge--pill">{{ o }}</span>
+                                }
+                              </div>
+                            }
+                          }
+                        </div>
                       }
                       @if (ln['discountedByCoupon'] && lineCouponNotes()) {
                         <small class="app-product-note">discounted by coupon</small>
@@ -600,7 +593,7 @@
                [class.dp__totals-row--grand]="row.id === 'Total'"
                [ngStyle]="textStyle(row.style)">
             <span>{{ row.label }}</span>
-            <strong>{{ row.value }}</strong>
+            <span>{{ row.value }}</span>
           </div>
         }
       </div>
@@ -612,7 +605,7 @@
         @for (row of visiblePaymentRows(); track row.id) {
           <div class="dp__payments-row" [ngStyle]="textStyle(row.style)">
             <span>{{ row.label }}</span>
-            <strong>{{ row.value }}</strong>
+            <span>{{ row.value }}</span>
           </div>
         }
         <!-- Per-payment-method rows from `data.invoicePayments`.
@@ -624,7 +617,7 @@
               {{ p.method }}
               @if (p.ref) { <small> · Ref# {{ p.ref }}</small> }
             </span>
-            <strong>BHD {{ p.amount.toFixed(3) }}</strong>
+            <span>BHD {{ p.amount.toFixed(3) }}</span>
           </div>
         }
       </div>

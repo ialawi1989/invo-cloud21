@@ -130,13 +130,19 @@ export class CompanyService {
         this.http.get<any>(`${this.baseUrl}company/getCompaniesList`)
       );
       const raw: any[] = res?.data ?? [];
+      // The list carries the logo as the media-library object (`mediaUrl`), not as a plain `logo` / `logoUrl`.
+      const mediaLogo = (c: any): string | null => {
+        const m = c?.mediaUrl;
+        const url: string | undefined = m && typeof m === 'object' ? (m.thumbnail || m.defaultUrl || m.original) : undefined;
+        return url ?? null;
+      };
       const list: Company[] = raw.map(c => ({
+        ...c,
         id:      c.id,
         name:    c.name,
         slug:    c.slug,
-        logo:    c.logo ?? c.logoUrl ?? null,
-        logoUrl: c.logoUrl ?? c.logo ?? null,
-        ...c,
+        logo:    c.logo ?? c.logoUrl ?? mediaLogo(c),
+        logoUrl: c.logoUrl ?? c.logo ?? mediaLogo(c),
       }));
       list.sort((a, b) =>
         (b.id === currentCompanyId ? 1 : 0) - (a.id === currentCompanyId ? 1 : 0)

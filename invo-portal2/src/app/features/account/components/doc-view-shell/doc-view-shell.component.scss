@@ -171,7 +171,7 @@ app-doc-view-shell { display: flex; flex: 1; min-height: 0; overflow: hidden; }
 .dv-viewer { position: relative; flex: 0 0 auto; }
 .dv-viewer__anchor { position: sticky; height: 0; z-index: 5; display: flex; pointer-events: none;
   // `align-items: flex-start` — the default `stretch` would squash the bar to this anchor's 0 height.
-  &--top { top: 10px; justify-content: flex-start; align-items: flex-start; padding-inline-start: 10px; }
+  &--top { top: 10px; justify-content: flex-end; align-items: flex-start; padding-inline-end: 10px; }
   &--bottom { bottom: 22px; top: auto; justify-content: center; align-items: flex-end; }
   > * { pointer-events: auto; } }
 // The bottom anchor's content must grow upward from its sticky line, not downward past it.
