@@ -75,7 +75,7 @@ export class ElementsListComponent {
       case 'Line':     return '';
       case 'Spacer':   return `${el.height}px`;
       case 'Logo':     return '';
-      case 'Image':    return el.path || el.data || '';
+      case 'Image':    return el.path || (el.data?.startsWith('data:') ? '' : el.data) || '';
       case 'QrCode':   return el.value || '—';
       case 'Barcode':  return el.value || '—';
       case 'Table':    return this.tableSourceLabel(el.source);

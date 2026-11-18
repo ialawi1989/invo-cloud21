@@ -133,15 +133,17 @@
     color: #0f172a;
     flex-shrink: 0;
   }
-  &__item--selected &__type { color: var(--color-brand-700); }
+  &__item--selected &__type,
+  &__item--selected &__summary { color: var(--color-brand-700); }
 
   // The element's content snippet — truncated to a single line so a
   // long Text value doesn't blow out the rail width.
   &__summary {
     flex: 1;
     min-width: 0;
-    font-size: 10px;
-    color: #94a3b8;
+    font-size: 12px;
+    font-weight: 600;
+    color: #0f172a;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

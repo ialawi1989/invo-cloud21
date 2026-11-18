@@ -358,6 +358,21 @@
                 (tabReorder)="reorderTab('Logo', gi, $event)"
               >
                 @switch (activeTab('Logo', gi, group)) {
+                  @case ('content') {
+                    <div class="field">
+                      <label>{{ 'RECEIPT_BUILDER.EDITOR.COMPANY_LOGO' | translate }}</label>
+                      @if (companyLogoUrl(); as logoUrl) {
+                        <img class="logo-preview" [src]="logoUrl" alt="" />
+                      } @else {
+                        <small class="hint">{{ 'RECEIPT_BUILDER.EDITOR.NO_COMPANY_LOGO' | translate }}</small>
+                      }
+                      <small class="hint">{{ 'RECEIPT_BUILDER.EDITOR.COMPANY_LOGO_HINT' | translate }}</small>
+                    </div>
+                    <div class="row">
+                      <button type="button" class="btn btn-default btn-sm" (click)="changeCompanyLogo()">{{ 'RECEIPT_BUILDER.EDITOR.CHANGE_COMPANY_LOGO' | translate }}</button>
+                      <button type="button" class="btn btn-ghost btn-sm" (click)="reloadCompanyLogo()">{{ 'RECEIPT_BUILDER.EDITOR.RELOAD_LOGO' | translate }}</button>
+                    </div>
+                  }
                   @case ('size') {
                     <div class="row">
                       <div class="field">

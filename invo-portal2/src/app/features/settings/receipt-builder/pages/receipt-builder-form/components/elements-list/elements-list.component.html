@@ -100,10 +100,8 @@
             </svg>
           </span>
 
-          <span class="el-list__type">{{ ('RECEIPT_BUILDER.ELEMENTS.' + el.type) | translate }}</span>
-          @if (summary(el); as text) {
-            <span class="el-list__summary">{{ text }}</span>
-          }
+          <!-- The icon already says what the element is, so the row shows its content; the type name only stands in when there is none. -->
+          <span class="el-list__summary">{{ summary(el) || (('RECEIPT_BUILDER.ELEMENTS.' + el.type) | translate) }}</span>
         </button>
 
         <button

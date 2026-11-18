@@ -145,7 +145,7 @@ export class ElementEditorComponent {
     SideText: [['content'], ['typography'], ['visibility']],
     Line:     [['line-style'], ['padding']],
     Spacer:   [['size'], ['padding']],
-    Logo:     [['size'], ['alignment']],
+    Logo:     [['content'], ['size'], ['alignment']],
     Image:    [['content'], ['size'], ['alignment']],
     QrCode:   [['content'], ['size'], ['visibility']],
     Barcode:  [['content'], ['size'], ['visibility']],
@@ -519,6 +519,20 @@ export class ElementEditorComponent {
       ),
     );
     return out;
+  }
+
+  /** The company logo the receipt prints (`!preferences.logo`). It is set in Business settings, not on the receipt. */
+  companyLogoUrl(): string {
+    const c = this.companies.currentCompany() as { mediaUrl?: { defaultUrl?: string }; logoUrl?: string; logo?: string } | null;
+    return c?.mediaUrl?.defaultUrl || c?.logoUrl || c?.logo || '';
+  }
+
+  /** Business settings opens in a new tab, so the receipt being edited (and its unsaved changes) stays as it is. */
+  changeCompanyLogo(): void { window.open('/settings/business', '_blank', 'noopener'); }
+
+  /** Reloads the company, to show a logo that was just changed in the other tab. */
+  async reloadCompanyLogo(): Promise<void> {
+    try { await this.companies.loadSettings(true); } catch { /* keep the current logo */ }
   }
 
   /** Opens the media library; the picked image is converted to base64 so the template carries it inline (no external URL). */
