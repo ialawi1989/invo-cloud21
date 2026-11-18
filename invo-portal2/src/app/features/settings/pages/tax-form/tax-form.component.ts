@@ -1,3 +1,4 @@
+import { DragIconComponent } from '@shared/components/drag-icon/drag-icon.component';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -35,7 +36,7 @@ interface TaxOption { id: string; name: string; taxPercentage: number; }
 @Component({
   selector: 'app-tax-form',
   standalone: true,
-  imports: [
+  imports: [DragIconComponent, 
     CommonModule, RouterModule, FormsModule, ReactiveFormsModule, TranslateModule, CdkDropList, CdkDrag, CdkDragHandle,
     BreadcrumbsComponent, LoadingOverlayComponent, FormStickyFooterComponent, FormSkeletonComponent, SearchDropdownComponent, ToggleComponent,
   ],

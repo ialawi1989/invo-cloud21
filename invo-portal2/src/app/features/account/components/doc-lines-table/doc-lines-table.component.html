@@ -69,7 +69,7 @@
           @for (line of visibleLines(); track trackLine($index, line)) {
             @let err = errorsFor(line);
             <tr cdkDrag [cdkDragData]="line" [class.dl__row--voided]="line.isVoided" [class.dl__row--removed]="isRemoved(line)">
-              <td class="dl__handle-col"><span class="dl__handle" cdkDragHandle appTooltip="drag"><svg viewBox="0 0 512 512" width="12" height="12" fill="currentColor" aria-hidden="true"><circle cx="153.6" cy="451" r="61"/><circle cx="153.6" cy="256" r="61"/><circle cx="153.6" cy="61" r="61"/><circle cx="358.4" cy="256" r="61"/><circle cx="358.4" cy="61" r="61"/><circle cx="358.4" cy="451" r="61"/></svg></span></td>
+              <td class="dl__handle-col"><span class="dl__handle" cdkDragHandle appTooltip="drag"><app-drag-icon [size]="12"/></span></td>
               @if (bulkMode()) {
                 <td class="dl__check-col"><input type="checkbox" [checked]="isSelected(line)" (change)="toggleSelect(line)"/></td>
               }

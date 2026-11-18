@@ -1,3 +1,4 @@
+import { DragIconComponent } from '@shared/components/drag-icon/drag-icon.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -63,7 +64,7 @@ interface DeptOption { id: string; name: string; }
 @Component({
   selector: 'app-category-form',
   standalone: true,
-  imports: [FormSkeletonComponent, 
+  imports: [DragIconComponent, FormSkeletonComponent, 
     CommonModule,
     RouterModule,
     ReactiveFormsModule,

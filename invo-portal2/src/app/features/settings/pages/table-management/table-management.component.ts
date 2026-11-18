@@ -1,3 +1,4 @@
+import { DragIconComponent } from '@shared/components/drag-icon/drag-icon.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -133,7 +134,7 @@ interface CtxMenu {
 @Component({
   selector: 'app-table-management',
   standalone: true,
-  imports: [
+  imports: [DragIconComponent, 
     CommonModule,
     RouterModule,
     FormsModule,

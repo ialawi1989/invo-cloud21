@@ -74,7 +74,7 @@
               @for (c of children(); track c.taxId) {
                 <div class="child-item" cdkDrag>
                   <span class="child-item__grip" cdkDragHandle aria-hidden="true">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="8" x2="20" y2="8"/><line x1="4" y1="16" x2="20" y2="16"/></svg>
+                    <app-drag-icon [size]="16"/>
                   </span>
                   <span class="child-item__name">{{ c.name }}</span>
                   <span class="child-item__pct">{{ c.taxPercentage }}%</span>

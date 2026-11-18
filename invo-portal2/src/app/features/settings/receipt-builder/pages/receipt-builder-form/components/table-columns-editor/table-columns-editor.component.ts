@@ -1,3 +1,4 @@
+import { DragIconComponent } from '@shared/components/drag-icon/drag-icon.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -57,7 +58,7 @@ export interface ColumnSuggestion {
 @Component({
   selector: 'app-table-columns-editor',
   standalone: true,
-  imports: [TooltipDirective, 
+  imports: [DragIconComponent, TooltipDirective, 
     CommonModule,
     FormsModule,
     TranslateModule,

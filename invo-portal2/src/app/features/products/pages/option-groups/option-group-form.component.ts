@@ -1,3 +1,4 @@
+import { DragIconComponent } from '@shared/components/drag-icon/drag-icon.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -49,7 +50,7 @@ import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton
 @Component({
   selector: 'app-option-group-form',
   standalone: true,
-  imports: [FormSkeletonComponent, 
+  imports: [DragIconComponent, FormSkeletonComponent, 
     CommonModule,
     RouterModule,
     FormsModule,

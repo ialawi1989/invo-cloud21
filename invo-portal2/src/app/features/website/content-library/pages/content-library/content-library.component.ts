@@ -1,3 +1,4 @@
+import { DragIconComponent } from '@shared/components/drag-icon/drag-icon.component';
 import { Component, inject, signal, OnInit, OnDestroy, computed, HostListener, Injector } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
@@ -39,7 +40,7 @@ interface LocalView {
 @Component({
   selector: 'app-content-library',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TooltipDirective, BreadcrumbsComponent, ReferencePickerComponent, DropdownMenuBtnComponent],
+  imports: [DragIconComponent, CommonModule, FormsModule, RouterModule, TooltipDirective, BreadcrumbsComponent, ReferencePickerComponent, DropdownMenuBtnComponent],
   styles: [`
     /* ── Host — matches Media Manager theme ── */
     :host {
@@ -828,14 +829,7 @@ interface LocalView {
                       <td style="width:64px;padding:0;position:relative;overflow:visible" (click)="$event.stopPropagation()">
                         <div class="rcc">
                           <span class="drag-grip">
-                            <svg width="12" height="16" viewBox="0 0 12 16" fill="none">
-                              <circle cx="4" cy="2.5"  r="1.2" fill="#A8CAFF"/>
-                              <circle cx="8" cy="2.5"  r="1.2" fill="#A8CAFF"/>
-                              <circle cx="4" cy="8"    r="1.2" fill="#A8CAFF"/>
-                              <circle cx="8" cy="8"    r="1.2" fill="#A8CAFF"/>
-                              <circle cx="4" cy="13.5" r="1.2" fill="#A8CAFF"/>
-                              <circle cx="8" cy="13.5" r="1.2" fill="#A8CAFF"/>
-                            </svg>
+                            <app-drag-icon [size]="12"/>
                           </span>
                           <span class="rn rn-default">{{ i+1 }}</span>
                           <label class="chk-wrap rn-checkbox" (click)="$event.stopPropagation()">

@@ -1,3 +1,4 @@
+import { DragIconComponent } from '@shared/components/drag-icon/drag-icon.component';
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
@@ -39,7 +40,7 @@ interface DefaultOptionRow {
 @Component({
   selector: 'app-pf-default-options',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, DragDropModule],
+  imports: [DragIconComponent, CommonModule, ReactiveFormsModule, TranslateModule, DragDropModule],
   templateUrl: './default-options.component.html',
   styleUrl: './default-options.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

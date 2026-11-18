@@ -119,11 +119,9 @@
          layers below. Same shape as the receipt-builder rail so the
          visual language reads identically between editors. -->
     @if (!previewMode()) {
-    <aside class="lbf-palette">
-      <app-rbf-widget [title]="'LABEL_BUILDER.FORM.PALETTE' | translate" storageKey="lbf:palette">
-        <!-- Single-column list of horizontal-row tiles — icon on the
-             left, label on the right. CDK drop-list connects to the
-             canvas so palette items can be dragged onto it. -->
+    <aside class="lbf-rail">
+      <!-- Tools: icon-only tiles (the name is a tooltip), like the receipt builder. -->
+      <div class="lbf-tools">
         <ul class="lbf-palette__list" cdkDropList
           [cdkDropListData]="palette"
           [cdkDropListSortingDisabled]="true"
@@ -134,20 +132,17 @@
               [cdkDragData]="item">
               <button type="button" class="lbf-palette__tile"
                 (click)="onPaletteClick(item)"
+                [attr.aria-label]="item.i18nKey | translate"
                 [appTooltip]="item.i18nKey | translate">
                 <span class="lbf-palette__icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none"
                     stroke="currentColor" stroke-width="1.6"
                     stroke-linecap="round" stroke-linejoin="round">
                     <path [attr.d]="item.iconPath"/>
                   </svg>
                 </span>
-                <span class="lbf-palette__label">{{ item.i18nKey | translate }}</span>
               </button>
 
-              <!-- Drag preview clone — sits in <body> while dragged.
-                   Renders as a tighter, brand-tinted pill so the user
-                   can see what they picked up. -->
               <div *cdkDragPreview class="lbf-palette__preview">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
                   stroke="currentColor" stroke-width="1.8"
@@ -159,9 +154,139 @@
             </li>
           }
         </ul>
-        <p class="lbf-palette__hint">{{ 'LABEL_BUILDER.FORM.INSPECTOR.DROP_HINT' | translate }}</p>
-      </app-rbf-widget>
+      </div>
 
+      <!-- Layers: its own column next to the tools (resizable by the handle on its edge). -->
+      <div class="lbf-layers-col">
+      <app-rbf-widget [title]="('LABEL_BUILDER.FORM.LAYERS' | translate) + ' · ' + template().template.length"
+        storageKey="lbf:layers">
+        <ul class="lbf-layers"
+          cdkDropList
+          cdkDropListLockAxis="y"
+          (cdkDropListDropped)="onLayerDrop($event)">
+          @if (template().template.length === 0) {
+            <li class="lbf-layers__empty">
+              {{ 'LABEL_BUILDER.FORM.LAYERS_EMPTY' | translate }}
+            </li>
+          }
+          @for (el of template().template.slice().reverse(); track $index; let revIdx = $index) {
+            @let i = template().template.length - 1 - revIdx;
+            <li class="lbf-layer"
+              cdkDrag
+              cdkDragLockAxis="y"
+              [class.lbf-layer--selected]="isLayerSelected(i)"
+              [class.lbf-layer--focused]="selectedIndex() === i"
+              [class.lbf-layer--hidden]="el.hidden">
+              <!-- Drag handle — dotted 6-circle pattern matching
+                   the custom-fields manager. Always-visible at
+                   the leading edge, low contrast so it doesn't
+                   compete with the row content. -->
+              <span class="lbf-layer__handle" cdkDragHandle
+                [attr.aria-label]="'COMMON.DRAG_TO_REORDER' | translate"
+                [appTooltip]="'COMMON.DRAG_TO_REORDER' | translate"
+                (click)="$event.stopPropagation()">
+                <app-drag-icon/>
+              </span>
+
+              <!-- Eye — Photoshop-style visibility toggle. -->
+              <button type="button" class="lbf-layer__btn lbf-layer__btn--eye"
+                (click)="toggleHidden(i, $event)"
+                [appTooltip]="(el.hidden ? 'LABEL_BUILDER.FORM.LAYER_SHOW' : 'LABEL_BUILDER.FORM.LAYER_HIDE') | translate">
+                @if (el.hidden) {
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                    <line x1="1" y1="1" x2="23" y2="23"/>
+                  </svg>
+                } @else {
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                }
+              </button>
+
+              <!-- Main row button — receipt-builder `el-list__row`
+                   pattern. Becomes the click target for selecting
+                   the element; the icon + label are the only
+                   content so the click surface stays predictable. -->
+              <button type="button" class="lbf-layer__row"
+                (click)="selectElement(i, $event)">
+                <svg class="lbf-layer__icon"
+                  viewBox="0 0 24 24" width="14" height="14"
+                  fill="none" stroke="currentColor" stroke-width="1.6"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path [attr.d]="layerIconPath(el.type)"/>
+                </svg>
+                <span class="lbf-layer__label">{{ layerLabel(el) }}</span>
+              </button>
+
+              <!-- Action cluster — Lock / Duplicate / Delete sit
+                   pinned to the trailing edge. They fade in on row
+                   hover so the row reads cleanly at rest, matching
+                   the receipt-builder convention. -->
+              <span class="lbf-layer__actions">
+                <button type="button" class="lbf-layer__btn"
+                  (click)="toggleLocked(i, $event)"
+                  [appTooltip]="(el.locked ? 'LABEL_BUILDER.FORM.LAYER_UNLOCK' : 'LABEL_BUILDER.FORM.LAYER_LOCK') | translate">
+                  @if (el.locked) {
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="3" y="11" width="18" height="11" rx="2"/>
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                  } @else {
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="3" y="11" width="18" height="11" rx="2"/>
+                      <path d="M7 11V7a5 5 0 0 1 9.9-1"/>
+                    </svg>
+                  }
+                </button>
+                <button type="button" class="lbf-layer__btn"
+                  (click)="duplicateLayer(i, $event)"
+                  [appTooltip]="'COMMON.DUPLICATE' | translate">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2"/>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                  </svg>
+                </button>
+                <button type="button" class="lbf-layer__btn lbf-layer__btn--danger"
+                  (click)="deleteLayer(i, $event)"
+                  [appTooltip]="'COMMON.DELETE' | translate">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6"  y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
+              </span>
+            </li>
+          }
+        </ul>
+
+        <!-- Bulk-action bar — only rendered when 2+ layers are
+             selected (shift / cmd / ctrl click). Surfaces Delete
+             first because it's the most common bulk op; bar is
+             sticky-positioned so users can scroll the layers list
+             without losing access to the action. -->
+        @if (hasMultiSelection()) {
+          <div class="lbf-layers-bulkbar" role="toolbar"
+            [attr.aria-label]="'LABEL_BUILDER.FORM.LAYERS_BULK' | translate">
+            <span class="lbf-layers-bulkbar__count">
+              {{ 'COMMON.SELECTED_COUNT' | translate:{ count: selectedIndices().size } }}
+            </span>
+            <span class="lbf-layers-bulkbar__spacer"></span>
+            <button type="button" class="lbf-layers-bulkbar__btn lbf-layers-bulkbar__btn--danger"
+              (click)="deleteSelectedLayers()"
+              [appTooltip]="'COMMON.DELETE' | translate">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+              </svg>
+              {{ 'COMMON.DELETE' | translate }}
+            </button>
+          </div>
+        }
+      </app-rbf-widget>
+      </div>
     </aside>
     }
 
@@ -318,6 +443,17 @@
         }
       </div>
     </section>
+
+    @if (!previewMode()) {
+      <div
+        class="lbf-splitter lbf-splitter--layers"
+        [class.lbf-splitter--active]="layersSplitterDragging()"
+        [appTooltip]="'LABEL_BUILDER.FORM.RESIZE_PANEL' | translate"
+        role="separator"
+        aria-orientation="vertical"
+        (mousedown)="onLayersSplitterMouseDown($event)"
+      ></div>
+    }
 
     <!-- Vertical splitter — drag to resize the right rail. Lives
          absolute over the rail's leading edge (not inside the rail)
@@ -907,147 +1043,6 @@
         }
       </div>
 
-      <!-- Layers panel — moved to the right rail next to the
-           inspector (Figma / receipt-builder convention). Pinned at
-           the foot of the card, scrolls within itself so the editor
-           above always has room. Top entry = front-most on canvas. -->
-      <div class="lbf-inspector__layers">
-        <app-rbf-widget [title]="('LABEL_BUILDER.FORM.LAYERS' | translate) + ' · ' + template().template.length"
-          storageKey="lbf:layers">
-          <ul class="lbf-layers"
-            cdkDropList
-            cdkDropListLockAxis="y"
-            (cdkDropListDropped)="onLayerDrop($event)">
-            @if (template().template.length === 0) {
-              <li class="lbf-layers__empty">
-                {{ 'LABEL_BUILDER.FORM.LAYERS_EMPTY' | translate }}
-              </li>
-            }
-            @for (el of template().template.slice().reverse(); track $index; let revIdx = $index) {
-              @let i = template().template.length - 1 - revIdx;
-              <li class="lbf-layer"
-                cdkDrag
-                cdkDragLockAxis="y"
-                [class.lbf-layer--selected]="isLayerSelected(i)"
-                [class.lbf-layer--focused]="selectedIndex() === i"
-                [class.lbf-layer--hidden]="el.hidden">
-                <!-- Drag handle — dotted 6-circle pattern matching
-                     the custom-fields manager. Always-visible at
-                     the leading edge, low contrast so it doesn't
-                     compete with the row content. -->
-                <span class="lbf-layer__handle" cdkDragHandle
-                  [attr.aria-label]="'COMMON.DRAG_TO_REORDER' | translate"
-                  [appTooltip]="'COMMON.DRAG_TO_REORDER' | translate"
-                  (click)="$event.stopPropagation()">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="9"  cy="6"  r="1"/>
-                    <circle cx="15" cy="6"  r="1"/>
-                    <circle cx="9"  cy="12" r="1"/>
-                    <circle cx="15" cy="12" r="1"/>
-                    <circle cx="9"  cy="18" r="1"/>
-                    <circle cx="15" cy="18" r="1"/>
-                  </svg>
-                </span>
-
-                <!-- Eye — Photoshop-style visibility toggle. -->
-                <button type="button" class="lbf-layer__btn lbf-layer__btn--eye"
-                  (click)="toggleHidden(i, $event)"
-                  [appTooltip]="(el.hidden ? 'LABEL_BUILDER.FORM.LAYER_SHOW' : 'LABEL_BUILDER.FORM.LAYER_HIDE') | translate">
-                  @if (el.hidden) {
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
-                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
-                      <line x1="1" y1="1" x2="23" y2="23"/>
-                    </svg>
-                  } @else {
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                      <circle cx="12" cy="12" r="3"/>
-                    </svg>
-                  }
-                </button>
-
-                <!-- Main row button — receipt-builder `el-list__row`
-                     pattern. Becomes the click target for selecting
-                     the element; the icon + label are the only
-                     content so the click surface stays predictable. -->
-                <button type="button" class="lbf-layer__row"
-                  (click)="selectElement(i, $event)">
-                  <svg class="lbf-layer__icon"
-                    viewBox="0 0 24 24" width="14" height="14"
-                    fill="none" stroke="currentColor" stroke-width="1.6"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <path [attr.d]="layerIconPath(el.type)"/>
-                  </svg>
-                  <span class="lbf-layer__label">{{ layerLabel(el) }}</span>
-                </button>
-
-                <!-- Action cluster — Lock / Duplicate / Delete sit
-                     pinned to the trailing edge. They fade in on row
-                     hover so the row reads cleanly at rest, matching
-                     the receipt-builder convention. -->
-                <span class="lbf-layer__actions">
-                  <button type="button" class="lbf-layer__btn"
-                    (click)="toggleLocked(i, $event)"
-                    [appTooltip]="(el.locked ? 'LABEL_BUILDER.FORM.LAYER_UNLOCK' : 'LABEL_BUILDER.FORM.LAYER_LOCK') | translate">
-                    @if (el.locked) {
-                      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="11" width="18" height="11" rx="2"/>
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                      </svg>
-                    } @else {
-                      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="11" width="18" height="11" rx="2"/>
-                        <path d="M7 11V7a5 5 0 0 1 9.9-1"/>
-                      </svg>
-                    }
-                  </button>
-                  <button type="button" class="lbf-layer__btn"
-                    (click)="duplicateLayer(i, $event)"
-                    [appTooltip]="'COMMON.DUPLICATE' | translate">
-                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                      <rect x="9" y="9" width="13" height="13" rx="2"/>
-                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                    </svg>
-                  </button>
-                  <button type="button" class="lbf-layer__btn lbf-layer__btn--danger"
-                    (click)="deleteLayer(i, $event)"
-                    [appTooltip]="'COMMON.DELETE' | translate">
-                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <line x1="18" y1="6" x2="6" y2="18"/>
-                      <line x1="6"  y1="6" x2="18" y2="18"/>
-                    </svg>
-                  </button>
-                </span>
-              </li>
-            }
-          </ul>
-
-          <!-- Bulk-action bar — only rendered when 2+ layers are
-               selected (shift / cmd / ctrl click). Surfaces Delete
-               first because it's the most common bulk op; bar is
-               sticky-positioned so users can scroll the layers list
-               without losing access to the action. -->
-          @if (hasMultiSelection()) {
-            <div class="lbf-layers-bulkbar" role="toolbar"
-              [attr.aria-label]="'LABEL_BUILDER.FORM.LAYERS_BULK' | translate">
-              <span class="lbf-layers-bulkbar__count">
-                {{ 'COMMON.SELECTED_COUNT' | translate:{ count: selectedIndices().size } }}
-              </span>
-              <span class="lbf-layers-bulkbar__spacer"></span>
-              <button type="button" class="lbf-layers-bulkbar__btn lbf-layers-bulkbar__btn--danger"
-                (click)="deleteSelectedLayers()"
-                [appTooltip]="'COMMON.DELETE' | translate">
-                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="3 6 5 6 21 6"/>
-                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                </svg>
-                {{ 'COMMON.DELETE' | translate }}
-              </button>
-            </div>
-          }
-        </app-rbf-widget>
-      </div>
     </aside>
     }
   </div>

@@ -1,3 +1,4 @@
+import { DragIconComponent } from '@shared/components/drag-icon/drag-icon.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -49,7 +50,7 @@ import { TooltipDirective } from '@shared/directives/tooltip.directive';
 @Component({
   selector: 'app-tab-template-builder',
   standalone: true,
-  imports: [TooltipDirective, CommonModule, FormsModule, TranslateModule, DragDropModule, SearchDropdownComponent, RichEditorComponent, TabTypeIconComponent],
+  imports: [DragIconComponent, TooltipDirective, CommonModule, FormsModule, TranslateModule, DragDropModule, SearchDropdownComponent, RichEditorComponent, TabTypeIconComponent],
   templateUrl: './tab-template-builder.component.html',
   styleUrl: './tab-template-builder.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

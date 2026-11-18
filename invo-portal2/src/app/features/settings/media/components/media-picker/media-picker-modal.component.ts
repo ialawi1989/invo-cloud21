@@ -688,19 +688,32 @@ export class MediaPickerModalComponent implements OnInit {
   async deleteActive(): Promise<void> {
     const item = this.activeItem();
     if (!item?.id) return;
+    // Find out where the file is used first, so the confirmation can say so. If that lookup fails, fall back to the generic warning.
+    let links: { id: string; name: string; reference: string }[] | null = null;
+    // The item already carries the same list the Detach dialog shows (`uploadTo`); ask the server only when it is missing.
+    const own = (item as unknown as { uploadTo?: { id: string; name: string; reference: string }[] | null }).uploadTo;
+    if (Array.isArray(own)) links = own;
+    else { try { links = await this.mediaService.getMediaLinks(item.id); } catch { links = null; } }
+    const used = links && links.length > 0;
+    const shown = (links ?? []).slice(0, 8).map((l) => `• ${l.reference}: ${l.name || l.id}`);
+    const more = links && links.length > shown.length ? `
+… and ${links.length - shown.length} more` : '';
     const ref = this.modalService.open<ConfirmModalComponent, ConfirmModalData, boolean>(ConfirmModalComponent, {
       size: 'sm',
       closeOnBackdrop: false,
       data: {
-        title: 'Delete file',
-        message: `Delete "${item.name}" from the media library? Anywhere it is used will lose the picture.`,
-        confirm: 'Delete',
+        title: used ? 'This file is in use' : 'Delete file',
+        message: used
+          ? `"${item.name}" is used by ${links!.length} item${links!.length === 1 ? '' : 's'}. If you delete it, they will lose their picture.`
+          : `Delete "${item.name}" from the media library?`,
+        note: used ? shown.join('\n') + more : links === null ? 'Could not check whether this file is used elsewhere.' : undefined,
+        confirm: used ? 'Delete anyway' : 'Delete',
         danger: true,
       },
     });
     if ((await ref.afterClosed()) !== true) return;
     try {
-      const ok = await this.mediaService.deleteMedia(item.id);
+      const ok = await this.mediaService.deleteMedia(item.id, item.mediaType);
       if (!ok) throw new Error('The file could not be deleted.');
       this.selected.set(this.selected().filter((m) => m.id !== item.id));
       this.focusedItem.set(null);

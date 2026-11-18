@@ -1285,16 +1285,7 @@
                     class="reorder-grip"
                     [appTooltip]="'CUSTOM_REPORTS.COMMON.DRAG_TO_REORDER' | translate"
                   >
-                    <svg
-                      width="12"
-                      height="12"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                    >
-                      <path d="M8 6h.01M8 12h.01M8 18h.01M16 6h.01M16 12h.01M16 18h.01" />
-                    </svg>
+                    <app-drag-icon [size]="12"/>
                   </span>
                   <span>{{ s.id }}</span>
                   <button class="sort-dir-btn" (click)="toggleSortDir(i)">{{ s.mod }}</button>
@@ -1361,22 +1352,7 @@
           (drop)="onReorderDrop($event, i)"
         >
           <span class="reorder-grip" [appTooltip]="'CUSTOM_REPORTS.COMMON.DRAG_TO_REORDER' | translate">
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-            >
-              <circle cx="9" cy="5" r="1" />
-              <circle cx="9" cy="12" r="1" />
-              <circle cx="9" cy="19" r="1" />
-              <circle cx="15" cy="5" r="1" />
-              <circle cx="15" cy="12" r="1" />
-              <circle cx="15" cy="19" r="1" />
-            </svg>
+            <app-drag-icon/>
           </span>
           <span class="reorder-label">{{ item.label }}</span>
         </div>

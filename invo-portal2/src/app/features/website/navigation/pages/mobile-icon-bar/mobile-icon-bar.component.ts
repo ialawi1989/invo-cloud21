@@ -1,3 +1,4 @@
+import { DragIconComponent } from '@shared/components/drag-icon/drag-icon.component';
 import { Component, HostListener, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -38,7 +39,7 @@ const DEFAULT_ITEMS: Array<{ name: string; en: string; ar: string; slug: string;
 @Component({
   selector: 'app-mobile-icon-bar',
   standalone: true,
-  imports: [ListSkeletonComponent, CommonModule, FormsModule, DragDropModule, TranslateModule, BreadcrumbsComponent, SpinnerComponent],
+  imports: [DragIconComponent, ListSkeletonComponent, CommonModule, FormsModule, DragDropModule, TranslateModule, BreadcrumbsComponent, SpinnerComponent],
   template: `
     <app-breadcrumbs [items]="breadcrumbs" navClass="mb-2" />
 
@@ -64,7 +65,7 @@ const DEFAULT_ITEMS: Array<{ name: string; en: string; ar: string; slug: string;
         @for (item of bar.template.list; track item.uId) {
           <div class="row" cdkDrag [cdkDragData]="item" [class.off]="!item.enabled">
             <span class="drag" cdkDragHandle>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>
+              <app-drag-icon/>
             </span>
 
             <div class="icon-picker">

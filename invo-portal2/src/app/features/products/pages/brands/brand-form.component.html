@@ -63,11 +63,7 @@
           @for (p of products(); track p.id) {
             <li class="prod" cdkDrag>
               <span class="prod__grip" cdkDragHandle [attr.aria-label]="'COMMON.DRAG_TO_REORDER' | translate">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/>
-                  <circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/>
-                  <circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/>
-                </svg>
+                <app-drag-icon/>
               </span>
               <app-entity-thumb [src]="p.thumbnailUrl" [alt]="p.name" [size]="36"/>
               <div class="prod__body">

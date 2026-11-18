@@ -1,3 +1,4 @@
+import { DragIconComponent } from '@shared/components/drag-icon/drag-icon.component';
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
@@ -71,7 +72,7 @@ import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton
 @Component({
   selector: 'app-custom-fields-manager',
   standalone: true,
-  imports: [FormSkeletonComponent, 
+  imports: [DragIconComponent, FormSkeletonComponent, 
     CommonModule,
     RouterModule,
     FormsModule,

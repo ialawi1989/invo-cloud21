@@ -7,9 +7,7 @@
         <li class="sl__row" role="listitem" cdkDrag [cdkDragData]="s.id" [attr.data-section-id]="s.id"
             [class.sl__row--on]="s.id === selectedId()" [attr.aria-current]="s.id === selectedId() ? 'true' : null">
           <button type="button" class="sl__handle" cdkDragHandle [attr.aria-label]="handleLabel(s)" aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown" tabindex="-1">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/>
-            </svg>
+            <app-drag-icon [size]="12"/>
           </button>
           <button type="button" class="sl__main" (click)="select.emit(s.id)" (keydown)="onRowKey($event, i)" aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown">
             <span class="sl__dot" [style.background]="'linear-gradient(135deg,' + s.colorStart + ',' + s.colorEnd + ')'" aria-hidden="true"></span>

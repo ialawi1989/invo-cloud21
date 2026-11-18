@@ -1,3 +1,4 @@
+import { DragIconComponent } from '@shared/components/drag-icon/drag-icon.component';
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList } from '@angular/cdk/drag-drop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -22,7 +23,7 @@ export type SectionAction = 'rename' | 'color' | 'duplicate' | 'delete';
 @Component({
   selector: 'app-section-list',
   standalone: true,
-  imports: [TranslateModule, CdkDropList, CdkDrag, CdkDragHandle, RowMenuComponent],
+  imports: [DragIconComponent, TranslateModule, CdkDropList, CdkDrag, CdkDragHandle, RowMenuComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './section-list.component.html',
   styleUrl: './section-list.component.scss',

@@ -163,7 +163,7 @@ export class BusinessSettingsComponent implements OnInit, CanLeaveComponent {
       });
       this.mediaId.set(data.mediaId ?? null);
       this.mediaUrl.set(data.mediaUrl?.defaultUrl ?? data.mediaUrl?.thumbnailUrl ?? null);
-      this.baseline = this.currentState();
+      this.baseline.set(this.currentState());
     } finally {
       this.loading.set(false);
     }
@@ -276,15 +276,20 @@ export class BusinessSettingsComponent implements OnInit, CanLeaveComponent {
   }
 
   /** The editable values as last loaded / saved. Save stays off until the current values differ from this. */
-  private baseline = '';
+  private baseline = signal('');
 
   private currentState(): string {
     const v = this.form.getRawValue();
-    return JSON.stringify({ name: String(v.name ?? '').trim(), smallestCurrency: Number(v.smallestCurrency ?? 0), roundingType: v.roundingType, mediaId: this.mediaId() });
+    return JSON.stringify({ name: String(v.name ?? '').trim(), smallestCurrency: Number(v.smallestCurrency ?? 0), roundingType: v.roundingType, mediaId: this.mediaId(), mediaUrl: this.mediaUrl() });
   }
 
   /** True when something was actually changed (the name, the rounding fields or the logo). */
-  hasChanges(): boolean { return this.baseline !== '' && this.currentState() !== this.baseline; }
+  hasChanges(): boolean {
+    // Read both signals first, so the Save button always tracks the logo, even while the page is still loading.
+    const now = this.currentState();
+    const base = this.baseline();
+    return base !== '' && now !== base;
+  }
 
   /** Save is allowed when something changed, the name is valid and the smallest-currency rule (0 to 0.99) holds. A value already stored on the
    *  company that breaks that rule (older data, e.g. 10) does not block saving other changes; only a value the user typed does. */
@@ -318,7 +323,7 @@ export class BusinessSettingsComponent implements OnInit, CanLeaveComponent {
       // Refresh the in-memory snapshot so subsequent edits diff correctly.
       this.company.set(await this.service.getCompany(true));
       this.form.markAsPristine();
-      this.baseline = this.currentState();
+      this.baseline.set(this.currentState());
       this.toast.success('COMMON.SAVED_OK');
       this.router.navigate(['/settings']);
     } catch (e: any) {

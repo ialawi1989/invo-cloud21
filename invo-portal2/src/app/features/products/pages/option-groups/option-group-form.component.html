@@ -94,7 +94,7 @@
             @for (o of visibleOptions(); track o.optionId; let i = $index) {
               <div class="pick-item" cdkDrag [cdkDragDisabled]="!reorderEnabled()">
                 <span class="pick-item__handle" cdkDragHandle aria-hidden="true" [class.pick-item__handle--off]="!reorderEnabled()">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.4"/><circle cx="15" cy="6" r="1.4"/><circle cx="9" cy="12" r="1.4"/><circle cx="15" cy="12" r="1.4"/><circle cx="9" cy="18" r="1.4"/><circle cx="15" cy="18" r="1.4"/></svg>
+                  <app-drag-icon [size]="16"/>
                 </span>
                 <span class="pick-item__thumb" aria-hidden="true">
                   @if (o.thumbnailUrl) {

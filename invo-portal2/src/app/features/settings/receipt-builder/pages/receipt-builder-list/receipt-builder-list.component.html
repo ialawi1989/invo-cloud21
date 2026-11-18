@@ -44,9 +44,16 @@
 
   <ng-template listRowActions let-row>
     <div class="inline-flex items-center justify-end" (click)="$event.stopPropagation()">
-      <app-dropdown-menu-btn [items]="rowMenuItems(row)" [appendToBody]="true" [chevron]="false" align="end" triggerClass="icon-btn">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-          <circle cx="5" cy="12" r="1.75"/><circle cx="12" cy="12" r="1.75"/><circle cx="19" cy="12" r="1.75"/>
+      <button type="button"
+        (click)="edit(row)"
+        class="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity
+               me-2 px-4 h-9 inline-flex items-center rounded-full
+               bg-brand-600 text-white text-sm font-medium shadow-sm hover:bg-brand-700">
+        {{ 'COMMON.EDIT' | translate }}
+      </button>
+      <app-dropdown-menu-btn [items]="rowMenuItems(row)" [appendToBody]="true" [chevron]="false" align="end" triggerClass="w-9 h-9 inline-flex items-center justify-center rounded-full bg-white text-slate-500 border border-slate-200 hover:text-brand-600 hover:border-brand-300 transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
         </svg>
       </app-dropdown-menu-btn>
     </div>

@@ -1,3 +1,4 @@
+import { DragIconComponent } from '@shared/components/drag-icon/drag-icon.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -103,7 +104,7 @@ const NUMERIC_COMPARATORS = [
 @Component({
   selector: 'app-products-collections-form',
   standalone: true,
-  imports: [
+  imports: [DragIconComponent, 
     CommonModule,
     FormsModule,
     DragDropModule,

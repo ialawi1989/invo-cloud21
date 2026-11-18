@@ -1,3 +1,4 @@
+import { DragIconComponent } from '@shared/components/drag-icon/drag-icon.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -122,7 +123,7 @@ interface HistoryEntry {
 @Component({
   selector: 'app-receipt-builder-form',
   standalone: true,
-  imports: [
+  imports: [DragIconComponent, 
     CommonModule,
     RouterModule,
     FormsModule,

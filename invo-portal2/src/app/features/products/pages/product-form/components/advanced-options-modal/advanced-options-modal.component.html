@@ -27,14 +27,7 @@
       <section class="aom__row" cdkDrag [cdkDragData]="row">
         <header class="aom__row-head">
           <span class="aom__row-handle" cdkDragHandle aria-hidden="true">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="9"  cy="6"  r="1"/>
-              <circle cx="15" cy="6"  r="1"/>
-              <circle cx="9"  cy="12" r="1"/>
-              <circle cx="15" cy="12" r="1"/>
-              <circle cx="9"  cy="18" r="1"/>
-              <circle cx="15" cy="18" r="1"/>
-            </svg>
+            <app-drag-icon/>
           </span>
           <h3 class="aom__row-title">
             {{ 'PRODUCTS.ADVANCED_OPTIONS.ROW' | translate }} {{ row.index + 1 }}
@@ -76,11 +69,7 @@
             @for (sec of row.left; track trackSection($index, sec)) {
               <li class="aom__row-item" cdkDrag [class.aom__row-item--off]="!sec.visible">
                 <span class="aom__handle" cdkDragHandle aria-hidden="true">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="9"  cy="6"  r="1"/><circle cx="15" cy="6"  r="1"/>
-                    <circle cx="9"  cy="12" r="1"/><circle cx="15" cy="12" r="1"/>
-                    <circle cx="9"  cy="18" r="1"/><circle cx="15" cy="18" r="1"/>
-                  </svg>
+                  <app-drag-icon/>
                 </span>
                 <label class="aom__check">
                   <input type="checkbox"
@@ -108,11 +97,7 @@
               @for (sec of row.right; track trackSection($index, sec)) {
                 <li class="aom__row-item" cdkDrag [class.aom__row-item--off]="!sec.visible">
                   <span class="aom__handle" cdkDragHandle aria-hidden="true">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <circle cx="9"  cy="6"  r="1"/><circle cx="15" cy="6"  r="1"/>
-                      <circle cx="9"  cy="12" r="1"/><circle cx="15" cy="12" r="1"/>
-                      <circle cx="9"  cy="18" r="1"/><circle cx="15" cy="18" r="1"/>
-                    </svg>
+                    <app-drag-icon/>
                   </span>
                   <label class="aom__check">
                     <input type="checkbox"

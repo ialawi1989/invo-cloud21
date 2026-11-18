@@ -12,9 +12,7 @@
           <span class="am__n" aria-hidden="true">{{ i + 1 }}</span>
           <button type="button" class="am__handle" cdkDragHandle (keydown)="onKey($event, i)" aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown"
                   [attr.aria-label]="'MENU_BUILDER.ARRANGE.HANDLE' | translate: { name: r.name, n: i + 1 }">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/>
-            </svg>
+            <app-drag-icon [size]="12"/>
           </button>
           <span class="am__name">{{ r.name }}</span>
           <span class="am__hours">{{ r.startAt.slice(0, 5) }} – {{ r.endAt.slice(0, 5) }}</span>

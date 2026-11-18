@@ -1,3 +1,4 @@
+import { DragIconComponent } from '@shared/components/drag-icon/drag-icon.component';
 import {
   ChangeDetectionStrategy, Component, DestroyRef, ElementRef, Injector, afterNextRender, effect, inject, input, output, signal, untracked, viewChild,
 } from '@angular/core';
@@ -19,7 +20,7 @@ import { VoidReasonError, VoidReasonItem, reasonValidator } from './void-reason.
 @Component({
   selector: 'li[app-reason-row]',
   standalone: true,
-  imports: [ReactiveFormsModule, TranslateModule, CdkDragHandle],
+  imports: [DragIconComponent, ReactiveFormsModule, TranslateModule, CdkDragHandle],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { role: 'listitem', class: 'rr', '[class.rr--editing]': 'editing()', '[attr.data-id]': 'item().id' },
   template: `
@@ -27,11 +28,7 @@ import { VoidReasonError, VoidReasonItem, reasonValidator } from './void-reason.
             [attr.aria-label]="'SETTINGS.POS_OPTIONS.VOID.REORDER' | translate: { name: item().label }"
             [attr.aria-keyshortcuts]="'Alt+ArrowUp Alt+ArrowDown'"
             (keydown)="onHandleKey($event)">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-        <circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/>
-        <circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/>
-        <circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/>
-      </svg>
+      <app-drag-icon [size]="16"/>
     </button>
 
     @if (editing()) {

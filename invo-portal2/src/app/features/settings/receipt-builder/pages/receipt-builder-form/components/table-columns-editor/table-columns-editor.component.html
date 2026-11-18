@@ -75,11 +75,7 @@
 
               <div class="tce-cell__row" (click)="toggleExpanded(cell.__key)">
                 <span class="tce-cell__handle" cdkDragHandle aria-hidden="true" (click)="$event.stopPropagation()">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="3" y1="6"  x2="21" y2="6"/>
-                    <line x1="3" y1="12" x2="21" y2="12"/>
-                    <line x1="3" y1="18" x2="21" y2="18"/>
-                  </svg>
+                  <app-drag-icon [size]="12"/>
                 </span>
 
                 <!-- Compact summary shows ONLY the binding key — it's

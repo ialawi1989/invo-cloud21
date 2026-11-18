@@ -1,3 +1,4 @@
+import { DragIconComponent } from '@shared/components/drag-icon/drag-icon.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -65,7 +66,7 @@ import { TooltipDirective } from '@shared/directives/tooltip.directive';
 @Component({
   selector: 'app-payment-methods-list',
   standalone: true,
-  imports: [TooltipDirective, 
+  imports: [DragIconComponent, TooltipDirective, 
     CommonModule,
     RouterModule,
     FormsModule,

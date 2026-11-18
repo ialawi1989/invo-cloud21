@@ -1,3 +1,4 @@
+import { DragIconComponent } from '@shared/components/drag-icon/drag-icon.component';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -37,7 +38,7 @@ interface LinkOptions {
 @Component({
   selector: 'app-navigation-builder',
   standalone: true,
-  imports: [TooltipDirective, ListSkeletonComponent, 
+  imports: [DragIconComponent, TooltipDirective, ListSkeletonComponent, 
     CommonModule, FormsModule, DragDropModule, TranslateModule,
     BreadcrumbsComponent, SpinnerComponent, SegmentedToggleComponent,
   ],

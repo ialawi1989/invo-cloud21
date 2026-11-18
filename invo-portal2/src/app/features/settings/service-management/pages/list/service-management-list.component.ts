@@ -1,3 +1,4 @@
+import { DragIconComponent } from '@shared/components/drag-icon/drag-icon.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -55,7 +56,7 @@ const QP = {
 @Component({
   selector: 'app-service-management-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslateModule, ListShellComponent, DragDropModule],
+  imports: [DragIconComponent, CommonModule, RouterModule, TranslateModule, ListShellComponent, DragDropModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './service-management-list.component.html',
   styleUrl:    './service-management-list.component.scss',

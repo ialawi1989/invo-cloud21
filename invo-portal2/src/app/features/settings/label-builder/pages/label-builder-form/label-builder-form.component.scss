@@ -1542,3 +1542,114 @@ textarea {
     &:hover { background: #fef2f2; border-color: #ef4444; color: #991b1b; }
   }
 }
+
+// ══ Docked layout (same as the receipt builder): flush panels, tools strip | layers | canvas | properties ══════
+.lbf-layout { gap: 0; padding: 0; }
+
+.lbf-rail {
+  flex: 0 0 calc(64px + var(--lbf-layers-w, 220px));
+  display: flex;
+  flex-direction: row;
+  align-self: stretch;
+  min-height: 0;
+  overflow: hidden;
+  background: #fff;
+  border-inline-end: 1px solid #e2e8f0;
+  @media (max-width: 768px) { display: none; }
+}
+// Tools: a fixed 64px strip of icon tiles, the name is a tooltip.
+.lbf-tools {
+  flex: 0 0 64px;
+  height: 100%;
+  overflow-y: auto;
+  padding: 10px 8px;
+  border-inline-end: 1px solid #e2e8f0;
+  .lbf-palette__list { padding: 0; gap: 4px; }
+  .lbf-palette__tile { justify-content: center; padding: 9px 0; gap: 0; border-color: transparent; background: transparent; }
+  .lbf-palette__tile:hover { background: #f1f5f9; }
+}
+// Layers: its own full-height column.
+.lbf-layers-col {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+  overflow-y: auto;
+  ::ng-deep app-rbf-widget { border: 0; border-radius: 0; box-shadow: none; background: #fff; }
+  .lbf-layers { max-height: none; }
+}
+
+// Properties: flush against the right edge, full height, flat sections.
+.lbf-inspector--card {
+  margin: 0;
+  height: auto;
+  max-height: none;
+  align-self: stretch;
+  padding: 0;
+  gap: 0;
+  border: 0;
+  border-inline-start: 1px solid #e2e8f0;
+  border-radius: 0;
+  box-shadow: none;
+}
+.lbf-inspector ::ng-deep app-rbf-widget { border: 0; border-bottom: 1px solid #e2e8f0; border-radius: 0; box-shadow: none; background: #fff; }
+.lbf-inspector .lbf-panel-title { padding: 12px 14px; margin: 0; }
+.lbf-inspector__editor { gap: 0; }
+
+// Grey canvas area.
+.lbf-canvas-wrap { background: #e9ecf1; }
+
+// Resize handles sit on the panel seams.
+.lbf-splitter { top: 0; bottom: 0; inset-inline-end: calc(var(--lbf-right-rail-w, 320px) - 6px); }
+.lbf-splitter--layers { inset-inline-end: auto; inset-inline-start: calc(64px + var(--lbf-layers-w, 220px) - 6px); }
+.lbf-splitter--layers:hover, .lbf-splitter--layers.lbf-splitter--active {
+  background: linear-gradient(to right, transparent 5px, var(--color-brand-500, #0891b2) 5px, var(--color-brand-500, #0891b2) 7px, transparent 7px);
+}
+// Hovering the layers handle must not light up the properties panel's border.
+.lbf-splitter--layers:hover ~ .lbf-inspector--card,
+.lbf-splitter--layers.lbf-splitter--active ~ .lbf-inspector--card { border-color: #e2e8f0; box-shadow: none; }
+
+// ══ Right-click menu on a layer / element (same look as the other builders' context menus) ═══════════════
+.lbf-ctx-backdrop { position: fixed; inset: 0; z-index: 1055; }
+
+.lbf-ctx {
+  position: fixed;
+  z-index: 1056;
+  min-width: 210px;
+  padding: 6px 0;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.16);
+  user-select: none;
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 14px;
+    font: inherit;
+    font-size: 13px;
+    text-align: start;
+    color: #334155;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    transition: background 100ms ease;
+
+    > svg { flex-shrink: 0; color: #64748b; }
+    > span { flex: 1; }
+    kbd { font: inherit; font-size: 11px; color: #94a3b8; }
+
+    &:hover:not(:disabled) { background: #f1f5f9; }
+    &:disabled { opacity: 0.4; cursor: default; }
+
+    &--danger {
+      color: #dc2626;
+      > svg, kbd { color: rgba(220, 38, 38, 0.7); }
+      &:hover:not(:disabled) { background: rgba(220, 38, 38, 0.08); }
+    }
+  }
+
+  &__divider { height: 1px; margin: 4px 0; background: #e2e8f0; }
+}

@@ -513,7 +513,9 @@ export class MediaManagerComponent implements OnInit, OnDestroy {
 
     this.deleting.set(true);
     try {
-      await this.mediaService.deleteMultipleMedia(ids);
+      // Send each file's type too (the server needs it to remove the stored file).
+      const byId = new Map(this.mediaData().map((m) => [m.id, m]));
+      await this.mediaService.deleteMultipleMedia(ids.map((id) => ({ id, mediaType: byId.get(id)?.mediaType ?? null })));
       this.selectedItems.set([]);
       await this.loadMedia({ refreshCounts: true });
     } catch (error) {

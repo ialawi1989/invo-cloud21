@@ -64,11 +64,7 @@
                 [formGroup]="levelAt(i)"
               >
                 <span class="pf-ms-card__handle" cdkDragHandle aria-hidden="true">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="9"  cy="6"  r="1"/><circle cx="15" cy="6"  r="1"/>
-                    <circle cx="9"  cy="12" r="1"/><circle cx="15" cy="12" r="1"/>
-                    <circle cx="9"  cy="18" r="1"/><circle cx="15" cy="18" r="1"/>
-                  </svg>
+                  <app-drag-icon/>
                 </span>
 
                 <div class="pf-ms-card__body" (click)="setActiveLevel(i)">
@@ -167,11 +163,7 @@
                 @for (item of itemsOf(activeLevel()).controls; track item.value['productId']; let itemIdx = $index) {
                   <div class="pf-ms-item" cdkDrag>
                     <span class="pf-ms-item__handle" cdkDragHandle aria-hidden="true">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="9"  cy="6"  r="1"/><circle cx="15" cy="6"  r="1"/>
-                        <circle cx="9"  cy="12" r="1"/><circle cx="15" cy="12" r="1"/>
-                        <circle cx="9"  cy="18" r="1"/><circle cx="15" cy="18" r="1"/>
-                      </svg>
+                      <app-drag-icon/>
                     </span>
                     <span class="pf-ms-item__name">{{ item.value['name'] }}</span>
                     <span class="pf-ms-item__price">{{ item.value['defaultPrice'] | number:'1.0-3' }}</span>

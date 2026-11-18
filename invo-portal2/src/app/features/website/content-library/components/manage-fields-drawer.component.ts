@@ -1,3 +1,4 @@
+import { DragIconComponent } from '@shared/components/drag-icon/drag-icon.component';
 import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -15,7 +16,7 @@ export interface ManageFieldsDrawerData {
 @Component({
   selector: 'app-manage-fields-drawer',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [DragIconComponent, CommonModule, FormsModule],
   styles: [`
     :host { display:flex; flex-direction:column; height:100%; font-family:'Inter',-apple-system,sans-serif; font-size:14px; }
 
@@ -160,14 +161,7 @@ export interface ManageFieldsDrawerData {
              (dragend)="onDragEnd()">
 
           <span class="mfd-grip">
-            <svg width="12" height="16" viewBox="0 0 12 16" fill="none">
-              <circle cx="4" cy="2.5" r="1.3" fill="currentColor"/>
-              <circle cx="8" cy="2.5" r="1.3" fill="currentColor"/>
-              <circle cx="4" cy="8"   r="1.3" fill="currentColor"/>
-              <circle cx="8" cy="8"   r="1.3" fill="currentColor"/>
-              <circle cx="4" cy="13.5" r="1.3" fill="currentColor"/>
-              <circle cx="8" cy="13.5" r="1.3" fill="currentColor"/>
-            </svg>
+            <app-drag-icon [size]="12"/>
           </span>
 
           <label class="mfd-chk-wrap" [class.locked]="field.isSystem" (click)="$event.stopPropagation()">

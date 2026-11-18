@@ -1,3 +1,4 @@
+import { DragIconComponent } from '@shared/components/drag-icon/drag-icon.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -60,7 +61,7 @@ export interface RbfWidgetTab {
 @Component({
   selector: 'app-rbf-widget',
   standalone: true,
-  imports: [CommonModule, TranslateModule, CdkDragHandle, CdkDropList, CdkDrag, TooltipDirective],
+  imports: [DragIconComponent, CommonModule, TranslateModule, CdkDragHandle, CdkDropList, CdkDrag, TooltipDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <header class="rbfw__header" [class.rbfw__header--draggable]="draggable()" [class.rbfw__header--tabbed]="isTabbed()" cdkDragHandle (click)="onHeaderClick($event)">
@@ -71,11 +72,7 @@ export interface RbfWidgetTab {
           [appTooltip]="'COMMON.WIDGET_DRAG_HINT' | translate"
           (click)="$event.stopPropagation()"
         >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="3"  y1="6"  x2="21" y2="6"/>
-            <line x1="3"  y1="12" x2="21" y2="12"/>
-            <line x1="3"  y1="18" x2="21" y2="18"/>
-          </svg>
+          <app-drag-icon [size]="13"/>
         </span>
       }
 

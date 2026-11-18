@@ -1,3 +1,4 @@
+import { DragIconComponent } from '@shared/components/drag-icon/drag-icon.component';
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -21,7 +22,7 @@ interface DisplayColumn extends TableColumn {
 @Component({
   selector: 'app-customize-columns-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, DragDropModule, TranslateModule],
+  imports: [DragIconComponent, CommonModule, FormsModule, DragDropModule, TranslateModule],
   template: `
     <!-- Header -->
     <div class="px-6 pt-6 pb-4">
@@ -49,13 +50,7 @@ interface DisplayColumn extends TableColumn {
                 [class.active:cursor-grabbing]="!item.locked"
                 [class.hover:text-slate-500]="!item.locked"
                 [class.opacity-30]="item.locked"
-                [class.cursor-not-allowed]="item.locked">
-                <svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor">
-                  <circle cx="2.5" cy="3"  r="1.1"/><circle cx="7.5" cy="3"  r="1.1"/>
-                  <circle cx="2.5" cy="8"  r="1.1"/><circle cx="7.5" cy="8"  r="1.1"/>
-                  <circle cx="2.5" cy="13" r="1.1"/><circle cx="7.5" cy="13" r="1.1"/>
-                </svg>
-              </div>
+                [class.cursor-not-allowed]="item.locked"><app-drag-icon [size]="14"/></div>
 
               <!-- Visibility checkbox -->
               <button type="button" (click)="toggleVisibility(item); $event.stopPropagation()"
@@ -147,13 +142,7 @@ interface DisplayColumn extends TableColumn {
                       [class.active:cursor-grabbing]="!child.locked"
                       [class.hover:text-slate-500]="!child.locked"
                       [class.opacity-30]="child.locked"
-                      [class.cursor-not-allowed]="child.locked">
-                      <svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor">
-                        <circle cx="2.5" cy="3"  r="1.1"/><circle cx="7.5" cy="3"  r="1.1"/>
-                        <circle cx="2.5" cy="8"  r="1.1"/><circle cx="7.5" cy="8"  r="1.1"/>
-                        <circle cx="2.5" cy="13" r="1.1"/><circle cx="7.5" cy="13" r="1.1"/>
-                      </svg>
-                    </div>
+                      [class.cursor-not-allowed]="child.locked"><app-drag-icon [size]="14"/></div>
                     <!-- Visibility checkbox -->
                     <button type="button" (click)="toggleChildVisibility(item, child)"
                       class="flex-shrink-0 w-[18px] h-[18px] rounded-[5px] flex items-center justify-center transition-colors"

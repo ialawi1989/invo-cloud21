@@ -1,3 +1,4 @@
+import { DragIconComponent } from '@shared/components/drag-icon/drag-icon.component';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
@@ -20,7 +21,7 @@ interface Row { id: string; name: string; startAt: string; endAt: string }
 @Component({
   selector: 'app-arrange-menus-modal',
   standalone: true,
-  imports: [TranslateModule, CdkDropList, CdkDrag, CdkDragHandle, ModalHeaderComponent, ModalFooterComponent],
+  imports: [DragIconComponent, TranslateModule, CdkDropList, CdkDrag, CdkDragHandle, ModalHeaderComponent, ModalFooterComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './arrange-menus-modal.component.html',
   styleUrl: './arrange-menus-modal.component.scss',

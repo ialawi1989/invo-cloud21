@@ -1,3 +1,4 @@
+import { DragIconComponent } from '@shared/components/drag-icon/drag-icon.component';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { TranslateModule } from '@ngx-translate/core';
@@ -31,7 +32,7 @@ export interface ReorderModalData {
 @Component({
   selector: 'app-reorder-modal',
   standalone: true,
-  imports: [DragDropModule, TranslateModule, ModalHeaderComponent, ModalFooterComponent],
+  imports: [DragIconComponent, DragDropModule, TranslateModule, ModalHeaderComponent, ModalFooterComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-modal-header [title]="data.title"/>
@@ -40,7 +41,7 @@ export interface ReorderModalData {
       <ul class="ro__list" cdkDropList (cdkDropListDropped)="drop($event)">
         @for (it of items(); track it.id; let i = $index) {
           <li class="ro__row" cdkDrag>
-            <span class="ro__grip" cdkDragHandle [attr.aria-label]="'COMMON.DRAG_TO_REORDER' | translate">⠿</span>
+            <span class="ro__grip" cdkDragHandle [attr.aria-label]="'COMMON.DRAG_TO_REORDER' | translate"><app-drag-icon/></span>
             <input class="ro__pos" type="number" min="1" [max]="items().length" [value]="i + 1"
               (change)="moveTo(i, $any($event.target).value)" [attr.aria-label]="'COMMON.REORDER.POSITION' | translate"/>
             @if (it.image) { <img class="ro__img" [src]="it.image" alt=""/> }

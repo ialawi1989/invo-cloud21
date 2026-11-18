@@ -1,3 +1,4 @@
+import { DragIconComponent } from '@shared/components/drag-icon/drag-icon.component';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -68,7 +69,7 @@ const blankLine = (supplier: SupplierMini | null): FormLine => ({
 @Component({
   selector: 'app-inventory-request-form',
   standalone: true,
-  imports: [FormSkeletonComponent, 
+  imports: [DragIconComponent, FormSkeletonComponent, 
     CommonModule, RouterLink, FormsModule, TranslateModule, DocFormShellComponent, LoadingOverlayComponent,
     CdkDropList, CdkDrag, CdkDragHandle, DropdownMenuBtnComponent, SearchDropdownComponent, QtyInputComponent, MycurrencyPipe,
     InventoryRequestPaperComponent, DocItemSearchComponent,

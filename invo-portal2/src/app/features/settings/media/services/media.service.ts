@@ -8,7 +8,8 @@ import {
   IMediaUploadResult,
   IAttachmentParams,
   IGetAttachmentsParams,
-  IMediaUploadConfig
+  IMediaUploadConfig,
+  IMediaType,
 } from '../models/media.model';
 /**
  * Media Service
@@ -314,18 +315,26 @@ export class MediaService {
 
   // ── Media Deletion ────────────────────────────────────────────────────────
 
+  /** Everything that uses this media (products, employees, the company logo...): `GET media/getMediaLinkList/:id`. */
+  async getMediaLinks(id: string): Promise<{ id: string; name: string; reference: string }[]> {
+    const response = await firstValueFrom(this.http.get<any>(`${this.baseUrl}media/getMediaLinkList/${id}`));
+    return Array.isArray(response?.data) ? response.data : [];
+  }
+
   /** Delete media by ID */
-  async deleteMedia(id: string): Promise<boolean> {
+  async deleteMedia(id: string, mediaType?: IMediaType | null): Promise<boolean> {
+    // The server reads `mediaId` (and `mediaType.extension`, to remove the stored file), the same body the legacy app sends.
+    // It used to be sent as `{ id }`, which the server ignored: nothing was deleted yet it answered success.
     const response = await firstValueFrom(
-      this.http.post<any>(`${this.baseUrl}media/deleteMedia`, { id })
+      this.http.post<any>(`${this.baseUrl}media/deleteMedia`, { mediaId: id, mediaType: mediaType ?? null })
     );
     return response.success || false;
   }
 
   /** Delete multiple media items */
-  async deleteMultipleMedia(ids: string[]): Promise<boolean> {
-    if (ids.length === 0) return true;
-    const results = await Promise.all(ids.map(id => this.deleteMedia(id)));
+  async deleteMultipleMedia(items: (string | { id: string; mediaType?: IMediaType | null })[]): Promise<boolean> {
+    if (items.length === 0) return true;
+    const results = await Promise.all(items.map(i => typeof i === 'string' ? this.deleteMedia(i) : this.deleteMedia(i.id, i.mediaType)));
     return results.every(r => r === true);
   }
 

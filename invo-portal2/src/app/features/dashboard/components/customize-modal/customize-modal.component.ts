@@ -1,3 +1,4 @@
+import { DragIconComponent } from '@shared/components/drag-icon/drag-icon.component';
 import {
   afterNextRender, ChangeDetectionStrategy, Component, computed, ElementRef,
   HostListener, inject, Injector, signal,
@@ -94,7 +95,7 @@ type SourceTab = 'all' | 'standard' | 'custom';
 @Component({
   selector: 'app-dashboard-customize-modal',
   standalone: true,
-  imports: [TooltipDirective, 
+  imports: [DragIconComponent, TooltipDirective, 
     CommonModule, TranslateModule, DragDropModule,
     ModalHeaderComponent, ModalFooterComponent,
   ],

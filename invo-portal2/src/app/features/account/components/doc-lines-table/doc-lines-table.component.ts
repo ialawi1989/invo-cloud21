@@ -1,3 +1,4 @@
+import { DragIconComponent } from '@shared/components/drag-icon/drag-icon.component';
 import '../../account-i18n';
 import { Component, HostListener, computed, inject, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -43,7 +44,7 @@ const blank = (v: any) => v == null || (typeof v === 'string' && v.trim() === ''
 @Component({
   selector: 'app-doc-lines-table',
   standalone: true,
-  imports: [
+  imports: [DragIconComponent, 
     CommonModule, FormsModule, TranslateModule, MycurrencyPipe, SearchDropdownComponent, DiscountFieldComponent,
     QtyInputComponent, DragDropModule, TooltipDirective, DropdownMenuBtnComponent, SegmentedToggleComponent,
   ],

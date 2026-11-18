@@ -6,24 +6,7 @@
         <!-- Row Header -->
         <div class="row-header">
           <div class="row-drag-handle" cdkDragHandle>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <circle cx="9" cy="5" r="1"></circle>
-              <circle cx="9" cy="12" r="1"></circle>
-              <circle cx="9" cy="19" r="1"></circle>
-              <circle cx="15" cy="5" r="1"></circle>
-              <circle cx="15" cy="12" r="1"></circle>
-              <circle cx="15" cy="19" r="1"></circle>
-            </svg>
+            <app-drag-icon [size]="16"/>
           </div>
           <span class="row-label">{{ 'DASHBOARD.ROW' | translate }} {{ rowIndex + 1 }}</span>
           <div class="row-usage">
@@ -64,24 +47,7 @@
             <div class="row-widget" [style.grid-column]="'span ' + (widget.colSpan || 12)" cdkDrag>
               <div class="widget-card">
                 <div class="widget-drag" cdkDragHandle>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <polyline points="5 9 2 12 5 15"></polyline>
-                    <polyline points="9 5 12 2 15 5"></polyline>
-                    <polyline points="15 19 12 22 9 19"></polyline>
-                    <polyline points="19 9 22 12 19 15"></polyline>
-                    <line x1="2" y1="12" x2="22" y2="12"></line>
-                    <line x1="12" y1="2" x2="12" y2="22"></line>
-                  </svg>
+                  <app-drag-icon/>
                 </div>
                 <span class="widget-title">{{ widget.title | translate }}</span>
                 <div class="widget-controls">

@@ -131,7 +131,7 @@
                 <tr cdkDrag [cdkDragDisabled]="!line.productId">
                   <td class="w-handle">
                     @if (line.productId) {
-                      <span class="handle" cdkDragHandle [attr.aria-label]="'PRODUCTS.INVENTORY_REQUEST.DRAG' | translate"><svg viewBox="0 0 512 512" width="12" height="12" fill="currentColor" aria-hidden="true"><circle cx="153.6" cy="451" r="61"/><circle cx="153.6" cy="256" r="61"/><circle cx="153.6" cy="61" r="61"/><circle cx="358.4" cy="256" r="61"/><circle cx="358.4" cy="61" r="61"/><circle cx="358.4" cy="451" r="61"/></svg></span>
+                      <span class="handle" cdkDragHandle [attr.aria-label]="'PRODUCTS.INVENTORY_REQUEST.DRAG' | translate"><app-drag-icon [size]="12"/></span>
                     }
                   </td>
                   @if (bulkMode()) {

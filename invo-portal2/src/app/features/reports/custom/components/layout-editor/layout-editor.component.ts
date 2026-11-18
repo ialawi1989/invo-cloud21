@@ -1,3 +1,4 @@
+import { DragIconComponent } from '@shared/components/drag-icon/drag-icon.component';
 import { Component, EventEmitter, Inject, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
@@ -37,7 +38,7 @@ const DEFAULT_COLSPAN_OPTIONS: ColSpanOption[] = [
 @Component({
   selector: 'app-layout-editor',
   standalone: true,
-  imports: [TooltipDirective, TranslateModule, DragDropModule],
+  imports: [DragIconComponent, TooltipDirective, TranslateModule, DragDropModule],
   templateUrl: './layout-editor.component.html',
   styleUrls: ['./layout-editor.component.scss'],
 })

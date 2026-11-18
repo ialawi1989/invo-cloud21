@@ -1,3 +1,4 @@
+import { DragIconComponent } from '@shared/components/drag-icon/drag-icon.component';
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
@@ -38,7 +39,7 @@ interface OptionGroupRow {
 @Component({
   selector: 'app-pf-option-group',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, DragDropModule],
+  imports: [DragIconComponent, CommonModule, ReactiveFormsModule, TranslateModule, DragDropModule],
   templateUrl: './option-group.component.html',
   styleUrl: './option-group.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

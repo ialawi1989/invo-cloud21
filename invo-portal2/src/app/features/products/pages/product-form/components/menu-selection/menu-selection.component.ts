@@ -1,3 +1,4 @@
+import { DragIconComponent } from '@shared/components/drag-icon/drag-icon.component';
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
@@ -73,7 +74,7 @@ import { TooltipDirective } from '@shared/directives/tooltip.directive';
 @Component({
   selector: 'app-pf-menu-selection',
   standalone: true,
-  imports: [TooltipDirective, CommonModule, ReactiveFormsModule, TranslateModule, DragDropModule],
+  imports: [DragIconComponent, TooltipDirective, CommonModule, ReactiveFormsModule, TranslateModule, DragDropModule],
   templateUrl: './menu-selection.component.html',
   styleUrl: './menu-selection.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

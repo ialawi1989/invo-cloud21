@@ -1,3 +1,4 @@
+import { DragIconComponent } from '@shared/components/drag-icon/drag-icon.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -90,7 +91,7 @@ interface WorkingRow {
 @Component({
   selector: 'app-advanced-options-modal',
   standalone: true,
-  imports: [TooltipDirective, 
+  imports: [DragIconComponent, TooltipDirective, 
     CommonModule,
     FormsModule,
     TranslateModule,

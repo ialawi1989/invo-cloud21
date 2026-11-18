@@ -1,3 +1,4 @@
+import { DragIconComponent } from '@shared/components/drag-icon/drag-icon.component';
 import { Component, OnInit, OnDestroy, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 import { DriveStep, Side } from 'driver.js';
 
@@ -131,7 +132,7 @@ interface SeedConfig {
 @Component({
   selector: 'app-report-builder',
   standalone: true,
-  imports: [TooltipDirective, 
+  imports: [DragIconComponent, TooltipDirective, 
     TranslateModule,
     FormsModule,
     NgSelectModule,

@@ -1,3 +1,4 @@
+import { DragIconComponent } from '@shared/components/drag-icon/drag-icon.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -41,7 +42,7 @@ import { PrintElement } from '../../../../services/receipt-builder.types';
 @Component({
   selector: 'app-elements-list',
   standalone: true,
-  imports: [
+  imports: [DragIconComponent, 
     CommonModule,
     TranslateModule,
     CdkDropList,

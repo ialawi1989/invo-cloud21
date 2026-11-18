@@ -1,3 +1,4 @@
+import { DragIconComponent } from '@shared/components/drag-icon/drag-icon.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -127,7 +128,7 @@ const PALETTE: PaletteItem[] = [
 @Component({
   selector: 'app-label-builder-form',
   standalone: true,
-  imports: [
+  imports: [DragIconComponent, 
     CommonModule,
     RouterModule,
     FormsModule,
@@ -265,6 +266,51 @@ export class LabelBuilderFormComponent implements OnInit, CanLeaveComponent {
     } catch { /* swallow */ }
   }
 
+  // ─── Layers column splitter ──────────────────────────────────────
+  // The Layers column beside the 64px tools strip is resizable too (`--lbf-layers-w`, remembered).
+  private static readonly TOOLS_W    = 64;
+  private static readonly LAYERS_MIN = 160;
+  private static readonly LAYERS_MAX = 480;
+  private static readonly LAYERS_KEY = 'lbf:layers-w';
+
+  layersSplitterDragging = signal<boolean>(false);
+
+  onLayersSplitterMouseDown(event: MouseEvent): void {
+    event.preventDefault();
+    this.layersSplitterDragging.set(true);
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    const isRtl = getComputedStyle(document.documentElement).direction === 'rtl';
+    const move = (e: MouseEvent) => {
+      const raw = (isRtl ? window.innerWidth - e.clientX : e.clientX) - LabelBuilderFormComponent.TOOLS_W;
+      this.applyLayersWidth(Math.min(LabelBuilderFormComponent.LAYERS_MAX, Math.max(LabelBuilderFormComponent.LAYERS_MIN, raw)));
+    };
+    const end = () => {
+      this.layersSplitterDragging.set(false);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      window.removeEventListener('mousemove', move);
+      window.removeEventListener('mouseup', end);
+    };
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', end);
+  }
+
+  private applyLayersWidth(w: number): void {
+    document.documentElement.style.setProperty('--lbf-layers-w', `${w}px`);
+    try { localStorage.setItem(LabelBuilderFormComponent.LAYERS_KEY, String(w)); }
+    catch { /* swallow */ }
+  }
+
+  private restoreLayersWidth(): void {
+    try {
+      const w = Number(localStorage.getItem(LabelBuilderFormComponent.LAYERS_KEY));
+      if (Number.isFinite(w) && w > 0) {
+        this.applyLayersWidth(Math.min(LabelBuilderFormComponent.LAYERS_MAX, Math.max(LabelBuilderFormComponent.LAYERS_MIN, w)));
+      }
+    } catch { /* swallow */ }
+  }
+
   onSplitterMouseDown(event: MouseEvent): void {
     event.preventDefault();
     this.splitterDragging.set(true);
@@ -280,8 +326,8 @@ export class LabelBuilderFormComponent implements OnInit, CanLeaveComponent {
 
     this.splitterMoveHandler = (e: MouseEvent) => {
       const raw = isRtl
-        ? e.clientX - 16
-        : window.innerWidth - e.clientX - 16;
+        ? e.clientX
+        : window.innerWidth - e.clientX;
       const w = Math.min(
         LabelBuilderFormComponent.RAIL_MAX,
         Math.max(LabelBuilderFormComponent.RAIL_MIN, raw),
@@ -715,6 +761,7 @@ export class LabelBuilderFormComponent implements OnInit, CanLeaveComponent {
     // first paint so the inspector doesn't visibly snap from 320 px
     // to its persisted size on load.
     this.restoreRailWidth();
+    this.restoreLayersWidth();
 
     const id = this.route.snapshot.paramMap.get('id') ?? '0';
     const seedType = (this.route.snapshot.queryParamMap.get('type') ?? 'label') as LabelTemplateType;
