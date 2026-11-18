@@ -84,6 +84,13 @@ export class TableColumnsEditorComponent {
    *  scratch column so the user can still add a blank manually. */
   addColumnCatalog = input<ColumnSuggestion[]>([]);
 
+  /** Legacy rule: extra rows can only be deleted on kitchen tickets, never on receipts. */
+  templateType = input<'reciept' | 'kitchen'>('reciept');
+
+  /** The table's source. Taxes / payments cells keep a binding in `value`, so they get a separate Header text field. */
+  source = input<string>('');
+  hasHeaderField = (): boolean => this.source() !== '!invoice.lines';
+
   /** Single emitter — parent funnels every column edit through one path. */
   @Output() groupsChange = new EventEmitter<TableGroup[]>();
 
@@ -276,6 +283,13 @@ export class TableColumnsEditorComponent {
    *  legacy `ReceiptTableGroup.addRow()`. The fresh row gets a stable
    *  `__key` for CDK drag tracking and starts with no cells; the user
    *  fills it via the per-row "+ Add column" menu. */
+  removeRow(gi: number, ri: number): void {
+    const next = this.cloneGroups();
+    if (!next[gi] || ri <= 0) return;
+    next[gi].rows.splice(ri, 1);
+    this.groupsChange.emit(next);
+  }
+
   addRow(gi: number): void {
     const next = this.cloneGroups();
     if (!next[gi]) return;

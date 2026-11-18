@@ -128,7 +128,6 @@
     @if (asBarcode(); as b) {
       <div class="er-barcode-wrap" [class.er--hidden]="b.visibility === 'Hidden'">
         <span class="er-barcode"
-          [style.height.px]="b.height"
           [attr.aria-label]="'Barcode: ' + b.value"
           [innerHTML]="barcodeSvg()"
         ></span>
@@ -161,7 +160,8 @@
       -->
       <div class="er-table">
         @if (hasVisibleCells(tbl)) {
-          <!-- Header section -->
+          <!-- Header section (invoice lines only: taxes and payments cells are per-row bindings, shown in the body) -->
+          @if (showHeader(tbl)) {
           <div class="er-table__section er-table__section--header">
             @for (g of tableGroups(tbl); track $index) {
               @for (r of g.rows; track $index; let rowIdx = $index) {
@@ -171,16 +171,17 @@
                       class="er-table__cell"
                       [style.flex-basis.%]="c.width || 0"
                       [style.text-align]="(c.alignment || 'left').toLowerCase()"
-                    >{{ resolveText(c.value) || " " }}</span>
+                    >{{ headerText(tbl, c) || " " }}</span>
                   }
                 </div>
               }
             }
           </div>
+          }
 
           <!-- Body section: per-line repeat of the full row stack -->
           <div class="er-table__section er-table__section--body">
-            @for (line of sampleRowsFor(tbl.source); track $index) {
+            @for (line of tableRows(tbl); track $index) {
               <div class="er-table__line">
                 @for (g of tableGroups(tbl); track $index) {
                   @for (r of g.rows; track $index) {
@@ -190,7 +191,7 @@
                           class="er-table__cell"
                           [style.flex-basis.%]="c.width || 0"
                           [style.text-align]="(c.alignment || 'left').toLowerCase()"
-                        >{{ resolveCellForLine(c.key, line) || " " }}</span>
+                        >{{ (tbl.source === '!invoice.lines' ? resolveCellForLine(c.key, line) : resolveValueForLine(c.value, line)) || " " }}</span>
                       }
                     </div>
                   }

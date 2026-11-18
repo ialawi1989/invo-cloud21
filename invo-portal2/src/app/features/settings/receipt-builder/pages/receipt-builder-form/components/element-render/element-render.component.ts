@@ -143,6 +143,30 @@ export class ElementRenderComponent {
     return [];
   }
 
+  /** Like the legacy builder, every table keeps its header row, with or without data rows beneath it. */
+  showHeader(_tbl: TableElement): boolean { return true; }
+
+  /** Rows a table repeats. Taxes / payments rows only come from a REAL invoice (picked with "Choose an invoice"): the sample
+   *  profiles carry no rows for them, as in the legacy builder. */
+  tableRows(tbl: TableElement): Record<string, unknown>[] {
+    if (tbl.source !== '!invoice.lines' && this.profile().invoice.id.startsWith('demo-')) return [];
+    return this.sampleRowsFor(tbl.source);
+  }
+
+  /** Header label of a cell. Lines tables show their label text; for taxes / payments the cell holds a binding
+   *  (`!paymentMethod.name`), shown as a readable name ("Payment Method Name") when there is no data. */
+  headerText(tbl: TableElement, cell: { value?: string; header?: string }): string {
+    if (tbl.source === '!invoice.lines') return this.resolveText(cell.value);
+    if (cell.header?.trim()) return cell.header;
+    return (cell.value ?? '')
+      .replace(/\.[A-Za-z]+\(\)/g, '')
+      .replace(/[!().]/g, ' ')
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      .split(/\s+/).filter(Boolean)
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ');
+  }
+
   /** True when the given QR value carries a ZATCA tax-compliance
    *  binding. Saudi Arabia mandates a specific TLV-encoded payload on
    *  every receipt; we surface a badge so the user can spot which QR
@@ -159,6 +183,12 @@ export class ElementRenderComponent {
    *  preview reads the way the printed receipt will. */
   resolveText(text: string | undefined | null): string {
     return resolveBindings(text ?? '', this.profile());
+  }
+
+  /** Taxes / payments cells keep their binding in `value` (`!name`, `!tenderAmount (!tenderEquivalent.currency())`): every
+   *  `!path` is read from the row, the way the legacy builder and the POS evaluate them. */
+  resolveValueForLine(value: string | undefined, line: Record<string, unknown>): string {
+    return (value ?? '').replace(/!([A-Za-z_][\w.]*(?:\(\))?)/g, (_m, path: string) => resolveLineKey(path, line, this.profile()));
   }
 
   /** Same idea for a Table cell whose `key` is a relative path
@@ -240,6 +270,11 @@ export class ElementRenderComponent {
         background:    '#ffffff',
         lineColor:     '#1f2937',
       });
+      // jsbarcode writes a fixed pixel size and no viewBox. Adding one (and keeping the size) lets a barcode that is wider than
+      // the paper shrink proportionally, while a short one keeps its natural size.
+      const w = parseFloat(svgEl.getAttribute('width') ?? '');
+      const h = parseFloat(svgEl.getAttribute('height') ?? '');
+      if (w > 0 && h > 0) svgEl.setAttribute('viewBox', `0 0 ${w} ${h}`);
       const svg = new XMLSerializer().serializeToString(svgEl);
       return this.sanitizer.bypassSecurityTrustHtml(svg);
     } catch {

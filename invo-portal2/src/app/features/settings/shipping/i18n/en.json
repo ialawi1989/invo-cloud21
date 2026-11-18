@@ -55,6 +55,7 @@
       "ERR_UNBOUNDED": "Only the tier with the highest From can have no upper limit. Enter a To value here, or uncheck No upper limit on the other tier.",
       "ERR_TO_NUMBER": "To must be a number, or empty (no upper limit) on the top tier.",
       "ERR_TO_GREATER": "To must be greater than From.",
+      "UNSAVED_GROUP": "A group is still being edited. Save or cancel it before saving the page.",
       "ERR_RANGE":       "From must be ≥ 0 and To must be greater than From.",
       "ERR_NAME_REQ":    "Rate name is required.",
       "GAP":             "Gap from {{from}} to {{to}}",

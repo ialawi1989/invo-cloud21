@@ -47,6 +47,12 @@
             }
           </label>
         </div>
+        <button type="button" class="icon-btn" (click)="toggleZone(zone.id)"
+          [attr.aria-expanded]="!isCollapsed(zone.id)"
+          [attr.aria-label]="(isCollapsed(zone.id) ? 'COMMON.EXPAND' : 'COMMON.COLLAPSE') | translate"
+          [appTooltip]="(isCollapsed(zone.id) ? 'COMMON.EXPAND' : 'COMMON.COLLAPSE') | translate">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" [style.transform]="isCollapsed(zone.id) ? 'rotate(-90deg)' : ''"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
         <button type="button" class="icon-btn icon-btn--danger" (click)="deleteZone(zone.id)"
           [attr.aria-label]="'SHIPPING.ZONE.DELETE' | translate"
           [appTooltip]="'SHIPPING.ZONE.DELETE' | translate">
@@ -57,6 +63,7 @@
         </button>
       </header>
 
+      @if (!isCollapsed(zone.id)) {
       <label class="zone__taxx">
         <input type="checkbox" [ngModel]="zone.taxExempt" (ngModelChange)="setZoneTaxExempt(zone.id, $event)"/>
         {{ 'SHIPPING.ZONE.TAX_EXEMPT' | translate }}
@@ -289,7 +296,15 @@
         }
         </div>
       </div>
+      }
     </section>
+  }
+
+  @if (editingGroup() !== null) {
+    <div class="unsaved-banner" role="alert">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      {{ 'SHIPPING.RATES.UNSAVED_GROUP' | translate }}
+    </div>
   }
 
   <footer class="save-bar">

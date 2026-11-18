@@ -48,6 +48,14 @@
     "WIDGET_DRAG_HINT":         "اسحب لأعلى/أسفل لإعادة الترتيب · أفلت على رأس آخر لدمجه كعلامة تبويب",
     "RESIZE_PANEL":             "اسحب لتغيير حجم اللوحة",
 
+    "CLIPBOARD": {
+
+      "COPIED": "تم نسخ العنصر",
+
+      "FAILED": "الحافظة غير متاحة"
+
+    },
+
     "JSON": {
 
       "EXPORT": "تصدير JSON",
@@ -175,6 +183,8 @@
     },
 
     "TABLE_EDITOR": {
+      "HEADER": "نص العنوان",
+      "HEADER_PLACEHOLDER": "العنوان (فارغ = تلقائي)",
       "GROUP":             "مجموعة {{n}}",
       "ROW":               "الصف {{n}}",
       "ROW_STATIC":        "ترويسة",
@@ -208,6 +218,9 @@
 
     "DEMO": {
       "PREVIEW_AS":      "عرض كـ",
+      "CHOOSE_INVOICE": "اختر فاتورة",
+      "SELECT_INVOICE": "اختر فاتورة",
+      "INVOICE_LOAD_FAILED": "تعذر تحميل هذه الفاتورة.",
       "PROFILE_DEFAULT": "افتراضي",
       "PROFILE_DINE_IN": "تناول داخلي",
       "PROFILE_PAID":    "مدفوعة",

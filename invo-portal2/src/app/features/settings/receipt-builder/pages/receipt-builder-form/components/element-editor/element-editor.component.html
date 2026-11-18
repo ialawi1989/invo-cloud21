@@ -617,6 +617,8 @@
                     <app-table-columns-editor
                       [groups]="t.groups || []"
                       [addColumnCatalog]="catalogFor(t.source)"
+                      [templateType]="templateType()"
+                      [source]="t.source"
                       (groupsChange)="emit('groups', $event)"
                     />
                   }

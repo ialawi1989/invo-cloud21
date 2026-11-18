@@ -8,7 +8,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { NgTemplateOutlet, CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -36,11 +36,15 @@ import { RbfWidgetComponent } from './components/rbf-widget/rbf-widget.component
 import { RbfWidgetCoordinator } from './components/rbf-widget/rbf-widget-coordinator.service';
 import { ModalService } from '@shared/modal/modal.service';
 import { ToastService } from '@shared/components/toast/toast.service';
+import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { ConfirmModalComponent, ConfirmModalData } from '@shared/modal/demo/confirm-modal.component';
 import { CompanyService } from '@core/auth/company.service';
 
 import { ReceiptBuilderService } from '../../services/receipt-builder.service';
 import { elementFromWire, elementToWire } from '../../services/receipt-wire';
+import { invoiceToDemo } from '../../services/invoice-preview';
+import { InvoicesService } from '../../../../account/invoices/services/invoices.service';
+import type { DemoInvoice } from '../../services/binding-resolver';
 import {
   PALETTE_ITEMS,
   ZATCA_PALETTE_ITEM,
@@ -123,6 +127,7 @@ interface HistoryEntry {
     FormsModule,
     TranslateModule,
     DragDropModule,
+    NgTemplateOutlet,
     OverlayModule,
     LoadingOverlayComponent,
     DesktopOnlyNoticeComponent,
@@ -132,6 +137,7 @@ interface HistoryEntry {
     RbfWidgetComponent,
     TooltipDirective,
     SegmentedToggleComponent,
+    SearchDropdownComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './receipt-builder-form.component.html',
@@ -143,6 +149,7 @@ export class ReceiptBuilderFormComponent implements OnInit, CanLeaveComponent {
   private destroyRef = inject(DestroyRef);
   private router     = inject(Router);
   private toast      = inject(ToastService);
+  private invoices   = inject(InvoicesService);
   private route      = inject(ActivatedRoute);
   private modal      = inject(ModalService);
   private companies  = inject(CompanyService);
@@ -228,7 +235,13 @@ export class ReceiptBuilderFormComponent implements OnInit, CanLeaveComponent {
    *  We fall back to `logoUrl` / `logo` so older Company shapes still
    *  work, but `mediaUrl.defaultUrl` is the canonical field. */
   activeProfile = computed<DemoProfile>(() => {
-    const base = this.demoProfiles.find((p) => p.id === this.activeProfileId()) ?? this.demoProfiles[0];
+    const base0 = this.demoProfiles.find((p) => p.id === this.activeProfileId()) ?? this.demoProfiles[0];
+    // A real invoice picked with "Choose an invoice" replaces the sample invoice (its branch details replace the sample's too).
+    const real = this.previewInvoice();
+    const br = this.previewBranch();
+    const base: DemoProfile = real
+      ? { ...base0, invoice: real, preferences: { ...base0.preferences, branchName: br.name || base0.preferences.branchName, branchAddress: br.address || base0.preferences.branchAddress, phoneNumber: br.phone || base0.preferences.phoneNumber } }
+      : base0;
     const company = this.companies.currentCompany() as
       | { name?: string; logo?: string; logoUrl?: string; mediaUrl?: { defaultUrl?: string } }
       | null;
@@ -249,6 +262,38 @@ export class ReceiptBuilderFormComponent implements OnInit, CanLeaveComponent {
   });
 
   /** The legacy builder adds the ZATCA QR tile only for Saudi Arabia companies. */
+  // ── "Choose an invoice" (legacy preview picker) ─────────────────────────
+  /** The invoice picked for the preview; null means the sample profile is shown. */
+  previewInvoice = signal<DemoInvoice | null>(null);
+  previewBranch = signal<{ name: string; address: string; phone: string }>({ name: '', address: '', phone: '' });
+  pickedInvoice = signal<{ id: string; invoiceNumber: string } | null>(null);
+
+  /** Same list the legacy picker loads: open / paid / closed / partially paid invoices, searchable, paged. */
+  loadInvoices = async (p: { page: number; pageSize: number; search: string }) => {
+    const d = await this.invoices.getInvoiceList({
+      page: p.page, limit: p.pageSize, searchTerm: p.search,
+      filter: { status: ['Open', 'Paid', 'Closed', 'Partially Paid'] },
+    });
+    return { items: d?.list ?? [], hasMore: p.page < (d?.pageCount ?? 1) };
+  };
+  invoiceLabel = (i: { invoiceNumber?: string } | null) => i?.invoiceNumber ?? '';
+  invoiceCompare = (a: { id?: string } | null, b: { id?: string } | null) => (a?.id ?? null) === (b?.id ?? null);
+
+  async onInvoicePicked(v: unknown): Promise<void> {
+    const picked = (Array.isArray(v) ? v[0] : v) as { id: string; invoiceNumber: string } | null;
+    this.pickedInvoice.set(picked ?? null);
+    if (!picked?.id) { this.previewInvoice.set(null); return; }
+    try {
+      const inv: any = await this.invoices.getInvoice(picked.id);
+      this.previewBranch.set({ name: inv.branchName ?? '', address: inv.branchAddress ?? '', phone: inv.branchPhone ?? '' });
+      this.previewInvoice.set(invoiceToDemo(inv));
+    } catch {
+      this.toast.error('RECEIPT_BUILDER.DEMO.INVOICE_LOAD_FAILED');
+      this.pickedInvoice.set(null);
+      this.previewInvoice.set(null);
+    }
+  }
+
   readonly paletteItems = computed(() =>
     (this.companies.settings() as { country?: string } | null)?.country === 'Saudi Arabia'
       ? [...PALETTE_ITEMS, ZATCA_PALETTE_ITEM]
@@ -667,6 +712,9 @@ export class ReceiptBuilderFormComponent implements OnInit, CanLeaveComponent {
     const k = ev.key.toLowerCase();
     if (k === 'z' && !ev.shiftKey)               { ev.preventDefault(); this.undo(); }
     else if ((k === 'z' && ev.shiftKey) || k === 'y') { ev.preventDefault(); this.redo(); }
+    else if ((k === 'c' || k === 'v') && !this.isTypingTarget(ev.target)) {
+      if (k === 'c') void this.copySelected(); else void this.pasteElement();
+    }
     else if (k === 's') {
       ev.preventDefault();
       if (!this.saving() && !this.loading() && this.isDirty() && this.template().name.trim()) void this.save();
@@ -694,9 +742,12 @@ export class ReceiptBuilderFormComponent implements OnInit, CanLeaveComponent {
    *  drags whose source is the canvas itself; palette-to-canvas
    *  drops still work via the cross-list branch in
    *  `onElementsDrop`. */
-  canvasSortPredicate = (_index: number, drag: { dropContainer: { id: string } }): boolean => {
-    return drag.dropContainer.id === 'rbf-canvas';
-  };
+
+  /** Id of the palette tile currently being dragged (drives the ghost tile that holds its place in the rail). */
+  readonly draggingPalette = signal<string | null>(null);
+
+  /** The palette is a fixed catalogue: nothing can be dropped into it, so its tiles never reorder or take canvas elements. */
+  readonly never = (): boolean => false;
 
   onElementsDrop(event: CdkDragDrop<PrintElement[]>): void {
     if (event.previousContainer === event.container) {
@@ -774,6 +825,38 @@ export class ReceiptBuilderFormComponent implements OnInit, CanLeaveComponent {
     } finally {
       this.saving.set(false);
     }
+  }
+
+  private isTypingTarget(t: EventTarget | null): boolean {
+    const el = t as HTMLElement | null;
+    return !!el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable);
+  }
+
+  /** Legacy copy: the selected element goes to the clipboard as JSON (so it can also be pasted into another template). */
+  async copySelected(): Promise<void> {
+    const el = this.template().recieptTemplate.find((e) => e.__key === this.selectedKey());
+    if (!el) return;
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(elementToWire({ ...el, id: '' })));
+      this.toast.success('RECEIPT_BUILDER.CLIPBOARD.COPIED');
+    } catch { this.toast.error('RECEIPT_BUILDER.CLIPBOARD.FAILED'); }
+  }
+
+  /** Legacy paste: a fresh element built from the clipboard JSON goes in after the selected element (or at the end). */
+  async pasteElement(): Promise<void> {
+    let data: any;
+    try { data = JSON.parse(await navigator.clipboard.readText()); } catch { return; }
+    if (!data || typeof data !== 'object' || Array.isArray(data) || typeof data.type !== 'string') return;
+    const [fresh] = parseElements([elementFromWire({ ...data, id: '', __key: undefined })]);
+    if (!fresh) return;
+    this.captureBefore(`Paste ${fresh.type}`, `paste:${Date.now()}`);
+    this.template.update((tp) => {
+      const next = [...tp.recieptTemplate];
+      const at = next.findIndex((e) => e.__key === this.selectedKey());
+      next.splice(at < 0 ? next.length : at + 1, 0, fresh);
+      return { ...tp, recieptTemplate: next };
+    });
+    this.selectedKey.set(fresh.__key ?? '');
   }
 
   /** Download the elements as a plain JSON array, the same file the legacy builder exports. */

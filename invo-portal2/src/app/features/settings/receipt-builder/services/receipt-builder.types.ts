@@ -155,6 +155,9 @@ export interface TableCell {
   alignment: string;
   isVisible: boolean;
   isRequired?: boolean;
+  /** Header text shown above a taxes / payments column. Those cells keep a per-row binding in `value`, so the header is a
+   *  separate, optional label (empty means a readable name made from the binding). */
+  header?: string;
   type?: string;
   isSelected?: boolean;
   /** Stable client-only id for CDK drag tracking. Stamped by the
@@ -254,14 +257,15 @@ export interface PaletteItem {
 }
 
 export const PALETTE_ITEMS: PaletteItem[] = [
-  { id: 'SideText',      iconId: 'SideText',      labelKey: 'SideText',      factory: () => makeElement('SideText') },
-  { id: 'Text',          iconId: 'Text',          labelKey: 'Text',          factory: () => makeElement('Text') },
+  // Palette-added text elements start with example text so they are visible on the canvas; the default templates build their own.
+  { id: 'SideText',      iconId: 'SideText',      labelKey: 'SideText',      factory: () => ({ ...(makeElement('SideText') as SideTextElement), leftText: 'Example text', rightText: 'Example text' }) },
+  { id: 'Text',          iconId: 'Text',          labelKey: 'Text',          factory: () => ({ ...(makeElement('Text') as TextElement), value: 'Example text' }) },
   { id: 'Spacer',        iconId: 'Spacer',        labelKey: 'Spacer',        factory: () => makeElement('Spacer') },
   { id: 'Line',          iconId: 'Line',          labelKey: 'Line',          factory: () => makeElement('Line') },
   { id: 'Logo',          iconId: 'Logo',          labelKey: 'Logo',          factory: () => makeElement('Logo') },
   { id: 'Image',         iconId: 'Image',         labelKey: 'Image',         factory: () => makeElement('Image') },
-  { id: 'QrCode',        iconId: 'QrCode',        labelKey: 'QrCode',        factory: () => makeElement('QrCode') },
-  { id: 'Barcode',       iconId: 'Barcode',       labelKey: 'Barcode',       factory: () => makeElement('Barcode') },
+  { id: 'QrCode',        iconId: 'QrCode',        labelKey: 'QrCode',        factory: () => ({ ...(makeElement('QrCode') as QrCodeElement), value: '!invoice.refrenceNumber' }) },
+  { id: 'Barcode',       iconId: 'Barcode',       labelKey: 'Barcode',       factory: () => ({ ...(makeElement('Barcode') as BarcodeElement), value: '!invoice.refrenceNumber' }) },
   { id: 'TableLines',    iconId: 'TableLines',    labelKey: 'TableLines',    factory: makeTableLines },
   { id: 'TableTaxes',    iconId: 'TableTaxes',    labelKey: 'TableTaxes',    factory: makeTableTaxes },
   { id: 'TablePayments', iconId: 'TablePayments', labelKey: 'TablePayments', factory: makeTablePayments },

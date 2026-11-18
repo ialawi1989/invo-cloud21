@@ -564,3 +564,6 @@
     }
   }
 }
+
+.tce-row__header { display: flex; align-items: center; justify-content: space-between; }
+.tce-row__remove { appearance: none; border: 0; background: transparent; width: 24px; height: 24px; border-radius: 6px; color: #94a3b8; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; &:hover { background: #fef2f2; color: #b91c1c; } }

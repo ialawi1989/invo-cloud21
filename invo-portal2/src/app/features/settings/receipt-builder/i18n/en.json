@@ -48,6 +48,14 @@
     "WIDGET_DRAG_HINT":         "Drag up/down to reorder · drop on another header to merge as a tab",
     "RESIZE_PANEL":             "Drag to resize panel",
 
+    "CLIPBOARD": {
+
+      "COPIED": "Element copied",
+
+      "FAILED": "Clipboard is not available"
+
+    },
+
     "JSON": {
 
       "EXPORT": "Export JSON",
@@ -175,6 +183,8 @@
     },
 
     "TABLE_EDITOR": {
+      "HEADER": "Header text",
+      "HEADER_PLACEHOLDER": "Header (empty = automatic)",
       "GROUP":             "Group {{n}}",
       "ROW":               "Row {{n}}",
       "ROW_STATIC":        "Header",
@@ -208,6 +218,9 @@
 
     "DEMO": {
       "PREVIEW_AS":      "Preview as",
+      "CHOOSE_INVOICE": "Choose an invoice",
+      "SELECT_INVOICE": "Select an invoice",
+      "INVOICE_LOAD_FAILED": "Could not load that invoice.",
       "PROFILE_DEFAULT": "Default",
       "PROFILE_DINE_IN": "Dine-in",
       "PROFILE_PAID":    "Paid",

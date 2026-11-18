@@ -138,17 +138,14 @@
 
 .er-barcode {
   display: block;
-  width: 100%;
-  max-width: 240px;
+  max-width: 100%;
   background: #fff;
 
-  /* `jsbarcode` writes a fixed-width SVG; let it scale to the
-     wrapper's width while keeping the bar height the user picked.
-     `display: block` on the inline SVG kills the baseline gap. */
+  /* Natural size (the bar height the user picked), shrinking proportionally only when wider than the paper. */
   > svg {
     display: block;
-    width: 100%;
-    height: 100%;
+    max-width: 100%;
+    height: auto;
   }
 }
 

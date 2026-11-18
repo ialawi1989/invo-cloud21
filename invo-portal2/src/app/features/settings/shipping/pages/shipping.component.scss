@@ -447,3 +447,5 @@ select.field__input {
 .rg__note { display: inline-flex; align-items: center; gap: 4px; color: #64748b; }
 .rg__diag-chip--gap { background: #fef3c7; color: #92400e; }
 .rg__diag-chip--overlap { background: #fee2e2; color: #b91c1c; }
+
+.unsaved-banner { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 10px; background: #fffbeb; border: 1px solid #fde68a; color: #92400e; font-size: 13px; font-weight: 600; }

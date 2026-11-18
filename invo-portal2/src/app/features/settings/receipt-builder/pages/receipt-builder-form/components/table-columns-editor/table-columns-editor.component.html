@@ -40,6 +40,14 @@
           <h3 class="tce-row__title">
             {{ 'RECEIPT_BUILDER.TABLE_EDITOR.ROW' | translate: { n: ri + 1 } }}
           </h3>
+          @if (ri > 0 && templateType() === 'kitchen') {
+            <button type="button" class="tce-row__remove" (click)="removeRow(gi, ri)"
+              [attr.aria-label]="'COMMON.DELETE' | translate" [appTooltip]="'COMMON.DELETE' | translate">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+              </svg>
+            </button>
+          }
         </header>
 
         <div
@@ -149,6 +157,19 @@
               @if (isExpanded(cell.__key)) {
                 <div class="tce-detail" (click)="$event.stopPropagation()">
                   <span class="tce-detail__key-chip" [appTooltip]="cell.key">{{ cell.key || '—' }}</span>
+
+                  @if (hasHeaderField()) {
+                    <div class="tce-detail__field">
+                      <label>{{ 'RECEIPT_BUILDER.TABLE_EDITOR.HEADER' | translate }}</label>
+                      <input
+                        type="text"
+                        [ngModel]="cell.header ?? ''"
+                        (ngModelChange)="patchCell(gi, ri, ci, 'header', $event)"
+                        [placeholder]="'RECEIPT_BUILDER.TABLE_EDITOR.HEADER_PLACEHOLDER' | translate"
+                        [ngModelOptions]="{ standalone: true }"
+                      />
+                    </div>
+                  }
 
                   <div class="tce-detail__field">
                     <label>{{ 'RECEIPT_BUILDER.EDITOR.VALUE' | translate }}</label>

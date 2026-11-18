@@ -71,6 +71,7 @@ export function elementToWire(el: PrintElement): Record<string, unknown> {
           isSelected: false,
           isVisible: c.isVisible !== false,
           isRequired: !!c.isRequired,
+          ...(typeof c.header === 'string' && c.header.trim() ? { header: c.header } : {}),
         })),
         visible: r.visible ?? { value: '', operator: '', property: '' },
         source: r.source ?? {},

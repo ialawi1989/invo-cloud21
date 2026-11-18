@@ -609,7 +609,6 @@
     // The placeholder is the gap left in the rail while the tile is
     // being dragged. Hide it — the palette is a static catalogue, the
     // tile mustn't appear to "leave" the rail.
-    &.cdk-drag-placeholder { display: none; }
 
     // The dragging clone CDK appends to <body>. It floats with the
     // cursor, so give it a tighter shadow + brand border to read as
@@ -863,3 +862,20 @@
     line-height: 1.5;
   }
 }
+
+.rbf-topbar__end { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+
+.rbf-preview-toolbar__invoice { display: flex; align-items: center; gap: 10px; width: 100%; > app-search-dropdown { flex: 1; min-width: 0; } }
+
+// Drop marker for a palette tile dragged over the canvas: a dashed slot that opens where the element will be inserted.
+.rbf-drop-ph {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 44px; margin: 4px 0; padding: 8px 12px;
+  border: 2px dashed var(--color-brand-400, #22b8cf); border-radius: 10px;
+  background: var(--color-brand-50, #ecfeff); color: var(--color-brand-700, #0e7490);
+  font-size: 12px; font-weight: 700;
+  transition: transform 150ms ease;
+}
+// The palette keeps its own faded ghost tile while a tile is dragged, so the in-rail placeholder stays hidden.
+.rbf-palette__list .rbf-drop-ph { display: none; }
+.rbf-palette__item--ghost { opacity: 0.45; pointer-events: none; list-style: none; }

@@ -154,6 +154,13 @@ export class ShippingComponent implements OnInit, CanLeaveComponent {
   /** Rows the server refused on the last save, by rate id (cleared when that row is edited). */
   rowErrors = signal<Record<number, string>>({});
 
+  /** Zones folded shut by the user (view-only state, never saved). */
+  private collapsedZones = signal<ReadonlySet<number>>(new Set());
+  isCollapsed(zoneId: number): boolean { return this.collapsedZones().has(zoneId); }
+  toggleZone(zoneId: number): void {
+    this.collapsedZones.update((s) => { const n = new Set(s); if (n.has(zoneId)) n.delete(zoneId); else n.add(zoneId); return n; });
+  }
+
   /** Aggregate "is the page invalid" flag — rolls per-zone, per-
    *  group, per-rate state into a single boolean for the save
    *  button's `[disabled]`. */

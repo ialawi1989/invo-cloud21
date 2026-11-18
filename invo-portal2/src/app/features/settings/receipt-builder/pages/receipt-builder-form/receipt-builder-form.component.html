@@ -175,19 +175,30 @@
       }
     </div>
 
-    <!-- JSON export / import: same file format as the legacy builder (a plain array of elements). -->
-    <input #jsonFile type="file" accept=".json,application/json" hidden (change)="onJsonFileSelected($event)"/>
-    <button type="button" class="btn btn-ghost btn-sm" (click)="exportJson()" [disabled]="loading()">{{ 'RECEIPT_BUILDER.JSON.EXPORT' | translate }}</button>
-    <button type="button" class="btn btn-ghost btn-sm" (click)="importJson(jsonFile)" [disabled]="loading()">{{ 'RECEIPT_BUILDER.JSON.IMPORT' | translate }}</button>
-
-    <button
-      type="button"
-      class="btn btn-primary"
-      (click)="save()"
-      [disabled]="saving() || loading() || !isDirty() || !template().name.trim()"
-    >
-      {{ 'COMMON.SAVE' | translate }}
-    </button>
+    <div class="rbf-topbar__end">
+      <!-- JSON export / import: same file format as the legacy builder (a plain array of elements). -->
+      <input #jsonFile type="file" accept=".json,application/json" hidden (change)="onJsonFileSelected($event)"/>
+      <button type="button" class="rbf-history__btn" (click)="exportJson()" [disabled]="loading()"
+        [attr.aria-label]="'RECEIPT_BUILDER.JSON.EXPORT' | translate" [appTooltip]="'RECEIPT_BUILDER.JSON.EXPORT' | translate">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+      </button>
+      <button type="button" class="rbf-history__btn" (click)="importJson(jsonFile)" [disabled]="loading()"
+        [attr.aria-label]="'RECEIPT_BUILDER.JSON.IMPORT' | translate" [appTooltip]="'RECEIPT_BUILDER.JSON.IMPORT' | translate">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+      </button>
+      <button
+        type="button"
+        class="btn btn-primary"
+        (click)="save()"
+        [disabled]="saving() || loading() || !isDirty() || !template().name.trim()"
+      >
+        {{ 'COMMON.SAVE' | translate }}
+      </button>
+    </div>
   </header>
 
   @if (loading()) {
@@ -217,14 +228,10 @@
           cdkDropList
           id="rbf-palette"
           cdkDropListSortingDisabled
+          [cdkDropListEnterPredicate]="never"
           [cdkDropListConnectedTo]="['rbf-canvas']"
         >
-          @for (item of paletteItems(); track trackPalette($index, item)) {
-            <li
-              cdkDrag
-              [cdkDragData]="{ paletteId: item.id }"
-              class="rbf-palette__item"
-            >
+                    <ng-template #tileTpl let-item>
               <button type="button" class="rbf-palette__tile" (click)="addElement(item)">
                 <span class="rbf-palette__icon" aria-hidden="true">
                   <!-- Inlined SVG per icon id — Angular sanitises <svg>
@@ -303,7 +310,27 @@
                 </span>
                 <span class="rbf-palette__label">{{ ('RECEIPT_BUILDER.ELEMENTS.' + item.labelKey) | translate }}</span>
               </button>
+          </ng-template>
+          @for (item of paletteItems(); track trackPalette($index, item)) {
+            <li
+              cdkDrag
+              [cdkDragData]="{ paletteId: item.id }"
+              (cdkDragStarted)="draggingPalette.set(item.id)"
+              (cdkDragEnded)="draggingPalette.set(null)"
+              class="rbf-palette__item"
+            >
+              <!-- Shown where the new element will land while a tile is dragged over the canvas (hidden in the rail itself). -->
+              <div class="rbf-drop-ph" *cdkDragPlaceholder>
+                <span>{{ 'RECEIPT_BUILDER.ELEMENTS.' + item.labelKey | translate }}</span>
+              </div>
+              <ng-container *ngTemplateOutlet="tileTpl; context: { $implicit: item }"/>
             </li>
+            <!-- While this tile is dragged away (CDK hides the original), a faded copy keeps its place so the rail never changes. -->
+            @if (draggingPalette() === item.id) {
+              <li class="rbf-palette__item rbf-palette__item--ghost" aria-hidden="true">
+                <ng-container *ngTemplateOutlet="tileTpl; context: { $implicit: item }"/>
+              </li>
+            }
           }
         </ul>
         </app-rbf-widget>
@@ -323,14 +350,21 @@
             [options]="previewProfileOptions"
             [value]="activeProfileId()"
             (valueChange)="activeProfileId.set($any($event))"/>
+          <label class="rbf-preview-toolbar__invoice">
+            <span class="rbf-preview-toolbar__label">{{ 'RECEIPT_BUILDER.DEMO.CHOOSE_INVOICE' | translate }}</span>
+            <app-search-dropdown
+              [loadFn]="loadInvoices" [pageSize]="20"
+              [displayWith]="invoiceLabel" [compareWith]="invoiceCompare"
+              [value]="pickedInvoice()" [clearable]="true" [searchable]="true"
+              [placeholder]="'RECEIPT_BUILDER.DEMO.SELECT_INVOICE' | translate"
+              (valueChange)="onInvoicePicked($any($event))"/>
+          </label>
         </div>
 
         <div
           class="rbf-canvas"
           cdkDropList
           id="rbf-canvas"
-          [cdkDropListConnectedTo]="['rbf-palette']"
-          [cdkDropListSortPredicate]="canvasSortPredicate"
           (cdkDropListDropped)="onElementsDrop($event)"
         >
           @if (template().recieptTemplate.length === 0) {
