@@ -561,7 +561,15 @@
     "LOGOUT": "تسجيل الخروج",
     "SWITCH_COMPANY": "تبديل الشركة",
     "NO_OTHER_COMPANIES": "لا توجد شركات أخرى",
-    "LOADING": "جاري التحميل…"
+    "LOADING": "جاري التحميل…",
+    "SHOW": "إظهار",
+    "HIDE": "إخفاء",
+    "PASSWORD_PROMPT": "أدخل كلمة المرور للتبديل بين الشركات.",
+    "PASSWORD_PLACEHOLDER": "أدخل كلمة المرور",
+    "CONFIRM": "تأكيد",
+    "CANCEL": "إلغاء",
+    "PASSWORD_REQUIRED": "هذا الحقل مطلوب",
+    "PASSWORD_WRONG": "كلمة المرور غير صحيحة. حاول مرة أخرى."
   },
   "GLOBAL_SEARCH": {
     "PLACEHOLDER": "ابحث في الصفحات والإعدادات",
@@ -586,6 +594,7 @@
   },
   "NOTIFICATIONS_PANEL": {
     "TITLE": "الإشعارات",
+    "NEW_ORDER": "طلب جديد",
     "SUBTITLE": "طلبات معلقة بانتظار القرار.",
     "SOUND_ON": "التنبيه الصوتي مفعل",
     "SOUND_OFF": "التنبيه الصوتي متوقف",

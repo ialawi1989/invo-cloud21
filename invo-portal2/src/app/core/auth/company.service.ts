@@ -148,6 +148,14 @@ export class CompanyService {
     }
   }
 
+  /** True when `password` is the signed-in employee's password (`company/validatePassword`). */
+  async validatePassword(password: string): Promise<boolean> {
+    const res = await firstValueFrom(
+      this.http.post<any>(`${this.baseUrl}company/validatePassword`, { password })
+    );
+    return res?.success === true;
+  }
+
   // ─── Switch company ──────────────────────────────────────────────────────
   // GET /company/switchCompnay/:id  (typo kept intentionally)
 

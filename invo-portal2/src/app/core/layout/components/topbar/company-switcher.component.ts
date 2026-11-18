@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { LanguageService } from '../../../i18n/language.service';
 import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../../../auth/auth.service';
 import { CompanyService } from '../../../auth/company.service';
@@ -18,7 +19,7 @@ import { EmployeeAiOverrideComponent } from '../../../ai/employee-ai-override/em
 @Component({
   selector: 'app-company-switcher',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslateModule],
+  imports: [CommonModule, RouterModule, FormsModule, TranslateModule],
   template: `
     <div class="sw">
 
@@ -83,7 +84,14 @@ import { EmployeeAiOverrideComponent } from '../../../ai/employee-ai-override/em
       </div>
 
       <!-- Company list -->
-      <div class="list-label">{{ 'COMPANY_SWITCHER.SWITCH_COMPANY' | translate }}</div>
+      <div class="list-label">
+        {{ 'COMPANY_SWITCHER.SWITCH_COMPANY' | translate }}
+        @if (hasProtected()) {
+          <button type="button" class="list-link" (click)="revealed.set(!revealed())">
+            {{ (revealed() ? 'COMPANY_SWITCHER.HIDE' : 'COMPANY_SWITCHER.SHOW') | translate }}
+          </button>
+        }
+      </div>
 
       @if (loading()) {
         <div class="loading-row">
@@ -96,10 +104,13 @@ import { EmployeeAiOverrideComponent } from '../../../ai/employee-ai-override/em
 
       <div class="company-list">
         @for (company of companyService.companies(); track company.id) {
+          <div class="company-item"
+               [class.company-item--blur]="isProtected(company)">
           <button
             class="company-row"
             [class.rtl]="langService.isRtl()"
             [class.company-row--active]="company.id === companyService.currentCompany()?.id"
+            [class.company-row--pending]="pending()?.id === company.id"
             (click)="onSwitch(company)"
             [disabled]="switching() !== null">
 
@@ -131,15 +142,37 @@ import { EmployeeAiOverrideComponent } from '../../../ai/employee-ai-override/em
               }
             </span>
           </button>
+
+          @if (pending()?.id === company.id) {
+            <!-- The password step: switching company needs the employee's password again. -->
+            <form class="pw" (ngSubmit)="confirmSwitch()">
+              <p class="pw-msg">{{ 'COMPANY_SWITCHER.PASSWORD_PROMPT' | translate }}</p>
+              <input class="pw-input" type="password" name="password" autocomplete="current-password"
+                     [(ngModel)]="password" [class.pw-input--err]="!!pwError()"
+                     [placeholder]="'COMPANY_SWITCHER.PASSWORD_PLACEHOLDER' | translate"
+                     [disabled]="switching() !== null" autofocus />
+              @if (pwError()) { <p class="pw-err">{{ pwError() | translate }}</p> }
+              <div class="pw-actions">
+                <button type="button" class="pw-btn pw-btn--cancel" (click)="cancelSwitch()" [disabled]="switching() !== null">
+                  {{ 'COMPANY_SWITCHER.CANCEL' | translate }}
+                </button>
+                <button type="submit" class="pw-btn pw-btn--confirm" [disabled]="switching() !== null">
+                  @if (switching() === company.id) { <span class="pw-spin"></span> } @else { {{ 'COMPANY_SWITCHER.CONFIRM' | translate }} }
+                </button>
+              </div>
+            </form>
+          }
+          </div>
         }
       </div>
 
     </div>
   `,
   styles: [`
-    :host { display: block; }
+    /* Fills the drawer, so the company list runs down to its bottom edge. */
+    :host { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
 
-    .sw { min-width: 280px; }
+    .sw { min-width: 280px; display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
 
     /* Identity */
     .identity {
@@ -181,6 +214,10 @@ import { EmployeeAiOverrideComponent } from '../../../ai/employee-ai-override/em
     }
 
     /* List */
+    .list-link {
+      float: inline-end; border: 0; background: none; padding: 0; cursor: pointer; font: inherit; font-size: 12px; font-weight: 600;
+      text-transform: none; letter-spacing: 0; color: #2b95a8; &:hover { text-decoration: underline; }
+    }
     .list-label {
       padding: 12px 18px 6px;
       font-size: 11px; font-weight: 600; color: #94a3b8;
@@ -196,7 +233,7 @@ import { EmployeeAiOverrideComponent } from '../../../ai/employee-ai-override/em
 
     .company-list {
       padding: 4px 8px 10px;
-      max-height: 240px; overflow-y: auto;
+      flex: 1 1 auto; min-height: 0; overflow-y: auto;
       scrollbar-width: thin; scrollbar-color: #e2e8f0 transparent;
     }
     .company-row {
@@ -209,6 +246,32 @@ import { EmployeeAiOverrideComponent } from '../../../ai/employee-ai-override/em
       &:disabled { cursor: default; opacity: .7; }
     }
     .company-row--active { background: #f0fdfd; }
+    .company-row--pending { background: #f8fafc; }
+
+    /* The other companies are blurred (their names are not for onlookers); the one being switched to and the current one stay clear. */
+    .company-item { transition: filter .2s, opacity .2s; }
+    .company-item--blur { filter: blur(4px); opacity: .65; user-select: none; }
+    .company-item--blur:hover { filter: blur(3px); }
+
+    /* Password step */
+    .pw { padding: 4px 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+    .pw-msg { margin: 0; font-size: 12.5px; color: #475569; text-align: center; }
+    .pw-input {
+      height: 40px; padding: 0 12px; box-sizing: border-box; width: 100%;
+      border: 1.5px solid #e5e7eb; border-radius: 8px; font: inherit; font-size: 14px; color: #111827; outline: none; text-align: center;
+      &:focus { border-color: #32acc1; }
+    }
+    .pw-input--err { border-color: #ef4444; }
+    .pw-err { margin: 0; font-size: 12px; color: #ef4444; text-align: center; }
+    .pw-actions { display: flex; gap: 8px; }
+    .pw-btn {
+      flex: 1; height: 38px; border-radius: 8px; font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; border: none;
+      display: flex; align-items: center; justify-content: center; transition: background .15s;
+      &:disabled { opacity: .6; cursor: not-allowed; }
+    }
+    .pw-btn--cancel { background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; &:hover:not(:disabled) { background: #fee2e2; } }
+    .pw-btn--confirm { background: #32acc1; color: #fff; &:hover:not(:disabled) { background: #2b95a8; } }
+    .pw-spin { width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; animation: spin .6s linear infinite; }
 
     .co-logo {
       width: 36px; height: 36px; border-radius: 8px; flex-shrink: 0;
@@ -264,6 +327,12 @@ export class CompanySwitcherComponent implements OnInit {
   langService = inject(LanguageService);
   loggingOut = signal(false);
   switching  = signal<string | null>(null);
+  /** The company the user clicked: its password step is open under it. */
+  pending    = signal<Company | null>(null);
+  /** The other companies are blurred until the user chooses to show them. */
+  revealed   = signal(false);
+  password   = '';
+  pwError    = signal('');
 
   employee    = toSignal(this.auth.employee$, { initialValue: this.auth.currentEmployee });
   avatarBroken = signal(false);
@@ -289,9 +358,54 @@ export class CompanySwitcherComponent implements OnInit {
     }
   }
 
-  async onSwitch(company: Company): Promise<void> {
-    if (company.id === this.companyService.currentCompany()?.id) return;
+  /**
+   * Blurred = the user sees this company only because they are a super admin, not because someone gave them access to it
+   * (`hasGrant`, sent by the backend), so a person at a shared screen cannot read its name. Granted companies, the current one,
+   * the one being switched to, and everything after "Show" are clear. Without the flag (older backend) it stays blurred.
+   */
+  isProtected(company: Company): boolean {
+    return !this.revealed()
+      && company['hasGrant'] !== true
+      && company.id !== this.companyService.currentCompany()?.id
+      && this.pending()?.id !== company.id;
+  }
 
+  hasProtected = computed(() =>
+    this.companyService.companies().some(c => c.id !== this.companyService.currentCompany()?.id && c['hasGrant'] !== true));
+
+  /** Clicking another company opens its password step (clicking it again closes it). */
+  onSwitch(company: Company): void {
+    if (company.id === this.companyService.currentCompany()?.id || this.switching() !== null) return;
+    if (this.pending()?.id === company.id) { this.cancelSwitch(); return; }
+    this.password = '';
+    this.pwError.set('');
+    this.pending.set(company);
+  }
+
+  cancelSwitch(): void { this.pending.set(null); this.password = ''; this.pwError.set(''); }
+
+  /** Checks the password, then switches. */
+  async confirmSwitch(): Promise<void> {
+    const company = this.pending();
+    if (!company) return;
+    if (!this.password.trim()) { this.pwError.set('COMPANY_SWITCHER.PASSWORD_REQUIRED'); return; }
+    this.switching.set(company.id);
+    this.pwError.set('');
+    try {
+      if (!(await this.companyService.validatePassword(this.password))) {
+        this.pwError.set('COMPANY_SWITCHER.PASSWORD_WRONG');
+        this.switching.set(null);
+        return;
+      }
+    } catch {
+      this.pwError.set('COMPANY_SWITCHER.PASSWORD_WRONG');
+      this.switching.set(null);
+      return;
+    }
+    await this.doSwitch(company);
+  }
+
+  private async doSwitch(company: Company): Promise<void> {
     this.switching.set(company.id);
     try {
       const res = await this.companyService.switchCompany(company.id);

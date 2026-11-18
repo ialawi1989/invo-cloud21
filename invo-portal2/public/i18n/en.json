@@ -561,7 +561,15 @@
     "LOGOUT": "Logout",
     "SWITCH_COMPANY": "Switch Company",
     "NO_OTHER_COMPANIES": "No other companies found",
-    "LOADING": "Loading…"
+    "LOADING": "Loading…",
+    "SHOW": "Show",
+    "HIDE": "Hide",
+    "PASSWORD_PROMPT": "Enter your password to switch company.",
+    "PASSWORD_PLACEHOLDER": "Enter your password",
+    "CONFIRM": "Confirm",
+    "CANCEL": "Cancel",
+    "PASSWORD_REQUIRED": "This value is required",
+    "PASSWORD_WRONG": "Incorrect password. Please try again."
   },
   "GLOBAL_SEARCH": {
     "PLACEHOLDER": "Search pages & settings",
@@ -586,6 +594,7 @@
   },
   "NOTIFICATIONS_PANEL": {
     "TITLE": "Notifications",
+    "NEW_ORDER": "New order",
     "SUBTITLE": "Pending orders awaiting a decision.",
     "SOUND_ON": "Sound alerts on",
     "SOUND_OFF": "Sound alerts off",

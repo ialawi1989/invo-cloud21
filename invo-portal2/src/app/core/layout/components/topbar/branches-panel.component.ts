@@ -17,12 +17,10 @@ import { DisconnectBranchModalComponent } from './disconnect-branch-modal.compon
 
       <!-- Header -->
       <div class="bp-header">
-        <div>
-          <h2 class="bp-title">Branches</h2>
-          @if (branchCount > 0) {
-            <span class="bp-badge">{{ branchCount }} connected</span>
-          }
-        </div>
+        <h2 class="bp-title">Branches</h2>
+        @if (branchCount > 0) {
+          <span class="bp-badge">{{ branchCount }} connected</span>
+        }
       </div>
 
       <!-- Branch list -->
@@ -36,16 +34,30 @@ import { DisconnectBranchModalComponent } from './disconnect-branch-modal.compon
         }
 
         @for (branch of branchList(); track branch.id) {
-          <div class="bp-row" [class.bp-row--connected]="branch.isConnected">
-            <div class="bp-row-info">
+          <div class="bp-card" [class.bp-card--connected]="branch.isConnected">
+            <div class="bp-card-top">
+              <span class="bp-card-icon" aria-hidden="true">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+              </span>
               <span class="bp-row-name">{{ branch.name }}</span>
-              @if (branch.isConnected && branch.terminalName) {
-                <span class="bp-row-terminal">
-                  Connected to Terminal Name: {{ branch.terminalName }}
-                  @if (branch.terminalType) { · {{ branch.terminalType }} }
-                </span>
-              }
+              <span class="bp-status" [class.bp-status--on]="branch.isConnected">
+                {{ branch.isConnected ? 'Connected' : 'Not connected' }}
+              </span>
             </div>
+
+            @if (branch.isConnected && branch.terminalName) {
+              <div class="bp-terminal">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+                </svg>
+                <span class="bp-terminal-label">Terminal</span>
+                <span class="bp-terminal-name">
+                  {{ branch.terminalName }}@if (branch.terminalType) { · {{ branch.terminalType }} }
+                </span>
+              </div>
+            }
 
             @if (branch.isConnected) {
               <button class="bp-btn bp-btn--disconnect"
@@ -69,48 +81,69 @@ import { DisconnectBranchModalComponent } from './disconnect-branch-modal.compon
     </div>
   `,
   styles: [`
-    :host { display: block; }
-    .bp { width: 320px; min-height: 100%; background: #fff; display: flex; flex-direction: column; }
+    :host { display: block; height: 100%; }
+    .bp { width: 340px; min-height: 100%; height: 100%; background: #fff; display: flex; flex-direction: column; }
 
+    /* The drawer's close button sits in the top corner, so the header keeps clear of it. */
     .bp-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 18px 20px 14px; border-bottom: 1px solid #f0f2f5; flex-shrink: 0;
+      display: flex; align-items: center; gap: 10px;
+      padding: 18px 60px 14px 20px; border-bottom: 1px solid #f0f2f5; flex-shrink: 0;
     }
-    .bp-title { font-size: 16px; font-weight: 600; color: #111827; margin: 0; display: inline; }
+    .bp-title { font-size: 17px; font-weight: 800; color: #0f172a; margin: 0; }
     .bp-badge {
-      display: inline-block; margin-left: 8px;
-      font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px;
-      background: #e6f7f7; color: #32acc1;
+      font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+      background: #e6f7f7; color: #1e8c9f;
     }
 
-    .bp-list { flex: 1; overflow-y: auto; }
+    .bp-list {
+      flex: 1; overflow-y: auto; padding: 12px 14px 24px; background: #fafbfc;
+      display: flex; flex-direction: column; gap: 12px;
+    }
     .bp-state {
       display: flex; align-items: center; justify-content: center; gap: 10px;
-      padding: 32px 20px; color: #9ca3af; font-size: 13px;
+      padding: 32px 20px; color: #94a3b8; font-size: 13px;
     }
-    .bp-row {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 14px 20px; gap: 12px; border-bottom: 1px solid #f9fafb;
-      &:hover { background: #fafafa; }
+
+    .bp-card {
+      display: flex; flex-direction: column; gap: 10px; padding: 14px;
+      background: #fff; border: 1px solid #e8ecf1; border-radius: 14px;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, .04);
     }
-    .bp-row-info { flex: 1; min-width: 0; }
-    .bp-row-name { display: block; font-size: 14px; font-weight: 500; color: #111827; }
-    .bp-row-terminal { display: block; font-size: 12px; color: #32acc1; margin-top: 3px; line-height: 1.4; }
+    .bp-card-top { display: flex; align-items: center; gap: 10px; }
+    .bp-card-icon {
+      flex: none; width: 34px; height: 34px; border-radius: 10px;
+      background: #f1f5f9; color: #94a3b8; display: flex; align-items: center; justify-content: center;
+    }
+    .bp-card--connected .bp-card-icon { background: #eef7f8; color: #2691a4; }
+    .bp-row-name { flex: 1; min-width: 0; font-size: 14.5px; font-weight: 700; color: #0f172a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .bp-status {
+      flex: none; font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+      background: #f1f5f9; color: #64748b;
+    }
+    .bp-status--on { background: #dcfce7; color: #15803d; }
+
+    .bp-terminal {
+      display: flex; align-items: flex-start; gap: 7px; padding: 10px 12px;
+      background: #f8fafc; border-radius: 10px; font-size: 12.5px; color: #64748b; line-height: 1.4;
+      svg { flex: none; margin-top: 2px; color: #94a3b8; }
+    }
+    .bp-terminal-label { flex: none; color: #94a3b8; }
+    .bp-terminal-name { min-width: 0; color: #1e293b; font-weight: 600; overflow-wrap: anywhere; }
 
     .bp-btn {
-      flex-shrink: 0; height: 34px; padding: 0 14px;
-      border-radius: 8px; font-size: 13px; font-weight: 500;
-      cursor: pointer; border: none; font-family: inherit;
-      display: flex; align-items: center; gap: 6px; transition: all .15s;
+      width: 100%; height: 36px; border-radius: 9px; font-size: 13px; font-weight: 700;
+      cursor: pointer; border: 1px solid transparent; font-family: inherit;
+      display: flex; align-items: center; justify-content: center; gap: 6px; transition: all .15s;
       &:disabled { opacity: .6; cursor: not-allowed; }
     }
     .bp-btn--connect {
-      background: #e6f7f7; color: #32acc1; border: 1px solid #b2e4e4;
-      &:hover:not(:disabled) { background: #cef0f0; }
+      background: #1e8c9f; color: #fff;
+      &:hover:not(:disabled) { background: #187789; }
+      .spin { border-color: rgba(255,255,255,.3); border-top-color: #fff; }
     }
     .bp-btn--disconnect {
-      background: #fef2f2; color: #ef4444; border: 1px solid #fecaca;
-      &:hover:not(:disabled) { background: #fee2e2; }
+      background: #fff; color: #dc2626; border-color: #fecaca;
+      &:hover:not(:disabled) { background: #fef2f2; }
     }
 
     .spin {

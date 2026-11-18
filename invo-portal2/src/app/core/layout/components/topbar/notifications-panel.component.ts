@@ -7,6 +7,7 @@ import { ModalRef } from '@shared/modal/modal.service';
 import { ToastService } from '@shared/components/toast/toast.service';
 import { PendingOrder, PendingOrdersService } from '../../services/pending-orders.service';
 
+import { MycurrencyPipe } from '../../../pipes/mycurrency.pipe';
 import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton.component';
 import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /**
@@ -19,7 +20,7 @@ import { TooltipDirective } from '@shared/directives/tooltip.directive';
 @Component({
   selector: 'app-notifications-panel',
   standalone: true,
-  imports: [TooltipDirective, ListSkeletonComponent, TranslateModule, DatePipe],
+  imports: [TooltipDirective, ListSkeletonComponent, TranslateModule, DatePipe, MycurrencyPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './notifications-panel.component.html',
   styleUrl: './notifications-panel.component.scss',
