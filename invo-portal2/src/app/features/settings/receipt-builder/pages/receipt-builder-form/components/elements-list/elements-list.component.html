@@ -19,6 +19,7 @@
         class="el-list__item"
         [class.el-list__item--selected]="isSelected(el.__key)"
         cdkDrag
+        (contextmenu)="menu.emit({ el, ev: $event })"
       >
         <div class="el-list__placeholder" *cdkDragPlaceholder></div>
 

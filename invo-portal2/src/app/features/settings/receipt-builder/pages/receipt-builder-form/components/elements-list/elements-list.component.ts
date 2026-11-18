@@ -59,6 +59,8 @@ export class ElementsListComponent {
   selectedKey = input<string>('');
 
   @Output() select    = new EventEmitter<PrintElement>();
+  /** Right-click on a row (the form opens the context menu). */
+  @Output() menu      = new EventEmitter<{ el: PrintElement; ev: MouseEvent }>();
   @Output() remove    = new EventEmitter<PrintElement>();
   @Output() duplicate = new EventEmitter<PrintElement>();
   @Output() reorder   = new EventEmitter<CdkDragDrop<PrintElement[]>>();

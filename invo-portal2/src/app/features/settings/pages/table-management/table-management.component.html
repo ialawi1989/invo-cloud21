@@ -101,6 +101,7 @@
               @for (o of selectedGroup()!.objects; track trackObject($index, o)) {
                 <div
                   class="tm-decor-wrap"
+                  (contextmenu)="onElementContextMenu($event, 'object', idOf(o))"
                   cdkDrag
                   cdkDragBoundary=".tm-canvas"
                   (cdkDragStarted)="onObjectDragStart(o, $event)"
@@ -136,6 +137,7 @@
               @for (t of selectedGroup()!.tables; track trackTable($index, t)) {
                 <div
                   class="tm-table-wrap"
+                  (contextmenu)="onElementContextMenu($event, 'table', idOf(t))"
                   cdkDrag
                   (cdkDragStarted)="onTableDragStart(t, $event)"
                   (cdkDragEnded)="onTableDragEnd(t, $event)"
@@ -550,13 +552,40 @@
 
   <!-- ═══ Right-click context menu ═══ -->
   @if (ctxMenu(); as ctx) {
-    <div class="tm-ctxmenu" [style.left.px]="ctx.x" [style.top.px]="ctx.y" (click)="$event.stopPropagation()">
+    <div class="tm-ctxmenu" [style.left.px]="ctx.x" [style.top.px]="ctx.y" (click)="$event.stopPropagation()" (contextmenu)="$event.preventDefault()">
+      @if (ctx.target; as target) {
+        <!-- Right-click on a table or a decor object: that element's own actions. -->
+        <button type="button" class="tm-ctxmenu__item" (click)="ctxEdit()">{{ 'SETTINGS.TABLES.CTX.EDIT' | translate }}</button>
+        <button type="button" class="tm-ctxmenu__item" (click)="ctxDuplicate()">{{ 'SETTINGS.TABLES.DUPLICATE' | translate }}</button>
+        <button type="button" class="tm-ctxmenu__item" (click)="ctxRotate(45)">{{ 'SETTINGS.TABLES.CTX.ROTATE_RIGHT' | translate }}</button>
+        <button type="button" class="tm-ctxmenu__item" (click)="ctxRotate(-45)">{{ 'SETTINGS.TABLES.CTX.ROTATE_LEFT' | translate }}</button>
+        @if (target.kind === 'table') {
+          @if (ctxTable(); as tb) {
+            <div class="tm-ctxmenu__divider"></div>
+            <button type="button" class="tm-ctxmenu__item" (click)="ctxToggleTableVisible()">
+              {{ (tb.properties.visible ? 'SETTINGS.TABLES.HIDE' : 'SETTINGS.TABLES.SHOW') | translate }}
+            </button>
+            <button type="button" class="tm-ctxmenu__item" (click)="ctxToggleSeats()">
+              {{ (tb.properties.hideSeats ? 'SETTINGS.TABLES.CTX.SHOW_SEAT_COUNT' : 'SETTINGS.TABLES.CTX.HIDE_SEAT_COUNT') | translate }}
+            </button>
+          }
+          <div class="tm-ctxmenu__divider"></div>
+          <button type="button" class="tm-ctxmenu__item tm-ctxmenu__item--danger" (click)="ctxUnassign()">{{ 'SETTINGS.TABLES.UNASSIGN' | translate }}</button>
+        } @else {
+          <button type="button" class="tm-ctxmenu__item" (click)="ctxResetSize()">{{ 'SETTINGS.TABLES.RESET_SIZE' | translate }}</button>
+          <div class="tm-ctxmenu__divider"></div>
+          <button type="button" class="tm-ctxmenu__item" (click)="ctxOrder('front')">{{ 'SETTINGS.TABLES.CTX.BRING_FRONT' | translate }}</button>
+          <button type="button" class="tm-ctxmenu__item" (click)="ctxOrder('back')">{{ 'SETTINGS.TABLES.CTX.SEND_BACK' | translate }}</button>
+          <div class="tm-ctxmenu__divider"></div>
+          <button type="button" class="tm-ctxmenu__item tm-ctxmenu__item--danger" (click)="ctxDeleteObject()">{{ 'COMMON.DELETE' | translate }}</button>
+        }
+      } @else {
       <button type="button" class="tm-ctxmenu__item" (click)="ctxAddTable()">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         {{ 'SETTINGS.TABLES.ADD_TABLE' | translate }}
       </button>
       <button type="button" class="tm-ctxmenu__item" (click)="ctxPickUnassigned()">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
         {{ 'SETTINGS.TABLES.PICK_UNASSIGNED' | translate }}
       </button>
       <div class="tm-ctxmenu__divider"></div>
@@ -565,6 +594,7 @@
         <button type="button" class="tm-ctxmenu__item tm-ctxmenu__item--sub" (click)="ctxAddObject(t)">
           {{ ('SETTINGS.TABLES.OBJECTS_TYPES.' + t.toUpperCase()) | translate }}
         </button>
+      }
       }
     </div>
   }

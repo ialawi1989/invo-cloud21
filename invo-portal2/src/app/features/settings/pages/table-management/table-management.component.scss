@@ -1266,3 +1266,5 @@
 @media (max-width: 900px) {
   .tm-workspace { --sb-w: 44px !important; }
 }
+
+.tm-ctxmenu__item--danger { color: #dc2626; &:hover { background: #fef2f2; } }

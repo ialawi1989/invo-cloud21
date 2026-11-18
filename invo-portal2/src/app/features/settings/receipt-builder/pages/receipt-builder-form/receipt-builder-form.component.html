@@ -215,8 +215,9 @@
            panel). Each is a collapsible `<app-rbf-widget>` so the
            user can fold one closed to give the other more room. The
            rail itself is a flex column with gap between widgets. -->
-      <aside class="rbf-rail">
-        <app-rbf-widget [title]="'RECEIPT_BUILDER.PALETTE' | translate" storageKey="palette">
+      <aside class="rbf-rail rbf-rail--tools">
+        <!-- Tools: just the tiles, no title bar. -->
+        <div class="rbf-tools">
         <!-- The palette is a CDK drop list connected to the canvas.
              Each tile is a `cdkDrag` carrying `{ type }` so the canvas
              handler can build a fresh element of the right kind on
@@ -232,7 +233,9 @@
           [cdkDropListConnectedTo]="['rbf-canvas']"
         >
                     <ng-template #tileTpl let-item>
-              <button type="button" class="rbf-palette__tile" (click)="addElement(item)">
+              <button type="button" class="rbf-palette__tile" (click)="addElement(item)"
+                [attr.aria-label]="('RECEIPT_BUILDER.ELEMENTS.' + item.labelKey) | translate"
+                [appTooltip]="('RECEIPT_BUILDER.ELEMENTS.' + item.labelKey) | translate">
                 <span class="rbf-palette__icon" aria-hidden="true">
                   <!-- Inlined SVG per icon id — Angular sanitises <svg>
                        markup that comes through `[innerHTML]`, so a
@@ -333,6 +336,18 @@
             }
           }
         </ul>
+        </div>
+        <!-- Layers: its own panel under the palette (like Figma's left sidebar). -->
+        <app-rbf-widget [title]="'RECEIPT_BUILDER.LAYERS.TITLE' | translate" storageKey="layers">
+          <app-elements-list
+            [elements]="template().recieptTemplate"
+            [selectedKey]="selectedKey()"
+            (select)="selectElement($event, { scroll: true })"
+            (menu)="openContextMenu($event.ev, $event.el)"
+            (remove)="removeElement($event)"
+            (duplicate)="duplicateElement($event)"
+            (reorder)="onLayersReorder($event)"
+          />
         </app-rbf-widget>
       </aside>
 
@@ -385,6 +400,7 @@
                 [class.rbf-slot--selected]="selectedKey() === el.__key"
                 cdkDrag
                 (click)="selectElement(el)"
+                (contextmenu)="openContextMenu($event, el)"
               >
                 <app-element-render [element]="el" [profile]="activeProfile()"/>
 
@@ -434,6 +450,17 @@
         (mousedown)="onSplitterMouseDown($event)"
       ></div>
 
+      <!-- Drag handle on the right edge of the Elements (layers) column. -->
+      <div
+        class="rbf-splitter rbf-splitter--layers"
+        [class.rbf-splitter--active]="layersSplitterDragging()"
+        [attr.aria-label]="'RECEIPT_BUILDER.RESIZE_PANEL' | translate"
+        [appTooltip]="'RECEIPT_BUILDER.RESIZE_PANEL' | translate"
+        role="separator"
+        aria-orientation="vertical"
+        (mousedown)="onLayersSplitterMouseDown($event)"
+      ></div>
+
       <!-- ── Right rail: per-element editor + layers panel ─────────────
            Two scrollable sections inside one container card: the
            editor (top) takes available height and scrolls, the layers
@@ -477,6 +504,7 @@
           </header>
         }
 
+        <!-- Properties panel (Figma style): the selected element's settings, or the template's own settings when nothing is selected. -->
         <div class="rbf-rail__editor">
         @if (selectedElement(); as el) {
           <app-element-editor
@@ -485,27 +513,52 @@
             (fieldChange)="patchSelectedElement($event.key, $event.value)"
           />
         } @else {
-          <div class="rbf-panel__empty">
-            <h2>{{ 'RECEIPT_BUILDER.PANEL_TITLE' | translate }}</h2>
-            <p>{{ 'RECEIPT_BUILDER.PANEL_PICK_ELEMENT' | translate }}</p>
-          </div>
-        }
-        </div>
+          <section class="rbf-tpl-panel">
+            <header class="rbf-tpl-panel__head">
+              <h2>{{ 'RECEIPT_BUILDER.TEMPLATE_PANEL.TITLE' | translate }}</h2>
+              <span class="rbf-topbar__type" [class.rbf-topbar__type--kitchen]="template().templateType === 'kitchen'">
+                {{ (template().templateType === 'kitchen' ? 'RECEIPT_BUILDER.TYPE_KITCHEN' : 'RECEIPT_BUILDER.TYPE_RECEIPT') | translate }}
+              </span>
+            </header>
 
-        <div class="rbf-rail__layers">
-          <app-rbf-widget [title]="'RECEIPT_BUILDER.LAYERS.TITLE' | translate" storageKey="layers">
-            <app-elements-list
-              [elements]="template().recieptTemplate"
-              [selectedKey]="selectedKey()"
-              (select)="selectElement($event, { scroll: true })"
-              (remove)="removeElement($event)"
-              (duplicate)="duplicateElement($event)"
-              (reorder)="onLayersReorder($event)"
-            />
-          </app-rbf-widget>
+            <div class="rbf-tpl-panel__card">
+              <h3>{{ 'RECEIPT_BUILDER.TEMPLATE_PANEL.DETAILS' | translate }}</h3>
+              <label class="rbf-tpl-panel__field">
+                <span>{{ 'RECEIPT_BUILDER.TEMPLATE_PANEL.NAME' | translate }}</span>
+                <input type="text"
+                  [ngModel]="template().name"
+                  (ngModelChange)="patch('name', $event)"
+                  [placeholder]="'RECEIPT_BUILDER.NAME_PLACEHOLDER' | translate"
+                  [ngModelOptions]="{ standalone: true }"/>
+              </label>
+              <dl class="rbf-tpl-panel__stats">
+                <div><dt>{{ 'RECEIPT_BUILDER.TEMPLATE_PANEL.ELEMENTS' | translate }}</dt><dd>{{ template().recieptTemplate.length }}</dd></div>
+                <div><dt>{{ 'RECEIPT_BUILDER.TEMPLATE_PANEL.PREVIEW' | translate }}</dt>
+                  <dd>{{ previewInvoice() ? pickedInvoice()?.invoiceNumber : ('RECEIPT_BUILDER.TEMPLATE_PANEL.SAMPLE' | translate) }}</dd></div>
+              </dl>
+            </div>
+
+            <div class="rbf-tpl-panel__card">
+              <h3>{{ 'RECEIPT_BUILDER.TEMPLATE_PANEL.SHORTCUTS' | translate }}</h3>
+              <ul class="rbf-tpl-panel__keys">
+                <li><kbd>Ctrl</kbd>+<kbd>S</kbd><span>{{ 'RECEIPT_BUILDER.TEMPLATE_PANEL.KEY_SAVE' | translate }}</span></li>
+                <li><kbd>Ctrl</kbd>+<kbd>Z</kbd><span>{{ 'RECEIPT_BUILDER.TEMPLATE_PANEL.KEY_UNDO' | translate }}</span></li>
+                <li><kbd>Ctrl</kbd>+<kbd>Y</kbd><span>{{ 'RECEIPT_BUILDER.TEMPLATE_PANEL.KEY_REDO' | translate }}</span></li>
+                <li><kbd>Ctrl</kbd>+<kbd>C</kbd><span>{{ 'RECEIPT_BUILDER.TEMPLATE_PANEL.KEY_COPY' | translate }}</span></li>
+                <li><kbd>Ctrl</kbd>+<kbd>V</kbd><span>{{ 'RECEIPT_BUILDER.TEMPLATE_PANEL.KEY_PASTE' | translate }}</span></li>
+              </ul>
+            </div>
+
+            <p class="rbf-tpl-panel__hint">{{ 'RECEIPT_BUILDER.PANEL_PICK_ELEMENT' | translate }}</p>
+          </section>
+        }
         </div>
       </aside>
     </div>
+  }
+
+  @if (ctxMenu(); as m) {
+    <app-element-context-menu [items]="m.items" [x]="m.x" [y]="m.y" (closed)="closeContextMenu()"/>
   }
 
   <app-loading-overlay [show]="saving()" [message]="saveLabel()"/>

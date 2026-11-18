@@ -398,7 +398,7 @@
 .rbf-workspace {
   flex: 1;
   display: grid;
-  grid-template-columns: 200px minmax(0, 1fr) var(--rbf-right-rail-w, 320px);
+  grid-template-columns: 240px minmax(0, 1fr) var(--rbf-right-rail-w, 320px);
   gap: 16px;
   padding: 16px;
   min-height: 0;
@@ -879,3 +879,103 @@
 // The palette keeps its own faded ghost tile while a tile is dragged, so the in-rail placeholder stays hidden.
 .rbf-palette__list .rbf-drop-ph { display: none; }
 .rbf-palette__item--ghost { opacity: 0.45; pointer-events: none; list-style: none; }
+
+// ── Properties panel when nothing is selected: the template's own settings ──
+.rbf-tpl-panel { display: flex; flex-direction: column; gap: 10px; }
+.rbf-tpl-panel__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 2px 2px 8px; border-bottom: 1px solid #e2e8f0;
+  > h2 { margin: 0; font-size: 13px; font-weight: 700; color: #0f172a; } }
+.rbf-tpl-panel__card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 10px;
+  > h3 { margin: 0; font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; } }
+.rbf-tpl-panel__field { display: flex; flex-direction: column; gap: 5px; font-size: 12px; font-weight: 600; color: #475569;
+  input { appearance: none; width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 10px; font: inherit; font-weight: 500; color: #0f172a; background: #fff;
+    &:focus { outline: 0; border-color: var(--color-brand-400, #7dd3fc); box-shadow: 0 0 0 2px var(--color-brand-100, #e0f2fe); } } }
+.rbf-tpl-panel__stats { margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  > div { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 10px; min-width: 0; }
+  dt { font-size: 11px; color: #64748b; font-weight: 600; }
+  dd { margin: 2px 0 0; font-size: 13px; font-weight: 700; color: #0f172a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } }
+.rbf-tpl-panel__keys { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px;
+  li { display: flex; align-items: center; gap: 4px; font-size: 12px; color: #475569; }
+  li > span { margin-inline-start: auto; color: #64748b; }
+  kbd { font: 600 11px ui-monospace, Menlo, monospace; background: #fff; border: 1px solid #cbd5e1; border-bottom-width: 2px; border-radius: 5px; padding: 1px 6px; color: #334155; } }
+.rbf-tpl-panel__hint { margin: 0; font-size: 12px; color: #94a3b8; line-height: 1.5; text-align: center; }
+
+
+// ══ Figma-style docked layout: flush panels, no outer margins, a slim left tool panel ═══════════════
+// Panels run edge to edge and full height, separated by 1px lines; only the centre canvas scrolls.
+.rbf-page { height: 100vh; min-height: 0; overflow: hidden; }
+.rbf-workspace {
+  gap: 0;
+  padding: 0;
+  grid-template-columns: 208px minmax(0, 1fr) var(--rbf-right-rail-w, 300px);
+  overflow: hidden;
+}
+.rbf-rail {
+  align-self: stretch;
+  height: 100%;
+  max-height: none;
+  gap: 0;
+  padding: 0;
+  background: #fff;
+  border: 0;
+  border-inline-end: 1px solid #e2e8f0;
+  border-radius: 0;
+  box-shadow: none;
+  overflow-y: auto;
+}
+.rbf-rail--right {
+  border-inline-end: 0;
+  border-inline-start: 1px solid #e2e8f0;
+  overflow: hidden;
+  height: 100%;
+  max-height: none;
+}
+// Every widget inside a panel is a flat section split by a hairline (Figma's property sections), not a floating card.
+.rbf-rail ::ng-deep app-rbf-widget {
+  border: 0;
+  border-bottom: 1px solid #e2e8f0;
+  border-radius: 0;
+  box-shadow: none;
+  background: #fff;
+}
+.rbf-rail ::ng-deep .rbfw__header { background: #fff; }
+.rbf-rail__editor { padding: 0; gap: 0; padding-inline-end: 0; }
+.rbf-panel-title { padding: 12px 14px; margin: 0; }
+.rbf-tpl-panel { padding: 12px 14px; }
+.rbf-splitter { top: 0; bottom: 0; inset-inline-end: calc(var(--rbf-right-rail-w, 300px) - 6px); }
+// The grey canvas area scrolls on its own.
+.rbf-canvas-wrap {
+  align-self: stretch;
+  height: 100%;
+  overflow-y: auto;
+  padding: 16px;
+  background: #e9ecf1;
+}
+
+// ── Left side = two full-height columns side by side: Tools | Layers ─────────────────────────────
+.rbf-workspace { grid-template-columns: calc(64px + var(--rbf-layers-w, 220px)) minmax(0, 1fr) var(--rbf-right-rail-w, 300px); }
+.rbf-rail--tools {
+  flex-direction: row;
+  overflow: hidden;
+  padding: 0;
+  > app-rbf-widget {
+    height: 100%;
+    overflow-y: auto;
+    border-bottom: 0;
+  }
+  > .rbf-tools { flex: 0 0 64px; height: 100%; overflow-y: auto; padding: 10px 8px; border-inline-end: 1px solid #e2e8f0; }
+  > app-rbf-widget:last-child  { flex: 1 1 0; min-width: 0; }
+}
+.rbf-rail--tools .rbf-palette__tile { justify-content: center; padding: 9px 0; gap: 0; border-color: transparent; background: transparent; }
+.rbf-rail--tools .rbf-palette__tile:hover { background: #f1f5f9; }
+.rbf-rail--tools .rbf-palette__label { display: none; }
+.rbf-rail--tools .rbf-tools { padding: 10px 8px; }
+.rbf-rail--tools .rbf-palette__list { gap: 4px; }
+// The layers column is as tall as the panel, so its list no longer needs its own height cap.
+.rbf-rail--tools ::ng-deep .el-list { max-height: none; -webkit-mask-image: none; mask-image: none; }
+
+// Resize handle on the Elements column's trailing edge (the tools strip is a fixed 64px).
+.rbf-splitter--layers { inset-inline-end: auto; inset-inline-start: calc(64px + var(--rbf-layers-w, 220px) - 6px); }
+.rbf-splitter--layers:hover, .rbf-splitter--layers.rbf-splitter--active { background: linear-gradient(to right, transparent 5px, var(--color-brand-500, #0891b2) 5px, var(--color-brand-500, #0891b2) 7px, transparent 7px); }
+// Hovering the layers handle must not light up the right panel's border.
+.rbf-splitter--layers:hover ~ .rbf-rail--right,
+.rbf-splitter--layers.rbf-splitter--active ~ .rbf-rail--right { border-color: #e2e8f0; box-shadow: none; }

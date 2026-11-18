@@ -105,6 +105,8 @@ interface CtxMenu {
   /** Canvas-relative point we'd add a new table/object at. */
   canvasX: number;
   canvasY: number;
+  /** Set when the right-click landed on a table or a decor object: the menu then offers that element's actions. */
+  target?: { kind: 'table' | 'object'; id: string };
 }
 
 /**
@@ -1225,6 +1227,112 @@ export class TableManagementComponent implements OnInit, CanLeaveComponent {
       canvasX: Math.round((ev.clientX - rect.left) / z),
       canvasY: Math.round((ev.clientY - rect.top ) / z),
     });
+  }
+
+  /** Right-click on a table or a decor object: select it and open the menu for that element (not the background one). */
+  onElementContextMenu(ev: MouseEvent, kind: 'table' | 'object', id: string): void {
+    ev.preventDefault();
+    ev.stopPropagation();
+    const selected = kind === 'table' ? this.selectedTableIds().has(id) : this.selectedObjectIds().has(id);
+    if (!selected) { if (kind === 'table') this.selectTable(id); else this.selectObject(id); }
+    this.ctxMenu.set({ x: ev.clientX, y: ev.clientY, canvasX: 0, canvasY: 0, target: { kind, id } });
+  }
+
+  /** The table the open menu is about (null for the background menu or a decor object). */
+  ctxTable(): RestaurantTable | null {
+    const t = this.ctxMenu()?.target;
+    return t?.kind === 'table' ? this.selectedGroup()?.tables.find((x) => idOf(x) === t.id) ?? null : null;
+  }
+
+  private ctxClose(): void { this.ctxMenu.set(null); }
+
+  ctxEdit(): void {
+    const t = this.ctxMenu()?.target;
+    this.ctxClose();
+    if (!t) return;
+    this.panelTab.set(t.kind === 'table' ? 'tables' : 'objects');
+  }
+
+  ctxDuplicate(): void {
+    const t = this.ctxMenu()?.target;
+    this.ctxClose();
+    if (!t) return;
+    if (t.kind === 'table') this.duplicateTable(t.id); else this.duplicateObject(t.id);
+  }
+
+  ctxRotate(delta: 45 | -45): void {
+    const t = this.ctxMenu()?.target;
+    this.ctxClose();
+    if (!t) return;
+    if (t.kind === 'table') this.rotateTable(t.id, delta); else this.rotateObject(t.id, delta);
+  }
+
+  ctxToggleTableVisible(): void {
+    const t = this.ctxTable();
+    this.ctxClose();
+    if (t) this.patchTableProps(idOf(t), 'visible', !t.properties.visible);
+  }
+
+  ctxToggleSeats(): void {
+    const t = this.ctxTable();
+    this.ctxClose();
+    if (t) this.patchTableProps(idOf(t), 'hideSeats', !t.properties.hideSeats);
+  }
+
+  ctxUnassign(): void {
+    const t = this.ctxMenu()?.target;
+    this.ctxClose();
+    if (t?.kind === 'table') void this.unassignTable(t.id);
+  }
+
+  ctxDeleteObject(): void {
+    const t = this.ctxMenu()?.target;
+    this.ctxClose();
+    if (t?.kind === 'object') this.removeObjectWithUndo(t.id);
+  }
+
+  ctxResetSize(): void {
+    const t = this.ctxMenu()?.target;
+    this.ctxClose();
+    if (t?.kind === 'object') this.resetObjectSize(t.id);
+  }
+
+  /** Decor objects paint in array order, so "front" is the end of the list. */
+  ctxOrder(where: 'front' | 'back'): void {
+    const t = this.ctxMenu()?.target;
+    this.ctxClose();
+    const groupId = this.selectedGroupId();
+    if (!t || t.kind !== 'object' || !groupId) return;
+    this.groups.update((list) => list.map((g) => {
+      if (idOf(g) !== groupId) return g;
+      const obj = g.objects.find((o) => idOf(o) === t.id);
+      if (!obj) return g;
+      const rest = g.objects.filter((o) => o !== obj);
+      return { ...g, objects: where === 'front' ? [...rest, obj] : [obj, ...rest] };
+    }));
+  }
+
+  /** Copy of a decor object, a little offset from the original. */
+  duplicateObject(id: string): void {
+    const groupId = this.selectedGroupId();
+    const src = this.selectedGroup()?.objects.find((o) => idOf(o) === id);
+    if (!groupId || !src) return;
+    const newId = tempId();
+    const copy: DecorObject = {
+      ...JSON.parse(JSON.stringify(src)),
+      id: null,
+      position: {
+        x: clamp(src.position.x + 24, 0, this.canvasW - src.width),
+        y: clamp(src.position.y + 24, 0, this.canvasH - src.height),
+      },
+    };
+    (copy as any).__tempId = newId;
+    this.groups.update((list) => list.map((g) => idOf(g) === groupId ? { ...g, objects: [...g.objects, copy] } : g));
+    this.selectedObjectId.set(newId);
+    this.selectedObjectIds.set(new Set([newId]));
+    this.selectedTableId.set(null);
+    this.selectedTableIds.set(new Set());
+    this.panelTab.set('objects');
   }
 
   ctxAddTable(): void {

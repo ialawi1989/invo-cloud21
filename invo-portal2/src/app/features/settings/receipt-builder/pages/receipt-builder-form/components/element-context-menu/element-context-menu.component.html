@@ -1,0 +1,28 @@
+<div class="ctx__backdrop" (click)="closed.emit()" (contextmenu)="$event.preventDefault(); closed.emit()"></div>
+
+<div class="ctx__menu" role="menu"
+     [style.left.px]="pos().left"
+     [style.top.px]="pos().top"
+     (click)="$event.stopPropagation()"
+     (contextmenu)="$event.preventDefault()">
+  @for (item of rows(); track item.id) {
+    @if (item.divider) {
+      <div class="ctx__divider" role="separator"></div>
+    } @else {
+      <button type="button" class="ctx__item" role="menuitem"
+              [class.ctx__item--danger]="item.danger"
+              [disabled]="item.disabled"
+              (click)="pick(item)">
+        <svg class="ctx__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path [attr.d]="path(item.icon)"/>
+        </svg>
+        <span class="ctx__label">{{ item.label }}</span>
+        @if (item.checked) {
+          <svg class="ctx__check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+        } @else if (item.shortcut) {
+          <span class="ctx__shortcut">{{ item.shortcut }}</span>
+        }
+      </button>
+    }
+  }
+</div>

@@ -48,6 +48,80 @@
     "WIDGET_DRAG_HINT":         "Drag up/down to reorder · drop on another header to merge as a tab",
     "RESIZE_PANEL":             "Drag to resize panel",
 
+    "TEMPLATE_PANEL": {
+
+      "TITLE": "Template",
+
+      "DETAILS": "Details",
+
+      "NAME": "Name",
+
+      "ELEMENTS": "Elements",
+
+      "PREVIEW": "Preview data",
+
+      "SAMPLE": "Sample",
+
+      "SHORTCUTS": "Shortcuts",
+
+      "KEY_SAVE": "Save",
+
+      "KEY_UNDO": "Undo",
+
+      "KEY_REDO": "Redo",
+
+      "KEY_COPY": "Copy element",
+
+      "KEY_PASTE": "Paste element"
+
+    },
+
+    "CTX": {
+
+      "DUPLICATE": "Duplicate",
+
+      "COPY": "Copy",
+
+      "PASTE": "Paste",
+
+      "ALIGN_LEFT": "Align left",
+
+      "ALIGN_CENTER": "Align center",
+
+      "ALIGN_RIGHT": "Align right",
+
+      "BOLD": "Bold",
+
+      "HIDE": "Hide",
+
+      "SHOW": "Show",
+
+      "LINE_SOLID": "Solid line",
+
+      "LINE_DASHED": "Dashed line",
+
+      "LINE_DOTTED": "Dotted line",
+
+      "TALLER": "Taller (+10)",
+
+      "SHORTER": "Shorter (-10)",
+
+      "SHOW_OPTIONS": "Show options",
+
+      "SHOW_PRICE": "Show price",
+
+      "MOVE_UP": "Move up",
+
+      "MOVE_DOWN": "Move down",
+
+      "MOVE_TOP": "Move to top",
+
+      "MOVE_BOTTOM": "Move to bottom",
+
+      "DELETE": "Delete"
+
+    },
+
     "CLIPBOARD": {
 
       "COPIED": "Element copied",
@@ -143,6 +217,10 @@
       "HEIGHT":            "Height (px)",
       "WIDTH":             "Width (px)",
       "SOURCE":            "Source",
+      "IMAGE_FROM_MEDIA": "Choose from media",
+      "IMAGE_BROWSE": "Browse…",
+      "IMAGE_CONVERT_FAILED": "Could not read that image.",
+      "IMAGE_NOT_IMAGE": "Please choose an image file.",
       "IMAGE_PATH":        "Image URL or asset path",
       "IMAGE_PATH_PLACEHOLDER": "https://… or /assets/img.png",
       "IMAGE_PATH_HINT":   "Leave empty to use the inline data field.",

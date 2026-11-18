@@ -48,6 +48,80 @@
     "WIDGET_DRAG_HINT":         "اسحب لأعلى/أسفل لإعادة الترتيب · أفلت على رأس آخر لدمجه كعلامة تبويب",
     "RESIZE_PANEL":             "اسحب لتغيير حجم اللوحة",
 
+    "TEMPLATE_PANEL": {
+
+      "TITLE": "القالب",
+
+      "DETAILS": "التفاصيل",
+
+      "NAME": "الاسم",
+
+      "ELEMENTS": "العناصر",
+
+      "PREVIEW": "بيانات المعاينة",
+
+      "SAMPLE": "نموذج",
+
+      "SHORTCUTS": "الاختصارات",
+
+      "KEY_SAVE": "حفظ",
+
+      "KEY_UNDO": "تراجع",
+
+      "KEY_REDO": "إعادة",
+
+      "KEY_COPY": "نسخ العنصر",
+
+      "KEY_PASTE": "لصق العنصر"
+
+    },
+
+    "CTX": {
+
+      "DUPLICATE": "تكرار",
+
+      "COPY": "نسخ",
+
+      "PASTE": "لصق",
+
+      "ALIGN_LEFT": "محاذاة لليسار",
+
+      "ALIGN_CENTER": "محاذاة للوسط",
+
+      "ALIGN_RIGHT": "محاذاة لليمين",
+
+      "BOLD": "عريض",
+
+      "HIDE": "إخفاء",
+
+      "SHOW": "إظهار",
+
+      "LINE_SOLID": "خط متصل",
+
+      "LINE_DASHED": "خط متقطع",
+
+      "LINE_DOTTED": "خط منقط",
+
+      "TALLER": "أطول (+10)",
+
+      "SHORTER": "أقصر (-10)",
+
+      "SHOW_OPTIONS": "إظهار الخيارات",
+
+      "SHOW_PRICE": "إظهار السعر",
+
+      "MOVE_UP": "تحريك لأعلى",
+
+      "MOVE_DOWN": "تحريك لأسفل",
+
+      "MOVE_TOP": "نقل إلى الأعلى",
+
+      "MOVE_BOTTOM": "نقل إلى الأسفل",
+
+      "DELETE": "حذف"
+
+    },
+
     "CLIPBOARD": {
 
       "COPIED": "تم نسخ العنصر",
@@ -143,6 +217,10 @@
       "HEIGHT":            "الارتفاع (بكسل)",
       "WIDTH":             "العرض (بكسل)",
       "SOURCE":            "المصدر",
+      "IMAGE_FROM_MEDIA": "اختيار من الوسائط",
+      "IMAGE_BROWSE": "استعراض…",
+      "IMAGE_CONVERT_FAILED": "تعذرت قراءة الصورة.",
+      "IMAGE_NOT_IMAGE": "يرجى اختيار ملف صورة.",
       "IMAGE_PATH":        "رابط الصورة أو مسار الأصل",
       "IMAGE_PATH_PLACEHOLDER": "https://… أو /assets/img.png",
       "IMAGE_PATH_HINT":   "اتركه فارغًا لاستخدام بيانات الصورة المضمنة.",

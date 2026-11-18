@@ -42,6 +42,7 @@ import { CompanyService } from '@core/auth/company.service';
 
 import { ReceiptBuilderService } from '../../services/receipt-builder.service';
 import { elementFromWire, elementToWire } from '../../services/receipt-wire';
+import { ElementContextMenuComponent, CtxItem } from './components/element-context-menu/element-context-menu.component';
 import { invoiceToDemo } from '../../services/invoice-preview';
 import { InvoicesService } from '../../../../account/invoices/services/invoices.service';
 import type { DemoInvoice } from '../../services/binding-resolver';
@@ -138,6 +139,7 @@ interface HistoryEntry {
     TooltipDirective,
     SegmentedToggleComponent,
     SearchDropdownComponent,
+    ElementContextMenuComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './receipt-builder-form.component.html',
@@ -348,6 +350,10 @@ export class ReceiptBuilderFormComponent implements OnInit, CanLeaveComponent {
         );
         if (Number.isFinite(w)) this.applyRailWidth(w);
       }
+      const layers = Number(localStorage.getItem(ReceiptBuilderFormComponent.LAYERS_KEY));
+      if (Number.isFinite(layers) && layers > 0) {
+        this.applyLayersWidth(Math.min(ReceiptBuilderFormComponent.LAYERS_MAX, Math.max(ReceiptBuilderFormComponent.LAYERS_MIN, layers)));
+      }
     } catch { /* localStorage unavailable */ }
 
     // Subscribe to paramMap so navigating between templates within the
@@ -493,8 +499,8 @@ export class ReceiptBuilderFormComponent implements OnInit, CanLeaveComponent {
       // RTL: rail sits on the left — width = cursor X minus the
       //      workspace's left padding (16px).
       const raw = isRtl
-        ? e.clientX - 16
-        : window.innerWidth - e.clientX - 16;
+        ? e.clientX
+        : window.innerWidth - e.clientX;
       const w = Math.min(
         ReceiptBuilderFormComponent.RAIL_MAX,
         Math.max(ReceiptBuilderFormComponent.RAIL_MIN, raw),
@@ -517,6 +523,42 @@ export class ReceiptBuilderFormComponent implements OnInit, CanLeaveComponent {
 
     window.addEventListener('mousemove', this.splitterMoveHandler);
     window.addEventListener('mouseup',   this.splitterEndHandler);
+  }
+
+  // ─── Layers column splitter ──────────────────────────────────────────
+  // The Elements (layers) column next to the 64px tools strip can be resized the same way (`--rbf-layers-w`, remembered).
+  private static readonly TOOLS_W    = 64;
+  private static readonly LAYERS_MIN = 160;
+  private static readonly LAYERS_MAX = 480;
+  private static readonly LAYERS_KEY = 'rbf:layers-w';
+
+  layersSplitterDragging = signal<boolean>(false);
+
+  onLayersSplitterMouseDown(event: MouseEvent): void {
+    event.preventDefault();
+    this.layersSplitterDragging.set(true);
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    const isRtl = getComputedStyle(document.documentElement).direction === 'rtl';
+    const move = (e: MouseEvent) => {
+      const raw = (isRtl ? window.innerWidth - e.clientX : e.clientX) - ReceiptBuilderFormComponent.TOOLS_W;
+      this.applyLayersWidth(Math.min(ReceiptBuilderFormComponent.LAYERS_MAX, Math.max(ReceiptBuilderFormComponent.LAYERS_MIN, raw)));
+    };
+    const end = () => {
+      this.layersSplitterDragging.set(false);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      window.removeEventListener('mousemove', move);
+      window.removeEventListener('mouseup', end);
+    };
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', end);
+  }
+
+  private applyLayersWidth(w: number): void {
+    document.documentElement.style.setProperty('--rbf-layers-w', `${w}px`);
+    try { localStorage.setItem(ReceiptBuilderFormComponent.LAYERS_KEY, String(w)); }
+    catch { /* swallow */ }
   }
 
   /** Set the CSS variable + persist. Pulled out so both the restore
@@ -708,11 +750,20 @@ export class ReceiptBuilderFormComponent implements OnInit, CanLeaveComponent {
    */
   @HostListener('document:keydown', ['$event'])
   onKeydown(ev: KeyboardEvent): void {
+    if (ev.key === 'Delete' && !this.isTypingTarget(ev.target)) {
+      const sel = this.selectedElement();
+      if (sel) { ev.preventDefault(); this.removeElement(sel); }
+      return;
+    }
     if (!(ev.ctrlKey || ev.metaKey)) return;
     const k = ev.key.toLowerCase();
     if (k === 'z' && !ev.shiftKey)               { ev.preventDefault(); this.undo(); }
     else if ((k === 'z' && ev.shiftKey) || k === 'y') { ev.preventDefault(); this.redo(); }
-    else if ((k === 'c' || k === 'v') && !this.isTypingTarget(ev.target)) {
+    else if (k === 'd' && !this.isTypingTarget(ev.target)) {
+      const el = this.selectedElement();
+      if (el) { ev.preventDefault(); this.duplicateElement(el); }
+    }
+    else if ((k === 'c' || k === 'v') && !this.isTypingTarget(ev.target) && !(k === 'c' && (window.getSelection()?.toString() ?? '') !== '')) {
       if (k === 'c') void this.copySelected(); else void this.pasteElement();
     }
     else if (k === 's') {
@@ -832,21 +883,124 @@ export class ReceiptBuilderFormComponent implements OnInit, CanLeaveComponent {
     return !!el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable);
   }
 
+  // ─── Right-click menu ────────────────────────────────────────────────
+  /** Open menu: where it is and which options it offers (they depend on the element's type). */
+  ctxMenu = signal<{ x: number; y: number; items: CtxItem[] } | null>(null);
+
+  openContextMenu(ev: MouseEvent, el: PrintElement): void {
+    ev.preventDefault();
+    ev.stopPropagation();
+    this.selectedKey.set(el.__key ?? '');
+    this.ctxMenu.set({ x: ev.clientX, y: ev.clientY, items: this.buildCtxItems(el) });
+  }
+
+  closeContextMenu(): void { this.ctxMenu.set(null); }
+
+  /** Move an element within the receipt. */
+  moveElement(el: PrintElement, where: 'up' | 'down' | 'top' | 'bottom'): void {
+    const len = this.template().recieptTemplate.length;
+    const from = this.template().recieptTemplate.findIndex((e) => e.__key === el.__key);
+    if (from < 0) return;
+    const to = where === 'up' ? from - 1 : where === 'down' ? from + 1 : where === 'top' ? 0 : len - 1;
+    if (to < 0 || to >= len || to === from) return;
+    this.captureBefore('Move element', `move:${Date.now()}`);
+    this.template.update((t) => {
+      const next = [...t.recieptTemplate];
+      moveItemInArray(next, from, to);
+      return { ...t, recieptTemplate: next };
+    });
+  }
+
+  /** The menu rows for one element: common actions, then what applies to its type, then ordering and delete. */
+  private buildCtxItems(el: PrintElement): CtxItem[] {
+    const c = (k: string) => this.translate.instant('RECEIPT_BUILDER.CTX.' + k);
+    const patch = (key: string, value: unknown) => () => this.patchSelectedElement(key, value);
+    const list = this.template().recieptTemplate;
+    const idx = list.findIndex((e) => e.__key === el.__key);
+    const e: any = el;
+
+    const common: CtxItem[] = [
+      { id: 'dup', label: c('DUPLICATE'), icon: 'duplicate', shortcut: 'Ctrl+D', run: () => this.duplicateElement(el) },
+      { id: 'copy', label: c('COPY'), icon: 'copy', shortcut: 'Ctrl+C', run: () => void this.copySelected() },
+      { id: 'paste', label: c('PASTE'), icon: 'paste', shortcut: 'Ctrl+V', run: () => void this.pasteElement() },
+    ];
+
+    const align = (values: [string, string, string]): CtxItem[] => [
+      { id: 'al', label: c('ALIGN_LEFT'), icon: 'alignL', checked: e.alignment === values[0], run: patch('alignment', values[0]) },
+      { id: 'ac', label: c('ALIGN_CENTER'), icon: 'alignC', checked: e.alignment === values[1], run: patch('alignment', values[1]) },
+      { id: 'ar', label: c('ALIGN_RIGHT'), icon: 'alignR', checked: e.alignment === values[2], run: patch('alignment', values[2]) },
+    ];
+    const bold: CtxItem = { id: 'bold', label: c('BOLD'), icon: 'bold', checked: e.fontWeight === 'bold', run: patch('fontWeight', e.fontWeight === 'bold' ? 'normal' : 'bold') };
+    const hidden = e.visibility === 'Hidden';
+    const visibility: CtxItem = { id: 'vis', label: hidden ? c('SHOW') : c('HIDE'), icon: hidden ? 'eye' : 'eyeoff', run: patch('visibility', hidden ? 'Visible' : 'Hidden') };
+
+    let specific: CtxItem[] = [];
+    switch (el.type) {
+      case 'Text':     specific = [...align(['Left', 'Center', 'Right']), bold, visibility]; break;
+      case 'SideText': specific = [bold, visibility]; break;
+      case 'QrCode':
+      case 'Barcode':  specific = [visibility]; break;
+      case 'Logo':
+      case 'Image':    specific = align(['left', 'center', 'right']); break;
+      case 'Line':
+        specific = (['solid', 'dashed', 'dotted'] as const).map((s) => ({
+          id: 'ls-' + s, label: c('LINE_' + s.toUpperCase()), icon: 'line', checked: e.style === s, run: patch('style', s),
+        }));
+        break;
+      case 'Spacer':
+        specific = [
+          { id: 'taller', label: c('TALLER'), icon: 'plus', run: patch('height', num(e.height) + 10) },
+          { id: 'shorter', label: c('SHORTER'), icon: 'minus', run: patch('height', Math.max(0, num(e.height) - 10)) },
+        ];
+        break;
+      case 'Table':
+        if (e.source === '!invoice.lines') {
+          const opts = e.options ?? {};
+          specific = [
+            { id: 'o-opt', label: c('SHOW_OPTIONS'), icon: 'list', checked: opts.showOptions !== false, run: patch('options', { ...opts, showOptions: opts.showOptions === false }) },
+            { id: 'o-price', label: c('SHOW_PRICE'), icon: 'list', checked: opts.showPrice !== false, run: patch('options', { ...opts, showPrice: opts.showPrice === false }) },
+          ];
+        }
+        break;
+    }
+
+    const order: CtxItem[] = [
+      { id: 'up', label: c('MOVE_UP'), icon: 'up', disabled: idx <= 0, run: () => this.moveElement(el, 'up') },
+      { id: 'down', label: c('MOVE_DOWN'), icon: 'down', disabled: idx >= list.length - 1, run: () => this.moveElement(el, 'down') },
+      { id: 'top', label: c('MOVE_TOP'), icon: 'top', disabled: idx <= 0, run: () => this.moveElement(el, 'top') },
+      { id: 'bottom', label: c('MOVE_BOTTOM'), icon: 'bottom', disabled: idx >= list.length - 1, run: () => this.moveElement(el, 'bottom') },
+    ];
+    const del: CtxItem = { id: 'del', label: c('DELETE'), icon: 'trash', shortcut: 'Del', danger: true, run: () => this.removeElement(el) };
+
+    const out: CtxItem[] = [...common];
+    if (specific.length) out.push({ id: 'd1', divider: true }, ...specific);
+    out.push({ id: 'd2', divider: true }, ...order, { id: 'd3', divider: true }, del);
+    return out;
+  }
+
+  /** Last copied element (JSON). Kept in memory too, because the browser can refuse system clipboard access (insecure page,
+   *  permission, focus in DevTools); copy and paste inside the editor must keep working then. */
+  private elementClipboard: string | null = null;
+
   /** Legacy copy: the selected element goes to the clipboard as JSON (so it can also be pasted into another template). */
   async copySelected(): Promise<void> {
     const el = this.template().recieptTemplate.find((e) => e.__key === this.selectedKey());
     if (!el) return;
-    try {
-      await navigator.clipboard.writeText(JSON.stringify(elementToWire({ ...el, id: '' })));
-      this.toast.success('RECEIPT_BUILDER.CLIPBOARD.COPIED');
-    } catch { this.toast.error('RECEIPT_BUILDER.CLIPBOARD.FAILED'); }
+    const json = JSON.stringify(elementToWire({ ...el, id: '' }));
+    this.elementClipboard = json;
+    try { await navigator.clipboard?.writeText(json); } catch { /* the in-app copy above still works */ }
+    this.toast.success('RECEIPT_BUILDER.CLIPBOARD.COPIED');
   }
 
   /** Legacy paste: a fresh element built from the clipboard JSON goes in after the selected element (or at the end). */
   async pasteElement(): Promise<void> {
-    let data: any;
-    try { data = JSON.parse(await navigator.clipboard.readText()); } catch { return; }
-    if (!data || typeof data !== 'object' || Array.isArray(data) || typeof data.type !== 'string') return;
+    let text = '';
+    try { text = (await navigator.clipboard?.readText()) ?? ''; } catch { /* fall back to the in-app copy */ }
+    let data: any = null;
+    for (const candidate of [text, this.elementClipboard ?? '']) {
+      try { const v = JSON.parse(candidate); if (v && typeof v === 'object' && !Array.isArray(v) && typeof v.type === 'string') { data = v; break; } } catch { /* not an element */ }
+    }
+    if (!data) return;
     const [fresh] = parseElements([elementFromWire({ ...data, id: '', __key: undefined })]);
     if (!fresh) return;
     this.captureBefore(`Paste ${fresh.type}`, `paste:${Date.now()}`);
@@ -978,3 +1132,5 @@ export class ReceiptBuilderFormComponent implements OnInit, CanLeaveComponent {
     this.router.navigate(['/settings/receipt-builder', 'new'], { queryParams: { type } });
   }
 }
+
+function num(v: unknown): number { const n = Number(v); return Number.isFinite(n) ? n : 0; }

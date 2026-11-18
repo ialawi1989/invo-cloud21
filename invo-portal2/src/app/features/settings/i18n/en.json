@@ -272,6 +272,15 @@
     },
 
     "TABLES": {
+      "CTX": {
+        "EDIT": "Edit",
+        "ROTATE_RIGHT": "Rotate 45° right",
+        "ROTATE_LEFT": "Rotate 45° left",
+        "HIDE_SEAT_COUNT": "Hide seat count",
+        "SHOW_SEAT_COUNT": "Show seat count",
+        "BRING_FRONT": "Bring to front",
+        "SEND_BACK": "Send to back"
+      },
       "SUBTITLE":             "Design the floor plan for each branch — group tables into zones, set capacity and rotation, drag to position.",
       "BRANCH":               "Branch",
       "GROUPS":               "Groups",

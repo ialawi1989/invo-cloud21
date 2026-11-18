@@ -408,9 +408,14 @@
               >
                 @switch (activeTab('Image', gi, group)) {
                   @case ('content') {
+                    <div class="row">
+                      <button type="button" class="btn btn-default btn-sm" (click)="chooseImageFromMedia()">{{ 'RECEIPT_BUILDER.EDITOR.IMAGE_FROM_MEDIA' | translate }}</button>
+                      <button type="button" class="btn btn-default btn-sm" (click)="imageFile.click()">{{ 'RECEIPT_BUILDER.EDITOR.IMAGE_BROWSE' | translate }}</button>
+                      <input #imageFile type="file" accept="image/*" hidden (change)="onImageFileBrowsed($event)"/>
+                    </div>
                     <div class="field">
                       <label>{{ 'RECEIPT_BUILDER.EDITOR.IMAGE_PATH' | translate }}</label>
-                      <input class="input" [ngModel]="im.path" (ngModelChange)="emit('path', $event)" [placeholder]="'RECEIPT_BUILDER.EDITOR.IMAGE_PATH_PLACEHOLDER' | translate"/>
+                      <input class="input" [ngModel]="im.path || im.data" (ngModelChange)="onImageSource($event)" [placeholder]="'RECEIPT_BUILDER.EDITOR.IMAGE_PATH_PLACEHOLDER' | translate"/>
                       <small class="hint">{{ 'RECEIPT_BUILDER.EDITOR.IMAGE_PATH_HINT' | translate }}</small>
                     </div>
                   }

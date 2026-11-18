@@ -12,6 +12,11 @@ import { CommonModule } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { ModalService } from '@shared/modal/modal.service';
+import { ToastService } from '@shared/components/toast/toast.service';
+import { MediaPickerModalComponent, MediaPickerConfig } from '@features/settings/media/components/media-picker/media-picker-modal.component';
+import { Media } from '@features/settings/media/models/media.model';
+import { MediaService } from '@features/settings/media/services/media.service';
 import { startWith } from 'rxjs/operators';
 import {
   CdkDragDrop,
@@ -81,6 +86,9 @@ export class ElementEditorComponent {
   private translate = inject(TranslateService);
   private companies = inject(CompanyService);
   private storefront = inject(StorefrontUrlService);
+  private modal      = inject(ModalService);
+  private mediaService = inject(MediaService);
+  private toast      = inject(ToastService);
 
   /** Currently-selected element. `null` when nothing's picked — the
    *  parent already shows a "select an element" hint in that case;
@@ -511,6 +519,96 @@ export class ElementEditorComponent {
       ),
     );
     return out;
+  }
+
+  /** Opens the media library; the picked image is converted to base64 so the template carries it inline (no external URL). */
+  async chooseImageFromMedia(): Promise<void> {
+    const ref = this.modal.open<MediaPickerModalComponent, MediaPickerConfig, Media | Media[] | undefined>(
+      MediaPickerModalComponent,
+      { size: 'xl', data: { contentTypes: ['image'], title: this.translate.instant('RECEIPT_BUILDER.EDITOR.IMAGE_FROM_MEDIA') } },
+    );
+    const result = await ref.afterClosed();
+    const media = Array.isArray(result) ? result[0] : result;
+    if (!media) return;
+    try {
+      // The media URL redirects to storage that does not allow cross-origin reads (CORS), so the browser cannot fetch it
+      // directly. The media API serves the original file itself, which has no such limit.
+      let dataUrl = '';
+      try {
+        dataUrl = await this.blobToDataUrl(await this.mediaService.getMediaRawBlob(media.id ?? ''));
+      } catch {
+        const url = media.imageUrl || media.thumbUrl;
+        if (!url) throw new Error('no url');
+        dataUrl = await this.urlToDataUrl(url);
+      }
+      this.setImageData(dataUrl);
+    } catch {
+      this.toast.error('RECEIPT_BUILDER.EDITOR.IMAGE_CONVERT_FAILED');
+    }
+  }
+
+  /** URL to base64. A plain fetch can fail with a CORS error when the browser already cached the picture from an `<img>` tag
+   *  (no CORS headers on that copy), so it is retried uncached, then loaded through an `<img crossorigin>` and a canvas. */
+  private async urlToDataUrl(url: string): Promise<string> {
+    if (url.startsWith('data:')) return url;
+    try {
+      const res = await fetch(url, { mode: 'cors', cache: 'no-store' });
+      if (!res.ok) throw new Error('http ' + res.status);
+      return await this.blobToDataUrl(await res.blob());
+    } catch {
+      const busted = url + (url.includes('?') ? '&' : '?') + 'rb=' + Date.now();
+      return await new Promise<string>((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          try {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.naturalWidth || 1;
+            canvas.height = img.naturalHeight || 1;
+            canvas.getContext('2d')?.drawImage(img, 0, 0);
+            resolve(canvas.toDataURL('image/png'));
+          } catch (e) { reject(e); }
+        };
+        img.onerror = () => reject(new Error('image load failed'));
+        img.src = busted;
+      });
+    }
+  }
+
+  /** Browse a picture from the computer; it is converted to base64 as well. */
+  async onImageFileBrowsed(ev: Event): Promise<void> {
+    const input = ev.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { this.toast.error('RECEIPT_BUILDER.EDITOR.IMAGE_NOT_IMAGE'); return; }
+    try {
+      this.setImageData(await this.blobToDataUrl(file));
+    } catch {
+      this.toast.error('RECEIPT_BUILDER.EDITOR.IMAGE_CONVERT_FAILED');
+    }
+  }
+
+  private setImageData(dataUrl: string): void {
+    this.emit('data', dataUrl);
+    this.emit('path', '');
+  }
+
+  private blobToDataUrl(blob: Blob): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(String(r.result));
+      r.onerror = () => reject(r.error);
+      r.readAsDataURL(blob);
+    });
+  }
+
+  /** The Content field of an Image holds either a URL / asset path (`path`) or an inline base64 data URI (`data`), which is what
+   *  an uploaded picture is stored as. The field shows whichever one is set and writes back to the matching property. */
+  onImageSource(v: string): void {
+    const value = v ?? '';
+    if (value.startsWith('data:')) { this.emit('data', value); this.emit('path', ''); }
+    else this.emit('path', value);
   }
 
   /** True when the table actually carries a cell with the given base
