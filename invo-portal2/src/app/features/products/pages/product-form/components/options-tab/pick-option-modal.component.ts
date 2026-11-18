@@ -14,6 +14,7 @@ import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ApiService } from '@core/http/api.service';
+import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 import { ModalHeaderComponent } from '@shared/modal/modal-header.component';
 import { MODAL_DATA, MODAL_REF } from '@shared/modal/modal.tokens';
 import type { ModalRef } from '@shared/modal/modal.service';
@@ -62,7 +63,7 @@ interface OptionRow {
 @Component({
   selector: 'app-pf-pick-option-modal',
   standalone: true,
-  imports: [CommonModule, TranslateModule, ModalHeaderComponent],
+  imports: [CommonModule, TranslateModule, ModalHeaderComponent, MycurrencyPipe],
   templateUrl: './pick-option-modal.component.html',
   styleUrl: './pick-option-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -85,6 +86,8 @@ export class PickOptionModalComponent implements OnInit, AfterViewInit, OnDestro
   private scrollObserver?: IntersectionObserver;
 
   selectedCount = computed(() => this.selected().size);
+  /** Every option loaded so far is ticked (drives the Select all / Clear all label). */
+  allLoadedSelected = computed(() => this.rows().length > 0 && this.rows().every((r) => this.selected().has(r.id)));
 
   ngOnInit(): void {
     const ids = this.data.excludedIds ?? [];
@@ -156,6 +159,16 @@ export class PickOptionModalComponent implements OnInit, AfterViewInit, OnDestro
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else              next.add(id);
+      return next;
+    });
+  }
+
+  /** Ticks every option loaded so far; when they are all ticked already, unticks them. */
+  toggleSelectAll(): void {
+    const all = this.allLoadedSelected();
+    this.selected.update((prev) => {
+      const next = new Set(prev);
+      for (const r of this.rows()) { if (all) next.delete(r.id); else next.add(r.id); }
       return next;
     });
   }

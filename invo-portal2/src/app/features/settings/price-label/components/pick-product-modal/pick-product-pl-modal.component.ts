@@ -153,6 +153,8 @@ export class PickProductPlModalComponent implements OnInit, AfterViewInit, OnDes
   private rowCache = new Map<string, ProductRow>();
 
   selectedCount = computed<number>(() => this.selected().size);
+  /** Every product loaded so far is ticked (drives the Select all / Clear all label). */
+  allPicked = computed<boolean>(() => this.rows().length > 0 && this.rows().every(r => r.picked));
 
   // Translate the i18n key here so the dropdown trigger renders
   // human text — `displayWith` returns `item.label`, which the

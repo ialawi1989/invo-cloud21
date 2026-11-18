@@ -244,8 +244,10 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    white-space: nowrap;
 
-    &:hover { background: #f8fafc; }
+    &:hover:not(:disabled) { background: #f8fafc; }
+    &:disabled { opacity: 0.55; cursor: not-allowed; }
 
     &--ghost { background: #f3f4f6; }
     &--primary {

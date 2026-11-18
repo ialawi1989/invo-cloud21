@@ -72,6 +72,8 @@ export class PickOptionGroupModalComponent implements OnInit, AfterViewInit, OnD
   private scrollObserver?: IntersectionObserver;
 
   selectedCount = computed(() => this.selected().size);
+  /** Every group loaded so far is ticked (drives the Select all / Clear all label). */
+  allLoadedSelected = computed(() => this.rows().length > 0 && this.rows().every((r) => this.selected().has(r.id)));
 
   ngOnInit(): void {
     const ids = this.data.excludedIds ?? [];
@@ -133,6 +135,16 @@ export class PickOptionGroupModalComponent implements OnInit, AfterViewInit, OnD
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else              next.add(id);
+      return next;
+    });
+  }
+
+  /** Ticks every group loaded so far; when they are all ticked already, unticks them. */
+  toggleSelectAll(): void {
+    const all = this.allLoadedSelected();
+    this.selected.update((prev) => {
+      const next = new Set(prev);
+      for (const r of this.rows()) { if (all) next.delete(r.id); else next.add(r.id); }
       return next;
     });
   }
