@@ -37,7 +37,11 @@
   </ng-template>
 
   <ng-template listRowActions let-row>
-    <div class="inline-flex items-center justify-end" (click)="$event.stopPropagation()">
+    <div class="inline-flex items-center justify-end gap-2" (click)="$event.stopPropagation()">
+      <button type="button" (click)="edit(row); $event.stopPropagation()"
+        class="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity px-4 h-9 inline-flex items-center rounded-full bg-brand-600 text-white text-sm font-medium shadow-sm hover:bg-brand-700">
+        {{ 'COMMON.EDIT' | translate }}
+      </button>
       <app-dropdown-menu-btn [items]="rowMenuItems(row)" [appendToBody]="true" [chevron]="false" align="end" triggerClass="icon-btn">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
           <circle cx="5" cy="12" r="1.75"/><circle cx="12" cy="12" r="1.75"/><circle cx="19" cy="12" r="1.75"/>
