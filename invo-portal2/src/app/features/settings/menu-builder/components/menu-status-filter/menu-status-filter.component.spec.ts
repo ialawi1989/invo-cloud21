@@ -17,16 +17,14 @@ describe('MenuStatusFilterComponent', () => {
     fixture = TestBed.createComponent(MenuStatusFilterComponent);
     emitted = [];
     fixture.componentInstance.valueChange.subscribe((v) => emitted.push(v));
-    fixture.componentRef.setInput('counts', { ACTIVE: 40, SCHEDULED: 0, ENDED: 1, DISABLED: 0 });
-    fixture.componentRef.setInput('total', 41);
     el = fixture.nativeElement;
     fixture.detectChanges();
   });
 
   const chips = () => Array.from(el.querySelectorAll<HTMLElement>('[role="radio"]'));
 
-  it('shows All plus Active now / Scheduled / Ended, each with its count', () => {
-    expect(chips().map((c) => c.querySelector('span')!.textContent!.trim())).toEqual(['41', '40', '0', '1']);
+  it('shows All plus Active now / Scheduled / Ended', () => {
+    expect(chips().length).toBe(4);
     expect(el.querySelector('[role="radiogroup"]')).toBeTruthy();
   });
 

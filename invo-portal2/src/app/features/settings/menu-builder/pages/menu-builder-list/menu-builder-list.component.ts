@@ -13,11 +13,10 @@ import type { ListQueryParams, TableColumn } from '@shared/components/list-page/
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 
 import { MenuBuilderService } from '../../services/menu-builder.service';
-import { MenuListItem, MenuStatus, MenuSummary } from '../../services/menu-builder.types';
+import { MenuListItem, MenuStatus } from '../../services/menu-builder.types';
 import { ArrangeMenusModalComponent } from '../../components/arrange-menus-modal/arrange-menus-modal.component';
 import { MenuStatusBadgeComponent } from '../../components/menu-status-badge/menu-status-badge.component';
 import { MenuStatusFilterComponent } from '../../components/menu-status-filter/menu-status-filter.component';
-import { MenuListSummaryComponent } from '../../components/menu-list-summary/menu-list-summary.component';
 import { HoursView, formatHours } from '../../utils/menu-hours';
 
 /**
@@ -27,7 +26,7 @@ import { HoursView, formatHours } from '../../utils/menu-hours';
 @Component({
   selector: 'app-menu-builder-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslateModule, ListPageComponent, ListCellTemplateDirective, ListRowActionsDirective, ListMobileChipDirective, MenuListSummaryComponent, MenuStatusBadgeComponent, MenuStatusFilterComponent],
+  imports: [CommonModule, RouterModule, TranslateModule, ListPageComponent, ListCellTemplateDirective, ListRowActionsDirective, ListMobileChipDirective, MenuStatusBadgeComponent, MenuStatusFilterComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './menu-builder-list.component.html',
 })
@@ -40,9 +39,6 @@ export class MenuBuilderListComponent {
   private prefs      = inject(UserPreferencesService);
   private modal      = inject(ModalService);
   private listPage   = viewChild(ListPageComponent);
-
-  /** Counts and the menus live now, shown above the table. Reloaded with the list. */
-  summary = signal<MenuSummary | null>(null);
 
   /** The selected tab (null = All). Mirrors the `status` URL param. */
   status = signal<MenuStatus | null>(this.readStatus(this.route.snapshot.queryParamMap.get('status')));
@@ -90,8 +86,7 @@ export class MenuBuilderListComponent {
       { key: 'name', label: this.t('MENU_BUILDER.NAME'), sortable: true, primary: true, locked: true, customTemplate: true, visible: true, order: 0 },
       { key: 'status', label: this.t('MENU_BUILDER.STATUS.COLUMN'), customTemplate: true, visible: true, order: 1 },
       { key: 'hours', label: this.t('MENU_BUILDER.HOURS'), sortable: true, customTemplate: true, visible: true, order: 2 },
-      { key: 'sectionsCount', label: this.t('MENU_BUILDER.SECTIONS'), customTemplate: true, visible: true, order: 3 },
-      { key: 'availableOnline', label: this.t('MENU_BUILDER.ONLINE'), sortable: true, customTemplate: true, visible: true, order: 4 },
+      { key: 'availableOnline', label: this.t('MENU_BUILDER.ONLINE'), sortable: true, customTemplate: true, visible: true, order: 3 },
     ];
   });
 
@@ -114,14 +109,11 @@ export class MenuBuilderListComponent {
 
   load = async (params: ListQueryParams) => {
     const col = params.sortBy ? MenuBuilderListComponent.SORT_COLUMN[params.sortBy.sortValue] : undefined;
-    // The summary is extra information: if it fails the list still loads.
-    const summaryReq = this.service.getSummary().then((s) => this.summary.set(s)).catch(() => this.summary.set(null));
     const res = await this.service.getList({
       page: params.page, limit: params.limit, search: (params.searchTerm || '').trim(),
       sortBy: col && params.sortBy ? { sortValue: col, sortDirection: params.sortBy.sortDirection } : undefined,
       status: this.status() ? [this.status()!] : undefined,
     });
-    await summaryReq;
     return { list: res.list, count: res.total, pageCount: Math.max(1, Math.ceil(res.total / (params.limit || 20))) };
   };
 

@@ -10,7 +10,6 @@ import {
   MenuListItem,
   MenuListPage,
   MenuStatus,
-  MenuSummary,
   MenuSection,
   MenuSectionColor,
   MenuSectionProduct,
@@ -72,23 +71,9 @@ export class MenuBuilderService {
         endAt:           String(m?.endAt   ?? '23:59:00'),
         availableOnline: m?.availableOnline !== false,
         index:           int(m?.index, 0),
-        sectionsCount:   Array.isArray(m?.sections) ? m.sections.length : (m?.sectionsCount ?? undefined),
         status:          ['ACTIVE', 'SCHEDULED', 'ENDED', 'DISABLED'].includes(m?.status) ? m.status : undefined,
       })),
       total: int(raw?.count ?? raw?.total ?? list.length, list.length),
-    };
-  }
-
-  /** Counts per live state and the menus live now (`product/getMenuSummary`). */
-  async getSummary(): Promise<MenuSummary> {
-    const res = await this.api.request<any>(this.api.get('product/getMenuSummary'));
-    const raw = res?.data ?? res ?? {};
-    const c = raw.statusCounts ?? {};
-    return {
-      total: int(raw.total, 0),
-      statusCounts: { ACTIVE: int(c.ACTIVE, 0), SCHEDULED: int(c.SCHEDULED, 0), ENDED: int(c.ENDED, 0), DISABLED: int(c.DISABLED, 0) },
-      active: Array.isArray(raw.active) ? raw.active.map((a: any) => ({ id: String(a?.id ?? ''), name: String(a?.name ?? '') })) : [],
-      branchTimeZone: String(raw.branchTimeZone ?? ''),
     };
   }
 

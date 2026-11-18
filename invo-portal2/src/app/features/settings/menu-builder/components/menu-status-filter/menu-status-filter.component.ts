@@ -6,7 +6,7 @@ import type { MenuStatus } from '../../services/menu-builder.types';
 /** The statuses that have a tab (what the hours say). */
 const TAB_STATUSES: readonly MenuStatus[] = ['ACTIVE', 'SCHEDULED', 'ENDED'];
 
-/** Tabs above the menu list: All, Active now, Scheduled, Ended, each with its count. A radiogroup: arrow keys move between them. */
+/** Tabs above the menu list: All, Active now, Scheduled, Ended, A radiogroup: arrow keys move between them. */
 @Component({
   selector: 'app-menu-status-filter',
   standalone: true,
@@ -17,18 +17,12 @@ const TAB_STATUSES: readonly MenuStatus[] = ['ACTIVE', 'SCHEDULED', 'ENDED'];
 export class MenuStatusFilterComponent {
   /** The selected status; null = All. */
   value = input<MenuStatus | null>(null);
-  counts = input<Record<MenuStatus, number>>({ ACTIVE: 0, SCHEDULED: 0, ENDED: 0, DISABLED: 0 });
-  /** Every menu (the "All" count). */
-  total = input(0);
   valueChange = output<MenuStatus | null>();
 
-  options = computed<Array<{ id: MenuStatus | null; key: string; count: number }>>(() => {
-    const c = this.counts();
-    return [
-      { id: null, key: 'ALL', count: this.total() },
-      ...TAB_STATUSES.map((s) => ({ id: s as MenuStatus | null, key: s, count: c[s] })),
-    ];
-  });
+  options = computed<Array<{ id: MenuStatus | null; key: string }>>(() => [
+    { id: null, key: 'ALL' },
+    ...TAB_STATUSES.map((s) => ({ id: s as MenuStatus | null, key: s })),
+  ]);
 
   select(id: MenuStatus | null): void {
     if (id !== this.value()) this.valueChange.emit(id);

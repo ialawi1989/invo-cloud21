@@ -17,7 +17,6 @@
     "BRANCHES_PLACEHOLDER": "اختر فرعًا أو أكثر",
     "NO_BRANCHES": "لا توجد فروع متاحة لهذا الحساب.",
     "HOURS": "الساعات",
-    "SECTIONS": "الأقسام",
     "ONLINE": "أونلاين",
     "CONFIRM_DELETE_SECTION": "هل تريد حذف القسم «{{name}}» وكل المنتجات المضافة إليه؟",
     "ADD_SECTION": "إضافة قسم",

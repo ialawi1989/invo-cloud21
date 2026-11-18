@@ -86,8 +86,6 @@ export interface MenuListItem {
   endAt: string;
   availableOnline: boolean;
   index: number;
-  /** Number of sections, surfaced in the list table. */
-  sectionsCount?: number;
   /** Live state by the hours (absent when the backend does not send it). */
   status?: MenuStatus;
 }
@@ -95,15 +93,6 @@ export interface MenuListItem {
 export interface MenuListPage {
   list: MenuListItem[];
   total: number;
-}
-
-/** What the live-hours state of the company's menus adds up to (computed by the backend in the branch's time zone). */
-export interface MenuSummary {
-  total: number;
-  statusCounts: { ACTIVE: number; SCHEDULED: number; ENDED: number; DISABLED: number };
-  /** The menus live now. */
-  active: Array<{ id: string; name: string }>;
-  branchTimeZone: string;
 }
 
 /** Full colour palette — ported verbatim from legacy

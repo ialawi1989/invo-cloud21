@@ -30,9 +30,7 @@
   </div>
 
   <div listSubHeader class="flex flex-col gap-3 pb-3">
-    <app-menu-status-filter [value]="status()" [counts]="summary()?.statusCounts ?? { ACTIVE: 0, SCHEDULED: 0, ENDED: 0, DISABLED: 0 }"
-                            [total]="summary()?.total ?? 0" (valueChange)="setStatus($event)"/>
-    <app-menu-list-summary [summary]="summary()"/>
+    <app-menu-status-filter [value]="status()" (valueChange)="setStatus($event)"/>
   </div>
 
   <ng-template listCellTemplate="name" let-row>
@@ -58,10 +56,6 @@
       @if (h.allDay) { {{ 'MENU_BUILDER.STATUS.ALL_DAY' | translate }} }
       @else { {{ h.range }}@if (h.overnight) { <span class="text-xs text-slate-500"> {{ 'MENU_BUILDER.STATUS.NEXT_DAY' | translate }}</span> } }
     </span>
-  </ng-template>
-
-  <ng-template listCellTemplate="sectionsCount" let-row>
-    <span class="inline-flex items-center text-xs font-semibold px-2.5 py-1 rounded-full bg-brand-50 text-brand-700">{{ row.sectionsCount ?? 0 }}</span>
   </ng-template>
 
   <ng-template listCellTemplate="availableOnline" let-row>

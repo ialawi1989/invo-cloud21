@@ -12,12 +12,11 @@ import type { MenuListItem } from '../../services/menu-builder.types';
 import { MenuBuilderListComponent } from './menu-builder-list.component';
 
 const row = (over: Partial<MenuListItem> = {}): MenuListItem => ({
-  id: 'm1', name: 'Lunch', branchIds: [], startAt: '09:00:00', endAt: '17:00:00', availableOnline: true, index: 0, sectionsCount: 3, ...over,
+  id: 'm1', name: 'Lunch', branchIds: [], startAt: '09:00:00', endAt: '17:00:00', availableOnline: true, index: 0, ...over,
 });
 
 describe('MenuBuilderListComponent (logic)', () => {
   let getList: ReturnType<typeof vi.fn>;
-  let getSummary: ReturnType<typeof vi.fn>;
   let navigate: ReturnType<typeof vi.fn>;
   let cmp: MenuBuilderListComponent;
   let params: BehaviorSubject<ReturnType<typeof convertToParamMap>>;
@@ -30,7 +29,7 @@ describe('MenuBuilderListComponent (logic)', () => {
       providers: [
         { provide: Router, useValue: { navigate } },
         { provide: ActivatedRoute, useValue: { queryParamMap: params, snapshot: { get queryParamMap() { return params.value; } } } },
-        { provide: MenuBuilderService, useValue: { getList, getSummary } },
+        { provide: MenuBuilderService, useValue: { getList } },
         { provide: ModalService, useValue: { open: () => ({ afterClosed: async () => true }) } },
         { provide: UserPreferencesService, useValue: { timePattern: () => 'HH:mm' } },
       ],
@@ -42,7 +41,6 @@ describe('MenuBuilderListComponent (logic)', () => {
   beforeEach(() => {
     TestBed.resetTestingModule();
     getList = vi.fn().mockResolvedValue({ list: [row()], total: 41 });
-    getSummary = vi.fn().mockResolvedValue({ total: 41, statusCounts: { ACTIVE: 40, SCHEDULED: 0, ENDED: 1, DISABLED: 0 }, active: [{ id: 'a', name: 'DineIn' }], branchTimeZone: 'Asia/Bahrain' });
     navigate = vi.fn().mockResolvedValue(true);
     cmp = create();
   });
@@ -58,15 +56,6 @@ describe('MenuBuilderListComponent (logic)', () => {
     expect(getList).toHaveBeenLastCalledWith({ page: 1, limit: 20, search: '', sortBy: { sortValue: 'startAt', sortDirection: 'desc' }, status: undefined });
     await cmp.load({ page: 1, limit: 20 });
     expect(getList).toHaveBeenLastCalledWith({ page: 1, limit: 20, search: '', sortBy: undefined, status: undefined });
-  });
-
-  it('loads the summary with the list, and the list still loads when the summary fails', async () => {
-    await cmp.load({ page: 1, limit: 20 });
-    expect(cmp.summary()?.statusCounts.ACTIVE).toBe(40);
-    getSummary.mockRejectedValue(new Error('x'));
-    const res = await cmp.load({ page: 1, limit: 20 });
-    expect(res.list.length).toBe(1);
-    expect(cmp.summary()).toBeNull();
   });
 
   it('reads the selected tab from the URL, and ignores nonsense', () => {
