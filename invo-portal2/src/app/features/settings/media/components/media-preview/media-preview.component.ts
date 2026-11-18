@@ -98,13 +98,17 @@ export class MediaPreviewComponent implements OnInit, OnDestroy {
     return this.currentMedia.isImage;
   }
 
+  /** The file extension, lower-case. The server sends `mediaType: null` for some items, so never read it directly. */
+  get extension(): string {
+    return (this.currentMedia?.mediaType?.extension ?? '').toLowerCase();
+  }
+
   get isDocument(): boolean {
-    const ext = this.currentMedia.mediaType.extension?.toLowerCase();
-    return this.DOCUMENT_EXTENSIONS.includes(ext) || this.currentMedia.isDocument;
+    return this.DOCUMENT_EXTENSIONS.includes(this.extension) || !!this.currentMedia?.isDocument;
   }
 
   get isPdf(): boolean {
-    return this.currentMedia.mediaType.extension?.toLowerCase() === 'pdf';
+    return this.extension === 'pdf';
   }
 
   get isVideo(): boolean {
@@ -237,7 +241,7 @@ export class MediaPreviewComponent implements OnInit, OnDestroy {
   private async loadDocument(): Promise<void> {
     this.revokeDocObjectUrl();
 
-    const ext = this.currentMedia.mediaType.extension?.toLowerCase() ?? '';
+    const ext = this.extension;
     const requestedId = this.currentMedia.id;
     const directUrl = this.currentMedia.imageUrl || '';
 

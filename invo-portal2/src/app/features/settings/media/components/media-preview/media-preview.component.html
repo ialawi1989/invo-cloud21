@@ -117,7 +117,7 @@
     @if (isModel && !hasError()) {
       <div class="model-preview">
         @for (id of [currentMedia.id]; track id) {
-          <app-model-viewer [mediaId]="id" [name]="currentMedia.name" [extension]="currentMedia.mediaType.extension" height="100%"/>
+          <app-model-viewer [mediaId]="id" [name]="currentMedia.name" [extension]="extension" height="100%"/>
         }
       </div>
     }

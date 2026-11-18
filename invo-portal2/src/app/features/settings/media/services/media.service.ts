@@ -416,7 +416,7 @@ export class MediaService {
     xhr.responseType = 'blob';
     xhr.onload = () => {
       if (xhr.status === 200) {
-        const filename = `${media.name}_${this.formatDate(new Date())}.${media.mediaType.extension}`;
+        const filename = `${media.name}_${this.formatDate(new Date())}.${media.mediaType?.extension ?? ''}`;
         this.triggerDownload(xhr.response, filename);
       }
     };

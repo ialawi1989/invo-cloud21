@@ -65,7 +65,8 @@ interface MediaFilters {
 }
 
 const TAB_TO_CONTENT_TYPE: Record<MediaTab, string[]> = {
-  all:        [],
+  // Documents are hidden, so "All" asks for the other types only (an empty list would include them).
+  all:        ['image', 'video', 'audio', 'model'],
   images:     ['image'],
   documents:  ['document', 'docs'], // backend may store either
   videos:     ['video'],
@@ -223,10 +224,10 @@ export class MediaManagerComponent implements OnInit, OnDestroy {
   mediaData    = signal<Media[]>([]);
   countByType  = signal<Record<string, number>>({});
 
-  // Total across all tabs (sum of countByType)
+  // Total across the visible tabs (documents are not counted)
   totalCount = computed(() => {
     const counts = this.countByType();
-    return Object.values(counts).reduce((sum, n) => sum + n, 0);
+    return TAB_TO_CONTENT_TYPE.all.reduce((sum, t) => sum + (counts[t] || 0), 0);
   });
 
   // Per-tab counts for badges
