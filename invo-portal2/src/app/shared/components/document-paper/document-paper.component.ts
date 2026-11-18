@@ -364,6 +364,9 @@ export class DocumentPaperComponent {
 
   /** Style helper for a TextStyle block — same shape both renderers
    *  use. Keeps the inline-style noise out of the template. */
+  /** The barcode badge style of the template (colours, size), as the legacy paper applied it. */
+  barcodeCfg(): any { return (this.template() as any).transactionalDetailsCustomization?.['barcode']; }
+
   textStyle(t: { size?: string | number; color?: string; bold?: boolean; italic?: boolean; underline?: boolean; alignment?: string; backgroundColor?: string } | undefined | null) {
     if (!t) return {};
     return {

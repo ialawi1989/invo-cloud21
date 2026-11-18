@@ -40,6 +40,10 @@ import { EmployeeService } from '../../services/employee.service';
 import { EmployeeDetails } from '../../models/employee.types';
 
 import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton.component';
+import { NotificationPreferencesComponent } from '../../components/notification-preferences/notification-preferences.component';
+import { DeviceUsageComponent } from '../../components/device-usage/device-usage.component';
+import { QrCodeTwoFaComponent, TwoFaModalData, TwoFaResult } from '@features/login/components/qr-code-two-fa.component';
+import { ConfirmModalComponent, ConfirmModalData } from '@shared/modal/demo/confirm-modal.component';
 /**
  * Employees → My Account (self-service)
  * ─────────────────────────────────────
@@ -58,7 +62,7 @@ import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton
  * Save stays on the page (it's self-service) and just toasts, matching
  * the settings-form convention of an in-place confirmation.
  */
-type MyAccountTab = 'profile' | 'security' | 'preferences' | 'info';
+type MyAccountTab = 'profile' | 'security' | 'preferences' | 'notifications' | 'devices' | 'info';
 
 @Component({
   selector: 'app-my-account',
@@ -73,6 +77,8 @@ type MyAccountTab = 'profile' | 'security' | 'preferences' | 'info';
     ToggleComponent,
     SearchDropdownComponent,
     SegmentedToggleComponent,
+    NotificationPreferencesComponent,
+    DeviceUsageComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './my-account.component.html',
@@ -122,14 +128,80 @@ export class MyAccountComponent implements OnInit, CanLeaveComponent {
     { value: 'profile',     label: 'EMPLOYEES.MY_ACCOUNT.TAB_PROFILE' },
     { value: 'security',    label: 'EMPLOYEES.MY_ACCOUNT.TAB_SECURITY' },
     { value: 'preferences', label: 'EMPLOYEES.MY_ACCOUNT.TAB_PREFERENCES' },
+    { value: 'notifications', label: 'EMPLOYEES.MY_ACCOUNT.TAB_NOTIFICATIONS' },
+    { value: 'devices',     label: 'EMPLOYEES.MY_ACCOUNT.TAB_DEVICES' },
     { value: 'info',        label: 'EMPLOYEES.MY_ACCOUNT.TAB_INFO' },
   ];
   tab = signal<MyAccountTab>(
-    (['profile', 'security', 'preferences', 'info'] as const).find(t => t === this.route.snapshot.queryParamMap.get('tab')) ?? 'profile',
+    (['profile', 'security', 'preferences', 'notifications', 'devices', 'info'] as const).find(t => t === this.route.snapshot.queryParamMap.get('tab')) ?? 'profile',
   );
   setTab(t: MyAccountTab): void {
     this.tab.set(t);
     void this.router.navigate([], { relativeTo: this.route, queryParams: { tab: t === 'profile' ? null : t }, queryParamsHandling: 'merge', replaceUrl: true });
+  }
+
+  // ─── Two-factor banner (the same set-up / turn-off flow as the legacy My Account) ───
+  /** Whether 2FA is on for this employee; the banner offers the opposite action. */
+  twoFaOn = signal(false);
+  canChangeTwoFa = computed(() => !!this.original()?.hasPermissionToChange2fa);
+
+  /** Asks first, then starts the set-up: the server returns the QR code to scan, and a 6-digit code from the app confirms it. */
+  async setupTwoFa(): Promise<void> {
+    const ok = await this.modal.open<ConfirmModalComponent, ConfirmModalData, boolean>(ConfirmModalComponent, {
+      size: 'sm',
+      data: {
+        title: this.translate.instant('EMPLOYEES.MY_ACCOUNT.TWO_FACTOR_TITLE'),
+        message: this.translate.instant('EMPLOYEES.MY_ACCOUNT.TWO_FACTOR_ASK'),
+        confirm: this.translate.instant('EMPLOYEES.MY_ACCOUNT.TWO_FACTOR_YES'),
+        cancel: this.translate.instant('EMPLOYEES.MY_ACCOUNT.TWO_FACTOR_LATER'),
+      },
+    }).afterClosed();
+    if (!ok) return;
+    const token = this.auth.getAccessToken() ?? '';
+    try {
+      const res = await this.auth.set2FA(token, true);
+      if (!res?.success) { this.toast.error(res?.msg || 'COMMON.SAVE_FAILED'); return; }
+      await this.openTwoFaModal('setup', res.data?.qrCode ?? '', res.data?.code ?? '');
+    } catch (e: any) {
+      this.toast.error('COMMON.SAVE_FAILED', e?.message);
+    }
+  }
+
+  async unsetTwoFa(): Promise<void> {
+    await this.openTwoFaModal('unset', '', '');
+  }
+
+  private async openTwoFaModal(action: 'setup' | 'unset', qrCode: string, codeStr: string): Promise<void> {
+    const token = this.auth.getAccessToken() ?? '';
+    const result = await this.modal.open<QrCodeTwoFaComponent, TwoFaModalData, TwoFaResult>(QrCodeTwoFaComponent, {
+      size: 'sm', closeOnBackdrop: false,
+      data: { accessToken: token, email: this.original()?.email ?? '', qrCode, codeStr, action },
+    }).afterClosed();
+    if (!result?.pincode) return;
+    if (action === 'setup') {
+      this.setTwoFaState(true);
+      this.toast.success('EMPLOYEES.MY_ACCOUNT.TWO_FACTOR_ENABLED');
+      return;
+    }
+    try {
+      const res = await this.auth.set2FA(token, false, result.pincode);
+      if (res?.success) {
+        this.setTwoFaState(false);
+        this.toast.success('EMPLOYEES.MY_ACCOUNT.TWO_FACTOR_DISABLED');
+      } else {
+        this.toast.error(res?.msg || 'COMMON.SAVE_FAILED');
+      }
+    } catch (e: any) {
+      this.toast.error('COMMON.SAVE_FAILED', e?.message);
+    }
+  }
+
+  /** Keeps the form's flag (and the loaded record) in step, so saving the page does not undo the change. */
+  private setTwoFaState(on: boolean): void {
+    this.twoFaOn.set(on);
+    this.form.patchValue({ apply2fa: on }, { emitEvent: false });
+    const orig = this.original();
+    if (orig) this.original.set({ ...orig, apply2fa: on });
   }
 
   // ─── Preferences (saved with the employee's options, not with the employee record) ───
@@ -237,6 +309,7 @@ export class MyAccountComponent implements OnInit, CanLeaveComponent {
         email:    data.email ?? '',
         apply2fa: !!data.apply2fa,
       });
+      this.twoFaOn.set(!!data.apply2fa);
     } finally {
       this.loading.set(false);
     }

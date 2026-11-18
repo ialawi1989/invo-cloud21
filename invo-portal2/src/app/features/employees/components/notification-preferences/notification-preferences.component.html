@@ -1,0 +1,49 @@
+<section class="np">
+  <header class="np__head">
+    <span class="np__head-icon" aria-hidden="true">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+    </span>
+    <h2 class="np__title">{{ 'EMPLOYEES.MY_ACCOUNT.NOTIFICATION_PREFERENCES' | translate }}</h2>
+    <div class="np__master">
+      <span>{{ 'EMPLOYEES.MY_ACCOUNT.NOTIFICATIONS_ENABLED' | translate }}</span>
+      <app-toggle [checked]="enabled()" [disabled]="loading()" (checkedChange)="setEnabled($event)"/>
+    </div>
+  </header>
+
+  <div class="np__groups" [class.np__groups--off]="!enabled()">
+    @for (g of groups; track g.id) {
+      <div class="np__group">
+        <div class="np__group-head">
+          <span class="np__tile np__tile--{{ g.tone }} np__group-icon" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [innerHTML]="g.icon"></svg>
+          </span>
+          <span class="np__group-title">{{ g.title | translate }}</span>
+          <button type="button" class="np__link" [disabled]="!enabled() || loading()" (click)="toggleGroup(g)">
+            {{ (allOn(g) ? 'EMPLOYEES.MY_ACCOUNT.DISABLE_ALL' : 'EMPLOYEES.MY_ACCOUNT.ENABLE_ALL') | translate }}
+          </button>
+        </div>
+
+        <ul class="np__items">
+          @for (item of g.items; track item.key) {
+            <li class="np__item">
+              <span class="np__tile np__tile--{{ item.tone }} np__item-icon" aria-hidden="true">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [innerHTML]="item.icon"></svg>
+              </span>
+              <div class="np__item-text">
+                <p class="np__item-title">{{ item.title | translate }}</p>
+                <p class="np__item-desc">{{ item.desc | translate }}</p>
+              </div>
+              <app-toggle [checked]="settings()[item.key]" [disabled]="!enabled() || loading()" (checkedChange)="set(item.key, $event)"/>
+            </li>
+          }
+        </ul>
+      </div>
+    }
+  </div>
+
+  <footer class="np__foot">
+    <button type="button" class="np__save" [disabled]="loading() || saving() || !dirty()" (click)="save()">
+      {{ (saving() ? 'COMMON.SAVING' : 'COMMON.SAVE') | translate }}
+    </button>
+  </footer>
+</section>

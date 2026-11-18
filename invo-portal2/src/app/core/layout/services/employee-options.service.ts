@@ -96,6 +96,8 @@ export interface EmployeePreferences {
 export interface EmployeeOptions {
   /** The employee's display preferences (timezone, date / time format, language, first day of week). */
   preferences?: EmployeePreferences;
+  /** My Account > Notifications: which events the employee wants to be notified about. */
+  notifications?: { enabled: boolean; settings: Record<string, boolean> };
   sidebar?: SidebarOptions;
   /** Per-entity list preferences, keyed by entity type (e.g. 'product'). */
   lists?: { [entityType: string]: ListPreference };

@@ -14,7 +14,8 @@
   box-shadow:
     0 1px 3px rgba(15, 23, 42, 0.12),
     0 10px 40px rgba(15, 23, 42, 0.15);
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  // The legacy paper is set in Amiri (Latin and Arabic).
+  font-family: "Amiri", serif;
   color: #1f2937;
   position: relative;
 
@@ -436,56 +437,68 @@
   }
 
   // ── Totals ───────────────────────────────────────────────────
+  // Legacy: a Bootstrap `card border p-3` in the right 5/12 of the page, rows split 6/6, no row dividers.
   &__totals {
     margin-top: 16px;
     margin-inline-start: auto;
-    width: 280px;
+    width: 41.666667%;
+    padding: 1rem;
+    border: 1px solid #eff2f7;
+    border-radius: 0.25rem;
     font-size: 9.5pt;
   }
 
   &__totals-row {
     display: flex;
     justify-content: space-between;
-    padding: 6px 10px;
-    border-bottom: 1px solid #f3f4f6;
+    padding: 0;
+    margin-bottom: 0.25rem;
+    &:last-child { margin-bottom: 0; }
 
-    &--grand {
-      background: var(--color-brand-50);
-      font-weight: 700;
-      color: var(--color-brand-700);
-      border: 2px solid var(--color-brand-500);
-      border-radius: 4px;
-      margin-top: 4px;
-    }
+    &--grand { font-weight: 700; }
   }
 
-  // ── Payments table (orange) ──────────────────────────────────
+  // ── Payments table ───────────────────────────────────────────
   &__payments {
-    margin: 8px 0 0 auto;
-    width: 280px;
-    background: #f1b44c;
+    margin: 0.5rem 0 0 auto;
+    width: 41.666667%;
+    padding: 1rem;
+    background: #fcf0da;
+    border: 1px solid #eff2f7;
+    border-radius: 0.25rem;
     color: #1f2937;
-    border-radius: 4px;
-    overflow: hidden;
     font-size: 9.5pt;
   }
 
   &__payments-row {
     display: flex;
     justify-content: space-between;
-    padding: 6px 12px;
-
-    & + & {
-      border-top: 1px solid rgba(0, 0, 0, 0.06);
-    }
+    margin-bottom: 0.25rem;
+    &:last-child { margin-bottom: 0; }
   }
 
   &__payments-row--method {
     > span > small {
-      display: block;
-      opacity: 0.75;
-      font-size: 8.5pt;
+      font-size: 80%;
     }
+  }
+
+  // ── Legacy badges (Bootstrap `.badge`) ───────────────────────
+  &__badge {
+    display: inline-block;
+    padding: 0.25em 0.4em;
+    font-size: 75%;
+    font-weight: 700;
+    line-height: 1;
+    color: #fff;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 0.25rem;
+
+    &--success { background-color: #34c38f; }
+    &--info { background-color: #50a5f1; }
+    &--pill { padding-inline: 0.6em; border-radius: 50rem; font-size: 11px; }
   }
 
   // ── Customer signature card ──────────────────────────────────
@@ -515,20 +528,6 @@
     border-radius: 4px;
     font-size: 9pt;
     color: #1f2937;
-  }
-
-  // ── Balance-due chip ─────────────────────────────────────────
-  &__balance {
-    margin: 12px 0 0 auto;
-    width: 280px;
-    padding: 8px 12px;
-    background: #f1b44c;
-    color: #1f2937;
-    border-radius: 4px;
-    display: flex;
-    justify-content: space-between;
-    font-size: 10pt;
-    font-weight: 700;
   }
 
   // ── Footer ───────────────────────────────────────────────────

@@ -30,6 +30,7 @@ import { EmployeeAiOverrideComponent } from '../../../ai/employee-ai-override/em
         </div>
         <div class="id-text">
           <p class="id-name">{{ displayName() }}</p>
+          @if (email()) { <p class="id-email" dir="ltr">{{ email() }}</p> }
           <p class="id-company">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" stroke-width="2">
@@ -187,7 +188,8 @@ import { EmployeeAiOverrideComponent } from '../../../ai/employee-ai-override/em
       display: flex; align-items: center; justify-content: center; overflow: hidden;
     }
     .id-avatar__img { width: 100%; height: 100%; object-fit: cover; }
-    .id-name    { font-size: 14px; font-weight: 600; color: #1e293b; margin: 0 0 3px; }
+    .id-name    { font-size: 14px; font-weight: 600; color: #1e293b; margin: 0 0 2px; }
+    .id-email   { font-size: 12px; color: #64748b; margin: 0 0 3px; overflow-wrap: anywhere; text-align: start; }
     .id-company {
       display: flex; align-items: center; gap: 4px;
       font-size: 12px; color: #64748b; margin: 0;
@@ -338,6 +340,7 @@ export class CompanySwitcherComponent implements OnInit {
   avatarBroken = signal(false);
   avatarUrl   = computed(() => (this.avatarBroken() ? null : resolveAvatarUrl(this.employee())));
   displayName = computed(() => resolveEmployeeName(this.employee()));
+  email       = computed(() => this.employee()?.email ?? '');
   initials    = computed(() => resolveInitials(this.employee()));
 
   /** Open the per-employee Content AI override (personal key that

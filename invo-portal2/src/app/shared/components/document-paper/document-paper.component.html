@@ -528,15 +528,15 @@
                     <div class="dp__line-desc">
                       <span class="dp__line-name">{{ ln.desc }}</span>
                       @if (ln.barcode) {
-                        <span class="app-product-badge app-product-badge--barcode">{{ ln.barcode }}</span>
+                        <span class="dp__badge dp__badge--success" [ngStyle]="textStyle(barcodeCfg())">{{ ln.barcode }}</span>
                       }
                       @if (ln['uom']) {
-                        <span class="app-product-badge app-product-badge--uom">{{ ln['uom'] }}</span>
+                        <span class="dp__badge dp__badge--info">{{ ln['uom'] }}</span>
                       }
                       @if (ln.options && ln.options.length) {
                         <div class="dp__line-options">
                           @for (opt of ln.options; track $index) {
-                            <span class="app-product-badge app-product-badge--option">
+                            <span class="dp__badge dp__badge--info dp__badge--pill">
                               {{ opt.name }}
                               @if (opt.price > 0) {
                                 <i>({{ asNum(opt.price).toFixed(3) }})</i>
@@ -649,12 +649,6 @@
       </div>
     }
 
-    @if (template().totalSectionCustomization.customerBalance.show && asNum($any(data()['totals'])?.balance) > 0) {
-      <div class="dp__balance" [style.background]="template().totalSectionCustomization.customerBalance.backgroundColor">
-        <span [ngStyle]="textStyle(template().totalSectionCustomization.customerBalance.balance)">Balance Due</span>
-        <strong>BHD {{ asNum($any(data()['totals'])?.balance).toFixed(3) }}</strong>
-      </div>
-    }
 
     <!-- Document footer (notes + terms + footer-additional-data) is
          rendered separately via `classicFooterTpl` below. The tail

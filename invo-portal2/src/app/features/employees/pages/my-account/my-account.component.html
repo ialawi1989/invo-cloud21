@@ -9,6 +9,19 @@
   @if (loading()) {
     <app-form-skeleton />
   } @else {
+    @if (canChangeTwoFa()) {
+      <div class="twofa-banner" role="status">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        @if (!twoFaOn()) {
+          <span>{{ 'EMPLOYEES.MY_ACCOUNT.TWO_FACTOR_ASK' | translate }}</span>
+          <button type="button" class="twofa-banner__link" (click)="setupTwoFa()">{{ 'EMPLOYEES.MY_ACCOUNT.TWO_FACTOR_SETUP' | translate }}</button>
+        } @else {
+          <span>{{ 'EMPLOYEES.MY_ACCOUNT.TWO_FACTOR_ASK_UNSET' | translate }}</span>
+          <button type="button" class="twofa-banner__link" (click)="unsetTwoFa()">{{ 'EMPLOYEES.MY_ACCOUNT.TWO_FACTOR_UNSET' | translate }}</button>
+        }
+      </div>
+    }
+
     <app-segmented-toggle class="tabs" [options]="tabs" [value]="tab()" (valueChange)="setTab($event)"/>
 
     <!-- ═══ Profile ═══ -->
@@ -214,6 +227,16 @@
         </div>
       </div>
     </section>
+    }
+
+    <!-- ═══ Notifications (saved to the employee's options) ═══ -->
+    @if (tab() === 'notifications') {
+      <app-notification-preferences/>
+    }
+
+    <!-- ═══ Device usage (signed-in devices) ═══ -->
+    @if (tab() === 'devices') {
+      <app-device-usage/>
     }
 
     <!-- ═══ Account info (read-only) ═══ -->

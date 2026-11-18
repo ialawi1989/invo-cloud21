@@ -20,6 +20,8 @@ export class EmployeeAvatarService {
     this.synced = true;
     try {
       const full = await this.employees.getOne(emp.id);
+      // The sign-in copy may carry no e-mail; the account menu shows it, so keep it in step too.
+      if (full?.email && full.email !== emp.email) this.auth.patchEmployee({ email: full.email });
       const url = full?.mediaUrl?.defaultUrl;
       if (url && url !== (emp as any).mediaUrl?.defaultUrl) this.auth.patchEmployee({ mediaUrl: full!.mediaUrl, mediaId: full!.mediaId } as any);
       else if (!url && resolveAvatarUrl(emp)) this.auth.patchEmployee({ mediaUrl: null, mediaId: null } as any); // the picture was removed elsewhere
