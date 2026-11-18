@@ -11,6 +11,7 @@
 }
 
 /* Hero */
+.rc-hero-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 .rc-hero { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 18px; }
 .rc-heading h1 { margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -.02em; color: #0f172a; }
 .rc-heading p { margin: 4px 0 0; font-size: 14px; color: #64748b; }

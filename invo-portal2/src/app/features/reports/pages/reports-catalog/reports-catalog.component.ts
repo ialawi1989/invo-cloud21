@@ -17,11 +17,11 @@ import { ReportsRecentService } from '../../services/reports-recent.service';
 import { groupAccent } from '../../models/report-accents';
 import { scheduleCapsFor, scheduleTypeFor } from '../../models/report-schedule';
 import { ReportScheduleService } from '../../services/report-schedule.service';
-import { ApiService } from '@core/http/api.service';
 import { ModalService } from '@shared/modal/modal.service';
 import {
   ReportScheduleModalComponent, ReportScheduleModalData, ReportScheduleModalResult,
 } from '../../components/report-schedule-modal/report-schedule-modal.component';
+import { ScheduledReportsDrawerComponent } from '../../components/scheduled-reports-drawer/scheduled-reports-drawer.component';
 import { SegmentedToggleComponent, SegmentedToggleOption } from '@shared/components/segmented-toggle/segmented-toggle.component';
 
 import { TooltipDirective } from '@shared/directives/tooltip.directive';
@@ -37,7 +37,6 @@ type MetaTab = 'all' | 'favorites' | 'new';
 })
 export class ReportsCatalogComponent implements OnInit {
   private router = inject(Router);
-  private api = inject(ApiService);
   private modal = inject(ModalService);
   private lang = inject(LanguageService);
   private privileges = inject(PrivilegeService);
@@ -164,14 +163,11 @@ export class ReportsCatalogComponent implements OnInit {
     try { this.scheduledTypes.set(await this.scheduleSvc.scheduledTypes()); } catch { /* the marks are optional */ }
   }
 
-  private branchList: { value: string; label: string }[] | null = null;
-  private async branches(): Promise<{ value: string; label: string }[]> {
-    if (this.branchList) return this.branchList;
-    try {
-      const res = await this.api.request<any>(this.api.post('branch/getBranches/', { page: 1, limit: 500, searchTerm: '', sortBy: {} }));
-      this.branchList = ((res?.data?.list ?? []) as any[]).map(b => ({ value: b.id, label: b.name }));
-    } catch { this.branchList = []; }
-    return this.branchList;
+  /** Every scheduled report of the company, in a side drawer. */
+  async openScheduledReports(): Promise<void> {
+    const ref = this.modal.open(ScheduledReportsDrawerComponent, { drawer: true, drawerWidth: '540px', drawerResizable: true });
+    await ref.afterClosed();
+    void this.loadScheduled(); // an edit or a delete in the drawer changes the calendar marks
   }
 
   /** Quick "Schedule report" straight from the catalog — opens the same dialog as the report's own schedule button, for a new schedule. */
@@ -179,7 +175,7 @@ export class ReportsCatalogComponent implements OnInit {
     event.stopPropagation();
     const type = scheduleTypeFor(r.slug);
     if (!type) return;
-    const branches = await this.branches();
+    const branches = await this.scheduleSvc.branches();
     const ref = this.modal.open<ReportScheduleModalComponent, ReportScheduleModalData, ReportScheduleModalResult>(
       ReportScheduleModalComponent, {
         size: 'md', closeOnBackdrop: false,

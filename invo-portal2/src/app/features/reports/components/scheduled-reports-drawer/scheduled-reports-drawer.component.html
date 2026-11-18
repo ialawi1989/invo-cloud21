@@ -1,0 +1,117 @@
+<header class="sr__head">
+  <h2 class="sr__title">
+    {{ 'REPORTS.SCHEDULE_LIST.TITLE' | translate }}
+    @if (!loading() && rows().length) { <span class="sr__count">{{ rows().length }}{{ hasNext() ? '+' : '' }}</span> }
+  </h2>
+  <button type="button" class="sr__filter-btn" [class.is-active]="showFilters()" (click)="toggleFilters()">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M7 12h10"/><path d="M10 18h4"/></svg>
+    {{ 'REPORTS.SCHEDULE_LIST.FILTERS' | translate }}
+    @if (activeFilterCount() > 0) { <span class="sr__filter-count">{{ activeFilterCount() }}</span> }
+  </button>
+</header>
+
+<div class="sr__tools">
+  <label class="sr__search">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" [ngModel]="searchInput()" (ngModelChange)="onSearch($event)" [placeholder]="'REPORTS.SCHEDULE_LIST.SEARCH' | translate"/>
+    @if (searchInput()) {
+      <button type="button" class="sr__x" (click)="clearSearch()" [appTooltip]="'REPORTS.SCHEDULE_LIST.CLEAR' | translate">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    }
+  </label>
+
+  @if (showFilters()) {
+    <div class="sr__filters">
+      <div class="sr__field">
+        <span class="sr__label">{{ 'REPORTS.SCHEDULE_LIST.STATUS' | translate }}</span>
+        <app-segmented-toggle size="sm" [options]="statusOptions" [value]="status()" (valueChange)="setStatus($event)"/>
+      </div>
+      <div class="sr__field">
+        <span class="sr__label">{{ 'REPORTS.SCHEDULE_LIST.FREQUENCY' | translate }}</span>
+        <app-segmented-toggle size="sm" [options]="frequencyOptions" [value]="frequency()" (valueChange)="setFrequency($event)"/>
+      </div>
+      <div class="sr__field">
+        <span class="sr__label">{{ 'REPORTS.SCHEDULE.NEXT_RUN' | translate }}</span>
+        <div class="sr__range">
+          <app-date-field [value]="nextFrom()" [max]="nextTo()" (valueChange)="setRange('nextFrom', $event)" triggerClass="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg bg-white"/>
+          <span>-</span>
+          <app-date-field [value]="nextTo()" [min]="nextFrom()" (valueChange)="setRange('nextTo', $event)" triggerClass="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg bg-white"/>
+        </div>
+      </div>
+      <div class="sr__field">
+        <span class="sr__label">{{ 'REPORTS.SCHEDULE.PREVIOUS_RUN' | translate }}</span>
+        <div class="sr__range">
+          <app-date-field [value]="prevFrom()" [max]="prevTo()" (valueChange)="setRange('prevFrom', $event)" triggerClass="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg bg-white"/>
+          <span>-</span>
+          <app-date-field [value]="prevTo()" [min]="prevFrom()" (valueChange)="setRange('prevTo', $event)" triggerClass="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg bg-white"/>
+        </div>
+      </div>
+      @if (activeFilterCount() > 0) {
+        <button type="button" class="sr__clear" (click)="clearFilters()">{{ 'REPORTS.SCHEDULE_LIST.CLEAR_FILTERS' | translate }}</button>
+      }
+    </div>
+  }
+</div>
+
+<div class="sr__body">
+  @if (loading()) {
+    <app-list-skeleton [rows]="4" [lines]="3" />
+  } @else if (failed()) {
+    <app-empty-state icon="error" tone="error" [title]="'REPORTS.SCHEDULE_LIST.LOAD_FAILED' | translate">
+      <button type="button" class="sr__btn" (click)="load()">{{ 'REPORTS.SCHEDULE_LIST.RETRY' | translate }}</button>
+    </app-empty-state>
+  } @else if (rows().length === 0) {
+    @if (hasSearchOrFilters()) {
+      <app-empty-state icon="search" [title]="'REPORTS.SCHEDULE_LIST.NO_MATCH' | translate"/>
+    } @else {
+      <app-empty-state icon="calendar" [title]="'REPORTS.SCHEDULE_LIST.EMPTY' | translate" [body]="'REPORTS.SCHEDULE_LIST.EMPTY_HINT' | translate"/>
+    }
+  } @else {
+    <ul class="sr__cards">
+      @for (row of rows(); track $index) {
+        <li class="sr__card">
+          <div class="sr__top">
+            <div class="sr__name">
+              <span class="sr__name-main">{{ row.report ? (row.report.titleKey | translate) : row.item.reportType }}</span>
+              @if (row.report) { <small class="sr__type">{{ row.item.reportType }}</small> }
+            </div>
+            <span class="sr__badge" [class.is-on]="row.item.isActive">{{ (row.item.isActive ? 'REPORTS.SCHEDULE.ACTIVE' : 'REPORTS.SCHEDULE.INACTIVE') | translate }}</span>
+          </div>
+
+          <dl class="sr__meta">
+            <div><dt>{{ 'REPORTS.SCHEDULE_LIST.FREQUENCY' | translate }}</dt><dd>{{ ('REPORTS.SCHEDULE.' + row.item.frequency.toUpperCase()) | translate }}</dd></div>
+            <div><dt>{{ 'REPORTS.SCHEDULE_LIST.FORMAT' | translate }}</dt><dd class="uppercase">{{ row.item.attachmentType }}</dd></div>
+            <div><dt>{{ 'REPORTS.SCHEDULE.NEXT_RUN' | translate }}</dt><dd>{{ row.item.isActive && row.item.nextRun ? (row.item.nextRun | date: 'yyyy-MM-dd HH:mm') : '-' }}</dd></div>
+            <div><dt>{{ 'REPORTS.SCHEDULE.PREVIOUS_RUN' | translate }}</dt><dd>{{ row.item.previousRun ? (row.item.previousRun | date: 'yyyy-MM-dd HH:mm') : '-' }}</dd></div>
+            <div class="sr__wide">
+              <dt>{{ 'REPORTS.SCHEDULE_LIST.RECIPIENTS' | translate }} ({{ row.item.allRecipients.length }})</dt>
+              <dd>
+                @for (email of row.item.allRecipients; track $index) { <span class="sr__chip">{{ email }}</span> } @empty { - }
+              </dd>
+            </div>
+          </dl>
+
+          <div class="sr__actions">
+            @if (confirmingDelete() === row) {
+              <span class="sr__ask">{{ 'REPORTS.SCHEDULE_LIST.DELETE_ASK' | translate }}</span>
+              <button type="button" class="sr__btn sr__btn--danger" (click)="remove(row)">{{ 'REPORTS.SCHEDULE_LIST.DELETE_YES' | translate }}</button>
+              <button type="button" class="sr__btn" (click)="cancelDelete()">{{ 'REPORTS.SCHEDULE_LIST.CANCEL' | translate }}</button>
+            } @else {
+              @if (canEdit) {
+                <button type="button" class="sr__btn" [disabled]="!row.report" (click)="edit(row)">{{ 'REPORTS.SCHEDULE_LIST.EDIT' | translate }}</button>
+              }
+              <button type="button" class="sr__btn sr__btn--brand" [disabled]="!row.report" (click)="openReport(row)">{{ 'REPORTS.SCHEDULE_LIST.OPEN' | translate }}</button>
+              <button type="button" class="sr__btn sr__btn--icon sr__btn--danger" [appTooltip]="'REPORTS.SCHEDULE_LIST.DELETE' | translate" (click)="askDelete(row)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+              </button>
+            }
+          </div>
+        </li>
+      }
+    </ul>
+    @if (hasNext()) {
+      <div class="sr__more"><button type="button" class="sr__btn" [disabled]="loadingMore()" (click)="loadMore()">{{ 'REPORTS.SCHEDULE_LIST.LOAD_MORE' | translate }}</button></div>
+    }
+  }
+</div>

@@ -21,6 +21,18 @@ export interface ScheduledReport {
   filter: Record<string, any>;
 }
 
+/** One row of `getAllScheduledReports`: a summary of a schedule (no id, no filter), with every e-mail it goes to. */
+export interface ScheduledListItem {
+  reportType: string;
+  frequency: ScheduleFrequency;
+  attachmentType: ScheduleAttachment;
+  isActive: boolean;
+  nextRun: string | null;
+  previousRun: string | null;
+  /** Employee e-mails + the extra addresses. */
+  allRecipients: string[];
+}
+
 /**
  * The scheduler (InvoCloudBack `scheduledReport.repo.ts` → `getfile`) knows a report by its own slug. The portal's slug is the
  * same except for these — verified against the `switch` in that file.

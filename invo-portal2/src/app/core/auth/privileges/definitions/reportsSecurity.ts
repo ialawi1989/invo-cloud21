@@ -10,6 +10,11 @@ export function reportsSecurity() {
         name: "View List",
         securityType: "cloud",
       }),
+      // Edit a schedule from the "Scheduled reports" drawer. Roles saved before it existed keep their current ability (missing = allowed).
+      "EditScheduledReports": new PrivilegeSetting({
+        name: "Edit Scheduled Reports",
+        securityType: "cloud",
+      }),
       "ProfitandLoss": new PrivilegeSetting({
         name: "Profit and Loss",
         securityType: "cloud",
