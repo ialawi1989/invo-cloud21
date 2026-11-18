@@ -36,7 +36,8 @@ type MediaTab = 'all' | 'images' | 'documents' | 'videos' | 'audio' | 'models';
 type SortField = 'createdAt' | 'name' | 'size';
 type SortDirection = 'ASC' | 'DESC';
 
-const MEDIA_TABS = ['all', 'images', 'documents', 'videos', 'audio', 'models'] as const;
+/** The tabs shown. Documents is hidden for now (a `?tab=documents` link falls back to All). */
+const MEDIA_TABS = ['all', 'images', 'videos', 'audio', 'models'] as const;
 const SORT_FIELDS = ['createdAt', 'name', 'size'] as const;
 const SORT_DIRS = ['ASC', 'DESC'] as const;
 const VIEW_MODES = ['grid', 'list'] as const;
