@@ -336,7 +336,7 @@ import type { FavPage as FavTab } from '../../services/favorites.service';
             </span>
             <span class="mobile-sheet-label">{{ lang.nativeLabel }}</span>
             @if (langService.current() === lang.code) {
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#556ee6" stroke-width="2.5" stroke-linecap="round">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2691a4" stroke-width="2.5" stroke-linecap="round">
                 <polyline points="20 6 9 17 4 12"/>
               </svg>
             }
@@ -378,9 +378,9 @@ import type { FavPage as FavTab } from '../../services/favorites.service';
       white-space: nowrap; flex-shrink: 0;
     }
     .topbar-action-btn:hover { background: #f4f5f7; border-color: #c5cfe0; color: #2a3042; }
-    .topbar-action-btn--active { background: #eef1ff; border-color: #556ee6; color: #556ee6; }
-    .topbar-action-btn--active svg { color: #556ee6; }
-    .topbar-action-btn--active .btn-caret { color: #556ee6; }
+    .topbar-action-btn--active { background: var(--color-brand-50); border-color: var(--color-brand-600); color: var(--color-brand-600); }
+    .topbar-action-btn--active svg { color: var(--color-brand-600); }
+    .topbar-action-btn--active .btn-caret { color: var(--color-brand-600); }
     .topbar-action-btn--starred svg:first-child { color: #f4c542; }
     .btn-caret { transition: transform .15s; flex-shrink: 0; color: #9ca3af; }
 
@@ -393,7 +393,7 @@ import type { FavPage as FavTab } from '../../services/favorites.service';
       color: #495057; cursor: pointer; transition: all .15s; flex-shrink: 0;
     }
     .mobile-more-btn:hover { background: #f4f5f7; }
-    .mobile-more-btn--active { background: #eef1ff; border-color: #556ee6; color: #556ee6; }
+    .mobile-more-btn--active { background: var(--color-brand-50); border-color: var(--color-brand-600); color: var(--color-brand-600); }
     .mobile-fav-dot {
       position: absolute; top: 5px; right: 5px;
       width: 6px; height: 6px; border-radius: 50%;
@@ -479,14 +479,14 @@ import type { FavPage as FavTab } from '../../services/favorites.service';
     .fav-item:hover { background: #f4f5f7; }
     .fav-item:hover .fav-item-edit,
     .fav-item:hover .fav-item-remove { opacity: 1; }
-    .fav-item--active .fav-item-label { color: #556ee6; font-weight: 500; }
-    .fav-item--active .fav-item-star { color: #556ee6; }
+    .fav-item--active .fav-item-label { color: var(--color-brand-600); font-weight: 500; }
+    .fav-item--active .fav-item-star { color: var(--color-brand-600); }
     .fav-item-star { color: #f4c542; flex-shrink: 0; }
     .fav-item-label {
       flex: 1; font-size: 13px; color: #2a3042;
       text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
-    .fav-item-label:hover { color: #556ee6; }
+    .fav-item-label:hover { color: var(--color-brand-600); }
     .fav-item-edit, .fav-item-remove {
       width: 22px; height: 22px; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
@@ -497,7 +497,7 @@ import type { FavPage as FavTab } from '../../services/favorites.service';
     .fav-item-remove:hover { background: #fee2e2; color: #dc2626; }
     .fav-edit-row { display: flex; align-items: center; gap: 5px; width: 100%; }
     .fav-input {
-      flex: 1; background: #f4f5f7; border: 1.5px solid #556ee6;
+      flex: 1; background: #f4f5f7; border: 1.5px solid var(--color-brand-600);
       border-radius: 6px; color: #2a3042; font-size: 16px;
       padding: 4px 8px; outline: none; font-family: inherit;
     }
@@ -507,16 +507,16 @@ import type { FavPage as FavTab } from '../../services/favorites.service';
       border: none; border-radius: 50%; cursor: pointer;
     }
     .fav-act-btn--cancel { background: #f1f3f5; color: #6c757d; }
-    .fav-act-btn--save   { background: #556ee6; color: #fff; }
+    .fav-act-btn--save   { background: var(--color-brand-600); color: #fff; }
     .fav-dropdown-footer { padding: 8px; border-top: 1px solid #f0f2f5; }
     .fav-add-btn {
       display: flex; align-items: center; gap: 7px;
       width: 100%; padding: 8px 8px;
       background: transparent; border: none; border-radius: 7px;
-      color: #556ee6; font-size: 13px; cursor: pointer;
+      color: var(--color-brand-600); font-size: 13px; cursor: pointer;
       transition: background .12s; font-family: inherit; font-weight: 500;
     }
-    .fav-add-btn:hover { background: #eef1ff; }
+    .fav-add-btn:hover { background: var(--color-brand-50); }
     .fav-recent-label { font-size: 10px; color: #9ca3af; margin: 10px 0 6px 4px; text-transform: uppercase; letter-spacing: .04em; }
     .fav-recent-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 2px; }
     .fav-recent-chip {
@@ -525,7 +525,7 @@ import type { FavPage as FavTab } from '../../services/favorites.service';
       border: 1px solid #e4e7ec; background: transparent;
       color: #495057; font-size: 12px; cursor: pointer; font-family: inherit; transition: all .12s;
     }
-    .fav-recent-chip:hover { border-color: #556ee6; color: #556ee6; }
+    .fav-recent-chip:hover { border-color: var(--color-brand-600); color: var(--color-brand-600); }
     .fav-recent-chip svg { color: #9ca3af; flex-shrink: 0; }
 
     /* ── Mobile bottom sheet ── */
@@ -561,15 +561,15 @@ import type { FavPage as FavTab } from '../../services/favorites.service';
       font-size: 14px; font-family: inherit; text-align: left;
     }
     .mobile-sheet-row:hover, .mobile-sheet-row:active { background: #f4f5f7; }
-    .mobile-sheet-row--active { color: #556ee6; }
+    .mobile-sheet-row--active { color: var(--color-brand-600); }
     .mobile-sheet-icon {
       width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
     }
-    .mobile-sheet-icon--blue { background: #eef1ff; color: #556ee6; }
+    .mobile-sheet-icon--blue { background: var(--color-brand-50); color: var(--color-brand-600); }
     .mobile-sheet-icon--globe { background: #f0faf8; color: #1D9E75; }
     .mobile-sheet-star { color: #f4c542; flex-shrink: 0; }
-    .mobile-sheet-row--active .mobile-sheet-star { color: #556ee6; }
+    .mobile-sheet-row--active .mobile-sheet-star { color: var(--color-brand-600); }
     .mobile-sheet-label { flex: 1; }
     .mobile-sheet-chevron { color: #9ca3af; flex-shrink: 0; }
     .mobile-sheet-remove {
@@ -590,7 +590,7 @@ import type { FavPage as FavTab } from '../../services/favorites.service';
       display: flex; align-items: center; gap: 10px;
       width: 100%; padding: 14px 20px; margin-top: 2px;
       background: transparent; border: none; border-top: 1px solid #f0f2f5;
-      color: #556ee6; font-size: 14px; font-weight: 500;
+      color: var(--color-brand-600); font-size: 14px; font-weight: 500;
       cursor: pointer; font-family: inherit; transition: background .1s;
     }
     .mobile-sheet-add:hover { background: #f4f6ff; }
