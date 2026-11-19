@@ -225,6 +225,10 @@ export class MyAccountComponent implements OnInit, CanLeaveComponent {
     { value: 'dark', label: 'EMPLOYEES.MY_ACCOUNT.PREF_THEME_DARK' },
     { value: 'system', label: 'EMPLOYEES.MY_ACCOUNT.PREF_THEME_SYSTEM' },
   ];
+  readonly densityOptions: SegmentedToggleOption<'compact' | 'comfortable'>[] = [
+    { value: 'compact', label: 'EMPLOYEES.MY_ACCOUNT.PREF_DENSITY_COMPACT' },
+    { value: 'comfortable', label: 'EMPLOYEES.MY_ACCOUNT.PREF_DENSITY_COMFORTABLE' },
+  ];
   readonly weekStartOptions: SegmentedToggleOption<string>[] = [
     { value: '0', label: 'EMPLOYEES.MY_ACCOUNT.PREF_SUNDAY' },
     { value: '1', label: 'EMPLOYEES.MY_ACCOUNT.PREF_MONDAY' },
@@ -242,6 +246,7 @@ export class MyAccountComponent implements OnInit, CanLeaveComponent {
   setPref<K extends keyof EmployeePreferences>(key: K, value: EmployeePreferences[K]): void {
     this.prefs.update(p => ({ ...p, [key]: value }));
     if (key === 'theme') this.userPrefs.previewTheme(value as EmployeePreferences['theme']);
+    if (key === 'density') this.userPrefs.previewDensity(value as EmployeePreferences['density']);
     this.dirtyExtra.set(true);
   }
 

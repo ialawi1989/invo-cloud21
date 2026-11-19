@@ -207,6 +207,15 @@ export interface MultiSelectFilterConfig extends BaseFilterConfig {
   placeholder?: string;
 }
 
+/** A preset the user can jump to from the toolbar: clicking it replaces the active filters with `filters`. */
+export interface QuickView {
+  id: string;
+  /** Label (plain text or an i18n key). */
+  label: string;
+  /** The complete filter state this view stands for (same shape as `FilterState`). */
+  filters: FilterState;
+}
+
 export interface FilterOption {
   value: any;
   label: string;

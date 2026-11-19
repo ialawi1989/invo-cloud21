@@ -103,7 +103,7 @@ export class PaymentsListComponent implements OnInit {
     this.searchConfig.placeholder = t('PAYMENTS.SEARCH_PLACEHOLDER');
     this.emptyState = { title: t('PAYMENTS.EMPTY'), message: '' };
     this.breadcrumbs = [
-      { label: t('PAYMENTS.DASHBOARD'), routerLink: '/dashboard' },
+      { label: t('MENU.SALES') }, // the sidebar group this page lives under
       { label: t(L + 'PAYMENTS_LIST') },
     ];
   }

@@ -28,6 +28,8 @@ export class UserPreferencesService {
   /** Unsaved choice from My Account, shown immediately so the user can see it before saving. */
   private readonly themePreview = signal<EmployeePreferences['theme'] | null>(null);
   readonly theme = computed(() => this.themePreview() ?? this.prefs().theme ?? 'light');
+  private readonly densityPreview = signal<EmployeePreferences['density'] | null>(null);
+  readonly density = computed(() => this.densityPreview() ?? this.prefs().density ?? 'compact');
   readonly timePattern = computed(() => (this.prefs().timeFormat === '12h' ? 'hh:mm a' : 'HH:mm'));
 
   constructor() {
@@ -43,6 +45,12 @@ export class UserPreferencesService {
       document.documentElement.classList.toggle('app-dark', dark);
       try { localStorage.setItem('invo.theme', t); } catch { /* storage unavailable */ }
     });
+    // List density: `data-density` on <html> (see styles/_density.scss).
+    effect(() => {
+      const d = this.density();
+      document.documentElement.setAttribute('data-density', d);
+      try { localStorage.setItem('invo.density', d); } catch { /* storage unavailable */ }
+    });
     // Switching language from the top bar also becomes the employee's choice, so the next sign-in does not undo it.
     effect(() => {
       const code = this.lang.current();
@@ -54,6 +62,9 @@ export class UserPreferencesService {
 
   /** Shows `theme` right away without saving; pass null to go back to the saved one. */
   previewTheme(theme: EmployeePreferences['theme'] | null): void { this.themePreview.set(theme); }
+
+  /** Shows `density` right away without saving; pass null to go back to the saved one. */
+  previewDensity(density: EmployeePreferences['density'] | null): void { this.densityPreview.set(density); }
 
   /** Reads the saved preferences and applies the language. Safe to call repeatedly. */
   async load(): Promise<void> {
@@ -72,6 +83,7 @@ export class UserPreferencesService {
     await this.options.setStrict({ ...current, preferences: clean });
     this.prefs.set(clean);
     this.themePreview.set(null);
+    this.densityPreview.set(null);
     if (clean.language && clean.language !== this.lang.current()) await this.lang.use(clean.language);
   }
 }

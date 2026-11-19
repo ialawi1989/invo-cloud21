@@ -75,6 +75,7 @@ import { ListSearchComponent } from '@shared/components/list-search/list-search.
             [clearLabel]="'COMMON.CLEAR' | translate"
             [searchLabel]="'COMMON.SEARCH' | translate"
             [live]="searchLive"
+            [collapsible]="true"
             (search)="searchChange.emit($event)"
             (clear)="searchClear.emit()"/>
 
@@ -132,38 +133,40 @@ import { ListSearchComponent } from '@shared/components/list-search/list-search.
     .ls-page {
       max-width: 1100px;
       margin: 0 auto;
-      padding: 16px 24px 40px;
+      padding: 12px 24px 32px;
       position: relative;
     }
     .ls-page--wide { max-width: none; }
 
     .ls-header {
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       justify-content: space-between;
-      gap: 16px;
-      margin-bottom: 16px;
+      gap: 12px;
+      margin-bottom: var(--lp-header-gap, 12px);
     }
     .ls-header__titles { flex: 1; min-width: 0; }
     .ls-header__actions { display: flex; gap: 8px; flex-shrink: 0; }
 
     .ls-title {
-      margin: 8px 0 4px;
-      font-size: 22px;
+      margin: 2px 0 0;
+      font-size: var(--lp-title-size, 1.25rem);
       font-weight: 700;
       color: var(--ui-text);
       letter-spacing: -0.01em;
     }
-    .ls-sub { margin: 0; font-size: 14px; color: var(--ui-muted); }
+    .ls-sub { margin: 2px 0 0; font-size: 13px; color: var(--ui-muted); }
 
+    /* Row 2 (like the reference tracker): search on the start side, extras (type tabs, filters) and the pager on the end side. */
     .ls-toolbar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 16px;
+      gap: 8px;
+      margin-bottom: var(--lp-header-gap, 12px);
       flex-wrap: wrap;
     }
+    .ls-toolbar app-list-search { flex: 0 1 auto; }
 
     .ls-pager {
       display: inline-flex;
@@ -177,8 +180,8 @@ import { ListSearchComponent } from '@shared/components/list-search/list-search.
       margin-inline-end: 4px;
     }
     .ls-pager__btn {
-      width: 28px;
-      height: 28px;
+      width: 26px;
+      height: 26px;
       border: 1px solid var(--ui-line);
       border-radius: 6px;
       background: var(--ui-surface);
@@ -200,11 +203,16 @@ import { ListSearchComponent } from '@shared/components/list-search/list-search.
     }
     .ls-card--flush { padding: 0; }
 
+    /* Compact density (same variables as the data-table lists, see styles/_density.scss): rows and header
+       cells lose their vertical air; pages keep their own horizontal padding, fonts and markup. */
+    .ls-page .ls-card ::ng-deep :is(th, td) { padding-block: var(--lp-cell-y, 8px); }
+    .ls-page .ls-card ::ng-deep th { font-size: 12.5px; }
+
     .ls-loading {
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 60px 0;
+      padding: 40px 0;
     }
     .ls-spinner {
       width: 28px; height: 28px;
@@ -218,7 +226,7 @@ import { ListSearchComponent } from '@shared/components/list-search/list-search.
 
     .ls-empty {
       text-align: center;
-      padding: 60px 16px;
+      padding: 40px 16px;
       color: var(--ui-faint);
     }
     .ls-empty :where(svg) { color: #cbd5e1; margin-bottom: 8px; }

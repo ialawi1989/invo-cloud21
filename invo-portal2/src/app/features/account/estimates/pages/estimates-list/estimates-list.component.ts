@@ -85,7 +85,7 @@ export class EstimatesListComponent extends DocumentListBase implements OnInit {
     this.searchConfig.defaultDateRange = { keyFrom: 'fromDate', keyTo: 'toDate' };
     this.emptyState = { title: t('ESTIMATES.EMPTY'), message: '' };
     this.breadcrumbs = [
-      { label: t(this.meta.dashboardCrumbKey), routerLink: '/dashboard' },
+      { label: t('MENU.SALES') }, // the sidebar group this page lives under
       { label: t(this.meta.listTitleKey) },
     ];
   }

@@ -80,6 +80,7 @@ export interface DropdownMenuBtnItem {
       <button type="button" #trigger
         [class]="'dmb__trigger ' + (triggerClass || '')"
         [disabled]="disabled"
+        [attr.aria-label]="ariaLabel || null"
         [attr.aria-haspopup]="'menu'"
         [attr.aria-expanded]="open()"
         (click)="toggle($event)">
@@ -304,6 +305,8 @@ export class DropdownMenuBtnComponent {
   @Input() triggerClass: string = '';
   /** Whether to render the dropdown chevron. */
   @Input() chevron: boolean = true;
+  /** Accessible name of the trigger — required when the trigger is icon-only. */
+  @Input() ariaLabel = '';
   /** Disable the trigger entirely. */
   @Input() disabled: boolean = false;
 

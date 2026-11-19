@@ -71,7 +71,7 @@ export class CustomersListComponent implements OnInit {
     this.searchConfig.placeholder = t('CUSTOMERS.SEARCH_PLACEHOLDER');
     this.emptyState = { title: t('CUSTOMERS.EMPTY'), message: '' };
     this.breadcrumbs = [
-      { label: t('CUSTOMERS.DASHBOARD'), routerLink: '/dashboard' },
+      { label: t('MENU.SALES') }, // the sidebar group this page lives under
       { label: t(L + 'CUSTOMER_LIST') },
     ];
     this.moreItems = [

@@ -1,6 +1,7 @@
 <app-list-page
   style="--lp-actions-w: 150px; --lp-sticky-col-w: 300px"
   [pageTitle]="'PRODUCTS.TITLE' | translate"
+  [showCount]="true"
   [columns]="columns"
   [dataSource]="loadProducts"
   [pagination]="paginationConfig"
@@ -18,32 +19,31 @@
   [mobileCardConfig]="mobileCardConfig"
   (rowClicked)="onRowClick($event)">
 
-  <!-- ═══ Header Action Buttons ═══ -->
-  <div listHeaderActions class="flex items-center gap-3">
-    <!-- "+ Add New" dropdown — one row per product type the user
-         can create. Uses the shared component (with appendToBody
-         in case the list-page header lives in a clipping ancestor). -->
+  <!-- ═══ Header actions: Add new (the one primary) and the "..." menu (its items are unchanged) ═══ -->
+  <div listHeaderActions class="flex items-center gap-2">
+    <!-- "+ Add new" dropdown — one row per product type the user can create (appendToBody in case the header lives in a clipping ancestor). -->
     <app-dropdown-menu-btn
       [items]="addNewMenuItems()"
       [appendToBody]="true"
       align="end"
-      triggerClass="flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium bg-gradient-to-r from-brand-500 to-brand-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      triggerClass="btn btn-primary lp-hbtn">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       {{ 'PRODUCTS.ACTIONS.NEW_PRODUCT' | translate }}
     </app-dropdown-menu-btn>
 
-    <!-- More actions "..." button (hidden entirely if the user has
-         permission for none of the items inside). Icon-only trigger
-         so we suppress the chevron. -->
+    <!-- More actions "..." (hidden entirely if the user has permission for none of the items inside).
+         Icon-only, so it has a tooltip and an aria-label. -->
     @if (moreActions.length > 0 || bulkOperationActions.length > 0) {
       <app-dropdown-menu-btn
         [items]="moreMenuItems()"
         [appendToBody]="true"
         [chevron]="false"
+        [ariaLabel]="'COMMON.MORE_ACTIONS' | translate"
+        [appTooltip]="'COMMON.MORE_ACTIONS' | translate"
         align="end"
-        triggerClass="flex items-center justify-center w-10 h-10 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-colors">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
+        triggerClass="lp-kebab">
+        <svg class="lp-kebab__dots" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="5" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="12" cy="19" r="1.9"/>
         </svg>
       </app-dropdown-menu-btn>
     }
@@ -56,7 +56,7 @@
       [appendToBody]="true"
       [chevron]="false"
       align="end"
-      triggerClass="flex items-center gap-2 h-10 px-3 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-colors text-sm">
+      triggerClass="lp-tbtn flex items-center gap-2 text-slate-600 transition-colors text-sm">
       <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
         <path stroke-linecap="round" stroke-linejoin="round" d="M3 7h13M3 12h9M3 17h5M17 8v10m0 0l-3-3m3 3l3-3"/>
       </svg>

@@ -1,11 +1,14 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   EventEmitter,
   Input,
   OnChanges,
   Output,
   SimpleChanges,
+  ViewChild,
+  computed,
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -40,6 +43,15 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
+    @if (collapsible && !expanded()) {
+      <button type="button" class="ls-search__icon" (click)="expand()" [attr.aria-label]="searchLabel">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </button>
+    } @else {
     <label class="ls-search" [class.ls-search--full]="fullWidth">
       <button type="button"
               class="ls-search__btn"
@@ -59,7 +71,8 @@ import { CommonModule } from '@angular/common';
         [attr.aria-label]="placeholder"
         (input)="onInput($any($event.target).value)"
         (keydown.enter)="submit(); $event.preventDefault()"
-        (keydown.escape)="onEscape()"/>
+        (keydown.escape)="onEscape()"
+        (blur)="onBlur()"/>
       @if (draft()) {
         <button type="button"
                 class="ls-search__clear"
@@ -73,6 +86,7 @@ import { CommonModule } from '@angular/common';
         </button>
       }
     </label>
+    }
   `,
   styles: [`
     .ls-search {
@@ -81,7 +95,7 @@ import { CommonModule } from '@angular/common';
       gap: 8px;
       flex: 1;
       max-width: 360px;
-      padding: 7px 10px;
+      padding: 5px 10px;
       background: var(--ui-surface);
       border: 1px solid var(--ui-line);
       border-radius: 8px;
@@ -89,6 +103,16 @@ import { CommonModule } from '@angular/common';
       transition: border-color 120ms ease, box-shadow 120ms ease;
     }
     .ls-search--full { max-width: none; width: 100%; }
+    /* Icon-only state (collapsible lists): a 30px square that expands into the pill on click. */
+    .ls-search__icon {
+      width: 30px; height: 30px; flex: none;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: 8px;
+      color: var(--ui-text-4); cursor: pointer;
+      transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+    }
+    .ls-search__icon:hover { background: var(--ui-surface-2); color: var(--ui-text); }
+    .ls-search__icon:focus-visible { outline: 2px solid var(--ui-brand-t600); outline-offset: 1px; }
     .ls-search:focus-within {
       border-color: var(--color-brand-500, #32acc1);
       box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.12);
@@ -133,6 +157,9 @@ export class ListSearchComponent implements OnChanges {
    *  filters where the result is instant; leave `false` (default)
    *  for backend-backed searches. */
   @Input() live = false;
+  /** Start as an icon-only button and expand into the pill when clicked (it folds back when it loses focus empty).
+   *  A search that already has text stays expanded. */
+  @Input() collapsible = false;
   /** `aria-label` overrides for the icon buttons. */
   @Input() searchLabel = 'Search';
   @Input() clearLabel  = 'Clear';
@@ -151,6 +178,12 @@ export class ListSearchComponent implements OnChanges {
    *  on URL-state hydration). */
   draft = signal<string>('');
 
+  private open = signal(false);
+  /** The pill is shown (always, unless `collapsible`; then only after a click or while it holds text). */
+  expanded = computed(() => !this.collapsible || this.open() || this.draft() !== '');
+
+  @ViewChild('inp') private inputEl?: ElementRef<HTMLInputElement>;
+
   ngOnChanges(ch: SimpleChanges): void {
     if ('value' in ch) this.draft.set(this.value ?? '');
   }
@@ -161,6 +194,15 @@ export class ListSearchComponent implements OnChanges {
   }
 
   submit(): void { this.search.emit(this.draft()); }
+
+  expand(): void {
+    this.open.set(true);
+    setTimeout(() => this.inputEl?.nativeElement.focus());
+  }
+
+  onBlur(): void {
+    if (this.collapsible && !this.draft()) this.open.set(false);
+  }
 
   onClear(): void {
     this.draft.set('');

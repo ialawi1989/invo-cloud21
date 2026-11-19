@@ -46,8 +46,7 @@ import {
   SortChangeEvent,
   FilterChangeEvent,
   PageChangeEvent,
-  MobileCardConfig
-} from '../interfaces/list-page.types';
+  MobileCardConfig, QuickView } from '../interfaces/list-page.types';
 
 // Directives
 import {
@@ -61,6 +60,8 @@ import {
 } from '../directives/list-template.directives';
 
 // FilterModal - MUST be relative import from same folder
+import { ListFilterBarComponent, FilterBarApply } from './list-filter-bar.component';
+import { SegmentedToggleComponent, SegmentedToggleOption } from '../../segmented-toggle/segmented-toggle.component';
 import { FilterModalComponent, FilterModalData, FilterModalResult } from './filter-modal.component';
 import { ModalService } from '../../../modal/modal.service';
 import { ConfirmModalComponent, ConfirmModalData } from '../../../modal/demo/confirm-modal.component';
@@ -113,6 +114,8 @@ import {
     ListMobileTitleDirective,
     ListMobileChipDirective,
     FilterModalComponent,
+    ListFilterBarComponent,
+    SegmentedToggleComponent,
     PaginationComponent,
     BreadcrumbsComponent,
     TranslateModule,
@@ -679,7 +682,21 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
   @Input() pageSubtitle = '';
 
   /** Breadcrumb items */
+  /** Show the total number of records as a small pill right after the title. */
+  @Input() showCount = false;
+
+  /** Optional preset tabs shown on the right of the toolbar (e.g. All / Active / Archived). Clicking one replaces the active
+   *  filters with its `filters`; none is selected while the filters match no preset. Empty = nothing rendered, no space reserved. */
+  @Input() quickViews: QuickView[] = [];
+
   @Input() breadcrumbs: BreadcrumbItem[] = [];
+
+  /** The crumbs ABOVE this page: the trail's last item is the page itself, which the title already says. */
+  get crumbParents(): BreadcrumbItem[] {
+    const b = this.breadcrumbs ?? [];
+    const last = b[b.length - 1];
+    return last && (last.label === this.pageTitle || !last.routerLink && !last.href) ? b.slice(0, -1) : b;
+  }
 
   /** Data source function - returns observable of list response */
   @Input({ required: true }) dataSource!: (params: ListQueryParams) => any;
@@ -1702,6 +1719,46 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
 
   toggleFilters(): void {
     this.showFilters.update(v => !v);
+  }
+
+  @ViewChild(ListFilterBarComponent) filterBar?: ListFilterBarComponent;
+
+  /** Chip text of an applied filter, for the filter bar. */
+  filterDisplayFn = (key: string): string => this.getFilterDisplayValue(key);
+
+  /** The filter bar finished editing one filter. */
+  onFilterBarApply(e: FilterBarApply): void {
+    this.filterLabels.set(e.labels || {});
+    this.applyFilters(e.filters);
+  }
+
+  /** Toolbar "Filter" button (shown while no filter is on): adds the first chip through the inline field picker. */
+  async openFilterPicker(ev: Event): Promise<void> {
+    const origin = ev.currentTarget as HTMLElement;
+    if (this.beforeFilterOpen) await this.beforeFilterOpen();
+    this.filterOpened.emit();
+    this.filterBar?.openPicker(origin);
+  }
+
+  quickViewOptions(): SegmentedToggleOption<string>[] {
+    return this.quickViews.map(q => ({ value: q.id, label: q.label }));
+  }
+
+  /** The preset whose filters equal the applied ones (ignoring empty values and key order); null when none does. */
+  activeQuickViewId(): string {
+    const norm = (f: FilterState) => JSON.stringify(Object.entries(f ?? {})
+      .filter(([, v]) => Array.isArray(v) ? v.length > 0 : v !== undefined && v !== null && v !== '')
+      .map(([k, v]) => [k, Array.isArray(v) ? [...v].map(String).sort() : String(v)])
+      .sort(([a], [b]) => String(a).localeCompare(String(b))));
+    const cur = norm(this.activeFilters());
+    return this.quickViews.find(q => norm(q.filters) === cur)?.id ?? '';
+  }
+
+  applyQuickView(id: string): void {
+    const q = this.quickViews.find(x => x.id === id);
+    if (!q) return;
+    this.filterLabels.set({});
+    this.applyFilters({ ...q.filters });
   }
 
   async openFilterModal(): Promise<void> {

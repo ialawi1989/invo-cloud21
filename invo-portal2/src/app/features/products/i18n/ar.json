@@ -18,6 +18,7 @@
   },
   "PRODUCTS": {
     "TITLE": "المنتجات",
+    "COUNT": "{{count}} منتج",
     "INVENTORY_REQUEST": {
       "SCAN_ITEM": "مسح صنف",
       "CLOSE_SCAN": "إغلاق المسح",
@@ -922,7 +923,7 @@
       "NO_TEMPLATES": "لا توجد قوالب ملصقات محفوظة. أنشئ واحداً من الإعدادات ← منشئ الملصقات.",
       "NO_PREVIEW": "اختر قالباً لعرض المعاينة."
     },
-    "SEARCH_PLACEHOLDER": "ابحث عن المنتجات بالاسم أو الباركود أو رمز التخزين...",
+    "SEARCH_PLACEHOLDER": "ابحث عن المنتجات",
     "IMPORT_EXPORT": {
       "GROUP": {
         "FILE": {

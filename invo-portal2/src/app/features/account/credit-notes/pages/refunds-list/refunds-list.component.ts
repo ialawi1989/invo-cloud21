@@ -82,7 +82,7 @@ export class RefundsListComponent implements OnInit {
     this.searchConfig.placeholder = t('CREDIT_NOTES.SEARCH_PLACEHOLDER');
     this.emptyState = { title: t(L + 'EMPTY'), message: '' };
     this.breadcrumbs = [
-      { label: t('CREDIT_NOTES.DASHBOARD'), routerLink: '/dashboard' },
+      { label: t('MENU.SALES') }, // the sidebar group this page lives under
       { label: t(L + 'TITLE') },
     ];
   }

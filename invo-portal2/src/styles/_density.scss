@@ -1,0 +1,147 @@
+// ─────────────────────────────────────────────────────────────────────
+// Compact density for data-table list pages (<app-list-page>)
+// ─────────────────────────────────────────────────────────────────────
+// Same information, less air: a one-line page header, a slim toolbar, 44px rows.
+// Also drives the settings lists (<app-list-shell>): its header, toolbar and row padding read these same variables.
+// Every number lives in the variables below, so density is retuned in one place
+// (set them back to the old values — 24 / 16 / 12 / 16 — to restore the roomy layout).
+// Colours are not touched here; only padding, margins and type size. Mobile cards keep their own layout.
+
+:root {
+  --lp-title-size: 1.5rem;        // page title
+  --lp-header-gap: 12px;          // space under the page header (was 24px)
+  --lp-card-gap: 12px;            // space under the table card (was 24px)
+  --lp-toolbar-pad: 10px 12px;    // search / filter bar (was 16px)
+  --lp-search-pad-y: 6px;         // search box height (was 10px)
+  --lp-cell-pad: 8px 14px;        // table cells (was 16px 24px)
+  --lp-cell-y: 8px;               // vertical padding of rows/headers in the settings lists (list-shell)
+  --lp-head-pad: 8px 14px;        // table header cells (was 12px 24px)
+  --lp-pager-pad: 8px 14px;       // pagination strip (was 16px 24px)
+  --lp-cell-font: 13px;           // body text in the table (was 14px)
+  --lp-action-pad: 6px 14px;      // header action buttons (was 12px 24px)
+  --lp-ctl: 36px;                 // height of the toolbar controls (search, filter, icon buttons)
+}
+
+// My Account > Preferences > Appearance > List density = Comfortable: the original roomy spacing.
+html[data-density='comfortable'] {
+  --lp-title-size: 1.5rem;
+  --lp-header-gap: 24px;
+  --lp-card-gap: 24px;
+  --lp-toolbar-pad: 16px;
+  --lp-search-pad-y: 10px;
+  --lp-cell-pad: 16px 24px;
+  --lp-cell-y: 16px;
+  --lp-head-pad: 12px 24px;
+  --lp-pager-pad: 16px 24px;
+  --lp-cell-font: 14px;
+  --lp-action-pad: 12px 24px;
+  --lp-ctl: 40px;
+}
+
+.list-page-container {
+  // ── Page header ────────────────────────────────────────────────
+  > .mb-6:first-child { margin-bottom: 10px; }
+  > .mb-6:first-child > .flex { min-height: 36px; }
+  h1.text-2xl { font-size: var(--lp-title-size); line-height: 1.6rem; }
+  [listHeaderActions] { gap: 8px; }
+  [listHeaderActions] .dmb__trigger,
+  [listHeaderActions] button.px-5,
+  > .mb-6 button.px-6.py-3 { padding: var(--lp-action-pad); font-size: 13px; }
+
+  // ── Page header + ONE card ─────────────────────────────────────
+  //   A  title (24px / 500) + count pill ........................ page actions     (on the page background, no divider line)
+  //   B  the card: toolbar (sticky, opaque) · active-filters row · the table        (the card is the only bordered box)
+  // The toolbar becomes the bulk-action bar while rows are selected.
+  > .mb-6:first-child { padding-top: 20px; margin-bottom: 16px; border-bottom: 0; }
+  .lp-head { gap: 12px; }
+  .lp-head__title { flex: 1 1 auto; display: flex; align-items: center; flex-wrap: wrap; gap: 0 10px; min-width: 0; }
+  .lp-head__title h1 { margin: 0; font-weight: 500; line-height: 2rem; }
+  .lp-head__title p { margin: 0; flex-basis: 100%; font-size: 12.5px; line-height: 1.3; color: var(--ui-muted); }
+  .lp-count-pill {
+    font-size: 13px; line-height: 1.4; padding: 2px 10px; border-radius: 999px;
+    color: var(--ui-text-4); border: 1px solid var(--ui-line); font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .lp-crumbs { display: inline-flex; font-size: 13px; color: var(--ui-muted); }
+  .lp-crumbs__sep { color: var(--ui-faint); font-size: 12px; margin-inline: -4px; transform: rotate(-90deg); }
+  [dir='rtl'] .lp-crumbs__sep { transform: rotate(90deg); }
+  .lp-head__actions { margin-inline-start: auto; flex: none; gap: 8px; }
+  .lp-head__actions > * { min-height: var(--lp-ctl); }
+
+  // Header buttons: Add new is the only primary; the "..." menu is a real, visible button.
+  .lp-hbtn { height: var(--lp-ctl); padding: 0 14px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; box-shadow: none; transform: none; }
+  .lp-kebab {
+    width: var(--lp-ctl); height: var(--lp-ctl); padding: 0; flex: none;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: 1px solid var(--ui-line-strong); border-radius: 8px;
+    background: var(--ui-surface); color: var(--ui-text); cursor: pointer;
+    transition: background 120ms ease, border-color 120ms ease;
+    &:hover:not(:disabled) { background: var(--ui-surface-2); }
+    &:focus-visible { outline: 2px solid var(--ui-brand-t600); outline-offset: 2px; }
+  }
+  .lp-kebab__dots { width: 18px; height: 18px; }
+
+  // The toolbar: first child of the card so it can stick to the top of the card while the table scrolls under it.
+  .lp-toolbar {
+    position: sticky; top: 56px; z-index: 25;             // below the 56px top bar
+    display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+    padding: 12px 16px; background: var(--ui-surface);    // opaque
+    border-bottom: 1px solid var(--ui-line); border-radius: 12px 12px 0 0;
+  }
+  .lp-toolbar__tools { display: flex; align-items: center; gap: 8px; flex: 1 1 auto; min-width: 0; }
+  .lp-toolbar__tools .relative.flex-1 { flex: 1 1 auto; min-width: 160px; max-width: 320px; }
+  .lp-toolbar__tools input.py-2\.5 { height: var(--lp-ctl); padding-top: 0; padding-bottom: 0; font-size: 13px; }
+  .lp-toolbar__sub { display: flex; justify-content: center; margin-inline-start: auto; }
+  .lp-toolbar__end { display: flex; align-items: center; gap: 8px; margin-inline-start: auto; }
+  .lp-toolbar__sub + .lp-toolbar__end { margin-inline-start: 0; }
+
+  // Every toolbar control: the same height, the same border.
+  .lp-toolbar button.lp-tbtn, .lp-toolbar__end > button, .lp-toolbar__tools > button {
+    height: var(--lp-ctl); min-width: var(--lp-ctl); padding: 0 12px; flex: none;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    border: 1px solid var(--ui-line); background: var(--ui-surface); border-radius: 8px; font-size: 13px;
+    &:hover:not(:disabled) { background: var(--ui-surface-2); }
+  }
+  .lp-toolbar__end > button:not(.lp-tbtn) { padding: 0; }
+  .lp-toolbar__end > .flex { padding: 2px; }
+  .lp-btn__label, .lp-flabel { white-space: nowrap; }
+  // Quick views (optional preset tabs on the right of the toolbar): the selected one is accent-tinted.
+  .lp-toolbar__sub { gap: 8px; align-items: center; }
+  .lp-quickviews .st__btn.is-on { background: var(--ui-brand-soft); color: var(--ui-brand-t600); box-shadow: none; }
+
+  // The bulk bar replaces the toolbar's content: same band, selection-tinted.
+  .lp-selbar--inline {
+    min-height: var(--lp-ctl); padding: 4px 10px; border-radius: 8px;
+    background: var(--ui-selected); color: var(--ui-text); border: 1px solid var(--ui-line-strong);
+    [class*="bg-slate-600"] { background: var(--ui-line-strong); }
+    [class*="text-slate-300"], [class*="text-slate-400"] { color: var(--ui-text-3); }
+    [class*="text-red-300"] { color: var(--ui-red-text); }
+    button:hover:not(:disabled) { background: var(--ui-hover); color: var(--ui-text); }
+  }
+
+  @media (max-width: 900px) {
+    .lp-head { flex-wrap: wrap; }
+    .lp-btn__label { display: none; }                      // Columns becomes an icon button (it keeps its tooltip + aria-label)
+    .lp-toolbar__tools { flex-basis: 100%; }
+    .lp-toolbar__sub { width: 100%; justify-content: flex-start; margin-inline-start: 0; }
+    .lp-toolbar__end { margin-inline-start: auto; }
+  }
+
+  // ── Table card ─────────────────────────────────────────────────
+  .list-card.mb-6 { margin-bottom: var(--lp-card-gap); }
+  .list-card .justify-between.p-4 { padding: var(--lp-toolbar-pad); gap: 8px; }
+  .list-card input.py-2\.5 { padding-top: var(--lp-search-pad-y); padding-bottom: var(--lp-search-pad-y); font-size: 13px; }
+  .list-card .p-2.rounded-lg { padding: 6px; }
+  .list-card .px-4.pb-4 { padding: 0 12px 10px; }
+
+  // ── Table ──────────────────────────────────────────────────────
+  .list-card table { font-size: var(--lp-cell-font); }
+  .list-card th.px-6.py-3 { padding: var(--lp-head-pad); font-size: 12.5px; }
+  .list-card td.px-6.py-4 { padding: var(--lp-cell-pad); }
+  .list-card td.px-6.py-3 { padding: var(--lp-cell-pad); }
+  .list-card .list-disclosure-cell { padding-top: 0; padding-bottom: 0; }
+
+  // ── Pagination strip ───────────────────────────────────────────
+  .list-card .border-t.rounded-b-xl.px-6.py-4 { padding: var(--lp-pager-pad); }
+  .list-card app-pagination button.h-9 { height: 30px; min-width: 30px; font-size: 13px; }
+  .list-card app-pagination .p-2.rounded-lg { padding: 6px; }
+}

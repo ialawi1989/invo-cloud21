@@ -137,7 +137,7 @@ export class InvoicesListComponent implements OnInit {
     this.searchConfig.placeholder = t('INVOICES.SEARCH_PLACEHOLDER');
     this.emptyState = { title: t('INVOICES.EMPTY'), message: '' };
     this.breadcrumbs = [
-      { label: t('INVOICES.DASHBOARD'), routerLink: '/dashboard' },
+      { label: t('MENU.SALES') }, // the sidebar group this page lives under
       { label: t(L + 'INVOICES_LIST') },
     ];
   }

@@ -18,6 +18,7 @@
   },
   "PRODUCTS": {
     "TITLE": "Products",
+    "COUNT": "{{count}} products",
     "INVENTORY_REQUEST": {
       "SCAN_ITEM": "Scan Item",
       "CLOSE_SCAN": "Close Scan",
@@ -922,7 +923,7 @@
       "NO_TEMPLATES": "No saved label templates yet. Create one in Settings → Label Builder.",
       "NO_PREVIEW": "Pick a template to render a preview."
     },
-    "SEARCH_PLACEHOLDER": "Search products by name, SKU, barcode...",
+    "SEARCH_PLACEHOLDER": "Search products",
     "IMPORT_EXPORT": {
       "GROUP": {
         "FILE": {

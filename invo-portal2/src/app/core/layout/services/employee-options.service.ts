@@ -93,6 +93,8 @@ export interface EmployeePreferences {
   firstDayOfWeek?: number;
   /** Dashboard appearance; unset = light. 'system' follows the device. */
   theme?: 'light' | 'dark' | 'system';
+  /** List / table spacing; unset = compact. */
+  density?: 'compact' | 'comfortable';
 }
 
 export interface EmployeeOptions {
