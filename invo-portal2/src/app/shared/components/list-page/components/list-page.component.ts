@@ -148,6 +148,14 @@ import {
       --lp-row-py: 14px;
       --lp-pad-x: 16px;
       --lp-gap: 8px;
+      --lp-page-px: 24px;      /* page side padding */
+      --lp-page-pb: 20px;      /* page bottom padding */
+      --lp-head-pt: 14px;      /* space above the page header block */
+      --lp-head-pb: 12px;      /* space below it */
+      --lp-th-h: 44px;         /* table header row height */
+      --lp-toolbar-py: 12px;   /* toolbar vertical padding */
+      --lp-row-ctl: 36px;      /* row "Edit" pill height */
+      --lp-row-btn: 32px;      /* row kebab size */
       --lp-accent: var(--ui-brand-t700, #207484);
       --lp-on-accent: var(--ui-on-accent, #fff);
       --lp-accent-soft: var(--ui-brand-soft, #ecfeff);
@@ -158,6 +166,14 @@ import {
       --lp-row-py: 6px;
       --lp-pad-x: 12px;
       --lp-gap: 6px;
+      --lp-page-px: 12px;
+      --lp-page-pb: 12px;
+      --lp-head-pt: 10px;
+      --lp-head-pb: 10px;
+      --lp-th-h: 36px;
+      --lp-toolbar-py: 8px;
+      --lp-row-ctl: 28px;
+      --lp-row-btn: 28px;
     }
 
     /* ── Sticky columns (checkbox + primary on the start edge, actions
@@ -300,7 +316,7 @@ import {
       /* Fill the viewport HEIGHT but keep comfortable side + bottom gutters
          (Wix-style contained panel) so the table stays scannable and doesn't
          feel crammed against the screen edges. The header supplies the top gap. */
-      padding: 0 24px 20px;
+      padding: 0 var(--lp-page-px) var(--lp-page-pb);
       /* Comfortable, Wix-like row rhythm — roomy but not airy. */
     }
     /* Let the primary (frozen) column absorb horizontal slack so wide screens
@@ -315,7 +331,7 @@ import {
     /* Page header (H1) — small extra inset on top of the container gutters. */
     .list-page-container.lp-fullbleed > .lp-head {
       flex: 0 0 auto;
-      padding: 14px 4px 12px;
+      padding: var(--lp-head-pt) 4px var(--lp-head-pb);
     }
     /* Card edge: the same border and shadow as the form cards (employee form,
        Customers), so lists and forms match. Full-bleed mode below removes it. */
@@ -501,7 +517,7 @@ import {
       color: var(--ui-t-4a5163);
       font-size: 13px;
       font-weight: 500;
-      height: calc(var(--lp-control-h) + 8px);
+      height: var(--lp-th-h);
       padding: 0 var(--lp-pad-x) !important;
       white-space: nowrap;
       border-top: 0 !important;
@@ -556,7 +572,7 @@ import {
     .lp-sort-idle { width: 14px; height: 14px; flex: 0 0 auto; color: var(--ui-faint); }
     /* Keep focused cells clear of the sticky header / first column / actions column (WCAG 2.2 focus not obscured). */
     .list-page-container .overflow-x-auto {
-      scroll-padding-top: calc(var(--lp-control-h) + 12px);
+      scroll-padding-top: var(--lp-th-h);
       scroll-padding-inline-start: calc(var(--lp-sticky-col-w, 300px) + 48px);
       scroll-padding-inline-end: var(--lp-actions-w, 184px);
     }
@@ -602,6 +618,19 @@ import {
       width: var(--lp-sticky-col-w, 300px);
       min-width: var(--lp-sticky-col-w, 300px);
       max-width: var(--lp-sticky-col-w, 300px);
+    }
+    /* [flexFirstColumn]: the first column takes the slack (and truncates with an ellipsis) instead of a fixed width;
+       its --lp-sticky-col-w is the minimum. Other columns size to their content. */
+    .list-page-container.lp-flex-first th.list-sticky-col,
+    .list-page-container.lp-flex-first td.list-sticky-col {
+      width: auto;
+      min-width: var(--lp-sticky-col-w, 300px);
+      max-width: 0;   /* content never widens it: it truncates, and it is the only auto-width column so it takes the slack */
+    }
+    /* Every other data column shrinks to its content (no percentages: they inflate a max-content table). */
+    .list-page-container.lp-flex-first thead th:not(.list-sticky-col):not(.start-0):not(.list-actions-th):not(.list-disclosure-cell),
+    .list-page-container.lp-flex-first tbody tr:not(.lp-node-row) > td:not(.list-sticky-col):not(.start-0):not(.list-floating-actions):not(.list-disclosure-cell) {
+      width: 1px;
     }
     .list-page-container td.list-floating-actions,
     .list-page-container th.list-actions-th {
@@ -673,7 +702,7 @@ import {
 
     .lp-toolbar, .lp-bulk {
       display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;
-      gap: var(--lp-gap); padding: 12px var(--lp-pad-x); background: var(--ui-surface);
+      gap: var(--lp-gap); padding: var(--lp-toolbar-py) var(--lp-pad-x); background: var(--ui-surface);
     }
     .lp-toolbar__start, .lp-toolbar__end { display: flex; align-items: center; flex-wrap: wrap; gap: var(--lp-gap); min-width: 0; }
     .lp-toolbar__start { flex: 1 1 auto; }
@@ -727,9 +756,8 @@ import {
        Every logical property, so indentation, connector, bar and chevron mirror in RTL. 24px per level; the
        structure also reads without colour (indent + connector). */
     .lp-tn { position: relative; display: flex; align-items: center; gap: 4px; min-width: 0; padding-inline-start: calc(min(var(--lp-level, 0), 3) * 24px); }
-    .lp-tn__body { flex: 1 1 auto; min-width: 0; overflow: hidden; }
+    .lp-tn__body { flex: 0 1 auto; min-width: 0; overflow: hidden; }
     .lp-tn__body .lp-grow { min-width: 0; flex-wrap: nowrap; }
-    .lp-tn__body .lp-grow > * { min-width: 0; }
     .lp-tslot { flex: 0 0 20px; width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; }
     .lp-tbtn {
       position: relative; display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px;
@@ -921,6 +949,9 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
    *  destroy) so pages need no extra wiring. Set `[fullBleed]="false"` to opt a
    *  page out (e.g. a list embedded below other content). */
   @Input() fullBleed = true;
+
+  /** The first (sticky) column takes the leftover width and truncates with an ellipsis; its `--lp-sticky-col-w` becomes a minimum. */
+  @Input() flexFirstColumn = false;
 
   /** Fit the table height to its rows instead of always filling the viewport:
    *  few rows → a short table (no big empty area below it); many rows → the

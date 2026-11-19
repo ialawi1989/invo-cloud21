@@ -35,6 +35,12 @@ export interface DropdownMenuBtnItem {
   iconPath?:  string;
   /** `viewBox` the icon path was authored against. Defaults to `'0 0 24 24'`. */
   iconViewBox?: string;
+  /** Optional decorative leading icon: an SVG path `d` (24x24, stroke). Rendered in a fixed 18px
+   *  slot at the inline-start of the row. When ANY item in the menu has one, items without it keep
+   *  an empty 18px slot so labels align; menus with none render exactly as before. */
+  leadingIcon?: string;
+  /** Mirror the leading icon in RTL (directional glyphs such as arrows). */
+  leadingIconFlipRtl?: boolean;
   /** Highlights the row as the active choice (e.g. the current sort field). */
   checked?: boolean;
   /** Trailing direction chevron on a `checked` row (e.g. the current sort direction). */
@@ -118,7 +124,8 @@ export interface DropdownMenuBtnItem {
       <ng-template #menu let-mode>
         <ul [class]="
               'dmb__menu dmb__menu--' + align +
-              (mode === 'overlay' ? ' dmb__menu--overlay' : '')
+              (mode === 'overlay' ? ' dmb__menu--overlay' : '') +
+              (hasLeadingIcons ? ' dmb__menu--icons' : '')
             "
             role="menu" (click)="$event.stopPropagation()">
           @for (item of items; track $index) {
@@ -133,6 +140,17 @@ export interface DropdownMenuBtnItem {
                 [class.dmb__item--danger]="item.danger"
                 [disabled]="!!item.disabled"
                 (click)="item.children?.length ? toggleSub($index, $event) : pick(item)">
+                @if (hasLeadingIcons) {
+                  <span class="dmb__lead" aria-hidden="true">
+                    @if (item.leadingIcon) {
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"
+                        stroke-linecap="round" stroke-linejoin="round" focusable="false"
+                        [style.transform]="item.leadingIconFlipRtl && isRtl ? 'scaleX(-1)' : null">
+                        <path [attr.d]="item.leadingIcon"/>
+                      </svg>
+                    }
+                  </span>
+                }
                 @if (item.tag) {
                   <span [class]="'dmb__tag dmb__tag--' + (item.tag.variant || 'cyan')">{{ item.tag.label }}</span>
                 }
@@ -268,6 +286,16 @@ export interface DropdownMenuBtnItem {
       &:hover:not(:disabled) { background: var(--color-brand-700, #227d8d); color: #fff; }
     }
 
+    /* Leading-icon menus only (.dmb__menu--icons) — menus without icons are untouched. */
+    .dmb__lead {
+      display: inline-flex; align-items: center; justify-content: center;
+      flex: 0 0 18px; width: 18px; height: 18px;
+      color: var(--ui-text-4);
+    }
+    .dmb__menu--icons button { min-height: 36px; }
+    .dmb__menu--icons .dmb__header { font-size: 12px; color: var(--ui-text-4); }
+    @media (pointer: coarse) { .dmb__menu--icons button { min-height: 44px; } }
+
     .dmb__sep {
       height: 1px;
       margin: 6px 0;
@@ -346,6 +374,12 @@ export class DropdownMenuBtnComponent {
           { originX: 'start', originY: 'top',    overlayX: 'start', overlayY: 'bottom', offsetY: -6 },
         ];
   }
+
+  /** True when any item carries a leading icon — then every row reserves the 18px slot. */
+  get hasLeadingIcons(): boolean { return this.items.some(i => !!i.leadingIcon); }
+
+  /** Document direction, read when the menu renders (the menu is rebuilt on every open). */
+  get isRtl(): boolean { return document.documentElement.getAttribute('dir') === 'rtl'; }
 
   open = signal<boolean>(false);
   /** Index of the item whose submenu flyout is open, if any. */

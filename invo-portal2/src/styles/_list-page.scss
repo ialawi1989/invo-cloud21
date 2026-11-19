@@ -57,8 +57,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: var(--lp-row-btn, 32px);
+  height: var(--lp-row-btn, 32px);
   color: var(--ui-muted, #64748b);
   background: transparent;
   border: 1px solid transparent;
@@ -85,3 +85,21 @@
   .lp-btn--collapsible { width: var(--lp-control-h, 36px); padding: 0; }
   .lp-btn--collapsible .lp-btn__label { display: none; }
 }
+
+// Row "Edit" pill: height follows the density token (36px Comfortable, 28px Compact), 44px minimum on touch screens.
+.lp-row-edit { height: var(--lp-row-ctl, 36px); }
+@media (pointer: coarse) { .lp-row-edit { min-height: 44px; } }
+
+// Compact: the SKU / barcode chip sits on the same line as the product name (name truncates, chip stays visible).
+// Comfortable keeps the chip on its own line under the name.
+:root[data-density='compact'] .lp-namecell {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+:root[data-density='compact'] .lp-namecell > :first-child { flex: 0 1 auto; min-width: 0; }
+:root[data-density='compact'] .lp-namecell > .app-product-badge { flex: 0 0 auto; align-self: center; }
+
+// Tree / flexible first column: the cell content comes from the page's own template (outside <app-list-page>'s
+// scoped styles), so the shrink-chain that lets a long name end in an ellipsis is declared here.
+.lp-tn__body .lp-grow > * { min-width: 0; }

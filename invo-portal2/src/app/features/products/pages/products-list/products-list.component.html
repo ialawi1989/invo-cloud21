@@ -1,5 +1,6 @@
 <app-list-page
-  style="--lp-actions-w: 150px; --lp-sticky-col-w: 300px"
+  style="--lp-actions-w: 150px; --lp-sticky-col-w: 300px; --lp-text-max: 180px"
+  [flexFirstColumn]="true"
   [pageTitle]="'PRODUCTS.TITLE' | translate"
   [columns]="columns"
   [dataSource]="loadProducts"
@@ -80,7 +81,7 @@
         }
       }
 
-      <div class="flex flex-col min-w-0 gap-1">
+      <div class="lp-namecell flex flex-col min-w-0 gap-1">
         <!-- `list-interactive-cell` mirrors the column-level `interactive` flag
              for custom templates — keeps hover styling consistent with the
              shared cellContent renderer.
@@ -208,7 +209,7 @@
         <button type="button"
           (click)="editProduct(row, $event)"
           class="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity
-                 me-2 px-4 h-9 inline-flex items-center rounded-full
+                 me-2 px-4 lp-row-edit inline-flex items-center rounded-full
                  bg-brand-600 text-white text-sm font-medium shadow-sm
                  hover:bg-brand-700">
           {{ 'COMMON.ACTIONS.EDIT' | translate }}
