@@ -149,7 +149,8 @@ import {
       --lp-pad-x: 16px;
       --lp-gap: 8px;
       --lp-page-px: 24px;      /* page side padding */
-      --lp-page-pb: 20px;      /* page bottom padding */
+      --lp-page-pb: var(--lp-page-px);   /* page bottom padding = the side padding */
+      --lp-foot-py: 10px;      /* footer vertical padding */
       --lp-head-pt: 14px;      /* space above the page header block */
       --lp-head-pb: 12px;      /* space below it */
       --lp-th-h: 44px;         /* table header row height */
@@ -167,7 +168,7 @@ import {
       --lp-pad-x: 12px;
       --lp-gap: 6px;
       --lp-page-px: 12px;
-      --lp-page-pb: 12px;
+      --lp-foot-py: 8px;
       --lp-head-pt: 10px;
       --lp-head-pb: 10px;
       --lp-th-h: 36px;
@@ -366,7 +367,7 @@ import {
     /* Pagination is the pinned bottom row — pad it past the iPhone home
        indicator so the controls aren't under the gesture bar. */
     .lp-fullbleed .list-card > .lp-foot {
-      padding-bottom: max(10px, env(safe-area-inset-bottom));
+      padding-bottom: max(var(--lp-foot-py), env(safe-area-inset-bottom));
     }
     .lp-fullbleed .list-card > .relative,
     .lp-fullbleed .list-card > .lp-mcards,
@@ -749,7 +750,7 @@ import {
     .lp-bulk__count { font-size: 14px; font-weight: 600; color: var(--ui-text); }
     .lp-bulk__actions { display: flex; flex: 1 1 auto; flex-wrap: wrap; align-items: center; gap: var(--lp-gap); }
 
-    .lp-foot { padding: 10px var(--lp-pad-x); border-top: 1px solid var(--ui-line); background: var(--ui-surface); }
+    .lp-foot { padding: var(--lp-foot-py) var(--lp-pad-x); border-top: 1px solid var(--ui-line); background: var(--ui-surface); }
 
 
     /* ── Row tree ───────────────────────────────────────────────────────────────
@@ -1249,8 +1250,17 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
     requestAnimationFrame(() => {
       const host = this.scrollHost?.nativeElement;
       if (!host || !this.stickyColumns) return;
-      const docTop = host.getBoundingClientRect().top + window.scrollY;
-      const h = window.innerHeight - docTop - ListPageComponent.SCROLL_BOTTOM_RESERVE - this.bottomReserve;
+      const root = this.hostRef.nativeElement as HTMLElement;
+      const hostRect = host.getBoundingClientRect();
+      const docTop = hostRect.top + window.scrollY;
+      // What sits under the table inside the card (footer, borders): measured, not a fixed guess, so each density's
+      // footer height and a visible filter bar are accounted for exactly.
+      const card = root.querySelector<HTMLElement>('.list-card');
+      const below = card ? Math.max(0, card.getBoundingClientRect().bottom - hostRect.bottom) : ListPageComponent.SCROLL_BOTTOM_RESERVE;
+      // The card's bottom edge then sits exactly one page padding above the viewport bottom.
+      const container = root.querySelector<HTMLElement>('.list-page-container');
+      const pagePb = container ? parseFloat(getComputedStyle(container).paddingBottom) || 0 : 0;
+      const h = window.innerHeight - docTop - below - pagePb - this.bottomReserve;
       // Never collapse to an unusably short strip on tiny viewports.
       this.scrollMaxHeight.set(Math.max(240, Math.round(h)));
     });
@@ -1258,7 +1268,19 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
 
   ngAfterViewInit(): void {
     this.recomputeScrollMaxHeight();
+    // The table's top moves when the filter bar or the toolbar / bulk bar change height, and the footer's height
+    // follows the density: re-measure whenever any of them resizes (the value converges, so this cannot loop).
+    if (typeof ResizeObserver !== 'undefined') {
+      this.sizeObserver = new ResizeObserver(() => this.recomputeScrollMaxHeight());
+      const root = this.hostRef.nativeElement as HTMLElement;
+      for (const sel of ['.lp-head', '.lp-above', '.list-card']) {
+        const el = root.querySelector(sel);
+        if (el) this.sizeObserver.observe(el);
+      }
+    }
   }
+
+  private sizeObserver?: ResizeObserver;
 
   // List State
   currentPage = signal(1);
@@ -1539,6 +1561,7 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
 
   ngOnDestroy(): void {
     this.deferredCount.dispose();
+    this.sizeObserver?.disconnect();
     this.listAbort?.abort();
     this.destroy$.next();
     this.destroy$.complete();

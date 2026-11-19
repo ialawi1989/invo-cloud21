@@ -98,16 +98,21 @@
   gap: 8px;
 }
 :root[data-density='compact'] .lp-namecell > :first-child { flex: 0 1 auto; min-width: 0; }
-// The chip keeps its text (>= 12px) but may shorten an unusually long code, so the name always keeps room.
-:root[data-density='compact'] .lp-namecell > .app-product-badge {
-  display: block;
-  flex: 0 1 auto;
-  align-self: center;
-  max-width: 38%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+// The SKU / barcode chip is never truncated or shrunk: if space runs short the product NAME truncates instead.
+:root[data-density='compact'] .lp-namecell > .app-product-badge { flex: 0 0 auto; align-self: center; }
 
 // Tree / flexible first column: the cell content comes from the page's own template (outside <app-list-page>'s
 // scoped styles), so the shrink-chain that lets a long name end in an ellipsis is declared here.
 .lp-tn__body .lp-grow > * { min-width: 0; }
+
+// The chip never shrinks in either density (the name beside / above it gives way instead).
+.lp-namecell > .app-product-badge { flex-shrink: 0; max-width: none; }
+
+// Compact footer: 32px controls (Comfortable keeps today's sizes); touch screens keep the 44px minimum.
+:root[data-density='compact'] .lp-foot button { height: 32px; min-height: 32px; }
+:root[data-density='compact'] .lp-foot button[aria-label$=' page'] { width: 32px; padding: 0; }
+:root[data-density='compact'] .lp-foot app-search-dropdown button { height: 32px; min-height: 32px; }
+@media (pointer: coarse) {
+  :root[data-density='compact'] .lp-foot button,
+  :root[data-density='compact'] .lp-foot app-search-dropdown button { height: 44px; min-height: 44px; }
+}

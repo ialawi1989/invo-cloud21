@@ -47,6 +47,7 @@
   <!-- ══════════════════════════════════════════════════════════════ -->
   <div class="list-card" [attr.aria-busy]="isLoading()">
 
+    <div class="lp-above">
     @if (selectable && selectedRows().length > 0) {
     <!-- ── Bulk action bar: replaces the toolbar while rows are selected ── -->
     <div class="lp-bulk" role="toolbar" [attr.aria-label]="'COMMON.SELECTED_COUNT' | translate:{ count: selectedRows().length }"
@@ -203,6 +204,7 @@
       [valueTextFn]="filterTextFn"
       (changed)="onInlineFilters($event)"
       (cleared)="clearAllFilters()"/>
+    </div>
 
     <!-- ══════════════════════════════════════════════════════════════ -->
     <!-- TABLE VIEW -->
