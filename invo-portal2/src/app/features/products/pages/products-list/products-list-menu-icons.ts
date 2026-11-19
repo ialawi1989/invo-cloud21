@@ -20,11 +20,13 @@ export interface MenuIconDef {
 }
 
 // ── Shapes (outline, 24x24) ────────────────────────────────────────────────
-const BOX = 'M21 8l-9-5-9 5v8l9 5 9-5z M3.3 7.5L12 12.5l8.7-5 M12 22V12.5';
+/** Warehouse building with shelving bays (Inventory). */
+const BOX = 'M22 8.4V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8.4a2 2 0 0 1 1.3-1.9l8-3.2a2 2 0 0 1 1.4 0l8 3.2a2 2 0 0 1 1.3 1.9z M6 18h12 M6 14h12 M6 10h12';
 const LAYERS = 'M12 2L2 7l10 5 10-5z M2 17l10 5 10-5 M2 12l10 5 10-5';
 const PUZZLE = 'M19.4 11H18V7a1 1 0 0 0-1-1h-4V4.6a2.6 2.6 0 0 0-5.2 0V6H4a1 1 0 0 0-1 1v3.8h1.4a2.6 2.6 0 0 1 0 5.2H3V20a1 1 0 0 0 1 1h3.8v-1.4a2.6 2.6 0 0 1 5.2 0V21H17a1 1 0 0 0 1-1v-4h1.4a2.6 2.6 0 0 0 0-5z';
 const WRENCH = 'M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.4 2.4-2.6-.6-.6-2.6z';
-const PACKAGE = 'M16.5 9.4L7.5 4.2 M21 16V8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4a2 2 0 0 0 1-1.7z M3.3 7L12 12l8.7-5 M12 22V12';
+/** Front-view taped parcel: top flaps with a tape strip and label (Package). */
+const PACKAGE = 'M3 8l2.5-5h13L21 8 M3 8h18v13H3z M9.5 8v5l2.5-1.5 2.5 1.5V8';
 const UTENSILS = 'M5 3v7a2 2 0 0 0 2 2v9 M9 3v7a2 2 0 0 1-2 2 M7 3v7 M17 21V3c-2.5 1.5-4 4.5-4 8h4';
 const CHECKLIST = 'M3 6l1.5 1.5L7 5 M3 12l1.5 1.5L7 11 M3 18l1.5 1.5L7 17 M11 6h10 M11 12h10 M11 18h10';
 const SCISSORS = 'M9.5 6a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0z M9.5 18a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0z M8.6 8.4L21 19 M8.6 15.6L21 5';
