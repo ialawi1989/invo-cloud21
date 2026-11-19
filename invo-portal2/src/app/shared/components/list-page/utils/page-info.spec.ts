@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { pageInfoFromResponse, resolvePage } from './page-info';
+import { pageChrome, pageInfoFromResponse, resolvePage } from './page-info';
 
 describe('pageInfoFromResponse', () => {
   it('reads a total from count (bigint strings included)', () => {
@@ -50,5 +50,58 @@ describe('resolvePage', () => {
     expect(r.to).toBe(30);
     expect(r.hasPrev).toBe(true);
     expect(resolvePage({ page: 1, limit: 15, total: 0 }, 0).from).toBe(0);
+  });
+});
+
+describe('pageChrome (what the pill and footer show)', () => {
+  const list = (info: Parameters<typeof resolvePage>[0], rows: number) => resolvePage(info, rows);
+
+  it('total pending: skeleton in pill and footer, no number yet, footer already usable (Previous / Next)', () => {
+    const c = pageChrome(list({ page: 1, limit: 15, hasNext: true }, 15), true);
+    expect(c.skeleton).toBe(true);
+    expect(c.pill).toBe(false);
+    expect(c.footer).toBe('compact');
+    expect(c.showFirstLast).toBe(false);
+  });
+
+  it('total failed: skeleton gone, pill and "of N" hidden, "Showing 1-15" + Previous / Next, list still usable', () => {
+    const p = list({ page: 1, limit: 15, hasNext: true }, 15);   // the count never arrived: total stays unknown
+    const c = pageChrome(p, false);
+    expect(c.skeleton).toBe(false);
+    expect(c.pill).toBe(false);
+    expect(c.footer).toBe('compact');
+    expect(c.showFirstLast).toBe(false);
+    expect(p.hasNext).toBe(true);
+    expect(p.from).toBe(1);
+    expect(p.to).toBe(15);
+  });
+
+  it('total known: pill, numbered pages and first / last', () => {
+    const c = pageChrome(list({ page: 1, limit: 15, total: 10581, hasNext: true }, 15), false);
+    expect(c).toEqual({ pill: true, skeleton: false, footer: 'full', showFirstLast: true });
+  });
+
+  it('a list with only a legacy pageCount keeps numbered pages and first / last', () => {
+    const p = list(pageInfoFromResponse({ pageCount: 5 }, 1, 15), 15);
+    const c = pageChrome(p, false);
+    expect(c.footer).toBe('full');
+    expect(c.showFirstLast).toBe(true);
+    expect(c.pill).toBe(false);
+  });
+
+  it('an empty list shows no pill', () => {
+    expect(pageChrome(list({ page: 1, limit: 15, total: 0 }, 0), false).pill).toBe(false);
+  });
+});
+
+describe('hasNext for child groups ("Show N more")', () => {
+  it('uses the API flag when present', () => {
+    expect(resolvePage({ page: 1, limit: 15, total: 40, hasNext: false }, 15).hasNext).toBe(false);
+  });
+  it('falls back to the total, then to a full page, when an older backend sends no hasNext', () => {
+    expect(resolvePage({ page: 1, limit: 15, total: 40 }, 15).hasNext).toBe(true);
+    expect(resolvePage({ page: 3, limit: 15, total: 40 }, 10).hasNext).toBe(false);
+    expect(resolvePage({ page: 1, limit: 15 }, 15).hasNext).toBe(true);
+    expect(resolvePage({ page: 1, limit: 15 }, 7).hasNext).toBe(false);
   });
 });

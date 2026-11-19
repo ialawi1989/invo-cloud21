@@ -6,6 +6,7 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import { ListPageComponent } from '@shared/components/list-page/components/list-page.component';
 import { listPageConfig } from '@shared/components/list-page/list-page.config';
+import { buildChildrenBody, buildCountBody, buildRootListBody, RootListInput } from '../../services/product-list-requests';
 import {
   ListCellTemplateDirective,
   ListRowActionsDirective,
@@ -707,9 +708,6 @@ export class ProductsListComponent implements OnInit {
   }
 
   // ─── Product tree (children load lazily, one expanded node at a time) ───────────────────
-  /** Which sort keys `product/productChildsList` can ORDER BY; anything else falls back to its default order. */
-  private static readonly CHILD_SORT_KEYS = new Set(['name', 'barcode', 'unitCost', 'defaultPrice', 'type', 'createdAt', 'categoryName', 'departmentName']);
-
   /** The ONE place the pill wording lives: product type -> i18n key under PRODUCTS.TREE (`<KEY>` plain, `<KEY>_N` with a count). */
   private static readonly PILL_KEYS: Record<string, string> = { matrix: 'VARIANTS', inventory: 'UNITS' };
 
@@ -723,18 +721,7 @@ export class ProductsListComponent implements OnInit {
       : level === 1 ? row.type === 'inventory'
       : false,
     loadChildren: async (parent, p) => {
-      const f = this.transformFilters(p.filter || {});
-      const sortOk = !!p.sortBy && ProductsListComponent.CHILD_SORT_KEYS.has(p.sortBy.sortValue);
-      const res = await this.productsService.productChildsList({
-        id: parent.id,
-        page: Math.max(1, p.page),
-        limit: p.limit,
-        searchTerm: p.searchTerm || '',
-        // Omitted (not {}) when unsupported: the endpoint then uses its default order.
-        sortBy: sortOk ? { sortValue: p.sortBy!.sortValue, sortDirection: p.sortBy!.sortDirection } : undefined,
-        // Only these three filters are honoured for children (brands, tags and ids are ignored by the endpoint).
-        filter: { departments: f.departments, categories: f.categories, type: f.type },
-      });
+      const res = await this.productsService.productChildsList(buildChildrenBody(parent.id, p));
       return { list: res.list, total: res.count === undefined || res.count === null ? undefined : Number(res.count), hasNext: res.hasNext };
     },
     pillLabel: (row, count) => {
@@ -759,19 +746,10 @@ export class ProductsListComponent implements OnInit {
 
   // Data Source
   loadProducts = async (params: ListQueryParams) => {
-    const response = await this.productsService.getProductList({
-      page: params.page,
-      limit: params.limit,
-      searchTerm: params.searchTerm || '',
-      sortBy: params.sortBy ? {
-        sortValue: params.sortBy.sortValue,
-        sortDirection: params.sortBy.sortDirection
-      } : {},
-      filter: this.transformFilters(params.filter || {}),
-      columns: params.columns,
-      // Rows first: the total comes separately (countProducts) while the deferred-count flag is on.
-      ...(listPageConfig.useDeferredCount ? { skipCount: true } : {}),
-    });
+    const response = await this.productsService.getProductList(
+      buildRootListBody(params as RootListInput, listPageConfig.useDeferredCount) as any,
+      params.signal,
+    );
 
     return {
       list: response.list,
@@ -782,34 +760,8 @@ export class ProductsListComponent implements OnInit {
   };
 
   /** Total for the same search and filters (the API's `countOnly`); page, limit and sort don't apply. */
-  countProducts = async (params: ListQueryParams): Promise<number> =>
-    this.productsService.getProductCount({
-      searchTerm: params.searchTerm || '',
-      filter: this.transformFilters(params.filter || {}),
-      columns: params.columns,
-    });
-
-  private transformFilters(filters: any): any {
-    // `types` is a checkbox-group filter — always serialize as an array. When
-    // the URL restore sees a single value it hands back a bare string
-    // (`filter_types=kit` → `"kit"`), so coerce here.
-    return {
-      type:        this.toArray(filters.types),
-      departments: filters.departmentId ? [filters.departmentId] : [],
-      categories:  filters.categoryId   ? [filters.categoryId]   : [],
-      // Backend (ProductRepo.listProductFilter) reads `filter.brands` as a
-      // string[] of brand ids → `brandid IN (...)`.
-      brands:      filters.brandId      ? [filters.brandId]      : [],
-      tags:        this.toArray(filters.tags),
-    };
-  }
-
-  /** Accepts array / scalar / nullish and returns a clean string array. */
-  private toArray(value: unknown): string[] {
-    if (Array.isArray(value)) return value as string[];
-    if (value === null || value === undefined || value === '') return [];
-    return [String(value)];
-  }
+  countProducts = async (params: ListQueryParams, signal?: AbortSignal): Promise<number> =>
+    this.productsService.getProductCount(buildCountBody(params as RootListInput) as any, signal);
 
   getTypeKey(type: string): string {
     return type.replace(/([A-Z])/g, '_$1').toUpperCase();

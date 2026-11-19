@@ -32,8 +32,8 @@ export class ProductListService {
     return res?.data;
   }
 
-  async getProductList(params: ProductListParams): Promise<ProductListResponse> {
-    const data = this.unwrap(await this.api.request(this.api.post('product/getProductList', params)));
+  async getProductList(params: ProductListParams, signal?: AbortSignal): Promise<ProductListResponse> {
+    const data = this.unwrap(await this.api.request(this.api.post('product/getProductList', params), { signal }));
     return {
       list: data?.list || [],
       // Left undefined (not 0) when the API skipped counting, so the list knows the total is unknown.
@@ -44,8 +44,8 @@ export class ProductListService {
   }
 
   /** The total for the same search / filters (`countOnly`): page, limit and sort are ignored by the API. */
-  async getProductCount(params: Omit<ProductListParams, 'page' | 'limit' | 'sortBy'>): Promise<number> {
-    const data = this.unwrap(await this.api.request(this.api.post('product/getProductList', { ...params, countOnly: true })));
+  async getProductCount(params: Omit<ProductListParams, 'page' | 'limit' | 'sortBy'>, signal?: AbortSignal): Promise<number> {
+    const data = this.unwrap(await this.api.request(this.api.post('product/getProductList', { ...params, countOnly: true }), { signal }));
     const n = typeof data === 'number' ? data : data?.count;
     const total = Number(n);
     if (!Number.isFinite(total)) throw new Error('countOnly returned no count');

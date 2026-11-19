@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
-import { Observable, firstValueFrom } from 'rxjs';
+import { Observable, firstValueFrom, takeUntil } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 // ─── Response shape ─────────────────────────────────────────────────────────
@@ -161,8 +161,22 @@ export class ApiService {
    * (`ApiResponse<T>`). Use this when you need access to `success`, `msg`,
    * or when the endpoint doesn't follow the standard envelope.
    */
-  async request<T = any>(obs: Observable<ApiResponse<T>>): Promise<ApiResponse<T>> {
-    return firstValueFrom(obs);
+  async request<T = any>(obs: Observable<ApiResponse<T>>, options?: { signal?: AbortSignal }): Promise<ApiResponse<T>> {
+    const signal = options?.signal;
+    if (!signal) return firstValueFrom(obs);
+    // With a signal, aborting unsubscribes the HttpClient observable, which cancels the underlying XHR.
+    if (signal.aborted) throw new DOMException('The request was aborted', 'AbortError');
+    const aborted$ = new Observable<void>(subscriber => {
+      const onAbort = () => { subscriber.next(); subscriber.complete(); };
+      signal.addEventListener('abort', onAbort, { once: true });
+      return () => signal.removeEventListener('abort', onAbort);
+    });
+    try {
+      return await firstValueFrom(obs.pipe(takeUntil(aborted$)));
+    } catch (e) {
+      if (signal.aborted) throw new DOMException('The request was aborted', 'AbortError');
+      throw e;
+    }
   }
 
   /**

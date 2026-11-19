@@ -69,7 +69,8 @@ import { ModalService } from '../../../modal/modal.service';
 import { ConfirmModalComponent, ConfirmModalData } from '../../../modal/demo/confirm-modal.component';
 import { CustomizeColumnsModalComponent, CustomizeColumnsData } from './customize-columns-modal.component';
 import { PaginationComponent } from '../../pagination';
-import { pageInfoFromResponse, resolvePage } from '../utils/page-info';
+import { pageChrome, pageInfoFromResponse, resolvePage } from '../utils/page-info';
+import { CountState, DeferredCount } from '../utils/deferred-count';
 import { listPageConfig, MAX_PAGE_LIMIT } from '../list-page.config';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../breadcrumbs';
 import { ListPreferencesService } from '../../../../core/layout/services/list-preferences.service';
@@ -1506,6 +1507,8 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
   }
 
   ngOnDestroy(): void {
+    this.deferredCount.dispose();
+    this.listAbort?.abort();
     this.destroy$.next();
     this.destroy$.complete();
     this.subscriptions.unsubscribe();
@@ -1669,6 +1672,8 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
 
     // Cancel previous request
     this.dataSubscription?.unsubscribe();
+    this.listAbort?.abort();
+    this.listAbort = new AbortController();
 
     // Any reload (refresh, page, search, filter, sort) invalidates the tree caches and collapses every node.
     this.resetTree();
@@ -1686,7 +1691,8 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
       // doesn't silently drop search hits against non-existent
       // fields. Tracking-side `visibleColumns()` still includes them
       // so the table renders them locally.
-      columns: ColumnHelper.getApiColumnKeys(this.columns)
+      columns: ColumnHelper.getApiColumnKeys(this.columns),
+      signal: this.listAbort.signal,
     };
 
     // "Scope" excludes page/limit/sort — those operate on the same dataset
@@ -2048,6 +2054,9 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
       this.data().length);
   });
 
+  /** What the pill and footer show (see `pageChrome`). */
+  readonly chrome = computed(() => pageChrome(this.pageInfo(), this.countPending()));
+
   /** Per-page choices, never above what the API accepts. */
   readonly pageSizeOptions = computed(() => {
     const opts = (this.pagination?.pageLimits?.length ? this.pagination.pageLimits : [15, 30, 50, 100]).filter(n => n >= 1 && n <= MAX_PAGE_LIMIT);
@@ -2056,10 +2065,9 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
 
   // ── Deferred total (countOnly) ───────────────────────────────────────────
   /** Optional: returns the total for the same search / filters. Used only while `listPageConfig.useDeferredCount` is on. */
-  @Input() countSource?: (params: ListQueryParams) => Promise<number>;
+  @Input() countSource?: (params: ListQueryParams, signal: AbortSignal) => Promise<number>;
 
-  private readonly countState = signal<{ status: 'idle' | 'pending' | 'ready' | 'failed'; total?: number; sig: string }>({ status: 'idle', sig: '' });
-  private countReq = 0;
+  private readonly countState = signal<CountState>({ status: 'idle', sig: '' });
   private forceCount = false;
 
   /** True while the total is on its way: the pill and the footer show a skeleton, never a spinner that can hang. */
@@ -2067,22 +2075,19 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
 
   private countSignature(): string { return JSON.stringify([this.searchTerm() || '', this.activeFilters()]); }
 
-  private loadCount(params: ListQueryParams, force: boolean): void {
-    if (!this.countSource || !listPageConfig.useDeferredCount) return;
-    const sig = JSON.stringify([params.searchTerm || '', params.filter ?? {}]);
-    const st = this.countState();
-    if (!force && st.sig === sig && (st.status === 'ready' || st.status === 'pending')) return;
-    const req = ++this.countReq;                     // a newer request makes any older answer stale
-    this.countState.set({ status: 'pending', sig });
-    this.countSource(params).then(total => {
-      if (req !== this.countReq || sig !== this.countSignature()) return;   // list state changed meanwhile
-      this.countState.set({ status: 'ready', total: Number(total), sig });
-    }).catch(err => {
-      if (req !== this.countReq) return;
-      console.warn('[list-page] total unavailable, continuing with Previous / Next only', err);
-      this.countState.set({ status: 'failed', sig });
-    });
-  }
+  private readonly deferredCount = new DeferredCount<ListQueryParams>({
+    enabled: () => !!this.countSource && listPageConfig.useDeferredCount,
+    fetch: (p, signal) => this.countSource!(p, signal),
+    signature: p => JSON.stringify([p.searchTerm || '', p.filter ?? {}]),
+    currentSignature: () => this.countSignature(),
+    onChange: st => this.countState.set(st),
+    debounceMs: 300,
+  });
+
+  /** Aborts the previous list request when a newer one starts. */
+  private listAbort: AbortController | null = null;
+
+  private loadCount(params: ListQueryParams, force: boolean): void { this.deferredCount.load(params, force); }
 
   /** Total shown in the header pill, grouped ("10,581"). */
   fmtCount(n: number): string { return n.toLocaleString('en-US'); }

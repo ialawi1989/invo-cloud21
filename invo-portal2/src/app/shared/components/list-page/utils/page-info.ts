@@ -91,3 +91,23 @@ export function resolvePage(info: PageInfo, rowsReturned: number): ResolvedPage 
     to: start + rowsReturned,
   };
 }
+
+/** What the pill and the footer show, given the resolved page and whether a total is still on its way. */
+export interface PageChrome {
+  /** Number in the header pill. */
+  pill: boolean;
+  /** Skeleton in the pill and after "Showing 1-15 of". */
+  skeleton: boolean;
+  /** Footer: numbered pages, "of N" and first / last buttons (`full`), or "Showing 1-15" + Previous / Next (`compact`). */
+  footer: 'full' | 'compact';
+  showFirstLast: boolean;
+}
+
+export function pageChrome(p: ResolvedPage, totalPending: boolean): PageChrome {
+  return {
+    pill: !totalPending && p.totalKnown && (p.total ?? 0) > 0,
+    skeleton: totalPending,
+    footer: p.totalKnown || p.pageCount !== null ? 'full' : 'compact',
+    showFirstLast: p.totalKnown || p.pageCount !== null,
+  };
+}

@@ -123,6 +123,8 @@ export interface ListQueryParams {
   };
   filter?: Record<string, any>;
   columns?: string[];
+  /** Aborted when this request is superseded (a newer one starts); pass it to the API call to cancel the XHR. */
+  signal?: AbortSignal;
 }
 
 /**
