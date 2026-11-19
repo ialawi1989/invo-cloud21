@@ -1,0 +1,153 @@
+@if (visible()) {
+<div class="fb" role="group" [attr.aria-label]="'COMMON.LP_ACTIVE_FILTERS' | translate"
+  animate.enter="fb-enter" animate.leave="fb-leave">
+
+  @for (c of chips(); track c.key) {
+  <div class="fb-chip" role="group" [class.fb-chip--draft]="c.draft" [attr.data-key]="c.key"
+    [attr.aria-label]="chipAria(c)" (keydown)="onChipKeydown($event, c)">
+    <button type="button" class="fb-seg fb-seg--field" aria-haspopup="menu"
+      [attr.aria-expanded]="pop()?.kind === 'field' && pop()?.key === c.key"
+      [appTooltip]="c.cfg.label" [attr.aria-label]="('COMMON.LP_CHANGE_FIELD' | translate) + ': ' + c.cfg.label"
+      (click)="openField(c, $event)">
+      <span class="fb-text">{{ c.cfg.label }}</span>
+    </button>
+    <span class="fb-op" aria-hidden="true">{{ c.opLabel }}</span>
+    <button type="button" class="fb-seg fb-seg--value" aria-haspopup="dialog"
+      [attr.aria-expanded]="pop()?.kind === 'value' && pop()?.key === c.key"
+      [appTooltip]="c.draft ? '' : c.valueText"
+      [attr.aria-label]="('COMMON.LP_CHANGE_VALUE' | translate) + ': ' + (c.draft ? ('COMMON.LP_CHOOSE_VALUE' | translate) : c.valueText)"
+      (click)="openValue(c, $event)">
+      <span class="fb-text" [class.fb-text--placeholder]="c.draft">{{ c.draft ? ('COMMON.LP_CHOOSE_VALUE' | translate) : c.valueText }}</span>
+    </button>
+    <button type="button" class="fb-seg fb-x" [appTooltip]="'COMMON.LP_REMOVE_FILTER' | translate"
+      [attr.aria-label]="('COMMON.LP_REMOVE_FILTER' | translate) + ': ' + c.cfg.label"
+      (click)="remove(c)">
+      <svg class="fb-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+  }
+
+  @if (pickableFields().length > 0 || pop()?.kind === 'add') {
+  <button type="button" class="fb-add" aria-haspopup="menu"
+    [appTooltip]="'COMMON.LP_ADD_FILTER' | translate" [attr.aria-label]="'COMMON.LP_ADD_FILTER' | translate"
+    (click)="openAdd($event)">
+    <svg class="fb-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+  }
+
+  <button type="button" class="fb-clear" (click)="clearAll()">{{ 'COMMON.LP_CLEAR_FILTERS' | translate }}</button>
+</div>
+}
+
+<!-- One popover serves every segment: field picker, or the value editor of the chip that opened it. -->
+<ng-template cdkConnectedOverlay
+  [cdkConnectedOverlayOrigin]="pop()?.origin ?? anchor"
+  [cdkConnectedOverlayOpen]="!!pop()"
+  [cdkConnectedOverlayPositions]="positions"
+  [cdkConnectedOverlayHasBackdrop]="true"
+  cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+  (backdropClick)="closePop()"
+  (detach)="closePop(false)">
+  @if (pop(); as p) {
+  <div class="fb-pop" tabindex="-1" (keydown)="onPopKeydown($event)" animate.enter="fb-pop-enter">
+
+    @if (p.kind === 'add' || p.kind === 'field') {
+      <div class="fb-pop__title" id="fb-pop-title">{{ 'COMMON.LP_PICK_FIELD' | translate }}</div>
+      <div role="menu" aria-labelledby="fb-pop-title" class="fb-pop__list">
+        @for (f of pickableFields(); track f.label) {
+        <button type="button" role="menuitem" class="fb-opt" (click)="pickField(f)">
+          <span class="fb-opt__label">{{ f.label }}</span>
+        </button>
+        }
+      </div>
+    }
+
+    @if (p.kind === 'value') {
+      @for (cfg of fields(); track cfg.label) {
+      @if (p.key && (cfg.type === 'date-range' ? cfg.keyFrom : $any(cfg).key) === p.key) {
+        <div class="fb-pop__title">{{ cfg.label }}</div>
+
+        <!-- Static option list: checkboxes for "any of", a single choice otherwise -->
+        @if (isStaticList(cfg)) {
+          <div class="fb-pop__list" [attr.role]="'menu'" [attr.aria-label]="cfg.label">
+            @for (o of options(cfg); track o.value) {
+            <button type="button" class="fb-opt" data-autofocus
+              [attr.role]="isMulti(cfg) ? 'menuitemcheckbox' : 'menuitemradio'"
+              [attr.aria-checked]="isChecked(cfg, o.value)"
+              [class.is-on]="isChecked(cfg, o.value)"
+              (click)="toggleOption(cfg, o)">
+              <span class="fb-opt__mark" [class.fb-opt__mark--radio]="!isMulti(cfg)" aria-hidden="true">
+                @if (isChecked(cfg, o.value)) {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 12.5 10 17.5 19 7"/></svg>
+                }
+              </span>
+              <span class="fb-opt__label">{{ o.label }}</span>
+            </button>
+            }
+          </div>
+        }
+
+        <!-- Async dropdown (departments, categories, tags…): the shared search dropdown, opened straight away -->
+        @else if (cfg.type === 'dropdown') {
+          <div class="fb-pop__body">
+            <app-search-dropdown
+              [loadFn]="$any(cfg.loadFn) || null"
+              [displayWith]="$any(optionLabel)"
+              [compareWith]="$any(optionCompare)"
+              [multiple]="!!cfg.multiple"
+              [value]="dropdownValue(cfg)"
+              (valueChange)="onDropdownPick(cfg, $event)"
+              [placeholder]="cfg.placeholder || ('COMMON.LP_CHOOSE_VALUE' | translate)"
+              [searchable]="true" [clearable]="true"
+              [preferPosition]="cfg.position || 'bottom'" />
+          </div>
+        }
+
+        @else if (cfg.type === 'date-range') {
+          <div class="fb-pop__body fb-pop__grid">
+            <label class="fb-field">
+              <span>{{ 'COMMON.FROM' | translate }}</span>
+              <app-date-picker [value]="rangeFrom(cfg)" (valueChange)="setRange(cfg, 'from', $event)" placeholder="dd/mm/yyyy" displayFormat="dd/MM/yyyy" />
+            </label>
+            <label class="fb-field">
+              <span>{{ 'COMMON.TO' | translate }}</span>
+              <app-date-picker [value]="rangeTo(cfg)" (valueChange)="setRange(cfg, 'to', $event)" placeholder="dd/mm/yyyy" displayFormat="dd/MM/yyyy" />
+            </label>
+          </div>
+        }
+
+        @else if (cfg.type === 'date-preset') {
+          <div class="fb-pop__list" role="menu" [attr.aria-label]="cfg.label">
+            @for (o of presets; track o.code) {
+            <button type="button" class="fb-opt" data-autofocus role="menuitemradio"
+              [attr.aria-checked]="presetChoice(cfg) === o.code || (o.code === 'custom' && showCustom(cfg))"
+              [class.is-on]="presetChoice(cfg) === o.code || (o.code === 'custom' && showCustom(cfg))"
+              (click)="setPreset(cfg, o.code)">
+              <span class="fb-opt__mark fb-opt__mark--radio" aria-hidden="true">
+                @if (presetChoice(cfg) === o.code || (o.code === 'custom' && showCustom(cfg))) {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 12.5 10 17.5 19 7"/></svg>
+                }
+              </span>
+              <span class="fb-opt__label">{{ o.labelKey | translate }}</span>
+            </button>
+            }
+          </div>
+          @if (showCustom(cfg)) {
+          <div class="fb-pop__body fb-pop__grid">
+            <label class="fb-field">
+              <span>{{ 'COMMON.FROM' | translate }}</span>
+              <app-date-picker [value]="customFrom(cfg)" (valueChange)="setCustom(cfg, 'from', $event)" placeholder="dd/mm/yyyy" displayFormat="dd/MM/yyyy" />
+            </label>
+            <label class="fb-field">
+              <span>{{ 'COMMON.TO' | translate }}</span>
+              <app-date-picker [value]="customTo(cfg)" (valueChange)="setCustom(cfg, 'to', $event)" placeholder="dd/mm/yyyy" displayFormat="dd/MM/yyyy" />
+            </label>
+          </div>
+          }
+        }
+      }
+      }
+    }
+  </div>
+  }
+</ng-template>

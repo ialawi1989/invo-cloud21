@@ -21,7 +21,7 @@
   gap: 4px;
   padding: 2px 8px;
   border-radius: 4px;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.4;
   font-weight: 500;
   letter-spacing: 0.01em;
@@ -40,13 +40,14 @@
   // service, etc.) which leans cyan/blue/teal in many hues. The
   // monospace font is the primary differentiator; the muted bg
   // avoids competing with the saturated type pill next to it.
-  &--barcode {
+  &--barcode,
+  &--sku {
     background: var(--ui-surface-2);
     color: var(--ui-text-3);
     border: 1px solid var(--ui-line);
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Cascadia Mono",
       "Roboto Mono", Consolas, "Courier New", monospace;
-    font-size: 10.5px;
+    font-size: 12px;
     font-weight: 600;
   }
 

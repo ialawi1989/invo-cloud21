@@ -81,6 +81,7 @@ export interface DropdownMenuBtnItem {
         [class]="'dmb__trigger ' + (triggerClass || '')"
         [disabled]="disabled"
         [attr.aria-haspopup]="'menu'"
+        [attr.aria-label]="ariaLabel || null"
         [attr.aria-expanded]="open()"
         (click)="toggle($event)">
         <ng-content/>
@@ -304,6 +305,8 @@ export class DropdownMenuBtnComponent {
   @Input() triggerClass: string = '';
   /** Whether to render the dropdown chevron. */
   @Input() chevron: boolean = true;
+  /** Accessible name for icon-only triggers (e.g. the "More actions" kebab). */
+  @Input() ariaLabel = '';
   /** Disable the trigger entirely. */
   @Input() disabled: boolean = false;
 

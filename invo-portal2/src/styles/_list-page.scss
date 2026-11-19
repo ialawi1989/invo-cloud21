@@ -1,0 +1,87 @@
+// Shared controls for <app-list-page> and the content pages project into it (header actions, row kebabs).
+// Sizes come from the density tokens that <app-list-page> declares on its host (--lp-control-h, --lp-gap, ...);
+// colours come from the global --ui-* tokens, so dark mode needs no change here.
+// Children never carry margins: spacing is the container's gap / padding.
+
+.lp-btn,
+.lp-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--lp-gap, 8px);
+  box-sizing: border-box;
+  height: var(--lp-control-h, 36px);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--ui-text, #0f172a);
+  background: var(--ui-surface, #fff);
+  border: 1px solid var(--ui-line-strong, #cbd5e1);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 150ms ease, border-color 150ms ease, opacity 150ms ease;
+
+  &:hover:not(:disabled) { background: var(--ui-hover, #f1f5f9); }
+  &:focus-visible { outline: 2px solid var(--ui-brand-t700, #207484); outline-offset: 2px; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+  &[aria-busy='true'] { cursor: progress; }
+}
+
+.lp-btn { padding: 0 12px; }
+
+// Square: same height as every other control.
+.lp-icon-btn {
+  width: var(--lp-control-h, 36px);
+  padding: 0;
+  > svg { width: 20px; height: 20px; flex: 0 0 auto; }
+}
+
+// The only primary (teal) button on a page. The fill is the darker brand token so label text keeps >= 4.5:1.
+.lp-btn--primary {
+  color: var(--ui-on-accent, #fff);
+  background: var(--ui-brand-t700, #207484);
+  border-color: var(--ui-brand-t700, #207484);
+  padding: 0 16px;
+  &:hover:not(:disabled) { background: var(--ui-brand-t800, #1d5d6b); border-color: var(--ui-brand-t800, #1d5d6b); }
+}
+
+.lp-btn--danger {
+  color: var(--ui-red-text, #b91c1c);
+  border-color: var(--ui-red-soft-2, #fecaca);
+  &:hover:not(:disabled) { background: var(--ui-red-soft, #fef2f2); }
+}
+
+// Row-level kebab / action buttons keep their own size but get a 44px hit area on touch screens.
+.lp-row-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  color: var(--ui-muted, #64748b);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease;
+  &:hover { background: var(--ui-hover, #f1f5f9); color: var(--ui-text, #0f172a); }
+  &:focus-visible { outline: 2px solid var(--ui-brand-t700, #207484); outline-offset: 1px; }
+  > svg { width: 18px; height: 18px; }
+}
+
+@media (pointer: coarse) {
+  .lp-btn, .lp-icon-btn { min-height: 44px; }
+  .lp-icon-btn { min-width: 44px; }
+  .lp-row-btn { width: 44px; height: 44px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-btn, .lp-icon-btn, .lp-row-btn { transition: none; }
+}
+
+// Below ~900px the secondary toolbar buttons (Sort, Columns) collapse to icon-only; search stays.
+@media (max-width: 900px) {
+  .lp-btn--collapsible { width: var(--lp-control-h, 36px); padding: 0; }
+  .lp-btn--collapsible .lp-btn__label { display: none; }
+}

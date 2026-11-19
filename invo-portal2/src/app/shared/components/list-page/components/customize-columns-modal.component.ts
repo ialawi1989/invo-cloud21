@@ -7,6 +7,7 @@ import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-
 import { MODAL_DATA, MODAL_REF } from '../../../modal/modal.tokens';
 import { ModalRef } from '../../../modal/modal.service';
 import { TableColumn } from '../interfaces/list-page.types';
+import { TooltipDirective } from '../../../directives/tooltip.directive';
 
 export interface CustomizeColumnsData {
   columns: TableColumn[];
@@ -22,7 +23,7 @@ interface DisplayColumn extends TableColumn {
 @Component({
   selector: 'app-customize-columns-modal',
   standalone: true,
-  imports: [DragIconComponent, CommonModule, FormsModule, DragDropModule, TranslateModule],
+  imports: [DragIconComponent, CommonModule, FormsModule, DragDropModule, TranslateModule, TooltipDirective],
   template: `
     <!-- Header -->
     <div class="px-6 pt-6 pb-4">
@@ -33,7 +34,7 @@ interface DisplayColumn extends TableColumn {
     <!-- Body -->
     <div class="px-4 pb-4 overflow-y-auto flex-1 min-h-0">
       <div cdkDropList (cdkDropListDropped)="onDrop($event)" class="flex flex-col divide-y divide-slate-100">
-        @for (item of displayColumns(); track item.key) {
+        @for (item of displayColumns(); track item.key; let i = $index) {
           <!-- Row wrapper. Locked rows are not draggable — they stay at the
                top so sticky-column positioning in the table holds. -->
           <div cdkDrag
@@ -102,9 +103,27 @@ interface DisplayColumn extends TableColumn {
 
               <!-- Lock icon (right side) -->
               @if (item.locked) {
-                <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                 </svg>
+              } @else {
+                <!-- Keyboard / single-pointer alternative to dragging (WCAG 2.5.7). -->
+                <span class="cc-move">
+                  <button type="button" class="cc-move__btn"
+                    [disabled]="!canMove(displayColumns(), i, -1)"
+                    (click)="moveTop(i, -1); $event.stopPropagation()"
+                    [appTooltip]="'COMMON.MOVE_UP' | translate"
+                    [attr.aria-label]="('COMMON.MOVE_UP' | translate) + ': ' + item.label">
+                    <svg class="cc-move__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 15 12 9 18 15"/></svg>
+                  </button>
+                  <button type="button" class="cc-move__btn"
+                    [disabled]="!canMove(displayColumns(), i, 1)"
+                    (click)="moveTop(i, 1); $event.stopPropagation()"
+                    [appTooltip]="'COMMON.MOVE_DOWN' | translate"
+                    [attr.aria-label]="('COMMON.MOVE_DOWN' | translate) + ': ' + item.label">
+                    <svg class="cc-move__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+                  </button>
+                </span>
               }
 
               <!-- SubFields expand -->
@@ -129,7 +148,7 @@ interface DisplayColumn extends TableColumn {
                 cdkDropList
                 [cdkDropListData]="item.groupedItems"
                 (cdkDropListDropped)="onChildDrop(item, $event)">
-                @for (child of item.groupedItems; track child.key; let first = $first) {
+                @for (child of item.groupedItems; track child.key; let first = $first; let ci = $index) {
                   <!-- Locked children cannot be dragged. -->
                   <div cdkDrag
                     [cdkDragDisabled]="!!child.locked"
@@ -181,9 +200,26 @@ interface DisplayColumn extends TableColumn {
                     }
                     <!-- Lock icon (right) -->
                     @if (child.locked) {
-                      <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                       </svg>
+                    } @else {
+                      <span class="cc-move">
+                        <button type="button" class="cc-move__btn"
+                          [disabled]="!canMove(item.groupedItems!, ci, -1)"
+                          (click)="moveChild(item, ci, -1); $event.stopPropagation()"
+                          [appTooltip]="'COMMON.MOVE_UP' | translate"
+                          [attr.aria-label]="('COMMON.MOVE_UP' | translate) + ': ' + (child.headerLabel || child.key)">
+                          <svg class="cc-move__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 15 12 9 18 15"/></svg>
+                        </button>
+                        <button type="button" class="cc-move__btn"
+                          [disabled]="!canMove(item.groupedItems!, ci, 1)"
+                          (click)="moveChild(item, ci, 1); $event.stopPropagation()"
+                          [appTooltip]="'COMMON.MOVE_DOWN' | translate"
+                          [attr.aria-label]="('COMMON.MOVE_DOWN' | translate) + ': ' + (child.headerLabel || child.key)">
+                          <svg class="cc-move__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+                        </button>
+                      </span>
                     }
                   </div>
                 }
@@ -255,6 +291,19 @@ interface DisplayColumn extends TableColumn {
         border-radius: 10px; min-height: 44px; opacity: .5;
         overflow: hidden;
       }
+      .cc-move { display: inline-flex; flex: 0 0 auto; gap: 2px; }
+      .cc-move__btn {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 28px; height: 28px; border-radius: 8px;
+        color: var(--ui-muted, #64748b); background: transparent;
+        transition: background-color 150ms ease, color 150ms ease;
+      }
+      .cc-move__btn:hover:not(:disabled) { background: var(--ui-hover, #f1f5f9); color: var(--ui-text, #0f172a); }
+      .cc-move__btn:focus-visible { outline: 2px solid var(--ui-brand-t700, #207484); outline-offset: 1px; }
+      .cc-move__btn:disabled { opacity: .35; cursor: not-allowed; }
+      .cc-move__icon { width: 16px; height: 16px; }
+      @media (pointer: coarse) { .cc-move__btn { width: 44px; height: 44px; } }
+      @media (prefers-reduced-motion: reduce) { .cc-move__btn { transition: none; } }
       .cdk-drag-animating { transition: transform 200ms ease; }
       .cdk-drop-list-dragging .cdk-drag { transition: transform 200ms ease; }
     </style>
@@ -330,6 +379,28 @@ export class CustomizeColumnsModalComponent {
     if (items[event.previousIndex]?.locked) return;
     if (items[event.currentIndex]?.locked)  return;
     moveItemInArray(items, event.previousIndex, event.currentIndex);
+    this.displayColumns.set([...this.displayColumns()]);
+  }
+
+  /** True when the item at `index` can swap with its neighbour in `delta` direction (locked slots are fixed). */
+  canMove(list: { locked?: boolean }[], index: number, delta: -1 | 1): boolean {
+    const target = list[index + delta];
+    return !!target && !target.locked && !list[index]?.locked;
+  }
+
+  /** Move a top-level column one step (keyboard alternative to dragging). */
+  moveTop(index: number, delta: -1 | 1): void {
+    const cols = [...this.displayColumns()];
+    if (!this.canMove(cols, index, delta)) return;
+    moveItemInArray(cols, index, index + delta);
+    cols.forEach((col, i) => col.order = i);
+    this.displayColumns.set(cols);
+  }
+
+  /** Move a grouped child one step within its group. */
+  moveChild(parent: DisplayColumn, index: number, delta: -1 | 1): void {
+    if (!parent.groupedItems || !this.canMove(parent.groupedItems, index, delta)) return;
+    moveItemInArray(parent.groupedItems, index, index + delta);
     this.displayColumns.set([...this.displayColumns()]);
   }
 

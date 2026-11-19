@@ -46,6 +46,7 @@
   --ui-amber-text: #b45309;
   --ui-green-text: #15803d;
   --ui-brand-text: #2691a4;
+  --ui-on-accent: #ffffff; // text on a brand-t700 fill (white on #207484 = 5.4:1)
   --ui-orange-text: #c2410c;
   --ui-brand-t600: #2691a4;
   --ui-brand-t700: #207484;
@@ -1059,6 +1060,7 @@ html.app-dark {
   --ui-green-text: #89d185;
   --ui-orange-text: #e9a56b;
   --ui-brand-text: #4fc3d6;
+  --ui-on-accent: #0b1f24; // dark text on the lighter dark-mode accent
   --ui-brand-t600: #4fc3d6;
   --ui-brand-t700: #62cbdc;
   --ui-brand-t800: #7bd4e2;

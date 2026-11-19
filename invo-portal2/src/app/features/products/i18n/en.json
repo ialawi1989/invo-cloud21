@@ -922,7 +922,7 @@
       "NO_TEMPLATES": "No saved label templates yet. Create one in Settings → Label Builder.",
       "NO_PREVIEW": "Pick a template to render a preview."
     },
-    "SEARCH_PLACEHOLDER": "Search products by name, SKU, barcode...",
+    "SEARCH_PLACEHOLDER": "Search products",
     "IMPORT_EXPORT": {
       "GROUP": {
         "FILE": {
@@ -1530,6 +1530,7 @@
     },
     "STOCK": {
       "TITLE": "Stock breakdown",
+      "OUT_OF_STOCK": "Out of stock",
       "TITLE_WITH_NAME": "{{name}} — Stock",
       "BUILD": "Build",
       "BREAK": "Break",

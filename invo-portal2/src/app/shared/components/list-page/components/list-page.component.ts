@@ -71,6 +71,9 @@ import { ListPreferencesService } from '../../../../core/layout/services/list-pr
 import { ListColumnPref } from '../../../../core/layout/services/employee-options.service';
 import { LayoutService } from '../../../../core/layout/services/layout.service';
 import { TooltipDirective } from '../../../directives/tooltip.directive';
+import { ListFilterBarComponent, ListFilterChange } from './list-filter-bar/list-filter-bar.component';
+import { DropdownMenuBtnComponent, DropdownMenuBtnItem } from '../../dropdown-menu-btn/dropdown-menu-btn.component';
+import { SegmentedToggleComponent } from '../../segmented-toggle/segmented-toggle.component';
 
 // Utilities
 import {
@@ -116,7 +119,10 @@ import {
     PaginationComponent,
     BreadcrumbsComponent,
     TranslateModule,
-    TooltipDirective
+    TooltipDirective,
+    ListFilterBarComponent,
+    DropdownMenuBtnComponent,
+    SegmentedToggleComponent
   ],
   templateUrl: './list-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -130,6 +136,22 @@ import {
     :host {
       display: block;
       width: 100%;
+      /* Density tokens - Comfortable by default; the root attribute data-density (My Account > Preferences)
+         switches them for every list. Colours come from the global --ui-* tokens so dark mode needs no change. */
+      --lp-control-h: 36px;
+      --lp-row-py: 14px;
+      --lp-pad-x: 16px;
+      --lp-gap: 8px;
+      --lp-accent: var(--ui-brand-t700, #207484);
+      --lp-on-accent: var(--ui-on-accent, #fff);
+      --lp-accent-soft: var(--ui-brand-soft, #ecfeff);
+      --lp-focus: var(--ui-brand-t700, #207484);
+    }
+    :host-context([data-density="compact"]) {
+      --lp-control-h: 32px;
+      --lp-row-py: 6px;
+      --lp-pad-x: 12px;
+      --lp-gap: 6px;
     }
 
     /* ── Sticky columns (checkbox + primary on the start edge, actions
@@ -274,11 +296,6 @@ import {
          feel crammed against the screen edges. The header supplies the top gap. */
       padding: 0 24px 20px;
       /* Comfortable, Wix-like row rhythm — roomy but not airy. */
-      --row-pad-y: 12px;
-    }
-    .lp-fullbleed thead th {
-      padding-top: 12px !important;
-      padding-bottom: 12px !important;
     }
     /* Let the primary (frozen) column absorb horizontal slack so wide screens
        give the long product name room instead of spreading the middle columns
@@ -290,10 +307,9 @@ import {
        list-sticky-col rule) — a balanced, predictable layout. Users who want
        it wider/narrower drag the header resize handle (persisted per user). */
     /* Page header (H1) — small extra inset on top of the container gutters. */
-    .list-page-container.lp-fullbleed > .mb-6:not(.list-card) {
+    .list-page-container.lp-fullbleed > .lp-head {
       flex: 0 0 auto;
-      padding: 14px 4px 0;
-      margin-bottom: 10px;
+      padding: 14px 4px 12px;
     }
     /* Card edge: the same border and shadow as the form cards (employee form,
        Customers), so lists and forms match. Full-bleed mode below removes it. */
@@ -327,8 +343,8 @@ import {
     }
     /* Pagination is the pinned bottom row — pad it past the iPhone home
        indicator so the controls aren't under the gesture bar. */
-    .lp-fullbleed .list-card > .border-t {
-      padding-bottom: max(16px, env(safe-area-inset-bottom));
+    .lp-fullbleed .list-card > .lp-foot {
+      padding-bottom: max(10px, env(safe-area-inset-bottom));
     }
     .lp-fullbleed .list-card > .relative,
     .lp-fullbleed .list-card > .lp-mcards,
@@ -424,7 +440,7 @@ import {
       transition: background-color 120ms ease;
     }
     .lp-col-resizer:hover::after,
-    .lp-col-resizer:active::after { background: #7fb5bd; }
+    .lp-col-resizer:active::after { background: var(--lp-accent); }
 
     /* Fixed phantom scrollbar — pinned to the real viewport bottom while
        the table is in view. NOTE: position: sticky cannot work here because
@@ -477,9 +493,10 @@ import {
     .list-page-container thead th {
       background: var(--ui-surface-1) !important;
       color: var(--ui-t-4a5163);
-      font-size: 14px;
-      font-weight: 600;
-      padding: 13px 18px !important;
+      font-size: 13px;
+      font-weight: 500;
+      height: calc(var(--lp-control-h) + 8px);
+      padding: 0 var(--lp-pad-x) !important;
       white-space: nowrap;
       border-top: 0 !important;
       border-bottom: 1px solid var(--ui-line) !important;
@@ -496,9 +513,8 @@ import {
     }
 
     /* Body cells. --row-pad-y tunes vertical density in one place. */
-    .list-page-container { --row-pad-y: 12px; }
     .list-page-container tbody td {
-      padding: var(--row-pad-y, 12px) 18px !important;
+      padding: var(--lp-row-py) var(--lp-pad-x) !important;
       font-size: 14px;
       color: var(--ui-t-4a5163);
       white-space: nowrap;
@@ -512,18 +528,39 @@ import {
        Also excluded: the disclosure cell (.list-disclosure-cell) — it holds a
        28px button in a 28px content box, so sub-pixel rounding counts as
        overflow and paints a stray "…" next to the chevron. */
-    .list-page-container tbody td:not(.list-floating-actions):not(.start-0):not(.list-sticky-col):not(.list-disclosure-cell),
-    .list-page-container thead th:not(.list-actions-th):not(.start-0):not(.list-sticky-col):not(.list-disclosure-cell) {
+    .list-page-container tbody td:not(.list-floating-actions):not(.start-0):not(.list-sticky-col):not(.list-disclosure-cell):not(.lp-col-num),
+    .list-page-container thead th:not(.list-actions-th):not(.start-0):not(.list-sticky-col):not(.list-disclosure-cell):not(.lp-col-num) {
       overflow: hidden;
       text-overflow: ellipsis;
+      max-width: var(--lp-text-max, 260px);
+    }
+    /* Numbers (qty, stock value, price, tax): never clipped, end-aligned, readable inside Arabic text. */
+    .list-page-container .lp-col-num {
+      min-width: 112px;
+      text-align: end;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+    .list-page-container td.lp-col-num > span { unicode-bidi: isolate; }
+    /* Stacked rows inside one cell (name + barcode + image toggles): space only the rows that have content,
+       so an empty toggle-only template never adds height (and density tokens stay in charge of row height). */
+    .lp-grow:empty { display: none; }
+    .list-page-container td > .lp-grow:not(:empty):not(:first-child) { margin-top: 4px; }
+    .lp-ellipsis { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .lp-sort-idle { width: 14px; height: 14px; flex: 0 0 auto; color: var(--ui-faint); }
+    /* Keep focused cells clear of the sticky header / first column / actions column (WCAG 2.2 focus not obscured). */
+    .list-page-container .overflow-x-auto {
+      scroll-padding-top: calc(var(--lp-control-h) + 12px);
+      scroll-padding-inline-start: calc(var(--lp-sticky-col-w, 300px) + 48px);
+      scroll-padding-inline-end: var(--lp-actions-w, 184px);
     }
     /* Subtle row dividers (recolour the Tailwind divide-y borders) */
     .list-page-container tbody tr { border-top-color: var(--ui-x-e6e8ee) !important; }
     /* Row hover (override Tailwind hover:bg-slate-50) */
     .list-page-container tbody tr.list-row:hover { background-color: var(--ui-x-f4fbfb) !important; }
     /* Teal accent — checkboxes + link-styled values */
-    .list-page-container input[type="checkbox"] { accent-color: #00aab3; }
-    .list-page-container .list-interactive-cell { color: #00aab3; }
+    .list-page-container input[type="checkbox"] { accent-color: var(--lp-accent); }
+    .list-page-container .list-interactive-cell { color: var(--lp-accent); }
 
     /* Card container — clean rounded corners (clip the inner square-cornered
        scroll area). */
@@ -552,7 +589,7 @@ import {
     .list-page-container th.start-0,
     .list-page-container td.start-0 {
       width: 48px; min-width: 48px; max-width: 48px;
-      padding-left: 16px !important; padding-right: 0 !important;
+      padding-inline: var(--lp-pad-x) 0 !important;
     }
     .list-page-container th.list-sticky-col,
     .list-page-container td.list-sticky-col {
@@ -610,17 +647,82 @@ import {
       color: var(--ui-faint); transition: color 120ms ease, background-color 120ms ease;
     }
     .lp-mcard__chevron:hover { color: var(--ui-brand-text); background: var(--ui-brand-soft); }
-    /* Floating selection bar — lifted clear of any page-level sticky footer
-       via --lp-selbar-offset (set by the host page). */
-    .lp-selbar { bottom: calc(1rem + var(--lp-selbar-offset, 0px)) !important; }
-    @media (min-width: 640px) {
-      .lp-selbar { bottom: calc(1.5rem + var(--lp-selbar-offset, 0px)) !important; }
-    }
     .lp-mcard-detail { border-bottom: 1px solid var(--ui-surface-2); background: var(--ui-surface-1); }
     .lp-skel { background: var(--ui-surface-2); animation: lp-skel-pulse 1.2s ease-in-out infinite; }
     .lp-mcard--skel { cursor: default; }
     .lp-mcard--skel:hover { background: transparent; }
     @keyframes lp-skel-pulse { 50% { opacity: .55; } }
+
+    /* ── Redesign: header / toolbar / bulk bar / footer ─────────────────────── */
+    .lp-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--lp-gap); padding-block-end: 16px; }
+    .lp-head__main { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+    .lp-head__title-row { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .lp-title { font-size: 24px; font-weight: 500; line-height: 1.25; letter-spacing: -0.01em; color: var(--ui-text); }
+    .lp-subtitle { font-size: 14px; color: var(--ui-muted); }
+    .lp-count {
+      flex: 0 0 auto; font-size: 13px; line-height: 1.4; padding: 2px 10px; border-radius: 999px;
+      color: var(--ui-muted); border: 1px solid var(--ui-line-strong); font-variant-numeric: tabular-nums; unicode-bidi: isolate;
+    }
+    .lp-head__actions { display: flex; align-items: center; gap: var(--lp-gap); }
+
+    .lp-toolbar, .lp-bulk {
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;
+      gap: var(--lp-gap); padding: 12px var(--lp-pad-x); background: var(--ui-surface);
+    }
+    .lp-toolbar__start, .lp-toolbar__end { display: flex; align-items: center; flex-wrap: wrap; gap: var(--lp-gap); min-width: 0; }
+    .lp-toolbar__start { flex: 1 1 auto; }
+
+    .lp-search { position: relative; display: flex; align-items: center; flex: 1 1 180px; min-width: 180px; max-width: 300px; }
+    .lp-search__input {
+      width: 100%; height: var(--lp-control-h); padding-inline: 36px 32px; font-size: 14px;
+      color: var(--ui-text); background: var(--ui-field, var(--ui-surface)); border: 1px solid var(--ui-field-border, var(--ui-line-strong)); border-radius: 8px;
+    }
+    .lp-search__input::placeholder { color: var(--ui-placeholder, var(--ui-muted)); }
+    .lp-search__input:hover { border-color: var(--ui-field-border-hover, var(--ui-faint)); }
+    .lp-search__input:focus-visible { outline: 2px solid var(--lp-focus); outline-offset: 1px; border-color: var(--lp-focus); }
+    .lp-search__go, .lp-search__clear {
+      position: absolute; top: 0; bottom: 0; display: inline-flex; align-items: center; justify-content: center;
+      color: var(--ui-muted); background: transparent; border-radius: 8px; cursor: pointer;
+    }
+    .lp-search__go { inset-inline-start: 0; width: 36px; }
+    .lp-search__clear { inset-inline-end: 0; width: 32px; }
+    .lp-search__go:hover, .lp-search__clear:hover { color: var(--ui-text); }
+    .lp-search__go:focus-visible, .lp-search__clear:focus-visible { outline: 2px solid var(--lp-focus); outline-offset: -2px; }
+    .lp-search svg { width: 16px; height: 16px; }
+
+    .lp-ico { width: 18px; height: 18px; flex: 0 0 auto; }
+    .lp-spin { animation: lp-spin 900ms linear infinite; }
+    @keyframes lp-spin { to { transform: rotate(360deg); } }
+    .lp-btn.is-active { background: var(--lp-accent-soft); border-color: var(--lp-accent); }
+    .lp-badge {
+      display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px;
+      font-size: 12px; font-weight: 600; line-height: 1; border-radius: 999px; color: var(--lp-on-accent); background: var(--lp-accent);
+    }
+
+    .lp-seg { display: inline-flex; align-items: center; gap: 2px; height: var(--lp-control-h); padding: 2px; border: 1px solid var(--ui-line-strong); border-radius: 8px; background: var(--ui-surface); }
+    .lp-seg__btn {
+      display: inline-flex; align-items: center; justify-content: center; height: 100%; aspect-ratio: 1; min-width: 28px;
+      color: var(--ui-muted); background: transparent; border-radius: 6px; cursor: pointer; transition: background-color 150ms ease, color 150ms ease;
+    }
+    .lp-seg__btn:hover { background: var(--ui-hover); color: var(--ui-text); }
+    .lp-seg__btn.is-on { background: var(--lp-accent-soft); color: var(--lp-accent); }
+    .lp-seg__btn:focus-visible { outline: 2px solid var(--lp-focus); outline-offset: 1px; }
+    .lp-seg__btn svg { width: 18px; height: 18px; }
+    @media (pointer: coarse) { .lp-seg__btn { min-width: 44px; min-height: 44px; } }
+
+    .lp-bulk { background: color-mix(in srgb, var(--lp-accent) 10%, var(--ui-surface)); border-bottom: 1px solid var(--ui-line); justify-content: flex-start; }
+    .lp-bulk__count { font-size: 14px; font-weight: 600; color: var(--ui-text); }
+    .lp-bulk__actions { display: flex; flex: 1 1 auto; flex-wrap: wrap; align-items: center; gap: var(--lp-gap); }
+
+    .lp-foot { padding: 10px var(--lp-pad-x); border-top: 1px solid var(--ui-line); background: var(--ui-surface); }
+
+    /* Motion: opacity + transform only, 150-200ms; exits are instant (faster than enters) and never block state. */
+    .lp-enter { animation: lp-in 160ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+    @keyframes lp-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+    @media (prefers-reduced-motion: reduce) {
+      .lp-enter, .animate-pulse, .lp-skel { animation: none; }
+      .lp-seg__btn { transition: none; }
+    }
   `]
 })
 export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDestroy {
@@ -833,6 +935,17 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
 
   /** Show loading spinner */
   @Input() loading = false;
+
+  /**
+   * Optional quick-view tabs (right side of the toolbar). Clicking one REPLACES the active filters with the preset;
+   * no tab is selected when the active filters match none. Omit / empty = nothing rendered, no space reserved.
+   */
+  @Input() set quickViews(v: { id: string; label: string; filters: FilterState }[] | null | undefined) { this._quickViews.set(v ?? []); }
+  get quickViews(): { id: string; label: string; filters: FilterState }[] { return this._quickViews(); }
+  private readonly _quickViews = signal<{ id: string; label: string; filters: FilterState }[]>([]);
+
+  /** Plural noun used in the screen-reader result announcement ("Showing 15 of 159 products"). */
+  @Input() resultsNoun = '';
 
   // ══════════════════════════════════════════════════════════════
   // OUTPUTS - Events
@@ -1533,6 +1646,7 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
           }
           if (scopeChanged) this.pruneSelection(response.list);
           this.isLoading.set(false);
+          this.announceTick.update(n => n + 1);
           // Wait for the DOM to flush the new rows before measuring
           // scrollWidth — otherwise the end-edge fade flashes off
           // even when the new data overflows the viewport.
@@ -1546,6 +1660,7 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
           this.isLoading.set(false);
           this.data.set([]);
           if (scopeChanged) this.pruneSelection([]);
+          this.announceTick.update(n => n + 1);
           return of({ list: [], pageCount: 0 });
         })
       )
@@ -1577,6 +1692,87 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
 
   refresh(): void {
     this.loadData();
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // TOOLBAR (redesign): filter bar, sort menu, quick views, announcements
+  // ══════════════════════════════════════════════════════════════
+
+  @ViewChild(ListFilterBarComponent) filterBar?: ListFilterBarComponent;
+
+  /** Bumped after every load so the live region re-announces even when the text is identical. */
+  private readonly announceTick = signal(0);
+
+  /** One atomic polite status message ("Showing 15 of 159 products") — never a bare number. */
+  readonly announcement = computed(() => {
+    const tick = this.announceTick();
+    if (this.isLoading() || tick === 0) return '';
+    const shown = this.data().length;
+    const total = this.totalCount() || shown;
+    const text = shown === 0
+      ? this.translate.instant('COMMON.LP_NO_RESULTS_ANNOUNCE')
+      : this.translate.instant('COMMON.LP_RESULTS_ANNOUNCE', { shown, total, noun: this.resultsNoun }).trim();
+    // A zero-width suffix on alternate loads makes screen readers announce identical consecutive messages.
+    return tick % 2 ? text : text + '​';
+  });
+
+  /** Resolves a filter chip's text; handed to the filter bar. */
+  readonly filterTextFn = (key: string): string => this.getFilterDisplayValue(key);
+
+  /** Total shown in the header pill, grouped ("10,581"). */
+  fmtCount(n: number): string { return n.toLocaleString('en-US'); }
+
+  /** Toolbar "Filter": adds the first chip when there is none; otherwise moves to the filter bar. */
+  async onFilterButton(btn: HTMLElement): Promise<void> {
+    if (this.beforeFilterOpen) await this.beforeFilterOpen();
+    this.filterOpened.emit();
+    if (this.hasActiveFilters()) this.filterBar?.focusFirstChip();
+    else this.filterBar?.startAdd(btn);
+  }
+
+  /** The filter bar edited the filters: same state + API params the filter modal produced. */
+  onInlineFilters(e: ListFilterChange): void {
+    this.filterLabels.set(e.labels);
+    this.applyFilters(e.filters);
+  }
+
+  /** Sort menu: every sortable column; picking one uses the list's own asc -> desc -> off cycle. */
+  readonly sortMenuItems = computed<DropdownMenuBtnItem[]>(() => {
+    const cur = this.sortBy();
+    return this._columns().filter(c => c.sortable).map(c => ({
+      label: c.headerLabel || c.label,
+      click: () => this.onColumnSort(c),
+      checked: cur?.sortValue === c.key,
+      trailing: cur?.sortValue === c.key ? (cur.sortDirection === 'asc' ? 'up' as const : 'down' as const) : undefined,
+    }));
+  });
+
+  /** The Sort button needs sorting enabled and at least one sortable column. */
+  get showSort(): boolean { return !!this.sorting?.enabled && this.sortMenuItems().length > 0; }
+
+  // Quick views
+  readonly quickViewOptions = computed(() =>
+    this._quickViews().map(v => ({ value: v.id, label: v.label, translate: false })));
+
+  /** Id of the quick view whose preset equals the active filters, else a value no tab has (none selected). */
+  readonly activeQuickView = computed(() => {
+    const now = this.normFilters(this.activeFilters());
+    return this._quickViews().find(v => this.normFilters(v.filters) === now)?.id ?? '__none__';
+  });
+
+  applyQuickView(id: string): void {
+    const v = this._quickViews().find(q => q.id === id);
+    if (!v) return;
+    this.filterLabels.set({});
+    this.applyFilters({ ...v.filters });
+  }
+
+  private normFilters(f: FilterState): string {
+    const entries = Object.entries(f ?? {})
+      .filter(([, v]) => !(v == null || v === '' || (Array.isArray(v) && !v.length)))
+      .map(([k, v]) => [k, Array.isArray(v) ? [...v].map(String).sort() : String(v)] as const)
+      .sort(([a], [b]) => a.localeCompare(b));
+    return JSON.stringify(entries);
   }
 
   // ══════════════════════════════════════════════════════════════
@@ -2102,7 +2298,7 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
   /** Alignment class for a column — 'end' right-aligns (numbers:
    *  price, stock, qty) in an RTL-safe way via logical text-end. */
   getAlignClass(column: TableColumn<T>): string {
-    return column.align === 'end' ? 'text-end' : 'text-start';
+    return column.align === 'end' ? 'text-end lp-col-num' : 'text-start';
   }
 
   getRowClass(row: T): string {

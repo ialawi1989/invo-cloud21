@@ -39,6 +39,11 @@ import { buildPageList, PageListEntry } from './pagination-utils';
   standalone: true,
   imports: [CommonModule, SearchDropdownComponent],
   templateUrl: './pagination.component.html',
+  styles: [`
+    /* Active page: darker accent fill so the label keeps >= 4.5:1 (the lighter brand teal is ~3.7:1 with white). */
+    .lp-page-on { background: var(--ui-brand-t700, #207484); color: var(--ui-on-accent, #fff); border-color: var(--ui-brand-t700, #207484); }
+    button:focus-visible { outline: 2px solid var(--ui-brand-t700, #207484); outline-offset: 2px; }
+  `],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PaginationComponent {
