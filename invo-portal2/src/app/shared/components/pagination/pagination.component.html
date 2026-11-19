@@ -5,7 +5,7 @@
     @if (showInfo()) {
       <!-- "Showing X–Y of Z" — hidden on mobile to save space; the page
            numbers already convey position. -->
-      <span class="hidden md:inline">{{ infoText() }}</span>
+      <span class="hidden md:inline-flex items-center gap-2">{{ infoText() }}@if (totalPending()) { <span class="pg-skel" aria-hidden="true"></span> }</span>
     }
 
     @if (showPageSize()) {

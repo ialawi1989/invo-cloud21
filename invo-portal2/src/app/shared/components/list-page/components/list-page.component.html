@@ -11,7 +11,9 @@
       }
       <div class="lp-head__title-row">
         <h1 class="lp-title">{{ pageTitle }}</h1>
-        @if (pageInfo().totalKnown && pageInfo().total! > 0) {
+        @if (countPending()) {
+          <span class="lp-count lp-count--skel" aria-hidden="true"><span class="lp-skel lp-skel--bar"></span></span>
+        } @else if (pageInfo().totalKnown && pageInfo().total! > 0) {
           <span class="lp-count" dir="ltr" [attr.aria-label]="'COMMON.LP_TOTAL_COUNT' | translate:{ count: pageInfo().total }">{{ fmtCount(pageInfo().total!) }}</span>
         }
       </div>
@@ -927,6 +929,8 @@
         [pageCount]="pageInfo().totalKnown ? null : pageInfo().pageCount"
         [hasNext]="pageInfo().hasNext"
         [rowsOnPage]="data().length"
+        [totalPending]="countPending()"
+        [pageSizeOptions]="pageSizeOptions()"
         [disabled]="isLoading()"
         [showFirstLast]="pageInfo().totalKnown"
         (pageChange)="goToPage($event)"

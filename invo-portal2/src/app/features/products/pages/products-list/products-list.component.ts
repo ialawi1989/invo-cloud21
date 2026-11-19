@@ -5,6 +5,7 @@ import { OverlayModule } from '@angular/cdk/overlay';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ListPageComponent } from '@shared/components/list-page/components/list-page.component';
+import { listPageConfig } from '@shared/components/list-page/list-page.config';
 import {
   ListCellTemplateDirective,
   ListRowActionsDirective,
@@ -734,7 +735,7 @@ export class ProductsListComponent implements OnInit {
         // Only these three filters are honoured for children (brands, tags and ids are ignored by the endpoint).
         filter: { departments: f.departments, categories: f.categories, type: f.type },
       });
-      return { list: res.list, total: res.count === undefined || res.count === null ? undefined : Number(res.count) };
+      return { list: res.list, total: res.count === undefined || res.count === null ? undefined : Number(res.count), hasNext: res.hasNext };
     },
     pillLabel: (row, count) => {
       const key = ProductsListComponent.PILL_KEYS[row.type] ?? ProductsListComponent.PILL_KEYS['inventory'];
@@ -767,15 +768,26 @@ export class ProductsListComponent implements OnInit {
         sortDirection: params.sortBy.sortDirection
       } : {},
       filter: this.transformFilters(params.filter || {}),
-      columns: params.columns
+      columns: params.columns,
+      // Rows first: the total comes separately (countProducts) while the deferred-count flag is on.
+      ...(listPageConfig.useDeferredCount ? { skipCount: true } : {}),
     });
 
     return {
       list: response.list,
       count: response.count,
-      pageCount: response.pageCount
+      pageCount: response.pageCount,
+      hasNext: response.hasNext,
     };
   };
+
+  /** Total for the same search and filters (the API's `countOnly`); page, limit and sort don't apply. */
+  countProducts = async (params: ListQueryParams): Promise<number> =>
+    this.productsService.getProductCount({
+      searchTerm: params.searchTerm || '',
+      filter: this.transformFilters(params.filter || {}),
+      columns: params.columns,
+    });
 
   private transformFilters(filters: any): any {
     // `types` is a checkbox-group filter — always serialize as an array. When

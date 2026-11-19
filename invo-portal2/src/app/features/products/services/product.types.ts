@@ -7,12 +7,19 @@ export interface ProductListParams {
   sortBy: { sortValue?: string; sortDirection?: 'asc' | 'desc' };
   filter: { types?: string[]; departments?: string[]; categories?: string[]; tags?: string[] };
   columns?: string[];
+  /** Ask the API not to count (faster); the response then has no `count` / `pageCount`. */
+  skipCount?: boolean;
+  /** Ask for the total only: the response is just `{ count }` and page / limit are ignored. */
+  countOnly?: boolean;
 }
 
 export interface ProductListResponse {
   list: any[];
-  count: number;
-  pageCount: number;
+  /** Absent when the request used `skipCount`. */
+  count?: number;
+  pageCount?: number;
+  /** Whether another page exists (the API provides it; derived by the list when missing). */
+  hasNext?: boolean;
 }
 
 export interface DropdownPage {

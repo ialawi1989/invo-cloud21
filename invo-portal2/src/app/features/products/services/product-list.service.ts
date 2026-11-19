@@ -26,13 +26,30 @@ export class ProductListService {
   private http = inject(HttpClient);
   private baseUrl = environment.backendUrl;
 
+  /** The API answers validation errors with HTTP 200 and `success: false`: that is a failure, not an empty list. */
+  private unwrap(res: any): any {
+    if (res?.success === false) throw new Error(res?.msg || res?.message || 'Request failed');
+    return res?.data;
+  }
+
   async getProductList(params: ProductListParams): Promise<ProductListResponse> {
-    const res = await this.api.request(this.api.post('product/getProductList', params));
+    const data = this.unwrap(await this.api.request(this.api.post('product/getProductList', params)));
     return {
-      list: res?.data?.list || [],
-      count: res?.data?.count || 0,
-      pageCount: res?.data?.pageCount || 0,
+      list: data?.list || [],
+      // Left undefined (not 0) when the API skipped counting, so the list knows the total is unknown.
+      count: data?.count === undefined || data?.count === null ? (params.skipCount ? undefined : 0) : Number(data.count),
+      pageCount: data?.pageCount === undefined || data?.pageCount === null ? (params.skipCount ? undefined : 0) : Number(data.pageCount),
+      hasNext: typeof data?.hasNext === 'boolean' ? data.hasNext : undefined,
     };
+  }
+
+  /** The total for the same search / filters (`countOnly`): page, limit and sort are ignored by the API. */
+  async getProductCount(params: Omit<ProductListParams, 'page' | 'limit' | 'sortBy'>): Promise<number> {
+    const data = this.unwrap(await this.api.request(this.api.post('product/getProductList', { ...params, countOnly: true })));
+    const n = typeof data === 'number' ? data : data?.count;
+    const total = Number(n);
+    if (!Number.isFinite(total)) throw new Error('countOnly returned no count');
+    return total;
   }
 
   /**
@@ -91,11 +108,13 @@ export class ProductListService {
   }
 
   async productChildsList(params: any): Promise<ProductListResponse> {
-    const res = await this.api.request(this.api.post('product/productChildsList', params));
+    const data = this.unwrap(await this.api.request(this.api.post('product/productChildsList', params)));
     return {
-      list: res?.data?.list || [],
-      count: res?.data?.count || 0,
-      pageCount: res?.data?.pageCount || 0,
+      list: data?.list || [],
+      // Child lists are small, so they keep the default response (with count).
+      count: data?.count === undefined || data?.count === null ? undefined : Number(data.count),
+      pageCount: data?.pageCount === undefined || data?.pageCount === null ? undefined : Number(data.pageCount),
+      hasNext: typeof data?.hasNext === 'boolean' ? data.hasNext : undefined,
     };
   }
 

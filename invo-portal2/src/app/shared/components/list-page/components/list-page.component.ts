@@ -70,6 +70,7 @@ import { ConfirmModalComponent, ConfirmModalData } from '../../../modal/demo/con
 import { CustomizeColumnsModalComponent, CustomizeColumnsData } from './customize-columns-modal.component';
 import { PaginationComponent } from '../../pagination';
 import { pageInfoFromResponse, resolvePage } from '../utils/page-info';
+import { listPageConfig, MAX_PAGE_LIMIT } from '../list-page.config';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../breadcrumbs';
 import { ListPreferencesService } from '../../../../core/layout/services/list-preferences.service';
 import { ListColumnPref } from '../../../../core/layout/services/employee-options.service';
@@ -773,6 +774,8 @@ import {
     .lp-tn--status { gap: 8px; min-height: 28px; }
     .lp-node-msg { font-size: 13px; color: var(--ui-muted); }
     .lp-skel--bar { display: inline-block; height: 12px; border-radius: 6px; }
+    .lp-count--skel { display: inline-flex; align-items: center; min-width: 52px; }
+    .lp-count--skel .lp-skel--bar { width: 32px; }
     .lp-mnode { display: flex; align-items: center; gap: 8px; min-height: 40px; padding-block: 6px; padding-inline-end: 14px; border-bottom: 1px solid var(--ui-surface-2); background: color-mix(in srgb, var(--lp-accent) 8%, var(--ui-surface)); }
     .lp-mcard.lp-intree { background-color: color-mix(in srgb, var(--lp-accent) 8%, var(--ui-surface)); }
     @media (prefers-reduced-motion: reduce) { .lp-tbtn, .lp-tbtn svg { transition: none; } }
@@ -1673,8 +1676,8 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
     this.isLoading.set(true);
 
     const params: ListQueryParams = {
-      page: this.currentPage(),
-      limit: this.pageSize(),
+      page: Math.max(1, Math.floor(this.currentPage()) || 1),
+      limit: Math.min(MAX_PAGE_LIMIT, Math.max(1, Math.floor(this.pageSize()) || 1)),
       searchTerm: this.searchTerm() || undefined,
       sortBy: this.sortBy(),
       filter: this.activeFilters(),
@@ -1695,6 +1698,9 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
     });
     const scopeChanged = this._lastScope !== null && this._lastScope !== scope;
     this._lastScope = scope;
+    // Total in parallel (never blocks the rows): new on a search / filter change or a refresh, kept across page / sort.
+    this.loadCount(params, scopeChanged || this.forceCount);
+    this.forceCount = false;
 
     const result = this.dataSource(params);
     const source$ = isObservable(result) ? result : from(Promise.resolve(result));
@@ -1754,6 +1760,7 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
   }
 
   refresh(): void {
+    this.forceCount = true;
     this.loadData();
   }
 
@@ -2034,9 +2041,48 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
   readonly filterTextFn = (key: string): string => this.getFilterDisplayValue(key);
 
   /** Paging facts for the footer, the header pill and the announcements: the only reader of the response's paging fields. */
-  readonly pageInfo = computed(() => resolvePage(
-    { page: this.currentPage(), limit: this.pageSize(), ...this.responseInfo() },
-    this.data().length));
+  readonly pageInfo = computed(() => {
+    const cs = this.countState();
+    return resolvePage(
+      { page: this.currentPage(), limit: this.pageSize(), ...this.responseInfo(), ...(cs.status === 'ready' ? { total: cs.total } : {}) },
+      this.data().length);
+  });
+
+  /** Per-page choices, never above what the API accepts. */
+  readonly pageSizeOptions = computed(() => {
+    const opts = (this.pagination?.pageLimits?.length ? this.pagination.pageLimits : [15, 30, 50, 100]).filter(n => n >= 1 && n <= MAX_PAGE_LIMIT);
+    return opts.length ? opts : [15];
+  });
+
+  // ── Deferred total (countOnly) ───────────────────────────────────────────
+  /** Optional: returns the total for the same search / filters. Used only while `listPageConfig.useDeferredCount` is on. */
+  @Input() countSource?: (params: ListQueryParams) => Promise<number>;
+
+  private readonly countState = signal<{ status: 'idle' | 'pending' | 'ready' | 'failed'; total?: number; sig: string }>({ status: 'idle', sig: '' });
+  private countReq = 0;
+  private forceCount = false;
+
+  /** True while the total is on its way: the pill and the footer show a skeleton, never a spinner that can hang. */
+  readonly countPending = computed(() => this.countState().status === 'pending');
+
+  private countSignature(): string { return JSON.stringify([this.searchTerm() || '', this.activeFilters()]); }
+
+  private loadCount(params: ListQueryParams, force: boolean): void {
+    if (!this.countSource || !listPageConfig.useDeferredCount) return;
+    const sig = JSON.stringify([params.searchTerm || '', params.filter ?? {}]);
+    const st = this.countState();
+    if (!force && st.sig === sig && (st.status === 'ready' || st.status === 'pending')) return;
+    const req = ++this.countReq;                     // a newer request makes any older answer stale
+    this.countState.set({ status: 'pending', sig });
+    this.countSource(params).then(total => {
+      if (req !== this.countReq || sig !== this.countSignature()) return;   // list state changed meanwhile
+      this.countState.set({ status: 'ready', total: Number(total), sig });
+    }).catch(err => {
+      if (req !== this.countReq) return;
+      console.warn('[list-page] total unavailable, continuing with Previous / Next only', err);
+      this.countState.set({ status: 'failed', sig });
+    });
+  }
 
   /** Total shown in the header pill, grouped ("10,581"). */
   fmtCount(n: number): string { return n.toLocaleString('en-US'); }

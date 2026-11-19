@@ -42,6 +42,9 @@ import { buildPageList, PageListEntry } from './pagination-utils';
   styles: [`
     /* Active page: darker accent fill so the label keeps >= 4.5:1 (the lighter brand teal is ~3.7:1 with white). */
     .lp-page-on { background: var(--ui-brand-t700, #207484); color: var(--ui-on-accent, #fff); border-color: var(--ui-brand-t700, #207484); }
+    .pg-skel { display: inline-block; width: 44px; height: 12px; border-radius: 6px; background: var(--ui-surface-2, #f1f5f9); animation: pg-pulse 1.2s ease-in-out infinite; }
+    @keyframes pg-pulse { 50% { opacity: .55; } }
+    @media (prefers-reduced-motion: reduce) { .pg-skel { animation: none; } }
     button:focus-visible { outline: 2px solid var(--ui-brand-t700, #207484); outline-offset: 2px; }
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -102,6 +105,9 @@ export class PaginationComponent {
 
   /** Override the compact label. Tokens: `{page}`. */
   compactFormat = input<string>('Page {page}');
+
+  /** The total is on its way: a small skeleton follows the range ("Showing 1–15 of ▒▒"). */
+  totalPending = input<boolean>(false);
 
   /** Rows on the current page. With no total, the info text then reads "Showing 1–15" (no "of N"). */
   rowsOnPage = input<number | null>(null);

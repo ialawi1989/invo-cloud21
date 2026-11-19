@@ -510,7 +510,7 @@ export class ProductsCollectionsFormComponent implements OnInit, CanLeaveCompone
         const res = await this.products.getProductList({ page, limit: pageSize, searchTerm: search, sortBy: {}, filter: {} });
         return {
           items: res.list.map((p: any) => ({ label: resolveLocalizedName(p, this.translate.currentLang), value: p.name })),
-          hasMore: page * pageSize < res.count,
+          hasMore: page * pageSize < (res.count ?? 0),
         };
       };
     }
