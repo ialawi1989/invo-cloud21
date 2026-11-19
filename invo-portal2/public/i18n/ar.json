@@ -178,6 +178,8 @@
     "LP_FILTER": "تصفية",
     "LP_FILTER_ACTIVE": "تصفية، {{count}} نشطة",
     "LP_SORT": "ترتيب",
+    "LP_SORT_ASC": "تصاعدي",
+    "LP_SORT_DESC": "تنازلي",
     "LP_SORT_BY": "ترتيب حسب",
     "LP_SORT_DEFAULT": "الترتيب الافتراضي",
     "LP_COLUMNS": "الأعمدة",

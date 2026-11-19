@@ -178,6 +178,8 @@
     "LP_FILTER": "Filter",
     "LP_FILTER_ACTIVE": "Filter, {{count}} active",
     "LP_SORT": "Sort",
+    "LP_SORT_ASC": "Ascending",
+    "LP_SORT_DESC": "Descending",
     "LP_SORT_BY": "Sort by",
     "LP_SORT_DEFAULT": "Default order",
     "LP_COLUMNS": "Columns",

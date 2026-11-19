@@ -147,6 +147,13 @@ export interface DropdownMenuBtnItem {
                   <svg class="dmb__item-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                 }
                 <span class="dmb__item-label">{{ item.label | translate }}</span>
+                <!-- Direction of the active choice (e.g. the sort order), at the end of the row. -->
+                @if (item.checked && item.trailing) {
+                  <svg class="dmb__item-icon dmb__item-icon--trailing" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polyline [attr.points]="item.trailing === 'up' ? '18 15 12 9 6 15' : '6 9 12 15 18 9'"/>
+                  </svg>
+                  <span class="sr-only">{{ (item.trailing === 'up' ? 'COMMON.LP_SORT_ASC' : 'COMMON.LP_SORT_DESC') | translate }}</span>
+                }
                 @if (item.children?.length) {
                   <svg class="dmb__item-caret" width="10" height="10" viewBox="0 0 512 512" fill="currentColor"><path d="M158.747 512c13.885 0 27.778-5.45 38.345-16.335L391.6 294.999c20.898-21.591 20.898-56.406 0-77.971L197.092 16.35c-21.023-21.693-55.245-21.818-76.413-.268-21.17 21.53-21.283 56.578-.26 78.271l156.688 161.646-156.688 161.642c-21.018 21.703-20.905 56.748.26 78.301C131.207 506.64 144.979 512 158.747 512z"/></svg>
                 }
