@@ -225,6 +225,10 @@ export class MyAccountComponent implements OnInit, CanLeaveComponent {
     { value: 'dark', label: 'EMPLOYEES.MY_ACCOUNT.PREF_THEME_DARK' },
     { value: 'system', label: 'EMPLOYEES.MY_ACCOUNT.PREF_THEME_SYSTEM' },
   ];
+  readonly densityOptions: SegmentedToggleOption<'comfortable' | 'compact'>[] = [
+    { value: 'comfortable', label: 'EMPLOYEES.MY_ACCOUNT.PREF_DENSITY_COMFORTABLE' },
+    { value: 'compact', label: 'EMPLOYEES.MY_ACCOUNT.PREF_DENSITY_COMPACT' },
+  ];
   readonly weekStartOptions: SegmentedToggleOption<string>[] = [
     { value: '0', label: 'EMPLOYEES.MY_ACCOUNT.PREF_SUNDAY' },
     { value: '1', label: 'EMPLOYEES.MY_ACCOUNT.PREF_MONDAY' },
@@ -242,6 +246,7 @@ export class MyAccountComponent implements OnInit, CanLeaveComponent {
   setPref<K extends keyof EmployeePreferences>(key: K, value: EmployeePreferences[K]): void {
     this.prefs.update(p => ({ ...p, [key]: value }));
     if (key === 'theme') this.userPrefs.previewTheme(value as EmployeePreferences['theme']);
+    if (key === 'density') this.userPrefs.previewDensity(value as EmployeePreferences['density']);
     this.dirtyExtra.set(true);
   }
 
@@ -297,6 +302,8 @@ export class MyAccountComponent implements OnInit, CanLeaveComponent {
   }
 
   async ngOnInit(): Promise<void> {
+    // Leaving the page by any route drops unsaved previews (a saved value has already replaced them).
+    this.destroyRef.onDestroy(() => { this.userPrefs.previewTheme(null); this.userPrefs.previewDensity(null); });
     void this.userPrefs.load().then(() => this.prefs.set({ ...this.userPrefs.prefs() }));
     const id = this.auth.currentEmployee?.id;
     // No signed-in employee id → nothing to edit; bounce to the dashboard.
@@ -461,6 +468,9 @@ export class MyAccountComponent implements OnInit, CanLeaveComponent {
   }
 
   cancel(): void {
+    // Unsaved appearance / density previews are discarded with the rest of the draft.
+    this.userPrefs.previewTheme(null);
+    this.userPrefs.previewDensity(null);
     this.router.navigate(['/dashboard']);
   }
 

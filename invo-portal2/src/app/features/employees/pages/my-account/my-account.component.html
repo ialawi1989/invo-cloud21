@@ -229,6 +229,11 @@
             <label class="field-label">{{ 'EMPLOYEES.MY_ACCOUNT.PREF_WEEK_START' | translate }}</label>
             <app-segmented-toggle [options]="weekStartOptions" [value]="'' + (prefs().firstDayOfWeek ?? 0)" (valueChange)="setPref('firstDayOfWeek', +$event)"/>
           </div>
+          <div class="field">
+            <label class="field-label">{{ 'EMPLOYEES.MY_ACCOUNT.PREF_DENSITY' | translate }}</label>
+            <app-segmented-toggle [options]="densityOptions" [value]="prefs().density ?? 'comfortable'" (valueChange)="setPref('density', $event)"/>
+            <p class="field-hint">{{ 'EMPLOYEES.MY_ACCOUNT.PREF_DENSITY_HINT' | translate }}</p>
+          </div>
         </div>
       </div>
     </section>

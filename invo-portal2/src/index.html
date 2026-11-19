@@ -14,6 +14,8 @@
       var t = localStorage.getItem('invo.theme');
       if (t === 'dark' || (t === 'system' && matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.classList.add('app-dark');
     } catch (e) {}
+    // Table density: last known value, so the first paint already has the right row height (the account's value replaces it once loaded).
+    try { document.documentElement.setAttribute('data-density', localStorage.getItem('invo.density') === 'compact' ? 'compact' : 'comfortable'); } catch (e) { document.documentElement.setAttribute('data-density', 'comfortable'); }
   </script>
 </head>
 <body>
