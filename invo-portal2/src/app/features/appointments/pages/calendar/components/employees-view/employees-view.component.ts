@@ -220,8 +220,8 @@ export class EmployeesViewComponent {
       const upcoming = tasks.filter(t => this.isUpcoming(t)).sort(byTime);
       const previous = tasks.filter(t => !this.isUpcoming(t)).sort((a, b) => byTime(b, a));
       return [
-        { key: 'upcoming', title: 'APPOINTMENTS.LIST.UPCOMING', tint: '#dbe8f6', tasks: upcoming },
-        { key: 'previous', title: 'APPOINTMENTS.LIST.PREVIOUS', tint: '#e5e7eb', tasks: previous },
+        { key: 'upcoming', title: 'APPOINTMENTS.LIST.UPCOMING', tint: 'var(--ui-appt-upcoming)', tasks: upcoming },
+        { key: 'previous', title: 'APPOINTMENTS.LIST.PREVIOUS', tint: 'var(--ui-appt-previous)', tasks: previous },
       ].filter(g => g.tasks.length > 0 || this.filter() === 'all');
     }
 
@@ -235,7 +235,7 @@ export class EmployeesViewComponent {
       .map(employee => ({
       key: employee.id,
       title: employee.name,
-      tint: `color-mix(in srgb, ${employeeColor(employee.id)} 18%, white)`,
+      tint: `color-mix(in srgb, ${employeeColor(employee.id)} 18%, var(--ui-surface))`,
       employee,
       tasks: tasks.filter(t => t.employeeId === employee.id).sort(byTime),
     }));

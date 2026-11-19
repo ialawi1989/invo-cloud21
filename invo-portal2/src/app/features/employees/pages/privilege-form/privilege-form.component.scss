@@ -469,7 +469,7 @@
   font: inherit; cursor: pointer; min-width: 0;
   transition: border-color 120ms ease, box-shadow 120ms ease, background 120ms ease;
   &:hover { border-color: var(--c1); }
-  &--active { border-color: var(--c1); background: var(--tint); box-shadow: 0 0 0 1px var(--c1) inset; }
+  &--active { border-color: var(--c1); background: color-mix(in srgb, var(--c1) 12%, var(--ui-surface)); box-shadow: 0 0 0 1px var(--c1) inset; }
   &__icon {
     flex-shrink: 0; width: 36px; height: 36px; border-radius: 10px; color: #fff;
     display: inline-flex; align-items: center; justify-content: center;
@@ -486,7 +486,7 @@
   @media (max-width: 860px) { flex-direction: column; }
   &__side {
     width: 260px; flex-shrink: 0; padding: 22px 20px;
-    background: linear-gradient(160deg, var(--tint), var(--ui-surface));
+    background: linear-gradient(160deg, color-mix(in srgb, var(--c1) 14%, var(--ui-surface)), var(--ui-surface));
     display: flex; flex-direction: column; gap: 10px; align-items: flex-start;
     @media (max-width: 860px) { width: 100%; }
   }

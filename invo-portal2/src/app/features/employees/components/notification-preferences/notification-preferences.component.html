@@ -15,7 +15,7 @@
       <div class="np__group">
         <div class="np__group-head">
           <span class="np__tile np__tile--{{ g.tone }} np__group-icon" aria-hidden="true">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [innerHTML]="g.icon"></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [innerHTML]="svg(g.icon)"></svg>
           </span>
           <span class="np__group-title">{{ g.title | translate }}</span>
           <button type="button" class="np__link" [disabled]="!enabled() || loading()" (click)="toggleGroup(g)">
@@ -27,7 +27,7 @@
           @for (item of g.items; track item.key) {
             <li class="np__item">
               <span class="np__tile np__tile--{{ item.tone }} np__item-icon" aria-hidden="true">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [innerHTML]="item.icon"></svg>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [innerHTML]="svg(item.icon)"></svg>
               </span>
               <div class="np__item-text">
                 <p class="np__item-title">{{ item.title | translate }}</p>

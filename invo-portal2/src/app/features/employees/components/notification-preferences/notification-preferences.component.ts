@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { TranslateModule } from '@ngx-translate/core';
 import { EmployeeOptionsService } from '@core/layout/services/employee-options.service';
 import { ToastService } from '@shared/components/toast/toast.service';
@@ -70,6 +71,15 @@ const GROUPS: NotifGroup[] = [
 export class NotificationPreferencesComponent implements OnInit {
   private options = inject(EmployeeOptionsService);
   private toast = inject(ToastService);
+  private sanitizer = inject(DomSanitizer);
+  private svgCache = new Map<string, SafeHtml>();
+
+  /** The tile icons are our own constant <path> markup; Angular's sanitizer would strip it from [innerHTML], so mark it trusted. */
+  svg(markup: string): SafeHtml {
+    let v = this.svgCache.get(markup);
+    if (!v) { v = this.sanitizer.bypassSecurityTrustHtml(markup); this.svgCache.set(markup, v); }
+    return v;
+  }
 
   readonly groups = GROUPS;
 

@@ -350,6 +350,8 @@
   --ui-x-e3eef0: #e3eef0;
   --ui-x-b6e6ee: #b6e6ee;
   --ui-x-d5f4fa: #d5f4fa;
+  --ui-x-ffffff: #ffffff;
+  --ui-x-f1f5f9: #f1f5f9;
   --ui-t-212529: #212529;
   --ui-t-2a3042: #2a3042;
   --ui-t-1a1f2e: #1a1f2e;
@@ -484,6 +486,28 @@
   --ui-b-10b981: #10b981;
   --ui-b-ef4444: #ef4444;
   --ui-b-d97706: #d97706;
+  --ui-pt-inventory-bg: #dbeafe;
+  --ui-pt-inventory-fg: #1d4ed8;
+  --ui-pt-serialized-bg: #fce7f3;
+  --ui-pt-serialized-fg: #be185d;
+  --ui-pt-batch-bg: #fef9c3;
+  --ui-pt-batch-fg: #a16207;
+  --ui-pt-kit-bg: #dcfce7;
+  --ui-pt-kit-fg: #15803d;
+  --ui-pt-service-bg: #cffafe;
+  --ui-pt-service-fg: #0e7490;
+  --ui-pt-package-bg: #ffedd5;
+  --ui-pt-package-fg: #c2410c;
+  --ui-pt-menu-item-bg: #ede9fe;
+  --ui-pt-menu-item-fg: #6d28d9;
+  --ui-pt-menu-selection-bg: #fee2e2;
+  --ui-pt-menu-selection-fg: #b91c1c;
+  --ui-pt-tailoring-bg: #ecfccb;
+  --ui-pt-tailoring-fg: #4d7c0f;
+  --ui-pt-matrix-bg: #f1f5f9;
+  --ui-pt-matrix-fg: #475569;
+  --ui-appt-upcoming: #dbe8f6;
+  --ui-appt-previous: #e5e7eb;
 }
 
 @mixin light-tokens {
@@ -820,6 +844,8 @@
   --ui-x-e3eef0: #e3eef0;
   --ui-x-b6e6ee: #b6e6ee;
   --ui-x-d5f4fa: #d5f4fa;
+  --ui-x-ffffff: #ffffff;
+  --ui-x-f1f5f9: #f1f5f9;
   --ui-t-212529: #212529;
   --ui-t-2a3042: #2a3042;
   --ui-t-1a1f2e: #1a1f2e;
@@ -954,6 +980,28 @@
   --ui-b-10b981: #10b981;
   --ui-b-ef4444: #ef4444;
   --ui-b-d97706: #d97706;
+  --ui-pt-inventory-bg: #dbeafe;
+  --ui-pt-inventory-fg: #1d4ed8;
+  --ui-pt-serialized-bg: #fce7f3;
+  --ui-pt-serialized-fg: #be185d;
+  --ui-pt-batch-bg: #fef9c3;
+  --ui-pt-batch-fg: #a16207;
+  --ui-pt-kit-bg: #dcfce7;
+  --ui-pt-kit-fg: #15803d;
+  --ui-pt-service-bg: #cffafe;
+  --ui-pt-service-fg: #0e7490;
+  --ui-pt-package-bg: #ffedd5;
+  --ui-pt-package-fg: #c2410c;
+  --ui-pt-menu-item-bg: #ede9fe;
+  --ui-pt-menu-item-fg: #6d28d9;
+  --ui-pt-menu-selection-bg: #fee2e2;
+  --ui-pt-menu-selection-fg: #b91c1c;
+  --ui-pt-tailoring-bg: #ecfccb;
+  --ui-pt-tailoring-fg: #4d7c0f;
+  --ui-pt-matrix-bg: #f1f5f9;
+  --ui-pt-matrix-fg: #475569;
+  --ui-appt-upcoming: #dbe8f6;
+  --ui-appt-previous: #e5e7eb;
   --color-slate-50: #f8fafc; --color-gray-50: #f8fafc;
   --color-slate-100: #f1f5f9; --color-gray-100: #f1f5f9;
   --color-slate-200: #e2e8f0; --color-gray-200: #e2e8f0;
@@ -982,15 +1030,15 @@
 html.app-dark {
   --ui-bare-bg: transparent; // borderless inputs show the wrapper's colour
   color-scheme: dark; // native controls, scrollbars, date pickers
-  --ui-surface-rgb: 24 24 24;
-  --ui-surface: #181818;
-  --ui-surface-1: #1f1f1f;
-  --ui-surface-2: #2a2d2e;
-  --ui-line: #2b2b2b;
-  --ui-line-strong: #3c3c3c;
-  --ui-ink: #2d2d2d;
-  --ui-ink-2: #333333;
-  --ui-ink-3: #3c3c3c;
+  --ui-surface-rgb: 26 28 31;
+  --ui-surface: #1a1c1f;
+  --ui-surface-1: #16181a;
+  --ui-surface-2: #25282c;
+  --ui-line: #26292d;
+  --ui-line-strong: #343a40;
+  --ui-ink: #2a2e33;
+  --ui-ink-2: #31363b;
+  --ui-ink-3: #3a4046;
   --ui-red-soft: #2a1c1c;
   --ui-red-soft-2: #4a2a2a;
   --ui-amber-soft: #2a2418;
@@ -1000,12 +1048,12 @@ html.app-dark {
   --ui-sky-soft-2: #2a3d4d;
   --ui-brand-soft: #12363d;
   --ui-brand-soft-2: #1d4a54;
-  --ui-text: #cccccc;
-  --ui-text-2: #cccccc;
-  --ui-text-3: #bbbbbb;
-  --ui-text-4: #ababab;
-  --ui-muted: #9d9d9d;
-  --ui-faint: #9a9a9a;
+  --ui-text: #e1e3e6;
+  --ui-text-2: #e1e3e6;
+  --ui-text-3: #c9ccd0;
+  --ui-text-4: #aeb3b9;
+  --ui-muted: #9096a0;
+  --ui-faint: #8a9097;
   --ui-red-text: #f48771;
   --ui-amber-text: #e2c26b;
   --ui-green-text: #89d185;
@@ -1015,19 +1063,19 @@ html.app-dark {
   --ui-brand-t700: #62cbdc;
   --ui-brand-t800: #7bd4e2;
   --ui-brand-t900: #96dde8;
-  --ui-page: #1f1f1f;
-  --ui-elevated: #202020;
-  --ui-elevated-border: #454545;
-  --ui-footer-bg: #181818;
-  --ui-field: #313131;
-  --ui-field-border: #3c3c3c;
-  --ui-field-border-hover: #4a4a4a;
-  --ui-hover: #2a2d2e;
+  --ui-page: #131416;
+  --ui-elevated: #202327;
+  --ui-elevated-border: #3a3f45;
+  --ui-footer-bg: #0e0f10;
+  --ui-field: #1d1f23;
+  --ui-field-border: #30353a;
+  --ui-field-border-hover: #3b4046;
+  --ui-hover: #2a2e33;
   --ui-selected: #12363d;
-  --ui-sidebar: #181818;
-  --ui-topbar: #181818;
-  --ui-placeholder: #8b8b8b;
-  --ui-disabled: #6e6e6e;
+  --ui-sidebar: #0e0f10;
+  --ui-topbar: #0e0f10;
+  --ui-placeholder: #858b92;
+  --ui-disabled: #5f656c;
   --ui-x-ecf7f9: #12363d;
   --ui-x-f4fafb: #1f1f1f;
   --ui-x-e9ecef: #2a2d2e;
@@ -1314,6 +1362,8 @@ html.app-dark {
   --ui-x-e3eef0: #12363d;
   --ui-x-b6e6ee: #1d4a54;
   --ui-x-d5f4fa: #12363d;
+  --ui-x-ffffff: #1f1f1f;
+  --ui-x-f1f5f9: #1f1f1f;
   --ui-t-212529: #cccccc;
   --ui-t-2a3042: #a8b0c7;
   --ui-t-1a1f2e: #a4aecb;
@@ -1448,17 +1498,39 @@ html.app-dark {
   --ui-b-10b981: #0b815a;
   --ui-b-ef4444: #e21313;
   --ui-b-d97706: #ac5f05;
-  --color-slate-50: #1f1f1f; --color-gray-50: #1f1f1f;
-  --color-slate-100: #2a2d2e; --color-gray-100: #2a2d2e;
-  --color-slate-200: #2b2b2b; --color-gray-200: #2b2b2b;
-  --color-slate-300: #3c3c3c; --color-gray-300: #3c3c3c;
-  --color-slate-400: #8b8b8b; --color-gray-400: #8b8b8b;
-  --color-slate-500: #9d9d9d; --color-gray-500: #9d9d9d;
-  --color-slate-600: #ababab; --color-gray-600: #ababab;
-  --color-slate-700: #bbbbbb; --color-gray-700: #bbbbbb;
-  --color-slate-800: #cccccc; --color-gray-800: #cccccc;
-  --color-slate-900: #cccccc; --color-gray-900: #cccccc;
-  --color-slate-950: #e0e0e0; --color-gray-950: #e0e0e0;
+  --ui-pt-inventory-bg: #1d2c42;
+  --ui-pt-inventory-fg: #8ab4f8;
+  --ui-pt-serialized-bg: #3a2030;
+  --ui-pt-serialized-fg: #f0a3c5;
+  --ui-pt-batch-bg: #3a3418;
+  --ui-pt-batch-fg: #e2c26b;
+  --ui-pt-kit-bg: #1c3324;
+  --ui-pt-kit-fg: #89d185;
+  --ui-pt-service-bg: #123a42;
+  --ui-pt-service-fg: #4fc3d6;
+  --ui-pt-package-bg: #3b2616;
+  --ui-pt-package-fg: #f0a56b;
+  --ui-pt-menu-item-bg: #2b2442;
+  --ui-pt-menu-item-fg: #b9a3f0;
+  --ui-pt-menu-selection-bg: #3b1f1f;
+  --ui-pt-menu-selection-fg: #f48771;
+  --ui-pt-tailoring-bg: #2b3517;
+  --ui-pt-tailoring-fg: #b5d36a;
+  --ui-pt-matrix-bg: #2a2d2e;
+  --ui-pt-matrix-fg: #ababab;
+  --ui-appt-upcoming: #1f3042;
+  --ui-appt-previous: #2b2b2b;
+  --color-slate-50: #16181a; --color-gray-50: #16181a;
+  --color-slate-100: #25282c; --color-gray-100: #25282c;
+  --color-slate-200: #26292d; --color-gray-200: #26292d;
+  --color-slate-300: #343a40; --color-gray-300: #343a40;
+  --color-slate-400: #858b92; --color-gray-400: #858b92;
+  --color-slate-500: #9096a0; --color-gray-500: #9096a0;
+  --color-slate-600: #aeb3b9; --color-gray-600: #aeb3b9;
+  --color-slate-700: #c9ccd0; --color-gray-700: #c9ccd0;
+  --color-slate-800: #e1e3e6; --color-gray-800: #e1e3e6;
+  --color-slate-900: #e1e3e6; --color-gray-900: #e1e3e6;
+  --color-slate-950: #f0f2f4; --color-gray-950: #f0f2f4;
   --color-brand-50: #12363d;
   --color-brand-100: #164650;
   --color-brand-200: #1d5b68;
@@ -1486,6 +1558,30 @@ html.app-dark {
   // Rich editor accent: white text on teal needs the darker teal.
   --ricos-custom-settings-action-color: #1f7f90;
   --ricos-custom-action-color: #1f7f90;
+
+  // Tailwind colour families used for tinted chips, alerts and badges (bg-sky-50 text-sky-700 ...):
+  // the pale ends become muted dark washes and the dark ends become readable light text.
+  --color-red-50: #2a1c1c; --color-red-100: #3a2222; --color-red-200: #4a2a2a; --color-red-700: #f48771; --color-red-800: #f9a595; --color-red-900: #fbc3b8;
+  --color-orange-50: #2b2118; --color-orange-100: #3a2a1b; --color-orange-200: #4a3622; --color-orange-700: #f0a56b; --color-orange-800: #f5be94; --color-orange-900: #f9d3b8;
+  --color-amber-50: #2a2418; --color-amber-100: #3a3118; --color-amber-200: #4a3f22; --color-amber-700: #e2c26b; --color-amber-800: #ead38f; --color-amber-900: #f0e0b0;
+  --color-yellow-50: #2a2818; --color-yellow-100: #3a3618; --color-yellow-200: #4a4522; --color-yellow-700: #e0d36b; --color-yellow-800: #e8de8f; --color-yellow-900: #efe8b0;
+  --color-lime-50: #222a18; --color-lime-100: #2d381b; --color-lime-200: #3a4a22; --color-lime-700: #b5d36a; --color-lime-800: #c8de8f; --color-lime-900: #d9e8b0;
+  --color-green-50: #1b2a1f; --color-green-100: #213a28; --color-green-200: #2a4a30; --color-green-700: #89d185; --color-green-800: #a5dca2; --color-green-900: #c0e8be;
+  --color-emerald-50: #1a2a24; --color-emerald-100: #1f3a2f; --color-emerald-200: #274a3b; --color-emerald-700: #6fd1a5; --color-emerald-800: #8fdcb9; --color-emerald-900: #b0e8cf;
+  --color-teal-50: #152a29; --color-teal-100: #1a3a38; --color-teal-200: #214a47; --color-teal-700: #5fd1c4; --color-teal-800: #86dcd2; --color-teal-900: #a8e8e0;
+  --color-cyan-50: #12363d; --color-cyan-100: #164650; --color-cyan-200: #1d5b68; --color-cyan-700: #4fc3d6; --color-cyan-800: #7bd4e2; --color-cyan-900: #a5e3ee;
+  --color-sky-50: #1a2630; --color-sky-100: #1f3040; --color-sky-200: #2a3d4d; --color-sky-700: #6cb6e8; --color-sky-800: #8fc9ef; --color-sky-900: #b4dcf5;
+  --color-blue-50: #1b2638; --color-blue-100: #212f48; --color-blue-200: #2a3d5e; --color-blue-700: #8ab4f8; --color-blue-800: #a8c8fa; --color-blue-900: #c5dbfc;
+  --color-indigo-50: #1f2238; --color-indigo-100: #272b48; --color-indigo-200: #313761; --color-indigo-700: #a3adf5; --color-indigo-800: #bcc3f8; --color-indigo-900: #d2d7fa;
+  --color-violet-50: #231f33; --color-violet-100: #2d2842; --color-violet-200: #3a3158; --color-violet-700: #b9a3f0; --color-violet-800: #ccbcf5; --color-violet-900: #ddd2f8;
+  --color-purple-50: #261f33; --color-purple-100: #31284a; --color-purple-200: #3d3158; --color-purple-700: #c4a3f0; --color-purple-800: #d3bcf5; --color-purple-900: #e1d2f8;
+  --color-fuchsia-50: #2e1f30; --color-fuchsia-100: #3b2640; --color-fuchsia-200: #4a2d52; --color-fuchsia-700: #e8a3f0; --color-fuchsia-800: #eebcf5; --color-fuchsia-900: #f3d2f8;
+  --color-pink-50: #2e1f28; --color-pink-100: #3b2633; --color-pink-200: #4a2d3e; --color-pink-700: #f0a3c5; --color-pink-800: #f5bcd5; --color-pink-900: #f8d2e3;
+  --color-rose-50: #2e1f22; --color-rose-100: #3b262b; --color-rose-200: #4a2d34; --color-rose-700: #f0a3b0; --color-rose-800: #f5bcc5; --color-rose-900: #f8d2d9;
+
+  // The three solid -700 fills (white text on top) keep a dark fill.
+  .bg-red-700, .hover\:bg-red-700:hover { background-color: #b91c1c; }
+  .bg-emerald-700, .hover\:bg-emerald-700:hover { background-color: #047857; }
 
   // Tailwind utilities that name a literal colour.
   .bg-white { background-color: var(--ui-surface); }
@@ -1518,7 +1614,7 @@ html.app-dark {
     &:hover { background: var(--ui-line-strong); color: #fff; }
     &:focus-visible { outline: 2px solid var(--ui-brand-t600); outline-offset: 1px; }
   }
-  .invo-tooltip { background: #2d2d2d; color: #e6e6e6; box-shadow: 0 0 0 1px var(--ui-elevated-border); }
+  .invo-tooltip { background: #2a2e33; color: #e8eaed; box-shadow: 0 0 0 1px var(--ui-elevated-border); }
 
   // ── Forms ───────────────────────────────────────────────────────────
   // Border / hover / focus colours apply to every field (colour only, so a field
@@ -1551,14 +1647,14 @@ html.app-dark {
   .re__btn.is-on { background: var(--ui-selected); border-color: var(--color-brand-600); color: #fff; }
 
   // Checkboxes / radios keep a visible border in both states.
-  input[type="checkbox"]:not(.no-custom) { background: var(--ui-field); border-color: #6e6e6e; }
+  input[type="checkbox"]:not(.no-custom) { background: var(--ui-field); border-color: #6a7077; }
   input[type="checkbox"]:not(.no-custom):checked,
   input[type="checkbox"]:not(.no-custom):indeterminate { background-color: var(--color-brand-600); border-color: var(--color-brand-500); }
   input[type="radio"] { accent-color: var(--color-brand-500); }
 
   // Toggles: visible off track + knob, teal when on.
-  .t-switch { background: #3c3c3c; box-shadow: inset 0 0 0 1px #5a5a5a; }
-  .t-thumb { background: #9d9d9d; box-shadow: none; }
+  .t-switch { background: #343a40; box-shadow: inset 0 0 0 1px #4a5057; }
+  .t-thumb { background: #9096a0; box-shadow: none; }
   .t-row[aria-checked='true'] .t-switch { background: var(--color-brand-600); box-shadow: none; }
   .t-row[aria-checked='true'] .t-thumb { background: #fff; }
 
@@ -1578,18 +1674,35 @@ html.app-dark {
     &:hover:not(:disabled) { background-color: var(--color-brand-700); box-shadow: none; transform: none; }
     &:active:not(:disabled) { background-color: var(--color-brand-800); }
   }
-  // Selected items: tinted background + a 2px teal bar on the leading edge (sidebar and list menus).
-  app-sidebar .menu-row.active, app-sidebar .sub-row.active { position: relative; background: var(--ui-selected); }
-  app-sidebar .menu-row.active::after, app-sidebar .sub-row.active::after,
-  .dmb__item--active::before,
-  .cdk-overlay-pane button[role="option"][aria-selected="true"]::before {
-    content: ''; position: absolute; inset-block: 0; inset-inline-start: 0; width: 2px; background: #32acc1; pointer-events: none;
+  // Floating bulk-action bars were built as "dark bar, light text" (bg-slate-900); the slate flip would
+  // make them a light slab, so they get the overlay surface instead.
+  .lp-selbar, .fixed[class*="bg-slate-900"] {
+    background: var(--ui-elevated); color: var(--ui-text);
+    box-shadow: 0 0 0 1px var(--ui-elevated-border), 0 8px 24px rgba(0, 0, 0, .5);
+    [class*="bg-slate-600"] { background: var(--ui-line-strong); }
+    [class*="text-slate-300"], [class*="text-slate-400"] { color: var(--ui-text-3); }
+    button:hover:not(:disabled) { background: var(--ui-hover); color: #fff; }
   }
+
+  // Status pills (statusClass in shared/utils/status-tone.ts) are solid fills with white text in light mode.
+  // In dark they become muted tinted chips (dark wash + readable tone), like the reference tracker's badges.
+  .rounded-full.bg-slate-600.text-white { background-color: #2a2e33; color: #aeb3b9; }
+  .rounded-full.bg-lime-600.text-white { background-color: #1c3324; color: #89d185; }
+  .rounded-full.bg-amber-400.text-white { background-color: #3a3118; color: #e2c26b; }
+  .rounded-full.bg-cyan-600.text-white { background-color: #12363d; color: #4fc3d6; }
+  .rounded-full.bg-sky-500.text-white { background-color: #1f3040; color: #6cb6e8; }
+  .rounded-full.bg-red-400.text-white { background-color: #3a2222; color: #f48771; }
+  .rounded-full.bg-slate-500.text-white { background-color: #2a2e33; color: #9096a0; }
+  .rounded-full.bg-orange-500.text-white { background-color: #3a2a1b; color: #f0a56b; }
+  .rounded-full.bg-yellow-400.text-slate-900 { background-color: #3a3618; color: #e0d36b; }
+
+  // Selected items (sidebar and list menus): a tinted background only, no edge lines.
+  app-sidebar .menu-row.active, app-sidebar .sub-row.active { background: var(--ui-selected); }
   .dmb__item--active {
-    position: relative; background: var(--ui-selected); color: var(--ui-text);
+    background: var(--ui-selected); color: var(--ui-text);
     &:hover:not(:disabled) { background: var(--ui-selected); color: #fff; }
   }
-  .cdk-overlay-pane button[role="option"][aria-selected="true"] { position: relative; background-color: var(--ui-selected); }
+  .cdk-overlay-pane button[role="option"][aria-selected="true"] { background-color: var(--ui-selected); }
 
   // Teal outline-style actions need the lighter teal to read as text.
   .re__figFootBtn, .rlp__footBtn, .re-gal-add { color: var(--ui-brand-t600); }
@@ -1609,13 +1722,13 @@ html.app-dark {
 
   // Secondary / outline
   .btn-default, .btn-ghost, .btn-outline, .btn-secondary, .btn-cancel {
-    background: transparent; border-color: #3a4452; color: #e6e6e6;
-    &:hover:not(:disabled) { background: var(--ui-hover); border-color: #4a4a4a; }
+    background: transparent; border-color: #3a4046; color: #e1e3e6;
+    &:hover:not(:disabled) { background: var(--ui-hover); border-color: #4a5057; }
     &:focus-visible { outline: 2px solid var(--ui-brand-t600); outline-offset: 2px; }
   }
   // Really disabled: clearly inactive but legible (no opacity fade).
   .btn:disabled, .btn-primary:disabled {
-    background: #2a2d2e; border-color: #3c3c3c; color: #8b8b8b; opacity: 1; box-shadow: none;
+    background: #25282c; border-color: #343a40; color: #8a9097; opacity: 1; box-shadow: none;
   }
   // Icon buttons need a visible hover.
   .icon-btn:hover, .btn-icon:hover, [class*="icon-btn"]:hover:not(:disabled) {
@@ -1631,16 +1744,23 @@ html.app-dark {
   // ── Shell ───────────────────────────────────────────────────────────
   app-sidebar {
     --bg: var(--ui-sidebar); --border: var(--ui-line); --bg-hover: var(--ui-hover); --bg-active: var(--ui-selected);
-    --text: #cccccc; --text-muted: #9d9d9d; --text-on: #ffffff;
+    --text: #c9ccd0; --text-muted: #8f959c; --text-on: #ffffff;
     .sidebar-footer { background: var(--ui-sidebar); backdrop-filter: none; }
+    // Same colour as the page footer next to it, so the sidebar gets a 1px edge (drawn inside, no layout shift).
+    aside.sidebar { box-shadow: inset -1px 0 0 var(--ui-line-strong); }
   }
-  .ffs, .form-footer { background: var(--ui-footer-bg); border-top: 1px solid var(--ui-line); box-shadow: none; backdrop-filter: none; }
+  .ffs, .form-footer { background: var(--ui-footer-bg); border-top: 1px solid var(--ui-line-strong); box-shadow: none; backdrop-filter: none; }
 }
 
 // ── Documents stay light ───────────────────────────────────────────────
 // Paper previews re-declare the light tokens, so a dark page never tints an invoice.
+// The paper component's HOST stays transparent: the pages inside paint their own white, and the gap
+// between pages (and the backdrop behind them) follows the theme.
 html.app-dark app-document-paper,
-html.app-dark app-designer-paper,
+html.app-dark app-designer-paper {
+  @include light-tokens;
+  color: #0f172a; filter: none; opacity: 1;
+}
 html.app-dark .keep-light {
   @include light-tokens;
   background: #fff; color: #0f172a; filter: none; opacity: 1;

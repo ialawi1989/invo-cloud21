@@ -160,7 +160,7 @@
   touch-action: none;
   background: linear-gradient(to right,
     #ff0000 0%,
-    var(--ui-x-ffff00) 17%,
+    #ffff00 17%, /* theme-ok: hue ramp is data, not UI */
     #00ff00 33%,
     #00ffff 50%,
     #0000ff 67%,
