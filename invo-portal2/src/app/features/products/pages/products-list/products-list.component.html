@@ -1,5 +1,5 @@
 <app-list-page
-  style="--lp-actions-w: 150px; --lp-sticky-col-w: 300px; --lp-text-max: 180px"
+  style="--lp-actions-w: 150px; --lp-sticky-col-w: var(--lp-name-col-w, 300px); --lp-text-max: 180px"
   [flexFirstColumn]="true"
   [pageTitle]="'PRODUCTS.TITLE' | translate"
   [columns]="columns"
@@ -11,9 +11,9 @@
   [headerActions]="[]"
   [bulkActions]="bulkActions"
   [selectable]="true"
-  [fitContent]="true"
-  [tree]="treeConfig"
+  [fitContent]="true"  [tree]="treeConfig"
   [countSource]="countProducts"
+  countMode="onDemand"
   [emptyState]="emptyState"
   [entityType]="'product'"
   [loadCustomFieldsFn]="loadCustomFieldsFn"

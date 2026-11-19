@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { pageChrome, pageInfoFromResponse, resolvePage } from './page-info';
+import { onDemandChrome, pageChrome, pageInfoFromResponse, resolvePage } from './page-info';
 
 describe('pageInfoFromResponse', () => {
   it('reads a total from count (bigint strings included)', () => {
@@ -103,5 +103,32 @@ describe('hasNext for child groups ("Show N more")', () => {
     expect(resolvePage({ page: 3, limit: 15, total: 40 }, 10).hasNext).toBe(false);
     expect(resolvePage({ page: 1, limit: 15 }, 15).hasNext).toBe(true);
     expect(resolvePage({ page: 1, limit: 15 }, 7).hasNext).toBe(false);
+  });
+});
+
+describe('onDemandChrome (countMode: onDemand)', () => {
+  const unknownPage = resolvePage({ page: 2, limit: 15, hasNext: true }, 15);
+  const knownPage = resolvePage({ page: 2, limit: 15, total: 10581, hasNext: true }, 15);
+
+  it('unknown: dashed "Count" button, compact footer (Previous / Next only), no first/last', () => {
+    const c = onDemandChrome(unknownPage, 'unknown');
+    expect(c).toMatchObject({ pillKind: 'button', pill: false, skeleton: false, footer: 'compact', showFirstLast: false });
+  });
+
+  it('counting: skeleton pill and footer skeleton, still Previous / Next only', () => {
+    expect(onDemandChrome(unknownPage, 'counting')).toMatchObject({ pillKind: 'skeleton', skeleton: true, footer: 'compact', showFirstLast: false });
+  });
+
+  it('failed: "Retry" pill, compact footer', () => {
+    expect(onDemandChrome(unknownPage, 'failed')).toMatchObject({ pillKind: 'retry', skeleton: false, footer: 'compact', showFirstLast: false });
+  });
+
+  it('known: the number, numbered pages and first / last', () => {
+    expect(onDemandChrome(knownPage, 'known')).toMatchObject({ pillKind: 'number', pill: true, footer: 'full', showFirstLast: true });
+  });
+
+  it('numbered pages never appear before the count is known, even if a total were present', () => {
+    expect(onDemandChrome(knownPage, 'counting').footer).toBe('compact');
+    expect(onDemandChrome(knownPage, 'unknown').showFirstLast).toBe(false);
   });
 });

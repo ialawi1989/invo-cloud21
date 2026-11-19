@@ -479,7 +479,9 @@ interface FavoritePage { label: string; link: string; }
       background: var(--bg);
       display: flex; flex-direction: column;
       transition: width .25s ease;
-      z-index: 1000; overflow: hidden;
+      /* clip, not hidden: hidden is still a scroll container, so focusing or scrolling something inside (or a wide page
+         next to it) could shift the sidebar a few pixels and cut off its logo and icons. clip forbids any offset. */
+      z-index: 1000; overflow: hidden; overflow: clip;
       overscroll-behavior: contain;
     }
     aside.sidebar.collapsed { width: var(--w-col); }

@@ -11,8 +11,20 @@
       }
       <div class="lp-head__title-row">
         <h1 class="lp-title">{{ pageTitle }}</h1>
-        @if (chrome().skeleton) {
-          <span class="lp-count lp-count--skel" aria-hidden="true"><span class="lp-skel lp-skel--bar"></span></span>
+        @if (chrome().pillKind === 'button') {
+          <button type="button" class="lp-count lp-count--btn" (click)="requestCount()"
+            [attr.aria-label]="'COMMON.LP_COUNT_ARIA' | translate:{ noun: resultsNoun }">
+            <svg class="lp-count__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8"/><path d="M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01M8 19h.01M12 19h.01M16 19h.01"/></svg>
+            {{ 'COMMON.LP_COUNT' | translate }}
+          </button>
+        } @else if (chrome().pillKind === 'retry') {
+          <button type="button" class="lp-count lp-count--btn lp-count--danger" (click)="requestCount()"
+            [attr.aria-label]="'COMMON.LP_COUNT_FAILED_ARIA' | translate:{ noun: resultsNoun }">
+            <svg class="lp-count__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+            {{ 'COMMON.LP_RETRY' | translate }}
+          </button>
+        } @else if (chrome().skeleton) {
+          <span class="lp-count lp-count--skel" [attr.aria-busy]="chrome().status === 'counting' ? 'true' : null" [attr.aria-hidden]="chrome().status === 'counting' ? null : 'true'"><span class="lp-skel lp-skel--bar"></span></span>
         } @else if (chrome().pill) {
           <span class="lp-count" dir="ltr" [attr.aria-label]="'COMMON.LP_TOTAL_COUNT' | translate:{ count: pageInfo().total }">{{ fmtCount(pageInfo().total!) }}</span>
         }
@@ -41,6 +53,7 @@
   <!-- Screen-reader result count: one atomic polite message after every filter / sort / page change. -->
   <div class="sr-only" role="status" aria-live="polite" aria-atomic="true">{{ announcement() }}</div>
   <div class="sr-only" role="status" aria-live="polite" aria-atomic="true">{{ treeAnnouncement() }}</div>
+  <div class="sr-only" role="status" aria-live="polite" aria-atomic="true">{{ countAnnouncement() }}</div>
 
   <!-- ══════════════════════════════════════════════════════════════ -->
   <!-- ONE CARD: toolbar, filter bar, table, footer                   -->
@@ -212,11 +225,11 @@
     @if (viewMode() === 'table' && !useMobileCards()) {
     <div class="relative"
       [class.list-has-scroll-start]="stickyColumns && hasScrollStart()"
-      [class.list-has-scroll-end]="stickyColumns && hasScrollEnd()">
+      [class.list-has-scroll-end]="stickyColumns && hasScrollEnd()"
+      [class.lp-overflow-end]="stickyColumns && hasScrollEnd()">
     <div [class.overflow-x-auto]="stickyColumns"
       #scrollHost
-      [style.max-height.px]="stickyColumns && (!isFullBleed || isFitContent) ? scrollMaxHeight() : null"
-      (scroll)="updateScrollState($event.target)">
+      [style.max-height.px]="stickyColumns && (!isFullBleed || isFitContent) ? scrollMaxHeight() : null">
 
       <!-- Loading Skeleton — mirrors the real table's per-column widths
            (colStyle) and w-full so the placeholder aligns with the data that
@@ -410,7 +423,13 @@
                 <div class="lp-tn__body">
                   <ng-container [ngTemplateOutlet]="cellBody" [ngTemplateOutletContext]="{ column: column, row: row }"/>
                 </div>
-                @if (pillText(node); as pill) { <span class="lp-pill">{{ pill }}</span> }
+                @if (pillText(node); as pill) {
+                  <!-- Never truncated: when the cell is short only the icon stays (label in the tooltip + aria-label). -->
+                  <span class="lp-pill" role="img" [attr.aria-label]="pill" [appTooltip]="pill">
+                    <svg class="lp-pill__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg>
+                    <span class="lp-pill__label">{{ pill }}</span>
+                  </span>
+                }
               </div>
               } @else {
                 <ng-container [ngTemplateOutlet]="cellBody" [ngTemplateOutletContext]="{ column: column, row: row }"/>
@@ -932,6 +951,9 @@
         [hasNext]="pageInfo().hasNext"
         [rowsOnPage]="data().length"
         [totalPending]="chrome().skeleton"
+        [countState]="chrome().status"
+        [countLabels]="countLabels()"
+        (countRequest)="requestCount()"
         [pageSizeOptions]="pageSizeOptions()"
         [disabled]="isLoading()"
         [showFirstLast]="chrome().showFirstLast"

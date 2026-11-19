@@ -5,7 +5,21 @@
     @if (showInfo()) {
       <!-- "Showing X–Y of Z" — hidden on mobile to save space; the page
            numbers already convey position. -->
-      <span class="hidden md:inline-flex items-center gap-2">{{ infoText() }}@if (totalPending()) { <span class="pg-skel" aria-hidden="true"></span> }</span>
+      <span class="hidden md:inline-flex items-center gap-2">{{ infoText() }}@switch (countState()) {
+        @case ('unknown') {
+          <button type="button" class="pg-link" (click)="countRequest.emit()" [attr.aria-label]="countLabels().showTotalAria">{{ countLabels().showTotal }}</button>
+        }
+        @case ('counting') {
+          {{ countLabels().of }}<span class="pg-skel" role="status" aria-busy="true" [attr.aria-label]="countLabels().counting"></span>
+        }
+        @case ('failed') {
+          <span class="pg-fail">{{ countLabels().couldntCount }}</span>
+          <button type="button" class="pg-link pg-link--danger" (click)="countRequest.emit()" [attr.aria-label]="countLabels().retryAria">{{ countLabels().retry }}</button>
+        }
+        @default {
+          @if (totalPending()) { <span class="pg-skel" aria-hidden="true"></span> }
+        }
+      }</span>
     }
 
     @if (showPageSize()) {
@@ -52,9 +66,9 @@
         type="button"
         (click)="first()"
         [disabled]="!canPrev()"
-        class="p-2 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+        class="inline-flex items-center justify-center p-2 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
         aria-label="First page">
-        <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="block shrink-0 w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
         </svg>
       </button>
@@ -65,9 +79,9 @@
       type="button"
       (click)="prev()"
       [disabled]="!canPrev()"
-      class="p-2 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+      class="inline-flex items-center justify-center p-2 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
       aria-label="Previous page">
-      <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg class="block shrink-0 w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
       </svg>
     </button>
@@ -102,7 +116,7 @@
 
     <!-- Compact mode: just the current page label -->
     @if (!hasTotal()) {
-      <span class="px-3 py-1.5 text-sm text-slate-600">
+      <span class="inline-flex items-center px-3 min-h-9 text-sm leading-none text-slate-600">
         {{ pageLabel() }}
       </span>
     }
@@ -112,9 +126,9 @@
       type="button"
       (click)="next()"
       [disabled]="!canNext()"
-      class="p-2 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+      class="inline-flex items-center justify-center p-2 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
       aria-label="Next page">
-      <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg class="block shrink-0 w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
       </svg>
     </button>
@@ -125,9 +139,9 @@
         type="button"
         (click)="last()"
         [disabled]="!canNext()"
-        class="p-2 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+        class="inline-flex items-center justify-center p-2 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
         aria-label="Last page">
-        <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="block shrink-0 w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
         </svg>
       </button>

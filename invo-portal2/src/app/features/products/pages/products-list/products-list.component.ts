@@ -49,6 +49,16 @@ import {
 
 import { TooltipDirective } from '@shared/directives/tooltip.directive';
 import { ADD_NEW_ICONS, MORE_ACTIONS_ICONS, MenuIconDef, showMenuIcons } from './products-list-menu-icons';
+/**
+ * Minimum widths of the numeric columns, from the number of characters of the widest value, not a pixel guess:
+ * "BHD -1,234,567.890" is 18 characters, so money columns reserve 18ch (tabular digits) plus the cell's side padding
+ * and are never clipped mid-text. `ch` resolves against the cell's own font, so the values follow the font size.
+ */
+const cellW = (chars: number) => `calc(${chars}ch + 2 * var(--lp-pad-x, 16px))`;
+const MONEY_COL_W = cellW(18);
+const QTY_COL_W = cellW(11);   // "-1,234,567.5"
+const TAX_COL_W = cellW(9);    // "VAT 15.5%"
+
 @Component({
   selector: 'app-products-list',
   standalone: true,
@@ -329,21 +339,21 @@ export class ProductsListComponent implements OnInit {
         key: 'departmentName',
         label: this.lang.instant('PRODUCTS.FIELDS.DEPARTMENT'),
         sortable: true,
-        width: '120px',
+        width: '96px',   // often empty: a narrow default, so the name column gets the slack
         order: 4,
       },
       {
         key: 'categoryName',
         label: this.lang.instant('PRODUCTS.FIELDS.CATEGORY'),
         sortable: true,
-        width: '120px',
+        width: '96px',
         order: 5,
       },
       {
         key: 'brandName',
         label: this.lang.instant('PRODUCTS.FIELDS.BRAND'),
         sortable: false,
-        width: '120px',
+        width: '96px',
         visible: false,
         order: 6,
       },
@@ -356,7 +366,7 @@ export class ProductsListComponent implements OnInit {
         key: 'qty',
         label: this.lang.instant('PRODUCTS.FIELDS.QTY'),
         sortable: true,
-        width: '90px',
+        width: QTY_COL_W,
         customTemplate: true,
         interactive: true,
         align: 'end',
@@ -370,7 +380,7 @@ export class ProductsListComponent implements OnInit {
         // backend can't ORDER BY — sorting it returns "Unknown sort column".
         sortable: false,
         customTemplate: true,
-        width: '130px',
+        width: MONEY_COL_W,
         align: 'end' as const,
         order: 8,
       }] : []),
@@ -379,7 +389,7 @@ export class ProductsListComponent implements OnInit {
         label: this.lang.instant('PRODUCTS.FIELDS.UNIT_COST'),
         sortable: false,
         customTemplate: true,
-        width: '120px',
+        width: MONEY_COL_W,
         align: 'end',
         visible: false,
         order: 9,
@@ -390,7 +400,7 @@ export class ProductsListComponent implements OnInit {
         sortable: true,
         pipe: 'currency' as const,
         pipeArgs: { currency: 'BHD' },
-        width: '110px',
+        width: MONEY_COL_W,
         align: 'end',
         order: 10,
       },
@@ -399,7 +409,7 @@ export class ProductsListComponent implements OnInit {
         label: this.lang.instant('PRODUCTS.FIELDS.TAX'),
         sortable: false,
         customTemplate: true,
-        width: '80px',
+        width: TAX_COL_W,
         order: 11,
       },
       {

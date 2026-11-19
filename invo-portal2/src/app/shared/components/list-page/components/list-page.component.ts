@@ -69,9 +69,11 @@ import { ModalService } from '../../../modal/modal.service';
 import { ConfirmModalComponent, ConfirmModalData } from '../../../modal/demo/confirm-modal.component';
 import { CustomizeColumnsModalComponent, CustomizeColumnsData } from './customize-columns-modal.component';
 import { PaginationComponent } from '../../pagination';
-import { pageChrome, pageInfoFromResponse, resolvePage } from '../utils/page-info';
+import { onDemandChrome, pageChrome, pageInfoFromResponse, resolvePage } from '../utils/page-info';
 import { CountState, DeferredCount } from '../utils/deferred-count';
-import { listPageConfig, MAX_PAGE_LIMIT } from '../list-page.config';
+import { COUNT_TIMEOUT_MS, CountMode, listPageConfig, MAX_PAGE_LIMIT } from '../list-page.config';
+import { OnDemandCount, OnDemandState } from '../utils/on-demand-count';
+import { recordListMetric } from '../utils/list-metrics';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../breadcrumbs';
 import { ListPreferencesService } from '../../../../core/layout/services/list-preferences.service';
 import { ListColumnPref } from '../../../../core/layout/services/employee-options.service';
@@ -142,6 +144,10 @@ import {
     :host {
       display: block;
       width: 100%;
+      /* A flex child (the routed host, the full-bleed shell) must be allowed to be narrower than its content,
+         otherwise a wide table widens the whole page instead of scrolling inside its card. */
+      min-width: 0;
+      max-width: 100%;
       /* Density tokens - Comfortable by default; the root attribute data-density (My Account > Preferences)
          switches them for every list. Colours come from the global --ui-* tokens so dark mode needs no change. */
       --lp-control-h: 36px;
@@ -182,20 +188,21 @@ import {
        Keep the sticky cells opaque so rows underneath don't bleed through
        when the user scrolls horizontally, and match the row hover colour
        so the sticky cells don't look out of place on hover. */
-    .list-sticky-cell {
-      background-color: var(--ui-surface);
+    /* ONE opaque colour per row, in every state: --lp-row-bg. The row, the frozen cells (start + Actions) and the end of
+       the edge fades all read it, so they can never disagree. It is always an opaque colour (a tint mixed with the
+       surface), never a translucent one: scrolling content must not show through a frozen cell. */
+    tr { --lp-row-bg: var(--ui-surface); }
+    tr.list-row:hover { --lp-row-bg: var(--ui-x-f4fbfb); }
+    tr.list-row-expanded { --lp-row-bg: var(--ui-x-ecfafd); }
+    tr.list-child-row { --lp-row-bg: var(--ui-x-f5fdfd); }
+    tr.list-child-row:hover { --lp-row-bg: var(--ui-x-ecfafd); }
+    tr.lp-intree { --lp-row-bg: var(--lp-tint); }
+    tr.lp-intree.list-row:hover { --lp-row-bg: color-mix(in srgb, var(--lp-accent) 18%, var(--ui-surface)); }
+    .list-sticky-cell,
+    .list-floating-actions {
+      background-color: var(--lp-row-bg);
       transition: background-color 150ms ease;
     }
-    tr.list-row:hover .list-sticky-cell { background-color: var(--ui-x-f4fbfb); }
-    tr.list-row-expanded .list-sticky-cell { background-color: var(--ui-x-ecfafd); }
-
-    /* Expanded child rows: keep their frozen (start + actions) cells opaque
-       and tinted to match the child row so scrolling content tucks cleanly
-       under them instead of bleeding over the sticky columns. */
-    tr.list-child-row .list-sticky-cell,
-    tr.list-child-row .list-floating-actions { background-color: var(--ui-x-f5fdfd); }
-    tr.list-child-row:hover .list-sticky-cell,
-    tr.list-child-row:hover .list-floating-actions { background-color: var(--ui-x-ecfafd); }
 
     /* Drop shadow CAST BY the frozen start (primary) column ONTO the scrolling
        content to its right — sits just outside the cell's end edge
@@ -225,40 +232,35 @@ import {
       background: linear-gradient(to left, rgba(15, 23, 42, 0.13), rgba(15, 23, 42, 0.04) 45%, rgba(15, 23, 42, 0));
     }
 
-    /* Pinned Actions — TRANSPARENT (Wix-style): only the buttons inside float
-       to the end edge over the row content; the cell itself has no background,
-       so it doesn't read as a solid frozen column. The buttons carry their own
-       white pill/shadow for legibility. */
-    .list-floating-actions { background: transparent; }
-    /* While columns still scroll under the pinned Actions, fill it so their text can't collide with the buttons. */
-    .list-has-scroll-end tr.list-row .list-floating-actions { background-color: var(--ui-surface); }
-    .list-has-scroll-end tr.list-row:hover .list-floating-actions { background-color: var(--ui-x-f4fbfb); }
-    .list-has-scroll-end tr.list-row-expanded .list-floating-actions { background-color: var(--ui-x-ecfafd); }
-
-    /* ── End-edge shadow ────────────────────────────────────────────────
-       Placed at the table's right EDGE (inside the pinned Actions cell, no
-       translate, no z-index so it sits BELOW the buttons but above the content
-       scrolling under the transparent cell). It fades that content out at the
-       edge and marks "more columns this way". Shown only while there is content
-       still to scroll toward the end (.list-has-scroll-end). */
+    /* Pinned Actions. The CELL is solid (the row's own colour, --lp-row-bg), so the kebab and the hover "Edit" pill
+       always sit on an opaque surface and the reserved --lp-actions-w never changes. Content that scrolls under it does
+       not stop at a hard edge: a gradient just OUTSIDE the cell's inline-start edge fades from transparent into the
+       row colour. It only shows while something is actually hidden under the column (.lp-overflow-end), so a table
+       that fits has no fade over its last column. pointer-events: none: it never blocks a click or covers a focus ring
+       (scroll-padding below also keeps focused cells clear of it). */
+    .list-floating-actions,
+    .list-actions-th { --lp-fade-w: 40px; --lp-fade-dir: to right; }
+    :host-context([dir="rtl"]) .list-floating-actions,
+    :host-context([dir="rtl"]) .list-actions-th { --lp-fade-dir: to left; }
     .list-floating-actions::before,
     .list-actions-th::before {
       content: "";
       position: absolute;
       top: 0;
       bottom: 0;
-      inset-inline-end: 0;
-      width: 32px;
-      background: linear-gradient(to left, rgba(15, 23, 42, 0.16), rgba(15, 23, 42, 0));
+      inset-inline-start: calc(-1 * var(--lp-fade-w));
+      inline-size: var(--lp-fade-w);
+      background: linear-gradient(var(--lp-fade-dir), transparent, var(--lp-row-bg));
       pointer-events: none;
       opacity: 0;
-      transition: opacity 0.15s ease;
+      transition: opacity 150ms ease;
     }
-    .list-has-scroll-end .list-floating-actions::before,
-    .list-has-scroll-end .list-actions-th::before { opacity: 1; }
-    :host-context([dir="rtl"]) .list-floating-actions::before,
-    :host-context([dir="rtl"]) .list-actions-th::before {
-      background: linear-gradient(to right, rgba(15, 23, 42, 0.16), rgba(15, 23, 42, 0));
+    /* The header cell fades into the header colour, not the row colour. */
+    .list-actions-th::before { background: linear-gradient(var(--lp-fade-dir), transparent, var(--ui-surface-1)); }
+    .lp-overflow-end .list-floating-actions::before,
+    .lp-overflow-end .list-actions-th::before { opacity: 1; }
+    @media (prefers-reduced-motion: reduce) {
+      .list-floating-actions::before, .list-actions-th::before, .list-sticky-cell, .list-floating-actions { transition: none; }
     }
 
     /* The table body scrolls INSIDE this host (both axes). Its height is capped
@@ -575,7 +577,7 @@ import {
     .list-page-container .overflow-x-auto {
       scroll-padding-top: var(--lp-th-h);
       scroll-padding-inline-start: calc(var(--lp-sticky-col-w, 300px) + 48px);
-      scroll-padding-inline-end: var(--lp-actions-w, 184px);
+      scroll-padding-inline-end: calc(var(--lp-actions-w, 184px) + 40px);   /* + the Actions fade (--lp-fade-w) */
     }
     /* Subtle row dividers (recolour the Tailwind divide-y borders) */
     .list-page-container tbody tr { border-top-color: var(--ui-x-e6e8ee) !important; }
@@ -699,6 +701,14 @@ import {
       flex: 0 0 auto; font-size: 13px; line-height: 1.4; padding: 2px 10px; border-radius: 999px;
       color: var(--ui-muted); border: 1px solid var(--ui-line-strong); font-variant-numeric: tabular-nums; unicode-bidi: isolate;
     }
+    /* On-demand total: "Count" (dashed) and "Retry" (danger) pills are buttons. */
+    .lp-count--btn { display: inline-flex; align-items: center; gap: 6px; background: transparent; border-style: dashed; font-family: inherit; cursor: pointer; }
+    .lp-count--btn:hover { background: var(--ui-surface-2); color: var(--ui-text); }
+    .lp-count--btn:focus-visible { outline: 2px solid var(--ui-brand-t700); outline-offset: 2px; }
+    .lp-count--danger { color: var(--ui-red-text); border-color: var(--ui-red-text); border-style: solid; }
+    .lp-count--danger:hover { background: var(--ui-red-soft); color: var(--ui-red-text); }
+    .lp-count__icon { inline-size: 14px; block-size: 14px; flex: 0 0 auto; }
+    @media (pointer: coarse) { .lp-count--btn { min-block-size: 44px; min-inline-size: 44px; justify-content: center; } }
     .lp-head__actions { display: flex; align-items: center; gap: var(--lp-gap); }
 
     .lp-toolbar, .lp-bulk {
@@ -756,7 +766,8 @@ import {
     /* ── Row tree ───────────────────────────────────────────────────────────────
        Every logical property, so indentation, connector, bar and chevron mirror in RTL. 24px per level; the
        structure also reads without colour (indent + connector). */
-    .lp-tn { position: relative; display: flex; align-items: center; gap: 4px; min-width: 0; padding-inline-start: calc(min(var(--lp-level, 0), 3) * 24px); }
+    .lp-tn { position: relative; display: flex; align-items: center; gap: 4px; min-width: 0; padding-inline-start: calc(min(var(--lp-level, 0), 3) * 24px);
+      container: lp-tn / inline-size; }
     .lp-tn__body { flex: 0 1 auto; min-width: 0; overflow: hidden; }
     .lp-tn__body .lp-grow { min-width: 0; flex-wrap: nowrap; }
     .lp-tslot { flex: 0 0 20px; width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; }
@@ -773,9 +784,22 @@ import {
     @media (pointer: coarse) { .lp-tbtn::before { content: ''; position: absolute; inset: -12px; } }
     .lp-tbtn--card { flex: 0 0 auto; width: 28px; height: 28px; }
 
+    /* The children pill never truncates ("U..."): it keeps its size, and when the cell is short it shows only its icon
+       (the label lives in the tooltip + aria-label). The name cell is a size container, so this follows the COLUMN width. */
     .lp-pill {
-      flex: 0 1 auto; min-width: 0; max-width: 34%; overflow: hidden; text-overflow: ellipsis; font-size: 12px; line-height: 1.4; padding: 1px 8px; border-radius: 999px; white-space: nowrap;
+      flex: 0 0 auto; display: inline-flex; align-items: center; gap: 4px;
+      font-size: 12px; line-height: 1.4; padding: 1px 8px; border-radius: 999px; white-space: nowrap;
       color: var(--ui-muted); border: 1px solid var(--ui-line-strong);
+    }
+    .lp-pill__icon { inline-size: 12px; block-size: 12px; flex: 0 0 auto; }
+    @container lp-tn (max-width: 290px) {
+      .lp-pill { padding-inline: 5px; }
+      .lp-pill__label { display: none; }
+    }
+    /* Compact keeps name + unit + SKU chip on ONE line, so the label needs more room before it gives way. */
+    @container lp-tn (max-width: 470px) {
+      :host-context([data-density="compact"]) .lp-pill { padding-inline: 5px; }
+      :host-context([data-density="compact"]) .lp-pill__label { display: none; }
     }
     /* Connector: an L from the parent's slot down to this row (logical borders + radius, so it mirrors). */
     .lp-conn {
@@ -1133,7 +1157,60 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
    *  container — used by the data-change effect to recompute the
    *  scroll-affordance state when rows are added/removed and on
    *  window resize. */
-  @ViewChild('scrollHost') scrollHost?: ElementRef<HTMLElement>;
+  private _scrollHost?: ElementRef<HTMLElement>;
+  @ViewChild('scrollHost') set scrollHost(ref: ElementRef<HTMLElement> | undefined) {
+    if (ref?.nativeElement === this._scrollHost?.nativeElement) { this._scrollHost = ref; return; }
+    this.unbindScrollHost();
+    this._scrollHost = ref;
+    if (ref) this.bindScrollHost(ref.nativeElement);
+  }
+  get scrollHost(): ElementRef<HTMLElement> | undefined { return this._scrollHost; }
+
+  // ── Scroll-state tracking (drives the Actions fade: .lp-overflow-end) ─────────────────────────
+  // The host sits behind an @if (it is replaced when the view mode changes), so the listener and the observer follow
+  // the ViewChild instead of being attached once. Scroll is passive and coalesced to one update per frame.
+  private scrollRaf = 0;
+  private hostRo?: ResizeObserver;
+  private readonly onHostScroll = () => this.scheduleScrollState();
+
+  private bindScrollHost(el: HTMLElement): void {
+    el.addEventListener('scroll', this.onHostScroll, { passive: true });
+    if (typeof ResizeObserver !== 'undefined') {
+      this.hostRo = new ResizeObserver(() => this.scheduleScrollState());
+      this.hostRo.observe(el);
+      const table = el.querySelector('table');
+      if (table) this.hostRo.observe(table);
+    }
+    this.scheduleScrollState();
+  }
+
+  private unbindScrollHost(): void {
+    this._scrollHost?.nativeElement.removeEventListener('scroll', this.onHostScroll);
+    this.hostRo?.disconnect();
+    this.hostRo = undefined;
+    if (this.scrollRaf) { cancelAnimationFrame(this.scrollRaf); this.scrollRaf = 0; }
+  }
+
+  /** One `updateScrollState` per animation frame, however many scroll / resize / data events arrive. */
+  scheduleScrollState(): void {
+    if (this.scrollRaf) return;
+    this.scrollRaf = requestAnimationFrame(() => {
+      this.scrollRaf = 0;
+      const host = this._scrollHost?.nativeElement;
+      if (!host) return;
+      // The table element is replaced (skeleton <-> rows): keep observing the live one.
+      const table = host.querySelector('table');
+      if (table && this.hostRo) this.hostRo.observe(table);
+      this.updateScrollState(host);
+    });
+  }
+
+  /** The columns or the rows changed: the hidden width under the Actions column may have appeared or gone. */
+  private readonly rescanOnContentChange = effect(() => {
+    this.displayColumns();
+    this.data();
+    this.scheduleScrollState();
+  });
 
   /** The fixed phantom scrollbar track (only exists while visible). */
   @ViewChild('hscrollPhantom') hscrollPhantom?: ElementRef<HTMLElement>;
@@ -1561,6 +1638,8 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
 
   ngOnDestroy(): void {
     this.deferredCount.dispose();
+    this.onDemandCount.dispose();
+    this.unbindScrollHost();
     this.sizeObserver?.disconnect();
     this.listAbort?.abort();
     this.destroy$.next();
@@ -1627,7 +1706,7 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
     const nextPage = state.page ?? 1;
     const nextSize = state.pageSize ?? this.pageSize();
     const nextSearch = state.searchTerm ?? '';
-    const nextSort = state.sortBy
+    const nextSort = ListUrlStateHelper.validateRestoredSort(state.sortBy, this.columns, this.sorting)
       ?? (this.sorting.enabled && this.sorting.defaultSort
         ? { sortValue: this.sorting.defaultSort.key, sortDirection: this.sorting.defaultSort.direction }
         : undefined);
@@ -1762,12 +1841,15 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
     this.loadCount(params, scopeChanged || this.forceCount);
     this.forceCount = false;
 
+    const listT0 = performance.now();
+    const metricMode = this.isOnDemand() ? 'onDemand' : 'auto';
     const result = this.dataSource(params);
     const source$ = isObservable(result) ? result : from(Promise.resolve(result));
 
     this.dataSubscription = source$
       .pipe(
         tap((response: ListResponse<T>) => {
+          recordListMetric({ kind: 'list', page: this.pageTitle, mode: metricMode, ms: performance.now() - listT0, ok: true });
           this.data.set(response.list);
           this.pruneOpenDetails(response.list);
           const pi = pageInfoFromResponse(response, params.page, params.limit);
@@ -1785,6 +1867,7 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
         }),
         catchError(error => {
           console.error('ListPageComponent: Error loading data', error);
+          recordListMetric({ kind: 'list', page: this.pageTitle, mode: metricMode, ms: performance.now() - listT0, ok: false });
           this.isLoading.set(false);
           this.data.set([]);
           if (scopeChanged) this.pruneSelection([]);
@@ -1820,7 +1903,7 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
   }
 
   refresh(): void {
-    this.forceCount = true;
+    this.forceCount = true;   // on demand: back to "unknown" (or, with sticky active, counted again)
     this.loadData();
   }
 
@@ -2103,13 +2186,17 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
   /** Paging facts for the footer, the header pill and the announcements: the only reader of the response's paging fields. */
   readonly pageInfo = computed(() => {
     const cs = this.countState();
-    return resolvePage(
-      { page: this.currentPage(), limit: this.pageSize(), ...this.responseInfo(), ...(cs.status === 'ready' ? { total: cs.total } : {}) },
-      this.data().length);
+    const od = this.onDemandState();
+    // On demand, only a count the user asked for counts: a total or page count riding on the list response is ignored.
+    const resp = this.isOnDemand() ? { hasNext: this.responseInfo().hasNext } : this.responseInfo();
+    const total = this.isOnDemand() ? (od.status === 'known' ? { total: od.total } : {}) : (cs.status === 'ready' ? { total: cs.total } : {});
+    return resolvePage({ page: this.currentPage(), limit: this.pageSize(), ...resp, ...total }, this.data().length);
   });
 
   /** What the pill and footer show (see `pageChrome`). */
-  readonly chrome = computed(() => pageChrome(this.pageInfo(), this.countPending()));
+  readonly chrome = computed(() => this.isOnDemand()
+    ? onDemandChrome(this.pageInfo(), this.onDemandState().status)
+    : { ...pageChrome(this.pageInfo(), this.countPending()), status: null as null, pillKind: null as null });
 
   /** Per-page choices, never above what the API accepts. */
   readonly pageSizeOptions = computed(() => {
@@ -2141,7 +2228,62 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
   /** Aborts the previous list request when a newer one starts. */
   private listAbort: AbortController | null = null;
 
-  private loadCount(params: ListQueryParams, force: boolean): void { this.deferredCount.load(params, force); }
+  private loadCount(params: ListQueryParams, force: boolean): void {
+    this.lastParams = params;
+    if (this.isOnDemand()) this.onDemandCount.observe(params, this.forceCount);
+    else this.deferredCount.load(params, force);
+  }
+
+  // ── On-demand total (countMode: 'onDemand') ──────────────────────────────
+  /** The page's mode (`listPageConfig.resolveCountMode` lets `localStorage['invo.countMode']` override it). */
+  @Input() countMode: CountMode = 'auto';
+
+  /** True when no count request is made until the user asks (needs a `countSource` and the deferred flag on). */
+  isOnDemand(): boolean {
+    return !!this.countSource && listPageConfig.useDeferredCount && listPageConfig.resolveCountMode(this.countMode) === 'onDemand';
+  }
+
+  private lastParams: ListQueryParams | null = null;
+  readonly onDemandState = signal<OnDemandState>({ status: 'unknown', sig: '' });
+
+  private readonly onDemandCount = new OnDemandCount<ListQueryParams>({
+    fetch: (p, signal) => this.countSource!(p, signal),
+    signature: p => JSON.stringify([p.searchTerm || '', p.filter ?? {}]),
+    currentSignature: () => this.countSignature(),
+    onChange: st => { this.onDemandState.set(st); this.announceCountState(st); },
+    sticky: () => listPageConfig.countStickyPerVisit,
+    timeoutMs: COUNT_TIMEOUT_MS,
+    debounceMs: 300,
+    onMetric: m => recordListMetric({ kind: 'count', page: this.pageTitle, mode: 'onDemand', ...m }),
+  });
+
+  /** "Count" / "Show total" / "Retry": the same request from every button. Does nothing while counting. */
+  requestCount(): void {
+    if (!this.isOnDemand() || !this.lastParams) return;
+    this.onDemandCount.request(this.lastParams);
+  }
+
+  /** Footer texts for the on-demand states (translated here; the pagination component stays language-free). */
+  readonly countLabels = computed(() => ({
+    showTotal: this.translate.instant('COMMON.LP_SHOW_TOTAL'),
+    showTotalAria: this.translate.instant('COMMON.LP_COUNT_ARIA', { noun: this.resultsNoun }),
+    of: this.translate.instant('COMMON.LP_OF'),
+    counting: this.translate.instant('COMMON.LP_COUNTING'),
+    couldntCount: this.translate.instant('COMMON.LP_COULDNT_COUNT'),
+    retry: this.translate.instant('COMMON.LP_RETRY'),
+    retryAria: this.translate.instant('COMMON.LP_COUNT_FAILED_ARIA', { noun: this.resultsNoun }),
+  }));
+
+  /** Polite announcement of a count state change ("Counting products", "10,581 products", "Couldn't count products"). */
+  readonly countAnnouncement = signal('');
+  private announceCountState(st: OnDemandState): void {
+    if (st.status === 'unknown') { this.countAnnouncement.set(''); return; }
+    const noun = this.resultsNoun;
+    const text = st.status === 'counting' ? this.translate.instant('COMMON.LP_COUNTING_ANNOUNCE', { noun })
+      : st.status === 'failed' ? this.translate.instant('COMMON.LP_COUNT_FAILED_ANNOUNCE', { noun })
+      : this.translate.instant('COMMON.LP_COUNT_DONE_ANNOUNCE', { total: this.fmtCount(st.total ?? 0), noun });
+    this.countAnnouncement.set(String(text).trim());
+  }
 
   /** Total shown in the header pill, grouped ("10,581"). */
   fmtCount(n: number): string { return n.toLocaleString('en-US'); }
@@ -2962,7 +3104,9 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
       // Seed the draft too so the input shows the restored term.
       this.searchDraft.set(state.searchTerm);
     }
-    if (state.sortBy) this.sortBy.set(state.sortBy);
+    // Invalid/unknown sorts are dropped: the default sort set in initializeState stays.
+    const restoredSort = ListUrlStateHelper.validateRestoredSort(state.sortBy, this.columns, this.sorting);
+    if (restoredSort) this.sortBy.set(restoredSort);
     if (state.filters) this.activeFilters.set(state.filters);
     if (state.visibleColumns) {
       this.visibleColumns.set(state.visibleColumns);

@@ -55,6 +55,9 @@ import { ScrollTopButtonComponent } from '@shared/components/scroll-top/scroll-t
          layout is using instead of hard-coding a copy that drifts. */
       --app-content-start: 240px;
       min-height: calc(100vh - 56px);
+      /* Wide content (a table) scrolls inside its own container; the page itself never scrolls sideways. clip creates
+         no scroll container, so sticky children and page scrolling are unaffected. */
+      overflow-x: clip;
       padding: 24px;
       /* App canvas: the legacy portal's light page colour (#f8f8fb). Lighter
          than the old blue-grey, so cards rely on their own hairline border. */

@@ -1,5 +1,5 @@
 import { Params } from '@angular/router';
-import { FilterState, ListPageState, TableColumn } from '../interfaces/list-page.types';
+import { FilterState, ListPageState, SortingConfig, TableColumn } from '../interfaces/list-page.types';
 
 /**
  * URL State Management Utilities
@@ -50,6 +50,31 @@ export class ListUrlStateHelper {
     }
 
     return params;
+  }
+
+  /**
+   * A sort restored from the URL is user-editable input, so it only counts when its key is a
+   * `sortable: true` column or the screen's declared `defaultSort` key. Anything else (unknown key,
+   * injection-like text, non-string, empty, sorting disabled) is ignored: returns `undefined` and the
+   * caller keeps the screen's default sort. The direction is normalised to 'asc' | 'desc'
+   * (case-insensitive); anything else falls back to the default direction.
+   */
+  static validateRestoredSort(
+    restored: { sortValue?: unknown; sortDirection?: unknown } | undefined | null,
+    columns: ReadonlyArray<Pick<TableColumn<any>, 'key' | 'sortable'>>,
+    sorting: Pick<SortingConfig, 'enabled' | 'defaultSort'>
+  ): { sortValue: string; sortDirection: 'asc' | 'desc' } | undefined {
+    if (!restored || !sorting.enabled) return undefined;
+    const key = restored.sortValue;
+    if (typeof key !== 'string' || key === '') return undefined;
+
+    const allowed = key === sorting.defaultSort?.key || columns.some(c => c.sortable === true && c.key === key);
+    if (!allowed) return undefined;
+
+    const dir = typeof restored.sortDirection === 'string' ? restored.sortDirection.trim().toLowerCase() : '';
+    const sortDirection: 'asc' | 'desc' =
+      dir === 'asc' || dir === 'desc' ? dir : (sorting.defaultSort?.direction ?? 'asc');
+    return { sortValue: key, sortDirection };
   }
 
   /**

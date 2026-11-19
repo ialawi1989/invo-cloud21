@@ -111,3 +111,33 @@ export function pageChrome(p: ResolvedPage, totalPending: boolean): PageChrome {
     showFirstLast: p.totalKnown || p.pageCount !== null,
   };
 }
+
+/** `countMode: 'onDemand'`: what the header pill shows in each count state. */
+export type OnDemandPill = 'button' | 'skeleton' | 'number' | 'retry' | 'none';
+
+export interface OnDemandChrome extends PageChrome {
+  status: 'unknown' | 'counting' | 'known' | 'failed';
+  /** Header pill: "Count" button, skeleton, the number, or the "Retry" button. */
+  pillKind: OnDemandPill;
+}
+
+/**
+ * Same shape as `pageChrome` for the on-demand mode. Numbered pages / first-last / "of N" appear ONLY in `known`;
+ * the other three states paginate with Previous / Next (driven by `hasNext`).
+ */
+export function onDemandChrome(p: ResolvedPage, status: OnDemandChrome['status']): OnDemandChrome {
+  const known = status === 'known' && p.totalKnown;
+  const pillKind: OnDemandPill =
+    status === 'unknown' ? 'button'
+    : status === 'counting' ? 'skeleton'
+    : status === 'failed' ? 'retry'
+    : known && (p.total ?? 0) > 0 ? 'number' : 'none';
+  return {
+    status,
+    pillKind,
+    pill: pillKind === 'number',
+    skeleton: status === 'counting',
+    footer: known ? 'full' : 'compact',
+    showFirstLast: known,
+  };
+}

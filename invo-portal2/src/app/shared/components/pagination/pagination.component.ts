@@ -46,6 +46,12 @@ import { buildPageList, PageListEntry } from './pagination-utils';
     @keyframes pg-pulse { 50% { opacity: .55; } }
     @media (prefers-reduced-motion: reduce) { .pg-skel { animation: none; } }
     button:focus-visible { outline: 2px solid var(--ui-brand-t700, #207484); outline-offset: 2px; }
+    /* On-demand total: text buttons in the info line ("Show total", "Retry"). */
+    .pg-link { background: none; border: 0; padding-block: 2px; padding-inline: 4px; border-radius: 4px; font: inherit; font-weight: 500; color: var(--ui-brand-t700, #207484); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+    .pg-link:hover { background: var(--ui-surface-2, #f1f5f9); }
+    .pg-link--danger, .pg-fail { color: var(--ui-red-text); }
+    .pg-skel { min-inline-size: 44px; }
+    @media (pointer: coarse) { .pg-link { min-block-size: 44px; min-inline-size: 44px; display: inline-flex; align-items: center; justify-content: center; } }
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -115,7 +121,24 @@ export class PaginationComponent {
   /** Info format when the total is unknown but `rowsOnPage` is given. Tokens: `{start}`, `{end}`. */
   rangeFormat = input<string>('Showing {start}–{end}');
 
+  /**
+   * On-demand total (`<app-list-page countMode="onDemand">`). `null` = the classic behaviour above (nothing changes).
+   *  - unknown:  "Showing 1–15" + a "Show total" text button;
+   *  - counting: "Showing 1–15 of" + a skeleton bar;
+   *  - failed:   "Showing 1–15", "Couldn't count." + a Retry button;
+   *  - known:    the normal full footer.
+   */
+  countState = input<'unknown' | 'counting' | 'known' | 'failed' | null>(null);
+
+  /** Texts of the on-demand states (the host translates them). */
+  countLabels = input<{ showTotal: string; showTotalAria: string; of: string; counting: string; couldntCount: string; retry: string; retryAria: string }>({
+    showTotal: 'Show total', showTotalAria: 'Show total count', of: 'of', counting: 'Counting',
+    couldntCount: "Couldn't count.", retry: 'Retry', retryAria: 'Retry counting',
+  });
+
   // ── Outputs ────────────────────────────────────────────────────────────────
+  /** "Show total" or "Retry" was pressed. */
+  countRequest   = output<void>();
   pageChange     = output<number>();
   pageSizeChange = output<number>();
 

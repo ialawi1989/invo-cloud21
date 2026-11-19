@@ -90,6 +90,11 @@
 .lp-row-edit { height: var(--lp-row-ctl, 36px); }
 @media (pointer: coarse) { .lp-row-edit { min-height: 44px; } }
 
+// Compact puts name + unit + SKU chip + children icon on ONE line. This minimum keeps about 160px for the name next
+// to a unit chip, a 22-digit SKU chip and the icon-only pill; the column still takes all the slack beyond it.
+// Comfortable stacks the chip under the name, so it keeps the 300px default.
+:root[data-density='compact'] { --lp-name-col-w: 460px; }
+
 // Compact: the SKU / barcode chip sits on the same line as the product name (name truncates, chip stays visible).
 // Comfortable keeps the chip on its own line under the name.
 :root[data-density='compact'] .lp-namecell {
