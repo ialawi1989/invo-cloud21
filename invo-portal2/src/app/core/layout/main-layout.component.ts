@@ -58,7 +58,7 @@ import { ScrollTopButtonComponent } from '@shared/components/scroll-top/scroll-t
       padding: 24px;
       /* App canvas: the legacy portal's light page colour (#f8f8fb). Lighter
          than the old blue-grey, so cards rely on their own hairline border. */
-      background: var(--ui-x-f8f8fb);
+      background: var(--ui-page);
       transition: margin-left .25s ease;
     }
     .main-content.collapsed { margin-left: 56px; --app-content-start: 56px; }
