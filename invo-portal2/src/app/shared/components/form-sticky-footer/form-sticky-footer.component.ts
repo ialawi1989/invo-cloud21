@@ -44,10 +44,8 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
       right: 0;
       bottom: 0;
       z-index: 60;
-      background: rgba(255, 255, 255, 0.92);
-      backdrop-filter: saturate(180%) blur(6px);
-      -webkit-backdrop-filter: saturate(180%) blur(6px);
-      border-top: 1px solid #e5e7eb;
+      background: var(--ui-footer-bg);
+      border-top: 1px solid var(--ui-line);
       box-shadow: 0 -4px 12px rgba(15, 23, 42, 0.06);
       /* Matches the sidebar's own transition so the two edges move together
          when it collapses, rather than the bar snapping ahead of it. */
@@ -80,7 +78,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
     }
 
     ::ng-deep .btn-primary {
-      background: #00a8b8;
+      background: var(--ui-b-00a8b8);
       color: #fff;
       border-color: #00a8b8;
     }
@@ -97,15 +95,15 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 
     ::ng-deep .btn-cancel,
     ::ng-deep .btn-ghost {
-      background: #fff;
-      color: #475569;
-      border-color: #e2e8f0;
+      background: var(--ui-surface);
+      color: var(--ui-text-4);
+      border-color: var(--ui-line);
     }
 
     ::ng-deep .btn-cancel:hover:not(:disabled),
     ::ng-deep .btn-ghost:hover:not(:disabled) {
-      background: #f8fafc;
-      color: #0f172a;
+      background: var(--ui-surface-1);
+      color: var(--ui-text);
     }
 
     ::ng-deep .btn-cancel:disabled,

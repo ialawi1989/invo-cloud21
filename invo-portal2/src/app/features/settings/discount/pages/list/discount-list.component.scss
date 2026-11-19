@@ -9,12 +9,12 @@
     padding: 12px 14px;
     text-align: start;
     font-size: 13px;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--ui-surface-2);
   }
 
   thead th {
-    background: #f8fafc;
-    color: #64748b;
+    background: var(--ui-surface-1);
+    color: var(--ui-muted);
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
@@ -24,18 +24,18 @@
   tbody tr {
     cursor: pointer;
     transition: background 100ms ease;
-    &:hover { background: #f8fafc; }
+    &:hover { background: var(--ui-surface-1); }
     &:last-child td { border-bottom: 0; }
   }
 
   &__name    { width: 40%; }
   &__type    { width: 12%; }
-  &__amount  { width: 18%; color: #0f172a; font-weight: 600; }
+  &__amount  { width: 18%; color: var(--ui-text); font-weight: 600; }
   &__status  { width: 14%; }
   &__actions { width: 60px; text-align: end; }
 }
 
-.row-name { font-weight: 600; color: #0f172a; }
+.row-name { font-weight: 600; color: var(--ui-text); }
 
 // Sortable column header. The dot/arrow is a pseudo-CSS arrow
 // drawn from `border` so we don't ship another SVG inline.
@@ -54,8 +54,8 @@
   align-items: center;
   gap: 4px;
 
-  &:hover { color: #0f172a; }
-  &.is-sorted { color: #0f172a; }
+  &:hover { color: var(--ui-text); }
+  &.is-sorted { color: var(--ui-text); }
 
   &__arrow {
     width: 8px;
@@ -87,18 +87,18 @@
   gap: 4px 6px;
   margin-top: 4px;
   font-size: 11px;
-  color: #64748b;
+  color: var(--ui-muted);
 
   &__sep      { color: #cbd5e1; }
-  &__scope    { color: #475569; }
+  &__scope    { color: var(--ui-text-4); }
   &__schedule {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    color: #475569;
-    > svg { color: #94a3b8; }
+    color: var(--ui-text-4);
+    > svg { color: var(--ui-faint); }
   }
-  &__min { color: #475569; }
+  &__min { color: var(--ui-text-4); }
 }
 
 .row-meta-skel { margin-top: 6px; }
@@ -124,14 +124,14 @@
   }
 
   &--on {
-    background: #ecfdf5;
-    color: #047857;
-    border: 1px solid #a7f3d0;
+    background: var(--ui-green-soft);
+    color: var(--ui-green-text);
+    border: 1px solid var(--ui-x-a7f3d0);
   }
   &--off {
-    background: #f1f5f9;
-    color: #64748b;
-    border: 1px solid #e2e8f0;
+    background: var(--ui-surface-2);
+    color: var(--ui-muted);
+    border: 1px solid var(--ui-line);
   }
 }
 
@@ -142,16 +142,16 @@
   border-radius: 999px;
   font-size: 11px;
   font-weight: 600;
-  background: #ecfeff;
-  color: #0e7490;
-  border: 1px solid #a5f3fc;
+  background: var(--ui-brand-soft);
+  color: var(--ui-brand-text);
+  border: 1px solid var(--ui-brand-soft-2);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 
   &--auto {
-    background: #fff7ed;
-    color: #9a3412;
-    border-color: #fed7aa;
+    background: var(--ui-x-fff7ed);
+    color: var(--ui-t-9a3412);
+    border-color: var(--ui-x-fed7aa);
   }
 }
 
@@ -162,12 +162,12 @@
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  color: #64748b;
+  color: var(--ui-muted);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
-  &:hover { background: #f1f5f9; color: #0f172a; }
+  &:hover { background: var(--ui-surface-2); color: var(--ui-text); }
 }
 .dl-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; } .dl-filter { min-width: 150px; }

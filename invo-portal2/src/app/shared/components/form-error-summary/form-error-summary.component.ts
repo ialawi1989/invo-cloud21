@@ -55,27 +55,27 @@ export interface FormErrorItem {
     .fes__trigger {
       display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; margin-inline-start: -8px;
       border: 0; border-radius: 6px; background: transparent; cursor: pointer;
-      font: inherit; font-size: 12px; font-weight: 600; color: #b91c1c;
-      svg { color: #dc2626; }
-      &:hover { background: #fef2f2; text-decoration: underline; }
+      font: inherit; font-size: 12px; font-weight: 600; color: var(--ui-red-text);
+      svg { color: var(--ui-red-text); }
+      &:hover { background: var(--ui-red-soft); text-decoration: underline; }
     }
     .fes__panel {
       position: absolute; inset-inline-start: 0; bottom: calc(100% + 12px); z-index: 70;
       width: 320px; max-width: 80vw; max-height: 320px; overflow-y: auto;
-      background: #fff; border: 1px solid #fecaca; border-radius: 10px;
+      background: var(--ui-surface); border: 1px solid var(--ui-red-soft-2); border-radius: 10px;
       box-shadow: 0 12px 28px rgba(15, 23, 42, .16); padding: 8px;
     }
-    .fes__title { padding: 4px 8px 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: #64748b; }
+    .fes__title { padding: 4px 8px 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--ui-muted); }
     .fes__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
     .fes__item {
       display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 10px;
       padding: 8px 10px; border: 0; border-radius: 6px; background: transparent; cursor: pointer; text-align: start;
-      font: inherit; font-size: 13px; color: #0f172a;
-      &:hover { background: #fef2f2; }
+      font: inherit; font-size: 13px; color: var(--ui-text);
+      &:hover { background: var(--ui-red-soft); }
     }
     .fes__label { min-width: 0; overflow-wrap: anywhere; }
-    .fes__hint { flex: none; font-size: 11px; font-weight: 600; color: #dc2626; }
-    .fes__more { padding: 6px 10px 2px; font-size: 12px; color: #64748b; }
+    .fes__hint { flex: none; font-size: 11px; font-weight: 600; color: var(--ui-red-text); }
+    .fes__more { padding: 6px 10px 2px; font-size: 12px; color: var(--ui-muted); }
   `],
 })
 export class FormErrorSummaryComponent {

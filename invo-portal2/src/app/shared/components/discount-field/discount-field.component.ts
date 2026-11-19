@@ -27,12 +27,12 @@ export interface DiscountValue {
   `,
   styles: [`
     :host { display: block; }
-    .df { display: flex; align-items: stretch; border: 1px solid #d0d5dd; border-radius: 8px; background: #fff; overflow: hidden; }
+    .df { display: flex; align-items: stretch; border: 1px solid var(--ui-line-strong); border-radius: 8px; background: var(--ui-surface); overflow: hidden; }
     .df:focus-within { border-color: #2691a4; box-shadow: 0 0 0 3px rgba(38, 145, 164, .15); }
-    .df--disabled { background: #f8fafc; opacity: .7; }
+    .df--disabled { background: var(--ui-surface-1); opacity: .7; }
     .df__input { flex: 1; min-width: 0; border: 0; outline: 0; padding: 8px 10px; font: inherit; background: transparent; }
-    .df__toggle { border: 0 !important; border-inline-start: 1px solid #e5e7eb !important; border-radius: 0 !important; background: #f8fafc !important; box-shadow: none !important; outline: none; padding: 0 12px; font-weight: 600; color: #475569; cursor: pointer; min-width: 52px; white-space: nowrap; }
-    .df__toggle:hover:not(:disabled) { background: #eef2f6; }
+    .df__toggle { border: 0 !important; border-inline-start: 1px solid var(--ui-line) !important; border-radius: 0 !important; background: var(--ui-surface-1) !important; box-shadow: none !important; outline: none; padding: 0 12px; font-weight: 600; color: var(--ui-text-4); cursor: pointer; min-width: 52px; white-space: nowrap; }
+    .df__toggle:hover:not(:disabled) { background: var(--ui-surface-2); }
   `],
 })
 export class DiscountFieldComponent {

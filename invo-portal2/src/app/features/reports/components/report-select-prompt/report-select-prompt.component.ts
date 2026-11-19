@@ -66,12 +66,12 @@ export type ReportPromptKind = 'employee' | 'branch' | 'product' | 'discount' | 
   `,
   styles: [`
     :host { display: block; }
-    .sp { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 34px 20px 38px; background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; box-shadow: 0 1px 3px rgba(15, 23, 42, .05); }
+    .sp { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 34px 20px 38px; background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: 16px; box-shadow: 0 1px 3px rgba(15, 23, 42, .05); }
     .sp-art { width: min(260px, 70vw); height: auto; margin-bottom: 4px; }
     .sp-shadow { fill: #e2e8f0; opacity: .7; }
     .sp-blob { fill: #eaf6f9; }
     .sp-dot { fill: #9fd6e0; &.d2 { fill: #fcd9a8; } &.d3 { fill: #c9c2f5; } }
-    .sp-spark { stroke: #94a3b8; stroke-width: 2; stroke-linecap: round; opacity: .7; }
+    .sp-spark { stroke: var(--ui-faint); stroke-width: 2; stroke-linecap: round; opacity: .7; }
     .sp-card { fill: #fff; stroke: #cbd9e1; stroke-width: 2; }
     .sp-head { fill: #dff1f5; }
     .sp-avatar { fill: #e0f2fe; stroke: #7cc4d4; stroke-width: 2; }
@@ -87,8 +87,8 @@ export type ReportPromptKind = 'employee' | 'branch' | 'product' | 'discount' | 
     @keyframes sp-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
     @keyframes sp-twinkle { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
     @media (prefers-reduced-motion: reduce) { .sp-float, .sp-dot { animation: none; } }
-    .sp-title { margin: 8px 0 4px; font-size: 17px; font-weight: 700; color: #0f172a; }
-    .sp-hint { margin: 0; max-width: 400px; font-size: 13.5px; line-height: 1.5; color: #64748b; }
+    .sp-title { margin: 8px 0 4px; font-size: 17px; font-weight: 700; color: var(--ui-text); }
+    .sp-hint { margin: 0; max-width: 400px; font-size: 13.5px; line-height: 1.5; color: var(--ui-muted); }
   `],
 })
 export class ReportSelectPromptComponent {

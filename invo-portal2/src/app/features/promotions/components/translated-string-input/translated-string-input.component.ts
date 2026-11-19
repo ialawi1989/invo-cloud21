@@ -47,11 +47,11 @@ import { TranslatedString } from '../../models/common.model';
     .tsi { display: flex; flex-direction: column; gap: 6px; }
     .tsi__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
     .tsi__head--end { justify-content: flex-end; }
-    .tsi__label { font-size: 13px; font-weight: 600; color: #334155; }
-    .tsi__req { color: #dc2626; margin-inline-start: 2px; }
+    .tsi__label { font-size: 13px; font-weight: 600; color: var(--ui-text-3); }
+    .tsi__req { color: var(--ui-red-text); margin-inline-start: 2px; }
     .tsi__input {
-      padding: 9px 12px; border: 1px solid #d0d5dd; border-radius: 8px;
-      font-size: 13.5px; color: #0f172a; font-family: inherit; resize: vertical;
+      padding: 9px 12px; border: 1px solid var(--ui-line-strong); border-radius: 8px;
+      font-size: 13.5px; color: var(--ui-text); font-family: inherit; resize: vertical;
     }
     .tsi__input:focus { outline: none; border-color: #2691a4; box-shadow: 0 0 0 3px rgba(38,145,164,.12); }
   `],

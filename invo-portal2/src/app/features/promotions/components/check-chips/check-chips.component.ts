@@ -21,7 +21,7 @@ import { LookupItem } from '../../services/promotions-lookups.service';
     .cc { display: flex; flex-wrap: wrap; gap: 8px; }
     .cc__item {
       display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px;
-      border: 1px solid #d0d5dd; background: #fff; font-size: 13px; color: #334155; cursor: pointer;
+      border: 1px solid var(--ui-line-strong); background: var(--ui-surface); font-size: 13px; color: var(--ui-text-3); cursor: pointer;
     }
   `],
 })

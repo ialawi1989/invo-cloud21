@@ -169,7 +169,7 @@ export interface PickedProduct {
       gap: 8px;
       flex-shrink: 0;
       padding-bottom: 4px;
-      border-bottom: 1px solid #f1f5f9;
+      border-bottom: 1px solid var(--ui-surface-2);
     }
     .bar {
       display: flex;
@@ -180,31 +180,31 @@ export interface PickedProduct {
     .counter {
       font-size: 11px;
       font-weight: 600;
-      color: #64748b;
-      &--full { color: #b45309; }
+      color: var(--ui-muted);
+      &--full { color: var(--ui-amber-text); }
     }
     .search {
       display: inline-flex; align-items: center; gap: 8px;
       padding: 7px 10px;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
+      background: var(--ui-surface-1);
+      border: 1px solid var(--ui-line);
       border-radius: 8px;
-      color: #94a3b8;
+      color: var(--ui-faint);
       input {
         flex: 1; border: none; outline: none; font: inherit; font-size: 13px;
-        background: transparent; color: #0f172a;
-        &::placeholder { color: #94a3b8; }
+        background: transparent; color: var(--ui-text);
+        &::placeholder { color: var(--ui-faint); }
       }
     }
     .loading { display: flex; align-items: center; justify-content: center; padding: 40px 0; }
     .spinner {
       width: 22px; height: 22px; border-radius: 50%;
-      border: 3px solid #e2e8f0; border-top-color: var(--color-brand-600);
+      border: 3px solid var(--ui-line); border-top-color: var(--color-brand-600);
       animation: ppm-spin .8s linear infinite;
     }
     @keyframes ppm-spin { to { transform: rotate(360deg); } }
 
-    .empty { margin: 0; padding: 32px 8px; text-align: center; color: #94a3b8; font-size: 13px; }
+    .empty { margin: 0; padding: 32px 8px; text-align: center; color: var(--ui-faint); font-size: 13px; }
 
     // Master checkbox bar — visually quieter than a row so it doesn't
     // compete with the per-row checkboxes underneath.
@@ -218,19 +218,19 @@ export interface PickedProduct {
       border-radius: 8px;
       cursor: pointer;
       font: inherit;
-      color: #475569;
+      color: var(--ui-text-4);
       font-size: 12px;
       font-weight: 600;
 
-      &:hover { background: #f8fafc; border-color: #e2e8f0; color: #0f172a; }
+      &:hover { background: var(--ui-surface-1); border-color: var(--ui-line); color: var(--ui-text); }
 
       &__check {
         width: 18px; height: 18px;
-        border: 1.5px solid #cbd5e1;
+        border: 1.5px solid var(--ui-line-strong);
         border-radius: 4px;
         display: inline-flex; align-items: center; justify-content: center;
         color: #fff;
-        background: #fff;
+        background: var(--ui-surface);
         flex-shrink: 0;
         &--on, &--mixed {
           background: var(--color-brand-600);
@@ -259,12 +259,12 @@ export interface PickedProduct {
     .row {
       display: inline-flex; align-items: center; gap: 10px;
       padding: 8px 10px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--ui-line);
       border-radius: 8px;
       cursor: pointer;
       transition: background 120ms ease, border-color 120ms ease;
-      &:hover { background: #f8fafc; }
-      &--on   { background: var(--color-brand-50); border-color: var(--color-brand-300, #bae6fd); }
+      &:hover { background: var(--ui-surface-1); }
+      &--on   { background: var(--color-brand-50); border-color: var(--color-brand-300, var(--ui-sky-soft-2)); }
       &--locked {
         // Cap reached + this row not picked → can't pick more.
         opacity: 0.55;
@@ -274,11 +274,11 @@ export interface PickedProduct {
 
       &__check {
         width: 18px; height: 18px;
-        border: 1.5px solid #cbd5e1;
+        border: 1.5px solid var(--ui-line-strong);
         border-radius: 4px;
         display: inline-flex; align-items: center; justify-content: center;
         color: #fff;
-        background: #fff;
+        background: var(--ui-surface);
         flex-shrink: 0;
         &--on { background: var(--color-brand-600); border-color: var(--color-brand-600); }
       }
@@ -286,16 +286,16 @@ export interface PickedProduct {
         width: 28px; height: 28px;
         border-radius: 6px;
         object-fit: cover;
-        background: #f1f5f9;
+        background: var(--ui-surface-2);
         flex-shrink: 0;
 
         &--placeholder {
           display: inline-flex; align-items: center; justify-content: center;
-          font-size: 13px; font-weight: 700; color: var(--color-brand-700);
+          font-size: 13px; font-weight: 700; color: var(--ui-brand-t700);
           background: var(--color-brand-50);
         }
       }
-      &__name { flex: 1; font-size: 13px; font-weight: 500; color: #0f172a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      &__name { flex: 1; font-size: 13px; font-weight: 500; color: var(--ui-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
       /* Category chip — surfaces the backend's categoryName (the
          SQL COALESCE already normalises NULL → 'Uncategorized'). Hidden
@@ -306,7 +306,7 @@ export interface PickedProduct {
         padding: 2px 8px;
         font-size: 11px;
         font-weight: 600;
-        color: var(--color-brand-700);
+        color: var(--ui-brand-t700);
         background: var(--color-brand-50);
         border-radius: 999px;
         overflow: hidden;
@@ -315,12 +315,12 @@ export interface PickedProduct {
       }
     }
 
-    .count { flex: 1; font-size: 12px; color: #64748b; }
+    .count { flex: 1; font-size: 12px; color: var(--ui-muted); }
 
     .btn-cancel {
-      padding: 9px 20px; background: #f3f4f6; border: 1px solid #e5e7eb;
+      padding: 9px 20px; background: var(--ui-surface-2); border: 1px solid var(--ui-line);
       border-radius: 8px; font-size: 13px; cursor: pointer;
-      &:hover { background: #e5e7eb; }
+      &:hover { background: var(--ui-line); }
     }
     .btn-confirm {
       padding: 9px 24px; background: var(--color-brand-600); color: #fff;

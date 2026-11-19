@@ -1,15 +1,15 @@
 .vl-btn {
   padding: 9px 16px;
   border-radius: 8px;
-  border: 1px solid #d0d5dd;
-  background: #fff;
-  color: #334155;
+  border: 1px solid var(--ui-line-strong);
+  background: var(--ui-surface);
+  color: var(--ui-text-3);
   font-size: 13.5px;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
 
-  &:hover { background: #f8fafc; }
+  &:hover { background: var(--ui-surface-1); }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 
   &--primary {
@@ -22,8 +22,8 @@
 }
 
 .vl-card {
-  background: #fff;
-  border: 1px solid #e4e7ec;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
   border-radius: 12px;
   padding: 16px 20px;
   margin-bottom: 16px;
@@ -38,7 +38,7 @@
     flex-wrap: wrap;
     margin-bottom: 14px;
   }
-  &__title { margin: 0; font-size: 15px; font-weight: 700; color: #0f172a; }
+  &__title { margin: 0; font-size: 15px; font-weight: 700; color: var(--ui-text); }
   &__tools { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 }
 
@@ -53,9 +53,9 @@
   gap: 4px;
   padding: 12px 14px;
   border-radius: 10px;
-  background: #f8fafc;
-  border: 1px solid #eef2f6;
+  background: var(--ui-surface-1);
+  border: 1px solid var(--ui-surface-2);
 
-  &__label { font-size: 11.5px; font-weight: 600; color: #64748b; }
-  &__value { font-size: 14px; font-weight: 700; color: #0f172a; }
+  &__label { font-size: 11.5px; font-weight: 600; color: var(--ui-muted); }
+  &__value { font-size: 14px; font-weight: 700; color: var(--ui-text); }
 }

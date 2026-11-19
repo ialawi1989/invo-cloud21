@@ -4,15 +4,17 @@ import {
   isBlockOfType,
   PAYMENT_COLUMN_CATALOG,
   DEFAULT_PAYMENT_COLUMNS,
+  paymentAmountPipe,
   PaymentColumnDef,
 } from '../../core/types/block.types';
 import { BindingContext } from '../../core/types/binding.types';
-import { Section } from '../../core/types/template.types';
+import { ExtraPage, MASTER_PAGE_ID, ReportTemplate, Section } from '../../core/types/template.types';
 import { BlockStyle } from '../../core/types/style.types';
 import { BindingEngine } from '../../core/binding/binding-engine';
-import { computePageDimensions, mmToPt } from '../../core/layout/dimensions';
-import { containsArabic } from '../../utils/arabic.utils';
+import { computePageDimensions, computeRepeaterItemHeightMm, mmToPt } from '../../core/layout/dimensions';
+import { containsArabic, splitByScript } from '../../utils/arabic.utils';
 import { barcodeSvg } from '../../utils/code-svg.utils';
+import { DEFAULT_FONT_STACK, normalizeSeedFontFamily } from '../../utils/fonts.utils';
 import { Renderer, RenderInput } from '../renderer.interface';
 
 /**
@@ -45,6 +47,9 @@ export interface PdfMakeDocDefinition {
 
 export type PdfContent =
   | string
+  // Sibling nodes drawn as one block — used to lay a border rect behind an
+  // absolutely-positioned block. pdfmake flattens nested content arrays.
+  | PdfContent[]
   | {
     text?: string | PdfContent[];
     image?: string;
@@ -99,6 +104,18 @@ const MIN_TOP_GAP_MM = 8;
 export class PdfMakeRenderer implements Renderer<PdfMakeDocDefinition> {
   constructor(private readonly binding: BindingEngine = new BindingEngine()) { }
 
+  /** Remote image URLs `renderAsync` couldn't fetch/embed. `header`/`footer`
+   *  are callbacks pdfmake invokes itself, long after `renderAsync` has
+   *  returned — `stripFailedImages` can only edit the STATIC `content` tree
+   *  already built by then, so a failed header/footer image (an
+   *  unreachable company logo, say) is blanked out here instead, at the
+   *  point `renderBlock` builds its `image:` node, which runs again on
+   *  every real header/footer invocation. Without this, one broken image
+   *  anywhere in a header/footer aborted the ENTIRE pdfmake document build
+   *  ("Invalid image: ... not found in virtual file system"), not just that
+   *  one picture. */
+  private failedImageUrls = new Set<string>();
+
   /**
    * pdfmake's `absolutePosition` is measured from the page top-left corner
    * for body content, but the `header`/`footer` callbacks are processed
@@ -139,12 +156,15 @@ export class PdfMakeRenderer implements Renderer<PdfMakeDocDefinition> {
   private repeaterReflowAnchor: { designedBottomMm: number; actualBottomMm: number } | null = null;
 
   render(input: RenderInput): PdfMakeDocDefinition {
+    this.failedImageUrls = new Set();
     const { template, data } = input;
     const locale = input.locale ?? template.locale;
     const ctx = this.binding.createRoot(data, locale, input.vars ?? {});
     const dims = computePageDimensions(template.page);
 
-    const body = template.sections.find((s) => s.type === 'body');
+    // `body` is scoped to the master page — extra pages (see `Section.pageId`)
+    // also use type 'body', and must not be picked up here.
+    const body = template.sections.find((s) => (s.pageId ?? MASTER_PAGE_ID) === MASTER_PAGE_ID && s.type === 'body');
     const headerSection = template.sections.find((s) => s.type === 'page-header');
     const footerSection = template.sections.find((s) => s.type === 'page-footer');
     const firstHeaderSection = template.sections.find((s) => s.type === 'first-page-header');
@@ -220,103 +240,24 @@ export class PdfMakeRenderer implements Renderer<PdfMakeDocDefinition> {
     }
 
     // ─── Body content ─────────────────────────────────────
-    this.originXPt = marginLeftPt;
-    this.originYPt = bodyYPt;
     this.pageMarginsTopPt = reservedTopPt;
-    this.bodyTopPt = bodyYPt;
-    this.bodyBottomPt = pageHeightPt - mmToPt(Math.max(dims.marginBottom, footerH));
-
+    const masterBodyBottomPt = pageHeightPt - mmToPt(Math.max(dims.marginBottom, footerH));
     if (body) {
-      const tables = body.blocks.filter((b) => isBlockOfType(b, 'table')) as TableBlock[];
-      const others = body.blocks.filter((b) => !isBlockOfType(b, 'table'));
-      // Anchor for "below the table" = bottom edge of the LAST table. Blocks
-      // whose y starts at or after this point are reflowed AFTER the table
-      // in the content array (no absolutePosition) so they always end up on
-      // the page where the table actually finishes — never overlapping a
-      // table that grew past its designed height.
-      const lastTable = tables[tables.length - 1];
-      const tableAnchorY = lastTable
-        ? lastTable.position.y + lastTable.size.height
-        : Infinity;
-      const aboveTable = others.filter((b) => b.position.y < tableAnchorY);
-      const belowTable = others.filter((b) => b.position.y >= tableAnchorY);
+      content.push(...this.renderBodySectionContent(body, ctx, marginLeftPt, bodyYPt, masterBodyBottomPt));
+    }
 
-      // Sort by designed y so a `repeater` is emitted BEFORE any block
-      // positioned below it. The repeater's internal slicing inserts
-      // `pageBreak: 'before'` markers between pages; pdfmake's flow writer
-      // advances to the last slice's page, so absolute blocks emitted
-      // afterwards naturally land on that final repeater page rather than
-      // sitting on page 1 underneath the first slice.
-      const sortedAbove = [...aboveTable].sort((a, b) => a.position.y - b.position.y);
-      this.repeaterReflowAnchor = null;
-      // Mutable reflow anchor for this page. Starts null (no repeater yet
-      // → blocks use designed y). After a repeater renders, this picks up
-      // its side-effect; subsequent blocks reflow relative to it. When a
-      // block won't fit on the current page, we emit pageBreak: 'before'
-      // and reset the anchor to the top of the new page's body band so
-      // the *next* block continues to use the running cursor.
-      let pageAnchor: { designedBottomMm: number; actualBottomMm: number } | null = null;
-      const bodyHeightMm = (this.bodyBottomPt - this.bodyTopPt) / mmToPt(1);
-      for (const b of sortedAbove) {
-        // Pick up an anchor a previous block (e.g. a repeater) installed
-        // by side-effect. Cast resets TS's control-flow narrowing — the
-        // loop body can't see the side-effect through renderBlock.
-        const installed = this.repeaterReflowAnchor as { designedBottomMm: number; actualBottomMm: number } | null;
-        if (installed) {
-          pageAnchor = installed;
-          this.repeaterReflowAnchor = null;
-        }
-
-        let renderTarget: Block = b;
-        let reflowed = false;
-        if (pageAnchor && b.position.y >= pageAnchor.designedBottomMm) {
-          let newY = pageAnchor.actualBottomMm + (b.position.y - pageAnchor.designedBottomMm);
-          // If the block would overflow the body band, push it to the next
-          // page and reset the running cursor to the top of body.
-          if (newY + b.size.height > bodyHeightMm) {
-            content.push({ text: '', pageBreak: 'before' } as PdfContent);
-            newY = 0;
-            pageAnchor = { designedBottomMm: b.position.y, actualBottomMm: 0 };
-          }
-          renderTarget = {
-            ...b,
-            position: { x: b.position.x, y: newY },
-          } as Block;
-          reflowed = true;
-        }
-
-        const c = this.renderBlock(renderTarget, ctx);
-        if (c) content.push(c);
-
-        // Advance the cursor ONLY when this block was reflowed against the
-        // anchor — otherwise a block that sits inside the repeater's
-        // designed bounds (and was therefore rendered at its original Y)
-        // would overwrite the anchor with values unrelated to where the
-        // cards actually ended, making the next trailing block reflow
-        // against a meaningless cursor.
-        if (pageAnchor && reflowed) {
-          pageAnchor = {
-            designedBottomMm: b.position.y + b.size.height,
-            actualBottomMm: renderTarget.position.y + b.size.height,
-          };
-        }
-      }
-      this.repeaterReflowAnchor = null;
-      // The LAST table switches to FLOW positioning when there's content
-      // below it. `absolutePosition` doesn't advance pdfmake's flow writer,
-      // so a below-table stack would otherwise land at flow Y=0 (top of
-      // body) and overlap the table. With flow positioning the writer
-      // advances past the table and the stack lands right after it on
-      // whatever page the table finishes.
-      const useFlowForLastTable = !!lastTable && belowTable.length > 0;
-      for (let i = 0; i < tables.length; i++) {
-        const isLast = i === tables.length - 1;
-        const mode: 'absolute' | 'flow' = isLast && useFlowForLastTable ? 'flow' : 'absolute';
-        const c = this.renderTable(tables[i], ctx, mode);
-        if (c) content.push(c);
-      }
-      const flow = this.renderBelowTableFlow(belowTable, tableAnchorY, ctx);
-      if (flow) content.push(flow);
+    // ─── Extra pages ────────────────────────────────────────
+    // Standalone pages appended after the master's flow (e.g. a company's own
+    // Terms & Conditions layout) — see `ReportTemplate.extraPages`. Each one
+    // is a single fresh page: no header/footer reservation (extra pages have
+    // no header/footer sections of their own), just the page margins.
+    const extraBodyYPt = mmToPt(Math.max(dims.marginTop, MIN_TOP_GAP_MM));
+    const extraBodyBottomPt = pageHeightPt - mmToPt(dims.marginBottom);
+    for (const extraPage of template.extraPages ?? []) {
+      const extraBody = this.findExtraPageBody(template, extraPage);
+      if (!extraBody) continue;
+      content.push({ text: '', pageBreak: 'before' } as PdfContent);
+      content.push(...this.renderBodySectionContent(extraBody, ctx, marginLeftPt, extraBodyYPt, extraBodyBottomPt));
     }
 
     return {
@@ -325,9 +266,21 @@ export class PdfMakeRenderer implements Renderer<PdfMakeDocDefinition> {
       // to honor the user's page.margins AND to leave room for header/footer
       // callback content (top/bottom are at least the section reservation).
       pageMargins: [marginLeftPt, reservedTopPt, marginRightPt, reservedBottomPt],
-      defaultStyle: this.styleToPdf(template.defaultStyle),
+      defaultStyle: this.styleToPdf(this.documentDefaultStyle(template)),
       content,
       info: { title: template.name },
+      // KNOWN LIMITATION: pdfmake's header/footer are per-physical-page
+      // callbacks for the WHOLE document — they have no notion of "the
+      // master's pages" vs "an extra page's pages". When repeatHeader/
+      // repeatFooter are on (the default), the master's header/footer will
+      // keep repeating onto extra-page content too, and `last-page-footer`
+      // attaches to the document's actual last physical page rather than the
+      // end of the master's own content. Avoiding this needs a two-pass
+      // layout (render once to learn the master's page count, then again
+      // with header/footer gated on it) — out of scope for v1. The HTML
+      // renderer (`html-renderer.ts`) doesn't have this limitation: it draws
+      // each page's header/footer explicitly per `RenderedPage`, so extra
+      // pages correctly render with none there.
       header: (currentPage, pageCount) => {
         // When repeatHeader=false, the page-1 header is rendered as absolute
         // body content above and the callback stays empty for every page.
@@ -381,6 +334,157 @@ export class PdfMakeRenderer implements Renderer<PdfMakeDocDefinition> {
   }
 
   /**
+   * Render one `body` section's blocks into an absolute-positioned pdfmake
+   * content stack — tables, repeaters, and the below-table reflow all handled
+   * exactly as the master body always has been. Extracted so extra pages
+   * (see `ReportTemplate.extraPages`) can reuse the identical logic against
+   * their own single-page origin instead of the master's header/footer-aware
+   * one. Mutates the shared `origin*`/`body*`/`repeaterReflowAnchor` instance
+   * fields the way `render()` always did — callers must not read those
+   * fields as "belonging" to any page but the one just rendered.
+   */
+  private renderBodySectionContent(
+    body: Section,
+    ctx: BindingContext,
+    marginLeftPt: number,
+    bodyYPt: number,
+    bodyBottomPt: number,
+  ): PdfContent[] {
+    this.originXPt = marginLeftPt;
+    this.originYPt = bodyYPt;
+    this.bodyTopPt = bodyYPt;
+    this.bodyBottomPt = bodyBottomPt;
+
+    const content: PdfContent[] = [];
+    const tables = body.blocks.filter((b) => isBlockOfType(b, 'table')) as TableBlock[];
+    const others = body.blocks.filter((b) => !isBlockOfType(b, 'table'));
+    // Anchor for "below the table" = bottom edge of the LAST table. Blocks
+    // whose y starts at or after this point are reflowed AFTER the table
+    // in the content array (no absolutePosition) so they always end up on
+    // the page where the table actually finishes — never overlapping a
+    // table that grew past its designed height.
+    const lastTable = tables[tables.length - 1];
+    const tableAnchorY = lastTable
+      ? lastTable.position.y + lastTable.size.height
+      : Infinity;
+    const aboveTable = others.filter((b) => b.position.y < tableAnchorY);
+    const belowTable = others.filter((b) => b.position.y >= tableAnchorY);
+
+    // Sort by designed y so a `repeater` is emitted BEFORE any block
+    // positioned below it. The repeater's internal slicing inserts
+    // `pageBreak: 'before'` markers between pages; pdfmake's flow writer
+    // advances to the last slice's page, so absolute blocks emitted
+    // afterwards naturally land on that final repeater page rather than
+    // sitting on page 1 underneath the first slice.
+    const sortedAbove = [...aboveTable].sort((a, b) => a.position.y - b.position.y);
+    this.repeaterReflowAnchor = null;
+    // Mutable reflow anchor for this page. Starts null (no repeater yet
+    // → blocks use designed y). After a repeater renders, this picks up
+    // its side-effect; subsequent blocks reflow relative to it. When a
+    // block won't fit on the current page, we emit pageBreak: 'before'
+    // and reset the anchor to the top of the new page's body band so
+    // the *next* block continues to use the running cursor.
+    let pageAnchor: { designedBottomMm: number; actualBottomMm: number } | null = null;
+    const bodyHeightMm = (this.bodyBottomPt - this.bodyTopPt) / mmToPt(1);
+    for (const b of sortedAbove) {
+      // Pick up an anchor a previous block (e.g. a repeater) installed
+      // by side-effect. Cast resets TS's control-flow narrowing — the
+      // loop body can't see the side-effect through renderBlock.
+      const installed = this.repeaterReflowAnchor as { designedBottomMm: number; actualBottomMm: number } | null;
+      if (installed) {
+        pageAnchor = installed;
+        this.repeaterReflowAnchor = null;
+      }
+
+      let renderTarget: Block = b;
+      let reflowed = false;
+      if (pageAnchor && b.position.y >= pageAnchor.designedBottomMm) {
+        let newY = pageAnchor.actualBottomMm + (b.position.y - pageAnchor.designedBottomMm);
+        // If the block would overflow the body band, push it to the next
+        // page and reset the running cursor to the top of body.
+        if (newY + b.size.height > bodyHeightMm) {
+          content.push({ text: '', pageBreak: 'before' } as PdfContent);
+          newY = 0;
+          pageAnchor = { designedBottomMm: b.position.y, actualBottomMm: 0 };
+        }
+        renderTarget = {
+          ...b,
+          position: { x: b.position.x, y: newY },
+        } as Block;
+        reflowed = true;
+      }
+
+      const c = this.renderBlock(renderTarget, ctx);
+      if (c) content.push(c);
+
+      // Advance the cursor ONLY when this block was reflowed against the
+      // anchor — otherwise a block that sits inside the repeater's
+      // designed bounds (and was therefore rendered at its original Y)
+      // would overwrite the anchor with values unrelated to where the
+      // cards actually ended, making the next trailing block reflow
+      // against a meaningless cursor.
+      if (pageAnchor && reflowed) {
+        pageAnchor = {
+          designedBottomMm: b.position.y + b.size.height,
+          actualBottomMm: renderTarget.position.y + b.size.height,
+        };
+      }
+    }
+    // Pick up an anchor the LAST `sortedAbove` block installed by side
+    // effect — the loop above only folds `repeaterReflowAnchor` into
+    // `pageAnchor` on its NEXT iteration, so when a repeater is the last
+    // block before the table (the common layout: repeater immediately
+    // followed by the totals table), its anchor is still sitting in the
+    // instance field and would otherwise be discarded by the reset below.
+    if (this.repeaterReflowAnchor) pageAnchor = this.repeaterReflowAnchor;
+    this.repeaterReflowAnchor = null;
+    // The LAST table switches to FLOW positioning when there's content
+    // below it. `absolutePosition` doesn't advance pdfmake's flow writer,
+    // so a below-table stack would otherwise land at flow Y=0 (top of
+    // body) and overlap the table. With flow positioning the writer
+    // advances past the table and the stack lands right after it on
+    // whatever page the table finishes.
+    const useFlowForLastTable = !!lastTable && belowTable.length > 0;
+    for (let i = 0; i < tables.length; i++) {
+      const table = tables[i];
+      // A table is ALWAYS emitted at its own `absolutePosition`/`margin`
+      // Y (see `renderTable`), never through pdfmake's flow writer — so
+      // unlike a native flow element it never naturally lands past a
+      // repeater/block above it that grew taller than designed. Without
+      // this, a table below a repeater renders at its stale designed Y on
+      // whatever page the repeater's OWN pagination left the flow writer
+      // on, printing on top of that page's cards instead of after them.
+      let renderTarget: TableBlock = table;
+      if (pageAnchor && table.position.y >= pageAnchor.designedBottomMm) {
+        let newY = pageAnchor.actualBottomMm + (table.position.y - pageAnchor.designedBottomMm);
+        // Only guarantee room for the header + one data row — the table's
+        // OWN pagination (headerRows/keepWithHeaderRows) handles breaking
+        // the rest across further pages from there.
+        const oneRowH = table.rowMinHeight ?? 7;
+        const minH = (table.showHeader ? oneRowH : 0) + oneRowH;
+        if (newY + minH > bodyHeightMm) {
+          content.push({ text: '', pageBreak: 'before' } as PdfContent);
+          newY = 0;
+        }
+        renderTarget = { ...table, position: { x: table.position.x, y: newY } };
+      }
+      const isLast = i === tables.length - 1;
+      const mode: 'absolute' | 'flow' = isLast && useFlowForLastTable ? 'flow' : 'absolute';
+      const c = this.renderTable(renderTarget, ctx, mode);
+      if (c) content.push(c);
+    }
+    const flow = this.renderBelowTableFlow(belowTable, tableAnchorY, ctx);
+    if (flow) content.push(flow);
+    return content;
+  }
+
+  /** Resolves an extra page's own `body` section (the one `Section` tagged
+   *  with its id — see `Section.pageId`). */
+  private findExtraPageBody(template: ReportTemplate, extraPage: ExtraPage): Section | undefined {
+    return template.sections.find((s) => s.pageId === extraPage.id && s.type === 'body');
+  }
+
+  /**
    * Async wrapper around `render`. pdfmake's `image: '<url>'` form cannot
    * fetch remote URLs from the browser — it only resolves data URIs or
    * entries already registered in its `images` dictionary. This walks the
@@ -394,11 +498,35 @@ export class PdfMakeRenderer implements Renderer<PdfMakeDocDefinition> {
     const docDef = this.render(input);
     const urls = new Set<string>();
     this.collectRemoteImageUrls(docDef as unknown as PdfContent, urls);
+    // `header`/`footer` are CALLBACKS — pdfmake invokes them itself during
+    // layout, once per page. Their content never exists as part of `docDef`
+    // until then, so a company logo (or any other remote image) placed in a
+    // page-header/footer section was invisible to the scan above: it never
+    // got pre-fetched, and pdfmake later hit the raw `http(s)://` URL and
+    // threw "not found in virtual file system" instead of a resolved image.
+    // Invoke each once with throwaway page numbers purely to discover what
+    // it WOULD render — an image `src` string doesn't depend on which page
+    // it is, so this one-off call is enough to find every URL that needs
+    // fetching; the real per-page renders happen later, driven by pdfmake.
+    try {
+      if (docDef.header) this.collectRemoteImageUrls(docDef.header(1, 1) as unknown as PdfContent, urls);
+    } catch { /* best-effort discovery only */ }
+    try {
+      if (docDef.footer) this.collectRemoteImageUrls(docDef.footer(1, 1) as unknown as PdfContent, urls);
+    } catch { /* best-effort discovery only */ }
     if (urls.size === 0) return docDef;
     const entries = await Promise.all(
       [...urls].map(async (u): Promise<[string, string | null]> => {
         try {
-          const res = await fetch(u);
+          // The app authenticates via a session cookie (every HttpClient
+          // call goes through `auth.interceptor.ts` with
+          // `withCredentials: true`) — a bare `fetch()` doesn't send cookies
+          // cross-origin by default, so an auth-gated media URL (a company
+          // logo, a product image) came back unauthorized and silently
+          // dropped, which is what a header/footer logo hitting this without
+          // `credentials` actually looked like: pdfmake later hit the raw,
+          // never-embedded URL and threw "not found in virtual file system".
+          const res = await fetch(u, { credentials: 'include' });
           if (!res.ok) return [u, null];
           const blob = await res.blob();
           const dataUrl = await new Promise<string>((resolve, reject) => {
@@ -420,7 +548,13 @@ export class PdfMakeRenderer implements Renderer<PdfMakeDocDefinition> {
       else failed.add(u);
     }
     docDef.images = images;
-    if (failed.size > 0) this.stripFailedImages(docDef as unknown as PdfContent, failed);
+    if (failed.size > 0) {
+      // Static `content` — edit the already-built tree directly.
+      this.stripFailedImages(docDef as unknown as PdfContent, failed);
+      // `header`/`footer` — recorded so `renderBlock` blanks these URLs out
+      // on every future (real) invocation instead; see `failedImageUrls`.
+      for (const u of failed) this.failedImageUrls.add(u);
+    }
     return docDef;
   }
 
@@ -477,9 +611,11 @@ export class PdfMakeRenderer implements Renderer<PdfMakeDocDefinition> {
 
     switch (block.type) {
       case 'text':
-        return this.positionedText(block, this.binding.interpolate(block.text, ctx), merged);
+        return this.withBorder(block, merged,
+          this.positionedText(block, this.binding.interpolate(block.text, ctx), merged));
       case 'rich-text':
-        return this.positionedText(block, this.htmlToPdfRuns(this.binding.interpolate(block.html, ctx)), merged);
+        return this.withBorder(block, merged,
+          this.positionedText(block, this.htmlToPdfRuns(this.binding.interpolate(block.html, ctx)), merged));
       case 'dynamic-field': {
         const v = this.binding.evaluate(block.expression, ctx);
         return this.positionedText(block, v === null || v === undefined ? '' : String(v), merged);
@@ -489,6 +625,10 @@ export class PdfMakeRenderer implements Renderer<PdfMakeDocDefinition> {
           ? String(this.binding.evaluate(block.binding, ctx) ?? '')
           : this.binding.interpolate(block.source, ctx);
         if (!src) return null;
+        // A remote URL `renderAsync` already tried and failed to embed —
+        // drop the block rather than hand pdfmake a bare URL it can't
+        // resolve, which would abort the whole document build.
+        if (this.failedImageUrls.has(src)) return null;
         // pdfmake's `image` field only accepts PNG/JPEG (data URL or VFS path).
         // SVGs — including SVG data URLs — must go through the `svg` field as
         // raw markup. Routing keeps the same author-time `image` block working
@@ -622,7 +762,8 @@ export class PdfMakeRenderer implements Renderer<PdfMakeDocDefinition> {
       case 'page-number':
         return this.positionedText(block, this.binding.interpolate(block.format, ctx), merged);
       case 'totals':
-        return this.positioned(block, this.renderTotalsBody(block, ctx, merged));
+        return this.withBorder(block, merged,
+          this.positioned(block, this.renderTotalsBody(block, ctx, merged)));
       case 'payments':
         return this.positioned(block, this.renderPaymentsBody(block, ctx));
       case 'group-header':
@@ -644,7 +785,7 @@ export class PdfMakeRenderer implements Renderer<PdfMakeDocDefinition> {
       this.binding.resolveArray(block.dataSource, ctx),
       ctx,
     );
-    const currency = block.currency ?? 'BHD';
+    const amountPipe = paymentAmountPipe(block.currency);
     const ids = block.columns ?? DEFAULT_PAYMENT_COLUMNS;
     const cols: PaymentColumnDef[] = ids
       .map((id) => PAYMENT_COLUMN_CATALOG.find((c) => c.id === id))
@@ -685,7 +826,7 @@ export class PdfMakeRenderer implements Renderer<PdfMakeDocDefinition> {
       const fillColor = block.zebra && i % 2 === 1 ? block.zebraColor ?? '#fafafa' : undefined;
       body.push(
         cols.map((c) => {
-          const expr = c.isAmount ? `${c.expression} | currency:${currency}` : c.expression;
+          const expr = c.isAmount ? `${c.expression} | ${amountPipe}` : c.expression;
           const v = this.binding.evaluate(expr, rowCtx);
           const text = v === null || v === undefined ? '' : String(v);
           return { text, fillColor, alignment: c.align };
@@ -832,7 +973,7 @@ export class PdfMakeRenderer implements Renderer<PdfMakeDocDefinition> {
       this.binding.resolveArray(block.dataSource, ctx),
       ctx,
     );
-    const itemH = block.itemHeight;
+    const itemH = computeRepeaterItemHeightMm(block);
     const gap = block.itemSpacing ?? 0;
     const direction = block.direction ?? 'vertical';
     const stride = itemH + gap;
@@ -1089,8 +1230,12 @@ export class PdfMakeRenderer implements Renderer<PdfMakeDocDefinition> {
       let groupIndex = 0;
       let runningRowIndex = 0;
       for (const [key, bucketRows] of buckets) {
+        // A row whose group-by expression is null/undefined/empty has no
+        // real category to group under — render it as plain rows instead
+        // of a one-item "group" with a blank/undefined header and footer.
+        const hasKey = key !== null && key !== undefined && key !== '';
         const groupCtx = this.binding.withGroup(ctx, key, bucketRows, groupIndex);
-        if (group.showHeader !== false && group.headerExpression) {
+        if (hasKey && group.showHeader !== false && group.headerExpression) {
           const text = this.binding.interpolate(group.headerExpression, groupCtx);
           const cell: PdfContent = {
             text,
@@ -1105,7 +1250,7 @@ export class PdfMakeRenderer implements Renderer<PdfMakeDocDefinition> {
           body.push(buildRowCells(row, runningRowIndex));
           runningRowIndex += 1;
         }
-        if (group.showFooter !== false && group.footerExpression) {
+        if (hasKey && group.showFooter !== false && group.footerExpression) {
           const text = this.binding.interpolate(group.footerExpression, groupCtx);
           const cell: PdfContent = {
             text,
@@ -1115,7 +1260,7 @@ export class PdfMakeRenderer implements Renderer<PdfMakeDocDefinition> {
           };
           body.push([cell, ...Array(Math.max(0, numCols - 1)).fill({})]);
         }
-        groupIndex += 1;
+        if (hasKey) groupIndex += 1;
       }
     } else {
       rows.forEach((row, i) => body.push(buildRowCells(row, i)));
@@ -1156,7 +1301,23 @@ export class PdfMakeRenderer implements Renderer<PdfMakeDocDefinition> {
       body.push(block.columns.map(() => ({ text: '' })));
     }
 
+    // The block's own font cascades into every cell. pdfmake resolves text
+    // styles down the node tree, so naming the font here is the exporter's
+    // equivalent of the CSS inheritance the canvas and the HTML renderer get
+    // for free from the wrapper element — a font set on the table reaches
+    // cells that don't set one of their own, and a column style still wins.
+    // Font only: `fillColor` / `alignment` from the rest of the block style
+    // would inherit into every cell and override the per-column alignment.
+    const tableFont = this.styleToPdf({ font: block.style?.font });
+
+    // Grid lines follow the block's own Border width (set 0 → none) rather
+    // than always drawing — undefined (never touched) still defaults to
+    // bordered, matching the canvas and HTML renderer.
+    const tableBorderWidth = block.style?.border?.top?.width ?? block.style?.border?.left?.width;
+    const tableLineW = tableBorderWidth === 0 ? 0 : TABLE_LINE_W;
+
     const tableContent: PdfContent = {
+      ...tableFont,
       table: {
         widths,
         headerRows: block.showHeader ? 1 : 0,
@@ -1165,8 +1326,8 @@ export class PdfMakeRenderer implements Renderer<PdfMakeDocDefinition> {
         dontBreakRows: !block.pageBreak,
       },
       layout: {
-        hLineWidth: () => TABLE_LINE_W,
-        vLineWidth: () => TABLE_LINE_W,
+        hLineWidth: () => tableLineW,
+        vLineWidth: () => tableLineW,
         hLineColor: () => '#d0d0d0',
         vLineColor: () => '#d0d0d0',
         paddingTop: () => TABLE_PAD_Y,
@@ -1283,18 +1444,44 @@ export class PdfMakeRenderer implements Renderer<PdfMakeDocDefinition> {
 
   // ─── style mapping ─────────────────────────────────────────
 
+  /**
+   * `template.defaultStyle`, with the document font folded in.
+   *
+   * pdfmake's `defaultStyle` is what a node inherits when it names nothing of
+   * its own — the exporter's equivalent of the `font-family` the canvas puts
+   * on the page element and the HTML renderer puts on `body` and `.page`.
+   * Both of those resolve "Inherit" to `theme.fontFamily`, so the theme font
+   * has to land here too, or changing the document font would stop at the
+   * screen and the PDF would keep rendering in pdfmake's built-in Roboto.
+   *
+   * The theme wins over any family already on `defaultStyle`: the theme slot
+   * is the one the property panel edits, and the two surfaces that show the
+   * design on screen read only that. Size and color on `defaultStyle` are
+   * left exactly as they were. A family pdfmake hasn't registered still
+   * resolves to nothing and falls back to Roboto — see `resolvePdfFontName`.
+   */
+  private documentDefaultStyle(template: RenderInput['template']): BlockStyle {
+    const family = normalizeSeedFontFamily(template.theme?.fontFamily)
+      || template.defaultStyle?.font?.family
+      || DEFAULT_FONT_STACK;
+    return {
+      ...template.defaultStyle,
+      font: { ...template.defaultStyle?.font, family },
+    };
+  }
+
   private styleToPdf(style: BlockStyle | undefined): Record<string, unknown> {
     if (!style) return {};
     const out: Record<string, unknown> = {};
-    if (style.font?.size !== undefined) out['fontSize'] = style.font.size;
-    if (style.font?.weight && (style.font.weight === 'bold' || Number(style.font.weight) >= 600)) out['bold'] = true;
-    if (style.font?.italic) out['italics'] = true;
-    if (style.font?.color) out['color'] = style.font.color;
-    if (style.font?.underline) out['decoration'] = 'underline';
+    if (style['font']?.size !== undefined) out['fontSize'] = style['font'].size;
+    if (style['font']?.weight && (style['font'].weight === 'bold' || Number(style['font'].weight) >= 600)) out['bold'] = true;
+    if (style['font']?.italic) out['italics'] = true;
+    if (style['font']?.color) out['color'] = style['font'].color;
+    if (style['font']?.underline) out['decoration'] = 'underline';
     // pdfmake doesn't understand CSS font stacks like '"Inter", Arial, sans-serif'.
     // Only forward the name if it matches a font registered in pdfMake.fonts
     // (the default VFS only ships Roboto). Otherwise let pdfmake fall back.
-    const fontName = this.resolvePdfFontName(style.font?.family);
+    const fontName = this.resolvePdfFontName(style['font']?.family);
     if (fontName) out['font'] = fontName;
     if (style.background) out['fillColor'] = style.background;
     if (style.align) out['alignment'] = style.align;
@@ -1372,6 +1559,56 @@ export class PdfMakeRenderer implements Renderer<PdfMakeDocDefinition> {
    * every text-bearing block (text, rich-text, dynamic-field, page-number,
    * group-header/footer).
    */
+  /**
+   * Stroke the block's border box.
+   *
+   * The canvas and HTML renderers get borders from CSS `border-*`, but
+   * pdfmake has no border concept for text/image/totals nodes — only the
+   * shapes that draw their own canvas rect (rectangle, repeater card) had
+   * one. Without this a design showed a frame on screen and lost it on
+   * export. Uniform width only, which is all the property panel offers:
+   * a pdfmake canvas rect strokes all four sides with a single width.
+   */
+  private borderRect(block: Block, style: BlockStyle | undefined): PdfContent | null {
+    const side = style?.border?.top
+      ?? style?.border?.right
+      ?? style?.border?.bottom
+      ?? style?.border?.left;
+    if (!side?.width) return null;
+    return this.positioned(block, {
+      canvas: [
+        {
+          type: 'rect',
+          x: 0,
+          y: 0,
+          w: mmToPt(block.size.width),
+          h: mmToPt(block.size.height),
+          lineColor: side.color,
+          lineWidth: side.width,
+        },
+      ],
+    });
+  }
+
+  /** `content` with its border drawn behind it, when the style sets one.
+   *
+   *  Wrapped in an explicit `{ stack: [...] }` rather than returned as a
+   *  bare `[border, content]` array. pdfmake accepts a bare array as a node
+   *  in most places, but whatever this node passes through downstream (the
+   *  page-reflow content list, in particular) can end up object-spreading
+   *  it — `{...[a, b]}` silently produces `{0: a, 1: b}`, which pdfmake's
+   *  own preprocessor then rejects as "Unrecognized document structure"
+   *  instead of the intended two-node stack. `stack` has exactly one array
+   *  property, so a spread only touches that key, never the elements. */
+  private withBorder(
+    block: Block,
+    style: BlockStyle | undefined,
+    content: PdfContent,
+  ): PdfContent {
+    const border = this.borderRect(block, style);
+    return border ? { stack: [border, content] } : content;
+  }
+
   private positionedText(
     block: Block,
     text: string | PdfContent[],
@@ -1394,25 +1631,57 @@ export class PdfMakeRenderer implements Renderer<PdfMakeDocDefinition> {
   }
 
   /**
-   * Force `font: 'Amiri'` on any run that contains Arabic — pdfmake's
-   * default Roboto has no Arabic glyphs, so without this Arabic chars
-   * render as `.notdef` boxes. Amiri also has Latin glyphs, so mixed
-   * runs still render acceptably. (Amiri is registered by
-   * `registerArabicFont()` at PDF-export time.) Returns `{}` for
-   * Latin-only runs so the document keeps Roboto as the default.
+   * Put Arabic characters on Amiri without dragging the Latin ones with them.
+   * pdfmake's default Roboto has no Arabic glyphs, so Arabic left on it
+   * renders as `.notdef` boxes. (Amiri is registered by `registerArabicFont()`
+   * at PDF-export time.)
+   *
+   * Spread over an object that already has `text`, so it can return either
+   * form:
+   *  - Latin only → `{}`, and the node keeps whatever the block's style chose.
+   *  - Arabic only → `{ font: 'Amiri' }`, one font for the whole node.
+   *  - Mixed → `{ text: [...] }`, one child run per script, Amiri named only
+   *    on the Arabic ones. Latin runs are left without a `font` on purpose:
+   *    that lets them inherit the block's own family, so an explicit font
+   *    choice survives and "Inherit" still lands on pdfmake's default Roboto.
+   *
+   * The mixed case is what an invoice actually looks like — an Arabic
+   * description beside a Latin SKU, or `Total / الإجمالي`. Before this it took
+   * one Arabic character anywhere in a node to move the whole node to Amiri,
+   * so the Latin half rendered in Amiri's Latin glyphs instead of Roboto and
+   * stopped matching the canvas.
+   *
+   * Splitting is safe for line breaking and bidi: pdfmake already tokenises
+   * every string into per-word inlines before layout, so this only changes
+   * which font some of those inlines carry, not how many there are.
    */
-  private arabicFontOverride(text: string | PdfContent[]): { font?: string } {
-    if (typeof text === 'string') {
-      return containsArabic(text) ? { font: 'Amiri' } : {};
+  private arabicFontOverride(text: string | PdfContent[]): { font?: string; text?: PdfContent[] } {
+    if (typeof text !== 'string') {
+      // Already-structured content (a bordered block's [rect, content] pair,
+      // for one). Its leaf runs are built elsewhere; all this can do is name
+      // the font for the whole node.
+      return this.containsArabicDeep(text) ? { font: 'Amiri' } : {};
     }
-    for (const run of text) {
+    if (!containsArabic(text)) return {};
+    const segments = splitByScript(text);
+    if (segments.length === 1) return { font: 'Amiri' };
+    return {
+      text: segments.map((s) => (s.arabic ? { text: s.text, font: 'Amiri' } : { text: s.text })),
+    };
+  }
+
+  /** True if any leaf run anywhere under `content` contains Arabic. */
+  private containsArabicDeep(content: PdfContent[]): boolean {
+    for (const run of content) {
       if (typeof run === 'string') {
-        if (containsArabic(run)) return { font: 'Amiri' };
+        if (containsArabic(run)) return true;
+      } else if (Array.isArray(run)) {
+        if (this.containsArabicDeep(run)) return true;
       } else if (run && typeof run.text === 'string' && containsArabic(run.text)) {
-        return { font: 'Amiri' };
+        return true;
       }
     }
-    return {};
+    return false;
   }
 
   private positioned(block: Block, content: Partial<Exclude<PdfContent, string>>): PdfContent {

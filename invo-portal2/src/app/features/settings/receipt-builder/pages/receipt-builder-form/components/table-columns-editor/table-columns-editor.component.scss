@@ -15,8 +15,8 @@
   flex-direction: column;
   gap: 10px;
   padding: 10px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--ui-surface-1);
+  border: 1px solid var(--ui-line);
   border-radius: 10px;
 
   &__header {
@@ -30,7 +30,7 @@
     margin: 0;
     font-size: 11px;
     font-weight: 800;
-    color: var(--color-brand-700);
+    color: var(--ui-brand-t700);
     text-transform: uppercase;
     letter-spacing: 0.06em;
   }
@@ -44,11 +44,11 @@
     border: none;
     border-radius: 4px;
     background: transparent;
-    color: #94a3b8;
+    color: var(--ui-faint);
     cursor: pointer;
     transition: background 120ms ease, color 120ms ease;
 
-    &:hover { background: #fef2f2; color: #b91c1c; }
+    &:hover { background: var(--ui-red-soft); color: var(--ui-red-text); }
   }
 
   &__add-row {
@@ -59,19 +59,19 @@
     gap: 6px;
     padding: 6px 10px;
     background: transparent;
-    border: 1px dashed #cbd5e1;
+    border: 1px dashed var(--ui-line-strong);
     border-radius: 6px;
     font: inherit;
     font-size: 11px;
     font-weight: 600;
-    color: #475569;
+    color: var(--ui-text-4);
     cursor: pointer;
     transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
 
     &:hover {
       background: var(--color-brand-50);
-      border-color: var(--color-brand-300, #bae6fd);
-      color: var(--color-brand-700);
+      border-color: var(--color-brand-300, var(--ui-sky-soft-2));
+      color: var(--ui-brand-t700);
     }
   }
 }
@@ -88,17 +88,17 @@
   gap: 6px;
   padding: 8px 10px;
   background: var(--color-brand-50);
-  border: 1px dashed var(--color-brand-300, #bae6fd);
+  border: 1px dashed var(--color-brand-300, var(--ui-sky-soft-2));
   border-radius: 6px;
   font: inherit;
   font-size: 12px;
   font-weight: 700;
-  color: var(--color-brand-700);
+  color: var(--ui-brand-t700);
   cursor: pointer;
   transition: background 120ms ease, border-color 120ms ease;
 
   &:hover {
-    background: var(--color-brand-100, #e0f2fe);
+    background: var(--color-brand-100, var(--ui-sky-soft));
     border-color: var(--color-brand-500);
   }
 }
@@ -108,8 +108,8 @@
 // distinct sub-section. Cells inside still have their own border to
 // stay legible against this white background.
 .tce-row {
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
   border-radius: 10px;
   padding: 10px;
 
@@ -124,7 +124,7 @@
     margin: 0;
     font-size: 11px;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--ui-text);
     text-transform: uppercase;
     letter-spacing: 0.04em;
   }
@@ -132,9 +132,9 @@
   &__type {
     font-size: 10px;
     font-weight: 600;
-    color: #64748b;
-    background: #fff;
-    border: 1px solid #e2e8f0;
+    color: var(--ui-muted);
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-line);
     padding: 2px 6px;
     border-radius: 999px;
     text-transform: uppercase;
@@ -156,20 +156,20 @@
     justify-content: center;
     gap: 6px;
     padding: 6px 10px;
-    background: #fff;
-    border: 1px dashed #cbd5e1;
+    background: var(--ui-surface);
+    border: 1px dashed var(--ui-line-strong);
     border-radius: 6px;
     font: inherit;
     font-size: 11px;
     font-weight: 600;
-    color: #475569;
+    color: var(--ui-text-4);
     cursor: pointer;
     transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
 
     &:hover {
       background: var(--color-brand-50);
-      border-color: var(--color-brand-300, #bae6fd);
-      color: var(--color-brand-700);
+      border-color: var(--color-brand-300, var(--ui-sky-soft-2));
+      color: var(--ui-brand-t700);
     }
 
     // While the menu is open keep the trigger pinned in the
@@ -178,7 +178,7 @@
     &--on:hover {
       background: var(--color-brand-50);
       border-color: var(--color-brand-500);
-      color: var(--color-brand-700);
+      color: var(--ui-brand-t700);
     }
   }
 }
@@ -195,8 +195,8 @@
   width: 240px;
   max-height: 320px;
   overflow: auto;
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
   border-radius: 8px;
   box-shadow: 0 12px 28px rgba(15, 23, 42, 0.15);
 
@@ -211,15 +211,15 @@
     border-radius: 4px;
     font: inherit;
     font-size: 12px;
-    color: #475569;
+    color: var(--ui-text-4);
     cursor: pointer;
     text-align: start;
     transition: background 120ms ease, border-color 120ms ease;
 
     &:hover {
       background: var(--color-brand-50);
-      border-color: var(--color-brand-300, #bae6fd);
-      color: var(--color-brand-700);
+      border-color: var(--color-brand-300, var(--ui-sky-soft-2));
+      color: var(--ui-brand-t700);
     }
   }
 
@@ -233,7 +233,7 @@
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 11px;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--ui-text);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -243,7 +243,7 @@
     padding: 18px 12px;
     text-align: center;
     font-size: 12px;
-    color: #94a3b8;
+    color: var(--ui-faint);
   }
 }
 
@@ -259,22 +259,22 @@
   flex-direction: column;
   gap: 0;
   padding: 0;
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
   border-radius: 6px;
   transition: background 120ms ease, border-color 120ms ease,
               box-shadow 120ms ease, opacity 120ms ease;
 
   &--hidden {
     opacity: 0.55;
-    background: #f1f5f9;
+    background: var(--ui-surface-2);
   }
 
   // Open state — pin the brand border so the user can spot which
   // column they're editing while scrolling the rail.
   &--open {
-    border-color: var(--color-brand-300, #bae6fd);
-    box-shadow: 0 0 0 1px var(--color-brand-300, #bae6fd);
+    border-color: var(--color-brand-300, var(--ui-sky-soft-2));
+    box-shadow: 0 0 0 1px var(--color-brand-300, var(--ui-sky-soft-2));
   }
 
   // Always-visible summary row.
@@ -289,13 +289,13 @@
   &__handle {
     width: 18px; height: 22px;
     display: inline-flex; align-items: center; justify-content: center;
-    color: #94a3b8;
+    color: var(--ui-faint);
     cursor: grab;
     flex-shrink: 0;
     border-radius: 4px;
 
     &:active { cursor: grabbing; }
-    &:hover  { background: #f8fafc; color: #475569; }
+    &:hover  { background: var(--ui-surface-1); color: var(--ui-text-4); }
   }
 
   // Read-only key chip — the only column identifier in the compact
@@ -311,7 +311,7 @@
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 12px;
     font-weight: 600;
-    color: #0f172a;
+    color: var(--ui-text);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -321,22 +321,22 @@
   &__width {
     width: 44px;
     padding: 3px 4px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--ui-line);
     border-radius: 4px;
-    background: #fff;
+    background: var(--ui-surface);
     font: inherit;
     font-size: 11px;
     text-align: center;
-    color: #0f172a;
+    color: var(--ui-text);
     outline: none;
 
     &:focus  { border-color: var(--color-brand-500); }
-    &:disabled { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
+    &:disabled { background: var(--ui-surface-2); color: var(--ui-faint); cursor: not-allowed; }
   }
 
   &__pct {
     font-size: 10px;
-    color: #94a3b8;
+    color: var(--ui-faint);
     flex-shrink: 0;
     margin-inline-start: -2px;
   }
@@ -350,13 +350,13 @@
     border: none;
     border-radius: 4px;
     background: transparent;
-    color: #94a3b8;
+    color: var(--ui-faint);
     cursor: pointer;
     flex-shrink: 0;
     transition: background 120ms ease, color 120ms ease;
 
-    &:hover { background: #f1f5f9; color: #475569; }
-    &--danger:hover { background: #fef2f2; color: #b91c1c; }
+    &:hover { background: var(--ui-surface-2); color: var(--ui-text-4); }
+    &--danger:hover { background: var(--ui-red-soft); color: var(--ui-red-text); }
   }
 
   // Expansion chevron — rotates 180° when the panel is open so the
@@ -364,12 +364,12 @@
   &__chev {
     width: 18px; height: 22px;
     display: inline-flex; align-items: center; justify-content: center;
-    color: #94a3b8;
+    color: var(--ui-faint);
     flex-shrink: 0;
     transition: transform 160ms ease, color 120ms ease;
 
     &--open {
-      color: var(--color-brand-700);
+      color: var(--ui-brand-t700);
       transform: rotate(180deg);
     }
   }
@@ -384,7 +384,7 @@
   &__placeholder {
     height: 30px;
     background: var(--color-brand-50);
-    border: 1px dashed var(--color-brand-300, #bae6fd);
+    border: 1px dashed var(--color-brand-300, var(--ui-sky-soft-2));
     border-radius: 4px;
     margin-bottom: 4px;
   }
@@ -397,8 +397,8 @@
 // textarea, then a Width + Alignment row.
 .tce-detail {
   padding: 10px;
-  border-top: 1px solid #e2e8f0;
-  background: #f8fafc;
+  border-top: 1px solid var(--ui-line);
+  background: var(--ui-surface-1);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -407,13 +407,13 @@
     align-self: flex-start;
     max-width: 100%;
     padding: 4px 8px;
-    background: #fff;
-    border: 1px solid #e2e8f0;
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-line);
     border-radius: 999px;
     font: inherit;
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 11px;
-    color: #475569;
+    color: var(--ui-text-4);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -430,7 +430,7 @@
     > label {
       font-size: 11px;
       font-weight: 600;
-      color: #64748b;
+      color: var(--ui-muted);
       text-transform: uppercase;
       letter-spacing: 0.04em;
     }
@@ -439,12 +439,12 @@
     > input {
       width: 100%;
       padding: 7px 10px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--ui-line);
       border-radius: 8px;
-      background: #fff;
+      background: var(--ui-surface);
       font: inherit;
       font-size: 13px;
-      color: #0f172a;
+      color: var(--ui-text);
       outline: none;
       transition: border-color 120ms ease, box-shadow 120ms ease;
 
@@ -471,27 +471,27 @@
     > input {
       width: 70px;
       padding: 6px 8px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--ui-line);
       border-radius: 6px;
-      background: #fff;
+      background: var(--ui-surface);
       font: inherit;
       font-size: 13px;
-      color: #0f172a;
+      color: var(--ui-text);
       outline: none;
 
       &:focus { border-color: var(--color-brand-500); }
-      &:disabled { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
+      &:disabled { background: var(--ui-surface-2); color: var(--ui-faint); cursor: not-allowed; }
     }
-    > span { color: #94a3b8; font-size: 12px; }
+    > span { color: var(--ui-faint); font-size: 12px; }
   }
 
   &__seg {
     display: inline-flex;
     width: 100%;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--ui-line);
     border-radius: 8px;
     overflow: hidden;
-    background: #fff;
+    background: var(--ui-surface);
   }
 
   // Toggle for conditional-hide modifiers (`hideIfOne` / `hideIfZero`)
@@ -512,7 +512,7 @@
       position: relative;
       width: 32px; height: 18px;
       border-radius: 999px;
-      background: #cbd5e1;
+      background: var(--ui-line-strong);
       flex-shrink: 0;
       transition: background 120ms ease;
     }
@@ -520,7 +520,7 @@
       position: absolute;
       top: 2px; inset-inline-start: 2px;
       width: 14px; height: 14px;
-      background: #fff;
+      background: var(--ui-surface);
       border-radius: 999px;
       box-shadow: 0 1px 2px rgba(15, 23, 42, 0.18);
       transition: inset-inline-start 120ms ease;
@@ -528,7 +528,7 @@
     input:checked + &__track { background: var(--color-brand-600); }
     input:checked + &__track .toggle__thumb { inset-inline-start: 16px; }
 
-    &__label { font-size: 12px; color: #475569; }
+    &__label { font-size: 12px; color: var(--ui-text-4); }
   }
 
   &__seg-btn {
@@ -539,20 +539,20 @@
     font: inherit;
     font-size: 11px;
     font-weight: 600;
-    color: #64748b;
+    color: var(--ui-muted);
     cursor: pointer;
     transition: background 120ms ease, color 120ms ease;
     text-transform: capitalize;
 
     &:hover:not(.tce-detail__seg-btn--on) {
-      background: #f8fafc;
-      color: #0f172a;
+      background: var(--ui-surface-1);
+      color: var(--ui-text);
     }
     &--on {
       background: var(--color-brand-600);
       color: #fff;
     }
-    & + & { border-inline-start: 1px solid #e2e8f0; }
+    & + & { border-inline-start: 1px solid var(--ui-line); }
 
     // Icon-only variant for alignment pickers — flex-center the
     // glyph and drop the text-transform.
@@ -566,4 +566,4 @@
 }
 
 .tce-row__header { display: flex; align-items: center; justify-content: space-between; }
-.tce-row__remove { appearance: none; border: 0; background: transparent; width: 24px; height: 24px; border-radius: 6px; color: #94a3b8; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; &:hover { background: #fef2f2; color: #b91c1c; } }
+.tce-row__remove { appearance: none; border: 0; background: transparent; width: 24px; height: 24px; border-radius: 6px; color: var(--ui-faint); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; &:hover { background: var(--ui-red-soft); color: var(--ui-red-text); } }

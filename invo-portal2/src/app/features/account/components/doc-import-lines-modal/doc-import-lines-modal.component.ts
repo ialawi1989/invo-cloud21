@@ -59,16 +59,16 @@ const TEMPLATE = [
   `,
   styles: [`
     .im { padding: 16px 24px; display: flex; flex-direction: column; gap: 10px; }
-    .im__label { font-size: 13px; font-weight: 600; color: #334155; }
-    .im__file { border: 1px solid #d0d5dd; border-radius: 8px; padding: 8px; font: inherit; font-size: 13px; }
-    .im__err { margin: 0; color: #dc2626; font-size: 12.5px; }
-    .im__ok { margin: 0; color: #227d8d; font-size: 13px; }
-    .im__warn { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; border-radius: 8px; padding: 8px 12px; font-size: 12.5px; max-height: 140px; overflow: auto; }
+    .im__label { font-size: 13px; font-weight: 600; color: var(--ui-text-3); }
+    .im__file { border: 1px solid var(--ui-line-strong); border-radius: 8px; padding: 8px; font: inherit; font-size: 13px; }
+    .im__err { margin: 0; color: var(--ui-red-text); font-size: 12.5px; }
+    .im__ok { margin: 0; color: var(--ui-brand-text); font-size: 13px; }
+    .im__warn { background: var(--ui-amber-soft); border: 1px solid var(--ui-amber-soft-2); color: var(--ui-amber-text); border-radius: 8px; padding: 8px 12px; font-size: 12.5px; max-height: 140px; overflow: auto; }
     .im__warn ul { margin: 4px 0 0; padding-inline-start: 18px; }
-    .im__switch { display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; color: #334155; cursor: pointer; }
-    .im__tpl { margin-inline-end: auto; font-size: 13px; color: #64748b; }
-    :host ::ng-deep .im__btn, .im__btn { padding: 9px 16px; border-radius: 8px; border: 1px solid #d0d5dd; background: #fff; color: #334155; font-weight: 600; font-size: 13.5px; cursor: pointer; }
-    .im__btn--primary { border-color: #2691a4; background: #2691a4; color: #fff; }
+    .im__switch { display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--ui-text-3); cursor: pointer; }
+    .im__tpl { margin-inline-end: auto; font-size: 13px; color: var(--ui-muted); }
+    :host ::ng-deep .im__btn, .im__btn { padding: 9px 16px; border-radius: 8px; border: 1px solid var(--ui-line-strong); background: var(--ui-surface); color: var(--ui-text-3); font-weight: 600; font-size: 13.5px; cursor: pointer; }
+    .im__btn--primary { border-color: #2691a4; background: var(--ui-b-2691a4); color: #fff; }
     .im__btn:disabled { opacity: .5; cursor: not-allowed; }
   `],
 })

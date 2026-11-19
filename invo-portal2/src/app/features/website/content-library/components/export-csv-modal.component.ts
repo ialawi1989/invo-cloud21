@@ -22,7 +22,7 @@ export interface ExportCsvData {
   standalone: true,
   imports: [CommonModule, FormsModule],
   styles: [`
-    :host { font-family:'Inter',-apple-system,sans-serif; color:#111827; }
+    :host { font-family:'Inter',-apple-system,sans-serif; color:var(--ui-text); }
 
     .modal { width:100%; max-height:80vh; display:flex; flex-direction:column; }
 
@@ -31,14 +31,14 @@ export interface ExportCsvData {
       display:flex; align-items:flex-start; justify-content:space-between;
       padding:22px 24px 16px; flex-shrink:0;
     }
-    .mh-title { font-size:18px; font-weight:700; color:#111827; margin:0 0 4px; }
-    .mh-sub { font-size:13px; color:#6b7280; margin:0; line-height:1.45; }
+    .mh-title { font-size:18px; font-weight:700; color:var(--ui-text); margin:0 0 4px; }
+    .mh-sub { font-size:13px; color:var(--ui-muted); margin:0; line-height:1.45; }
     .mh-actions { display:flex; align-items:center; gap:6px; }
     .icon-btn {
       width:30px; height:30px; border:none; background:transparent; cursor:pointer;
-      color:#9ca3af; border-radius:7px; display:flex; align-items:center; justify-content:center;
+      color:var(--ui-faint); border-radius:7px; display:flex; align-items:center; justify-content:center;
     }
-    .icon-btn:hover { background:#f3f4f6; color:#374151; }
+    .icon-btn:hover { background:var(--ui-surface-2); color:var(--ui-text-3); }
 
     /* body */
     .body { flex:1; overflow-y:auto; padding:8px 24px 24px; }
@@ -46,11 +46,11 @@ export interface ExportCsvData {
     /* radio options */
     .opt {
       display:flex; align-items:flex-start; gap:14px;
-      padding:16px 0; border-bottom:1px solid #f1f5f9;
+      padding:16px 0; border-bottom:1px solid var(--ui-surface-2);
       cursor:pointer; transition:background .08s;
     }
     .opt:last-child { border-bottom:none; }
-    .opt:hover { background:#fafbfc; margin:0 -24px; padding:16px 24px; border-radius:0; }
+    .opt:hover { background:var(--ui-surface-1); margin:0 -24px; padding:16px 24px; border-radius:0; }
 
     /* custom radio */
     .opt-radio-wrap {
@@ -61,7 +61,7 @@ export interface ExportCsvData {
     }
     .opt-radio-circle {
       width:20px; height:20px; border-radius:50%;
-      border:2px solid #cbd5e1; background:#fff;
+      border:2px solid var(--ui-line-strong); background:var(--ui-surface);
       display:flex; align-items:center; justify-content:center;
       transition:all .15s;
     }
@@ -76,21 +76,21 @@ export interface ExportCsvData {
       background:#32acc1;
     }
     .opt-text { flex:1; }
-    .opt-title { font-size:15px; font-weight:600; color:#111827; margin:0 0 3px; }
-    .opt-desc { font-size:13px; color:#6b7280; margin:0; line-height:1.4; }
+    .opt-title { font-size:15px; font-weight:600; color:var(--ui-text); margin:0 0 3px; }
+    .opt-desc { font-size:13px; color:var(--ui-muted); margin:0; line-height:1.4; }
 
     /* progress */
     .progress-wrap { padding:40px 0; text-align:center; }
     .progress-bar-bg {
-      width:100%; height:6px; background:#e5e7eb; border-radius:3px;
+      width:100%; height:6px; background:var(--ui-line); border-radius:3px;
       overflow:hidden; margin-bottom:12px;
     }
     .progress-bar-fill {
       height:100%; background:#32acc1; border-radius:3px;
       transition:width .3s ease;
     }
-    .progress-pct { font-size:14px; font-weight:600; color:#111827; margin-bottom:6px; }
-    .progress-msg { font-size:13px; color:#6b7280; }
+    .progress-pct { font-size:14px; font-weight:600; color:var(--ui-text); margin-bottom:6px; }
+    .progress-msg { font-size:13px; color:var(--ui-muted); }
 
     /* ready */
     .ready-wrap { padding:32px 0; display:flex; flex-direction:column; align-items:center; gap:16px; }
@@ -98,12 +98,12 @@ export interface ExportCsvData {
       width:80px; height:80px; position:relative;
       display:flex; align-items:center; justify-content:center;
     }
-    .ready-title { font-size:18px; font-weight:700; color:#111827; margin:0; }
-    .ready-desc { font-size:14px; color:#6b7280; text-align:center; max-width:340px; line-height:1.5; margin:0; }
+    .ready-title { font-size:18px; font-weight:700; color:var(--ui-text); margin:0; }
+    .ready-desc { font-size:14px; color:var(--ui-muted); text-align:center; max-width:340px; line-height:1.5; margin:0; }
     .download-btn {
       display:inline-flex; align-items:center; gap:8px;
       height:44px; padding:0 28px; border-radius:100px;
-      border:none; background:#32acc1; color:#fff;
+      border:none; background:var(--ui-b-32acc1); color:#fff;
       font-size:15px; font-weight:600; cursor:pointer; font-family:inherit;
       transition:background .13s; margin-top:4px;
     }
@@ -112,16 +112,16 @@ export interface ExportCsvData {
     /* footer */
     .mf {
       display:flex; align-items:center; justify-content:flex-end; gap:10px;
-      padding:16px 24px; border-top:1px solid #f1f5f9; flex-shrink:0;
+      padding:16px 24px; border-top:1px solid var(--ui-surface-2); flex-shrink:0;
     }
     .btn {
       height:40px; border-radius:100px; font-size:14px; font-weight:500;
       cursor:pointer; font-family:inherit; padding:0 24px;
       transition:all .13s; display:inline-flex; align-items:center; gap:7px;
     }
-    .btn-cancel { border:1.5px solid #e5e7eb; background:#fff; color:#374151; }
-    .btn-cancel:hover { background:#f3f4f6; }
-    .btn-primary { border:none; background:#32acc1; color:#fff; }
+    .btn-cancel { border:1.5px solid var(--ui-line); background:var(--ui-surface); color:var(--ui-text-3); }
+    .btn-cancel:hover { background:var(--ui-surface-2); }
+    .btn-primary { border:none; background:var(--ui-b-32acc1); color:#fff; }
     .btn-primary:hover { background:#2b95a8; }
     .btn-primary:disabled { opacity:.55; cursor:default; }
   `],

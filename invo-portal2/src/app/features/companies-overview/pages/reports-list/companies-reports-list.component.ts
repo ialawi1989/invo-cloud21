@@ -26,12 +26,12 @@ import { TranslateModule } from '@ngx-translate/core';
   styles: [`
     :host { display: block; overflow-y: auto; }
     .cr { padding: 24px 32px; }
-    h2 { margin: 0 0 16px; font-size: 20px; font-weight: 700; color: #0f172a; }
+    h2 { margin: 0 0 16px; font-size: 20px; font-weight: 700; color: var(--ui-text); }
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
-    .card { display: flex; gap: 14px; align-items: flex-start; padding: 16px; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; text-decoration: none; color: inherit; transition: border-color .15s, box-shadow .15s;
+    .card { display: flex; gap: 14px; align-items: flex-start; padding: 16px; background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: 12px; text-decoration: none; color: inherit; transition: border-color .15s, box-shadow .15s;
       &:hover { border-color: #32acc1; box-shadow: 0 2px 10px rgba(50,172,193,.12); } }
-    .ico { width: 40px; height: 40px; flex: none; display: grid; place-items: center; border-radius: 10px; background: #ecfeff; color: #0e7490; }
-    .txt { display: flex; flex-direction: column; gap: 2px; b { font-size: 14px; color: #0f172a; } small { font-size: 12px; color: #64748b; } }
+    .ico { width: 40px; height: 40px; flex: none; display: grid; place-items: center; border-radius: 10px; background: var(--ui-brand-soft); color: var(--ui-brand-text); }
+    .txt { display: flex; flex-direction: column; gap: 2px; b { font-size: 14px; color: var(--ui-text); } small { font-size: 12px; color: var(--ui-muted); } }
   `],
 })
 export class CompaniesReportsListComponent {

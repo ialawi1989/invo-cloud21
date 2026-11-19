@@ -25,7 +25,7 @@ export interface RefItem {
       display: flex; align-items: center; justify-content: space-between;
       margin-bottom: 6px;
     }
-    .rp-label { font-size: 13px; font-weight: 500; color: #374151; }
+    .rp-label { font-size: 13px; font-weight: 500; color: var(--ui-text-3); }
     .rp-open-link {
       border: none; background: none; cursor: pointer;
       font-size: 12px; font-weight: 500; color: #32acc1;
@@ -37,8 +37,8 @@ export interface RefItem {
     .rp-box {
       display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
       min-height: 42px; padding: 6px 10px;
-      border: 1.5px solid #e5e7eb; border-radius: 8px;
-      background: #fff; cursor: text; transition: border-color .12s;
+      border: 1.5px solid var(--ui-line); border-radius: 8px;
+      background: var(--ui-surface); cursor: text; transition: border-color .12s;
       position: relative;
     }
     .rp-box:focus-within { border-color: #32acc1; box-shadow: 0 0 0 3px rgba(50,172,193,.08); }
@@ -48,7 +48,7 @@ export interface RefItem {
     .tag {
       display: inline-flex; align-items: center; gap: 4px;
       height: 24px; padding: 0 7px 0 4px; border-radius: 5px;
-      background: #e6f7fa; color: #0e7a8a; font-size: 12px; font-weight: 500;
+      background: var(--ui-x-e6f7fa); color: var(--ui-t-0e7a8a); font-size: 12px; font-weight: 500;
       white-space: nowrap; max-width: 160px;
     }
     .tag-img {
@@ -60,7 +60,7 @@ export interface RefItem {
       color: #7dd3e0; display: flex; align-items: center; justify-content: center;
       border-radius: 50%; padding: 0; flex-shrink: 0; margin-left: 1px;
     }
-    .tag-x:hover { color: #0e7a8a; background: #ccf0f5; }
+    .tag-x:hover { color: var(--ui-t-0e7a8a); background: var(--ui-x-ccf0f5); }
 
     /* + Add Reference button */
     .rp-add {
@@ -90,25 +90,25 @@ export interface RefItem {
     /* No collection configured */
     .rp-disabled {
       min-height: 42px; padding: 10px 12px;
-      border: 1.5px dashed #e5e7eb; border-radius: 8px;
-      background: #fafafa; color: #9ca3af; font-size: 13px;
+      border: 1.5px dashed var(--ui-line); border-radius: 8px;
+      background: var(--ui-x-fafafa); color: var(--ui-faint); font-size: 13px;
       display: flex; align-items: center; gap: 6px;
     }
 
     /* Dropdown — fixed position */
     .rp-dd {
       position: fixed; z-index: 9999;
-      width: 220px; background: #fff;
-      border: 1px solid #e5e7eb; border-radius: 10px;
+      width: 220px; background: var(--ui-surface);
+      border: 1px solid var(--ui-line); border-radius: 10px;
       box-shadow: 0 10px 32px rgba(0,0,0,.14);
       max-height: 320px; display: flex; flex-direction: column;
       overflow: hidden;
     }
     .rp-dd-search {
       margin: 0; height: 34px;
-      border: none; border-bottom: 1px solid #f1f5f9;
-      padding: 0 12px; font-size: 13px; font-family: inherit; color: #111827;
-      outline: none; background: #fff; flex-shrink: 0;
+      border: none; border-bottom: 1px solid var(--ui-surface-2);
+      padding: 0 12px; font-size: 13px; font-family: inherit; color: var(--ui-text);
+      outline: none; background: var(--ui-surface); flex-shrink: 0;
       box-sizing: border-box; width: 100%; border-radius: 10px 10px 0 0;
     }
     .rp-dd-search:focus { border-bottom-color: #32acc1; }
@@ -122,25 +122,25 @@ export interface RefItem {
     .rp-dd-item {
       display: flex; align-items: center; gap: 10px;
       padding: 9px 10px; border-radius: 6px; cursor: pointer;
-      font-size: 13px; color: #374151; transition: background .08s;
+      font-size: 13px; color: var(--ui-text-3); transition: background .08s;
     }
-    .rp-dd-item:hover { background: #f1f5f9; }
-    .rp-dd-item.sel { background: #e6f7fa; color: #0e7a8a; font-weight: 500; }
+    .rp-dd-item:hover { background: var(--ui-surface-2); }
+    .rp-dd-item.sel { background: var(--ui-x-e6f7fa); color: var(--ui-t-0e7a8a); font-weight: 500; }
     .rp-dd-img {
       width: 28px; height: 28px; border-radius: 6px; object-fit: cover; flex-shrink: 0;
-      background: #f1f5f9;
+      background: var(--ui-surface-2);
     }
     .rp-dd-ph {
       width: 28px; height: 28px; border-radius: 6px; flex-shrink: 0;
-      background: #f1f5f9; display: flex; align-items: center; justify-content: center;
+      background: var(--ui-surface-2); display: flex; align-items: center; justify-content: center;
       color: #cbd5e1;
     }
     .rp-dd-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .rp-dd-empty { padding: 16px 12px; text-align: center; font-size: 13px; color: #9ca3af; }
-    .rp-dd-loading { padding: 16px; text-align: center; color: #9ca3af; font-size: 12px; }
+    .rp-dd-empty { padding: 16px 12px; text-align: center; font-size: 13px; color: var(--ui-faint); }
+    .rp-dd-loading { padding: 16px; text-align: center; color: var(--ui-faint); font-size: 12px; }
 
     .rp-dd-footer {
-      padding: 8px 12px; border-top: 1px solid #f1f5f9; flex-shrink: 0;
+      padding: 8px 12px; border-top: 1px solid var(--ui-surface-2); flex-shrink: 0;
     }
     .rp-dd-open-btn {
       border: none; background: none; cursor: pointer;

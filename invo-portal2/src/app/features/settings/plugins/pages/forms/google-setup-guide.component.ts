@@ -107,25 +107,25 @@ import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.
     </app-plugin-form-shell>
   `,
   styles: [`
-    .gd-h2 { margin: 0 0 4px; font-size: 16px; font-weight: 700; color: #0f172a; }
-    .gd-h3 { margin: 16px 0 8px; font-size: 14px; font-weight: 700; color: #0f172a; }
-    .gd-lead { margin: 0 0 12px; font-size: 13px; color: #64748b; }
+    .gd-h2 { margin: 0 0 4px; font-size: 16px; font-weight: 700; color: var(--ui-text); }
+    .gd-h3 { margin: 16px 0 8px; font-size: 14px; font-weight: 700; color: var(--ui-text); }
+    .gd-lead { margin: 0 0 12px; font-size: 13px; color: var(--ui-muted); }
     .gd-steps { margin-bottom: 12px; }
     .gd-cases td { vertical-align: top; }
     .gd-actions { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 4px 0 12px; }
-    .gd-link { font-size: 13px; font-weight: 600; color: var(--color-brand-700, #2691a4); text-decoration: none; }
+    .gd-link { font-size: 13px; font-weight: 600; color: var(--ui-brand-t700); text-decoration: none; }
     .gd-link:hover { text-decoration: underline; }
     .gd-callout { border-radius: 10px; padding: 12px 14px; margin-bottom: 4px; }
-    .gd-callout--ok { background: #ecfdf5; border: 1px solid #a7f3d0; }
-    .gd-callout h3 { margin: 0 0 2px; font-size: 14px; font-weight: 700; color: #047857; }
-    .gd-callout p { margin: 0; font-size: 13px; color: #065f46; }
+    .gd-callout--ok { background: var(--ui-green-soft); border: 1px solid var(--ui-x-a7f3d0); }
+    .gd-callout h3 { margin: 0 0 2px; font-size: 14px; font-weight: 700; color: var(--ui-green-text); }
+    .gd-callout p { margin: 0; font-size: 13px; color: var(--ui-t-065f46); }
     .gd-cta {
       display: inline-block; margin-top: 4px; padding: 9px 18px; border-radius: 8px;
       background: var(--color-brand-600, #2691a4); color: #fff; font-size: 13px; font-weight: 600;
       text-decoration: none;
     }
     .gd-cta:hover { background: var(--color-brand-700, #1f7d8e); }
-    .gd-notes { margin: 0; padding-inline-start: 20px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #334155; }
+    .gd-notes { margin: 0; padding-inline-start: 20px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--ui-text-3); }
   `],
 })
 export class GoogleSetupGuideComponent {

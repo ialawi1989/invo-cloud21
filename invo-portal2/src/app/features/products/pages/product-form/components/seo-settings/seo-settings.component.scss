@@ -28,7 +28,7 @@
   &__sub {
     margin: 0;
     font-size: 12px;
-    color: #64748b;
+    color: var(--ui-muted);
   }
 
   // ── Severity tally ───────────────────────────────────────────────
@@ -45,14 +45,14 @@
     padding: 8px 6px;
     min-width: 0;
     border-radius: 10px;
-    border: 1px solid #e2e8f0;
-    background: #fff;
+    border: 1px solid var(--ui-line);
+    background: var(--ui-surface);
     font-size: 11px;
     line-height: 1.2;
     text-align: center;
 
-    &--ok  { color: #16a34a; border-color: #bbf7d0; background: #f0fdf4; }
-    &--bad { color: #b91c1c; border-color: #fecaca; background: #fef2f2; }
+    &--ok  { color: #16a34a; border-color: var(--ui-x-bbf7d0); background: var(--ui-x-f0fdf4); }
+    &--bad { color: var(--ui-red-text); border-color: var(--ui-red-soft-2); background: var(--ui-red-soft); }
   }
   &__chip-count {
     font-weight: 700;
@@ -61,7 +61,7 @@
     flex-shrink: 0;
   }
   &__chip-label {
-    color: #475569;
+    color: var(--ui-text-4);
     font-weight: 600;
     min-width: 0;
     overflow: hidden;
@@ -84,19 +84,19 @@
     flex-direction: column;
     gap: 8px;
     padding: 12px;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background: var(--ui-surface-1);
+    border: 1px solid var(--ui-line);
     border-radius: 10px;
   }
   &__kw {
     align-self: flex-start;
     padding: 3px 10px;
     border-radius: 999px;
-    background: #e0f2fe;
-    color: #0e7490;
+    background: var(--ui-sky-soft);
+    color: var(--ui-brand-text);
     font-size: 12px;
     font-weight: 600;
-    &--empty { background: #f1f5f9; color: #64748b; font-weight: 500; }
+    &--empty { background: var(--ui-surface-2); color: var(--ui-muted); font-weight: 500; }
   }
   &__snippet {
     display: flex;
@@ -105,19 +105,19 @@
   }
   &__snippet-url {
     font-size: 11px;
-    color: #64748b;
+    color: var(--ui-muted);
     word-break: break-all;
     a { color: inherit; text-decoration: none; &:hover { text-decoration: underline; } }
   }
   &__snippet-title {
     font-size: 14px;
     font-weight: 700;
-    color: #1a0dab;
+    color: var(--ui-t-1a0dab);
     margin-top: 2px;
   }
   &__snippet-desc {
     font-size: 12px;
-    color: #475569;
+    color: var(--ui-text-4);
     margin-top: 2px;
     line-height: 1.4;
   }
@@ -126,7 +126,7 @@
     margin-top: 6px;
     font-size: 11px;
     font-weight: 600;
-    color: var(--color-brand-700);
+    color: var(--ui-brand-t700);
     text-decoration: none;
     &:hover { text-decoration: underline; }
   }

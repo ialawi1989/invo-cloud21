@@ -269,7 +269,7 @@ export async function buildClassicPdfDocDefinition(template: DocumentTemplate, d
   if (layout) {
     const cols = layout.tableColumns.filter((c) => {
       const col = (template.tableCustomization as any)[c.id];
-      return !col || col.show !== false;
+      return col ? col.show !== false : c.defaultShow !== false;   // Image / Barcode stay off until a template turns them on
     });
     // `dataModel.tableLinesField` (e.g. 'invoicLines') is a template-styling-config lookup key,
     // NOT the data path — every doc type's actual line items live under the flat `data['lines']`

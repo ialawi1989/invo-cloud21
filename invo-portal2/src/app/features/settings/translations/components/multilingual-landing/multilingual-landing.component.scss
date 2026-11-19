@@ -19,22 +19,22 @@
   justify-content: space-between;
   gap: 16px;
 
-  &__title { margin: 0 0 4px; font-size: 22px; font-weight: 700; color: #0f172a; letter-spacing: -0.01em; }
-  &__sub { margin: 0; font-size: 14px; color: #64748b; }
+  &__title { margin: 0 0 4px; font-size: 22px; font-weight: 700; color: var(--ui-text); letter-spacing: -0.01em; }
+  &__sub { margin: 0; font-size: 14px; color: var(--ui-muted); }
   &__actions { display: inline-flex; align-items: center; gap: 10px; flex-shrink: 0; }
 }
 // Anchor styled as a button (routerLink) — strip the link underline.
 .ml-head__actions a.btn { text-decoration: none; }
 
 .ml-card {
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
   border-radius: 12px;
   overflow: hidden;
 
-  &__head { padding: 16px 20px; border-bottom: 1px solid #f1f5f9; }
-  &__title { margin: 0; font-size: 15px; font-weight: 700; color: #0f172a; }
-  &__hint { margin: 4px 0 0; font-size: 13px; color: #94a3b8; }
+  &__head { padding: 16px 20px; border-bottom: 1px solid var(--ui-surface-2); }
+  &__title { margin: 0; font-size: 15px; font-weight: 700; color: var(--ui-text); }
+  &__hint { margin: 4px 0 0; font-size: 13px; color: var(--ui-faint); }
 }
 
 .ml-orig {
@@ -44,8 +44,8 @@
   padding: 18px 20px;
 
   &__cell { display: flex; flex-direction: column; gap: 4px; }
-  &__k { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; }
-  &__v { font-size: 14px; font-weight: 600; color: #0f172a; display: inline-flex; align-items: center; gap: 8px; }
+  &__k { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ui-faint); }
+  &__v { font-size: 14px; font-weight: 600; color: var(--ui-text); display: inline-flex; align-items: center; gap: 8px; }
 }
 
 .ml-badge {
@@ -53,8 +53,8 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #475569;
-  background: #f1f5f9;
+  color: var(--ui-text-4);
+  background: var(--ui-surface-2);
   border-radius: 4px;
   padding: 2px 6px;
 }
@@ -62,8 +62,8 @@
 .ml-code {
   font-family: ui-monospace, monospace;
   font-size: 12px;
-  color: #475569;
-  background: #f1f5f9;
+  color: var(--ui-text-4);
+  background: var(--ui-surface-2);
   border-radius: 4px;
   padding: 2px 7px;
 }
@@ -72,16 +72,16 @@
   width: 100%;
   border-collapse: collapse;
 
-  th, td { padding: 12px 20px; text-align: start; font-size: 13px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+  th, td { padding: 12px 20px; text-align: start; font-size: 13px; border-bottom: 1px solid var(--ui-surface-2); vertical-align: middle; }
   thead th {
-    background: #f8fafc; color: #64748b; font-size: 11px; font-weight: 700;
+    background: var(--ui-surface-1); color: var(--ui-muted); font-size: 11px; font-weight: 700;
     text-transform: uppercase; letter-spacing: 0.06em;
   }
   tbody tr { cursor: pointer; transition: background 100ms ease; }
-  tbody tr:hover { background: #f8fafc; }
+  tbody tr:hover { background: var(--ui-surface-1); }
   tbody tr:last-child td { border-bottom: 0; }
 
-  &__lang { font-weight: 600; color: #0f172a; }
+  &__lang { font-weight: 600; color: var(--ui-text); }
   &__progress { min-width: 220px; }
   &__actions { width: 56px; text-align: end; }
 }
@@ -92,7 +92,7 @@
   width: 140px;
   height: 6px;
   border-radius: 999px;
-  background: #e2e8f0;
+  background: var(--ui-line);
   overflow: hidden;
   vertical-align: middle;
   margin-inline-end: 8px;
@@ -103,7 +103,7 @@
     transition: width 200ms ease;
     &--done { background: #16a34a; }
   }
-  &__text { font-size: 12px; color: #64748b; }
+  &__text { font-size: 12px; color: var(--ui-muted); }
 }
 
 .ml-chip {
@@ -113,17 +113,17 @@
   font-weight: 600;
   border-radius: 999px;
   padding: 3px 9px;
-  background: #e0f2fe;
+  background: var(--ui-sky-soft);
   color: #0369a1;
 
-  &--done { background: #dcfce7; color: #15803d; }
+  &--done { background: var(--ui-green-soft); color: var(--ui-green-text); }
 }
 
-.ml-empty { padding: 40px 20px; text-align: center; color: #94a3b8; p { margin: 0; font-size: 13px; } }
+.ml-empty { padding: 40px 20px; text-align: center; color: var(--ui-faint); p { margin: 0; font-size: 13px; } }
 
 .icon-btn {
   appearance: none; background: transparent; border: 0;
-  width: 32px; height: 32px; border-radius: 8px; color: #64748b; cursor: pointer;
+  width: 32px; height: 32px; border-radius: 8px; color: var(--ui-muted); cursor: pointer;
   display: inline-flex; align-items: center; justify-content: center;
-  &:hover { background: #f1f5f9; color: #0f172a; }
+  &:hover { background: var(--ui-surface-2); color: var(--ui-text); }
 }

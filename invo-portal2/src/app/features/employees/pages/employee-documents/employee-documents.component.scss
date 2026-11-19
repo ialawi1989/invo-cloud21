@@ -17,7 +17,7 @@
 .hr-error {
   border: 1px solid var(--danger-color, #dc2626);
   border-radius: 6px;
-  background: var(--danger-bg, #fef2f2);
+  background: var(--danger-bg, var(--ui-red-soft));
   padding: 0.75rem 1rem;
   display: flex;
   flex-direction: column;
@@ -25,12 +25,12 @@
 
   &__title {
     font-weight: 600;
-    color: var(--danger-color, #b91c1c);
+    color: var(--danger-color, var(--ui-red-text));
   }
 
   &__hint {
     font-size: 0.875rem;
-    color: var(--text-color, #111827);
+    color: var(--text-color, var(--ui-text));
   }
 
   /**
@@ -46,7 +46,7 @@
     word-break: break-word;
     max-height: 8rem;
     overflow: auto;
-    color: var(--text-muted, #6b7280);
+    color: var(--text-muted, var(--ui-muted));
   }
 
   &__dismiss {
@@ -55,7 +55,7 @@
     border: none;
     padding: 0;
     font-size: 0.8125rem;
-    color: var(--danger-color, #b91c1c);
+    color: var(--danger-color, var(--ui-red-text));
     cursor: pointer;
     text-decoration: underline;
   }
@@ -64,7 +64,7 @@
 .doc-warnings {
   border: 1px solid var(--warning-color, #f59e0b);
   border-radius: 6px;
-  background: var(--warning-bg, #fffbeb);
+  background: var(--warning-bg, var(--ui-amber-soft));
   padding: 0.75rem 1rem;
   font-size: 0.875rem;
 
@@ -73,11 +73,11 @@
 }
 
 .doc-note {
-  border: 1px dashed var(--border-color, #e5e7eb);
+  border: 1px dashed var(--border-color, var(--ui-line));
   border-radius: 6px;
   padding: 0.625rem 0.875rem;
   font-size: 0.875rem;
-  color: var(--text-muted, #6b7280);
+  color: var(--text-muted, var(--ui-muted));
 }
 
 // ─── Header ──────────────────────────────────────────────────────────────
@@ -96,7 +96,7 @@
 
 // ─── Editor ──────────────────────────────────────────────────────────────
 .doc-form {
-  border: 1px solid var(--border-color, #e5e7eb);
+  border: 1px solid var(--border-color, var(--ui-line));
   border-radius: 8px;
   padding: 1rem;
   margin-bottom: 1.25rem;
@@ -126,9 +126,9 @@
   &__label {
     font-size: 0.8125rem;
     font-weight: 500;
-    color: var(--text-muted, #6b7280);
+    color: var(--text-muted, var(--ui-muted));
 
-    em { color: var(--danger-color, #dc2626); font-style: normal; }
+    em { color: var(--danger-color, var(--ui-red-text)); font-style: normal; }
   }
 }
 
@@ -137,7 +137,7 @@
 .doc-empty {
   padding: 2rem 0;
   text-align: center;
-  color: var(--text-muted, #6b7280);
+  color: var(--text-muted, var(--ui-muted));
   font-size: 0.875rem;
 }
 
@@ -148,7 +148,7 @@
 }
 
 .doc-card {
-  border: 1px solid var(--border-color, #e5e7eb);
+  border: 1px solid var(--border-color, var(--ui-line));
   border-radius: 8px;
   padding: 0.875rem 1rem;
   display: flex;
@@ -171,7 +171,7 @@
   }
 
   &__type { font-weight: 600; }
-  &__number { color: var(--text-muted, #6b7280); font-size: 0.875rem; }
+  &__number { color: var(--text-muted, var(--ui-muted)); font-size: 0.875rem; }
 
   &__status {
     display: flex;
@@ -179,12 +179,12 @@
     gap: 0.5rem;
   }
 
-  &__expiry { font-size: 0.8125rem; color: var(--text-muted, #6b7280); }
+  &__expiry { font-size: 0.8125rem; color: var(--text-muted, var(--ui-muted)); }
 
   &__actions {
     display: flex;
     gap: 0.75rem;
-    border-top: 1px solid var(--border-color, #e5e7eb);
+    border-top: 1px solid var(--border-color, var(--ui-line));
     padding-top: 0.5rem;
   }
 }
@@ -197,18 +197,18 @@
   font-weight: 600;
   white-space: nowrap;
 
-  &--valid    { background: #dcfce7; color: #166534; }
-  &--expiring { background: #fef3c7; color: #92400e; }
-  &--expired  { background: #fee2e2; color: #991b1b; }
-  &--verified { background: #e0e7ff; color: #3730a3; }
+  &--valid    { background: var(--ui-green-soft); color: var(--ui-green-text); }
+  &--expiring { background: var(--ui-amber-soft); color: var(--ui-amber-text); }
+  &--expired  { background: var(--ui-red-soft); color: var(--ui-red-text); }
+  &--verified { background: var(--ui-x-e0e7ff); color: var(--ui-t-3730a3); }
 
   /**
    * Absent status. Neutral and visibly different from every real state — the
    * point is that it reads as "we do not know", not as a pass.
    */
   &--unknown {
-    background: repeating-linear-gradient(45deg, #f3f4f6, #f3f4f6 4px, #e5e7eb 4px, #e5e7eb 8px);
-    color: #4b5563;
+    background: repeating-linear-gradient(45deg, var(--ui-surface-2), var(--ui-surface-2) 4px, var(--ui-line) 4px, var(--ui-line) 8px);
+    color: var(--ui-text-4);
   }
 }
 
@@ -220,7 +220,7 @@
 
   &__empty {
     font-size: 0.8125rem;
-    color: var(--text-muted, #6b7280);
+    color: var(--text-muted, var(--ui-muted));
   }
 }
 
@@ -237,7 +237,7 @@
     white-space: nowrap;
   }
 
-  &__size { color: var(--text-muted, #6b7280); font-size: 0.75rem; }
+  &__size { color: var(--text-muted, var(--ui-muted)); font-size: 0.75rem; }
 }
 
 .doc-upload {
@@ -253,7 +253,7 @@
   flex-wrap: wrap;
 
   &__name { font-size: 13px; font-weight: 500; }
-  &__hint { font-size: 12px; color: #64748b; }
+  &__hint { font-size: 12px; color: var(--ui-muted); }
 }
 
 .doc-btn-busy { display: inline-flex; align-items: center; gap: 8px; }
@@ -263,11 +263,11 @@
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  border: 2px solid #cbd5e1;
+  border: 2px solid var(--ui-line-strong);
   border-top-color: var(--color-brand-600, #0e7490);
   animation: doc-spin 0.7s linear infinite;
   flex: none;
 
-  &--light { border-color: rgba(255, 255, 255, .45); border-top-color: #fff; }
+  &--light { border-color: rgba(255, 255, 255, .45); border-top-color: var(--ui-surface); }
 }
 @keyframes doc-spin { to { transform: rotate(360deg); } }

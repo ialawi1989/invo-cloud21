@@ -70,17 +70,17 @@ const DAY_MS = 24 * 60 * 60 * 1000;
   `,
   styles: [`
     .body { padding: 20px 24px; display: flex; flex-direction: column; gap: 10px; }
-    .msg  { font-size: 14px; color: #374151; margin: 0 0 4px; line-height: 1.6; }
-    .lbl  { font-size: 12px; font-weight: 600; color: #64748b; margin-top: 6px; }
-    .hint { font-size: 13px; color: #475569; margin: 4px 0 0; min-height: 18px; }
-    .hint--error { color: #dc2626; }
-    .note { font-size: 12px; color: #94a3b8; margin: 0; }
+    .msg  { font-size: 14px; color: var(--ui-text-3); margin: 0 0 4px; line-height: 1.6; }
+    .lbl  { font-size: 12px; font-weight: 600; color: var(--ui-muted); margin-top: 6px; }
+    .hint { font-size: 13px; color: var(--ui-text-4); margin: 4px 0 0; min-height: 18px; }
+    .hint--error { color: var(--ui-red-text); }
+    .note { font-size: 12px; color: var(--ui-faint); margin: 0; }
     .btn-cancel {
-      padding: 9px 20px; background: #f3f4f6; border: 1px solid #e5e7eb;
+      padding: 9px 20px; background: var(--ui-surface-2); border: 1px solid var(--ui-line);
       border-radius: 8px; font-size: 13px; cursor: pointer;
     }
     .btn-confirm {
-      padding: 9px 24px; background: #32acc1; color: #fff; border: none;
+      padding: 9px 24px; background: var(--ui-b-32acc1); color: #fff; border: none;
       border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
     }
     .btn-confirm:disabled { opacity: .5; cursor: not-allowed; }

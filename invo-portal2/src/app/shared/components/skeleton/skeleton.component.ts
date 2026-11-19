@@ -38,9 +38,9 @@ import { CommonModule } from '@angular/common';
       display: block;
       background: linear-gradient(
         90deg,
-        #f1f5f9 0%,
-        #e2e8f0 40%,
-        #f1f5f9 80%
+        var(--ui-surface-2) 0%,
+        var(--ui-line) 40%,
+        var(--ui-surface-2) 80%
       );
       background-size: 200% 100%;
       border-radius: 6px;

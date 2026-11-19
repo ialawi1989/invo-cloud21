@@ -54,19 +54,19 @@ const PAGE = 20;
   styles: [`
     .ms { width: 100%; box-sizing: border-box; }
     .ms__bar { display: flex; justify-content: space-between; gap: 12px; padding: 16px 20px; flex-wrap: wrap; }
-    .ms__search { flex: 1 1 240px; max-width: 360px; border: 1px solid #d0d5dd; border-radius: 8px; padding: 9px 12px; font: inherit; font-size: 13.5px; }
+    .ms__search { flex: 1 1 240px; max-width: 360px; border: 1px solid var(--ui-line-strong); border-radius: 8px; padding: 9px 12px; font: inherit; font-size: 13.5px; }
     .ms__search:focus { outline: none; border-color: #2691a4; box-shadow: 0 0 0 3px rgba(38, 145, 164, .12); }
     .ms__role { flex: 0 1 220px; min-width: 160px; }
-    .ms__new { border: 1px solid #2691a4; background: #2691a4; color: #fff; border-radius: 8px; padding: 9px 16px; font-weight: 600; font-size: 13.5px; cursor: pointer; }
+    .ms__new { border: 1px solid #2691a4; background: var(--ui-b-2691a4); color: #fff; border-radius: 8px; padding: 9px 16px; font-weight: 600; font-size: 13.5px; cursor: pointer; }
     .ms__new:hover { background: #227d8d; }
-    .ms__scroll { max-height: 52vh; overflow-y: auto; border-top: 1px solid #eef2f6; }
+    .ms__scroll { max-height: 52vh; overflow-y: auto; border-top: 1px solid var(--ui-surface-2); }
     .ms__table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-    .ms__table th { position: sticky; top: 0; text-align: start; background: #f8f9fc; color: #64748b; font-size: 12px; text-transform: uppercase; padding: 10px 20px; }
-    .ms__table td { padding: 12px 20px; border-top: 1px solid #f1f5f9; }
+    .ms__table th { position: sticky; top: 0; text-align: start; background: var(--ui-x-f8f9fc); color: var(--ui-muted); font-size: 12px; text-transform: uppercase; padding: 10px 20px; }
+    .ms__table td { padding: 12px 20px; border-top: 1px solid var(--ui-surface-2); }
     .ms__table tbody tr { cursor: pointer; }
-    .ms__table tbody tr:hover td { background: #f0fafb; }
-    .ms__empty { text-align: center; color: #94a3b8; padding: 32px !important; cursor: default; }
-    .ms__more { text-align: center; color: #94a3b8; padding: 10px; font-size: 12.5px; }
+    .ms__table tbody tr:hover td { background: var(--ui-x-f0fafb); }
+    .ms__empty { text-align: center; color: var(--ui-faint); padding: 32px !important; cursor: default; }
+    .ms__more { text-align: center; color: var(--ui-faint); padding: 10px; font-size: 12.5px; }
   `],
 })
 export class ManageSalespersonsModalComponent implements OnInit {

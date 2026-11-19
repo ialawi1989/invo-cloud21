@@ -30,6 +30,7 @@
   // sections.
   &--classic {
     padding: 1cm;
+    border-radius: 0.75rem;   // legacy `.card` radius; the ribbon is pinned over this corner as in legacy
     overflow: visible;    // the ribbon's folded corners sit 5px past the corner
   }
 
@@ -283,26 +284,9 @@
   // width/height; the inner img scales to fit without distortion.
   &__logo {
     flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    background: #fff;
+    margin-bottom: 1rem;
 
-    > img {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
-    }
-
-    &--placeholder {
-      background: linear-gradient(135deg, var(--color-brand-500) 0%, #4dc4d9 100%);
-      border-radius: 6px;
-      color: #fff;
-      font-weight: 700;
-      font-size: 18px;
-      letter-spacing: 2px;
-    }
+    > img { display: block; max-width: 100%; }
   }
 
   &__company {
@@ -326,8 +310,6 @@
     color: var(--color-brand-700);
     font-weight: 700;
     line-height: 1.1;
-    letter-spacing: 1px;
-    text-transform: uppercase;
   }
 
   // ── Meta ─────────────────────────────────────────────────────
@@ -359,7 +341,6 @@
     grid-template-columns: 1fr 1fr;
     gap: 12px 24px;
     margin: 16px 0;
-    font-size: 9.5pt;
   }
 
   &__fields-col {
@@ -415,34 +396,24 @@
     // Legacy: `py-2 mt-3` — a rem above, half a rem of padding, and no rule under it.
     margin: 1rem 0 0;
     padding: 0.5rem 0;
-    font-size: 10pt;
-
-    > strong { color: #1f2937; }
   }
 
-  &__tax-mode {
-    font-size: 9pt;
-    color: #64748b;
-    font-style: italic;
-  }
+  &__tax-mode { }
 
   // ── Items table ──────────────────────────────────────────────
   &__items {
     width: 100%;
     border-collapse: collapse;
     margin-top: 8px;
-    font-size: 9.5pt;
 
-    thead tr {
-      background: var(--color-brand-500);
-      color: #fff;
-    }
+    // Bootstrap `table-dark` head: the colours the template saves (inline) win over these.
     th {
       padding: 8px 10px;
       text-align: start;
       font-weight: 600;
-      font-size: 9pt;
       vertical-align: middle;
+      background-color: #212529;
+      color: #fff;
     }
     // Legacy (Bootstrap `.table`): cells align to the TOP, so the row number, qty and amounts line up with the item name
     // instead of floating in the middle of a tall description; no zebra stripes.
@@ -458,13 +429,9 @@
   // ── Items table — voided rows ────────────────────────────────
   // Strikes through with grey backdrop; matches legacy `.table-light`
   // + voided-line styling.
-  &__items-voided > td {
-    background: #f5f5f5;
-    color: #94a3b8 !important;
-    font-style: italic;
-    text-decoration: line-through;
-    text-decoration-color: #94a3b8;
-  }
+  // Voided rows take their colours from the template's voided-lines style (inline); legacy draws no strike-through.
+  &__items-voided > td { background: #f8f9fa; color: #6c757d; }
+  &__company-note { margin-top: 0.5rem; }
 
   // ── Description column richness ──────────────────────────────
   // Chip styles (barcode, UoM, option, note) live in the shared
@@ -497,13 +464,13 @@
   // Legacy: a Bootstrap `card border p-3` in the right 5/12 of the page, rows split 6/6, no row dividers.
   &__totals {
     margin-top: 16px;
+    margin-bottom: 1.5rem;
     margin-inline-start: auto;
     width: 41.666667%;
     padding: 1rem;
     border: 1px solid #d3d3d3;
     border-radius: 0.75rem;
     box-shadow: 0 0.0625rem 0 0 #1a1a1a12;
-    font-size: 9.5pt;
   }
 
   &__totals-row {
@@ -513,12 +480,12 @@
     margin-bottom: 0.25rem;
     &:last-child { margin-bottom: 0; }
 
-    &--grand { font-weight: 700; }
+    &--grand, &--grand > span { font-weight: 700 !important; }
   }
 
   // ── Payments table ───────────────────────────────────────────
   &__payments {
-    margin: 0.5rem 0 0 auto;
+    margin: 0.5rem 0 1.5rem auto;
     width: 41.666667%;
     padding: 1rem;
     background: #fcf0da;
@@ -526,7 +493,6 @@
     border-radius: 0.75rem;
     box-shadow: 0 0.0625rem 0 0 #1a1a1a12;
     color: #1f2937;
-    font-size: 9.5pt;
   }
 
   &__payments-row {
@@ -571,7 +537,6 @@
     display: flex;
     flex-direction: column;
     gap: 6px;
-    font-size: 9pt;
 
     > strong { color: #1f2937; }
     > img    { max-width: 100%; max-height: 80px; align-self: flex-start; }
@@ -580,22 +545,16 @@
   // ── Customer note (yellow band) ──────────────────────────────
   // Sits between the totals/payments cluster and the company note.
   &__customer-note {
-    margin: 12px 0 0;
-    padding: 10px 16px;
+    margin: 0 0 16px;
+    padding: 10px 12px;
     background: #fef3c7;
-    border: 1px solid #fde68a;
-    border-radius: 4px;
-    font-size: 9pt;
-    color: #1f2937;
+    border: 1px solid #fcd34d;
+    border-radius: 7px;
   }
 
   // ── Footer ───────────────────────────────────────────────────
   &__footer {
-    margin-top: 24px;
-    padding-top: 12px;
-    border-top: 1px solid #e5e7eb;
-    font-size: 9pt;
-    color: #64748b;
+    margin-top: 0.5rem;
 
     > div + div { margin-top: 8px; }
   }
@@ -719,3 +678,8 @@
 .dp__no-print { @media print { display: none !important; } }
 .dp__subitems { display: flex; flex-direction: column; gap: 0.25rem; margin-top: 0.25rem; }
 .dp__subitem { font-size: 13px; }
+
+// Product image column of the items table.
+.dp__line-img { display: block; width: 48px; height: 48px; object-fit: cover; border-radius: 4px; }
+
+@media print { .dp__ribbon { display: none !important; } }

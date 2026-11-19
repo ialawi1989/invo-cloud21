@@ -35,9 +35,9 @@ export interface BannerPresetPickerData {
     :host { display: block; }
     .bpp-head {
       padding: 16px 20px;
-      border-bottom: 1px solid #e2e8f0;
+      border-bottom: 1px solid var(--ui-line);
     }
-    .bpp-head h4 { margin: 0; font: 600 16px/1 inherit; color: #0f172a; }
+    .bpp-head h4 { margin: 0; font: 600 16px/1 inherit; color: var(--ui-text); }
     .bpp-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -51,8 +51,8 @@ export interface BannerPresetPickerData {
       align-items: flex-start;
       gap: 4px;
       padding: 16px;
-      background: #fff;
-      border: 1.5px solid #e2e8f0;
+      background: var(--ui-surface);
+      border: 1.5px solid var(--ui-line);
       border-radius: 8px;
       cursor: pointer;
       text-align: left;
@@ -60,11 +60,11 @@ export interface BannerPresetPickerData {
     }
     .bpp-card:hover {
       border-color: #32acc1;
-      background: #f0fafc;
+      background: var(--ui-x-f0fafc);
       transform: translateY(-1px);
     }
-    .bpp-name { font: 600 14px/1.2 inherit; color: #0f172a; }
-    .bpp-desc { font: 400 12px/1.4 inherit; color: #64748b; }
+    .bpp-name { font: 600 14px/1.2 inherit; color: var(--ui-text); }
+    .bpp-desc { font: 400 12px/1.4 inherit; color: var(--ui-muted); }
   `],
 })
 export class BannerPresetPickerComponent {

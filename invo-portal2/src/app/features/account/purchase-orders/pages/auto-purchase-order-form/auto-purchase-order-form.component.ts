@@ -103,18 +103,18 @@ interface AutoLine {
     </app-doc-form-shell>
   `,
   styles: [`
-    .ap__empty { color: #64748b; margin: 0; }
+    .ap__empty { color: var(--ui-muted); margin: 0; }
     .ap__wrap { overflow-x: auto; }
     .ap__table { width: 100%; border-collapse: collapse; font-size: 14px; }
-    .ap__table th { text-align: start; font-size: 12.5px; color: #64748b; font-weight: 600; padding: 8px 10px; border-bottom: 1px solid #e4e7ec; white-space: nowrap; }
-    .ap__table td { padding: 10px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+    .ap__table th { text-align: start; font-size: 12.5px; color: var(--ui-muted); font-weight: 600; padding: 8px 10px; border-bottom: 1px solid var(--ui-line); white-space: nowrap; }
+    .ap__table td { padding: 10px; border-bottom: 1px solid var(--ui-surface-2); vertical-align: middle; }
     .ap__table .end { text-align: end; }
     .ap__qty { width: 150px; }
     .ap__cost { width: 150px; }
-    .ap__cost small { display: block; font-size: 11px; color: #b45309; margin-top: 2px; }
+    .ap__cost small { display: block; font-size: 11px; color: var(--ui-amber-text); margin-top: 2px; }
     .ap__supplier { min-width: 220px; width: 260px; }
-    .ap__num { width: 100%; box-sizing: border-box; background: #fff; border: 1px solid #d0d5dd; border-radius: 8px; padding: 8px 10px; font: inherit; height: 38px; text-align: end; }
-    .ap__x { width: 28px; height: 28px; border-radius: 50%; border: 1px solid #fecaca; background: #fff; color: #dc2626; cursor: pointer; }
+    .ap__num { width: 100%; box-sizing: border-box; background: var(--ui-surface); border: 1px solid var(--ui-line-strong); border-radius: 8px; padding: 8px 10px; font: inherit; height: 38px; text-align: end; }
+    .ap__x { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--ui-red-soft-2); background: var(--ui-surface); color: var(--ui-red-text); cursor: pointer; }
     .ap__missing { outline: 1px solid #dc2626; border-radius: 8px; }
   `],
 })

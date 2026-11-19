@@ -15,12 +15,12 @@
     margin: 0;
     font-size: 14px;
     font-weight: 600;
-    color: #0f172a;
+    color: var(--ui-text);
     display: flex;
     align-items: center;
     gap: 6px;
   }
-  &__count { color: #94a3b8; font-weight: 500; margin-inline-start: 4px; }
+  &__count { color: var(--ui-faint); font-weight: 500; margin-inline-start: 4px; }
 
   &__controls {
     display: grid;
@@ -35,14 +35,14 @@
   }
   &__add-btn {
     padding: 0 14px;
-    background: #d9f2f6;
-    color: #143742;
-    border: 1px solid #a5dde6;
+    background: var(--ui-x-d9f2f6);
+    color: var(--ui-t-143742);
+    border: 1px solid var(--ui-x-a5dde6);
     border-radius: 8px;
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
-    &:hover:not(:disabled) { background: #c1e9ef; }
+    &:hover:not(:disabled) { background: var(--ui-x-c1e9ef); }
     &:disabled { opacity: 0.55; cursor: not-allowed; }
   }
   &__search { max-width: 100%; }
@@ -51,7 +51,7 @@
     margin: 4px 0 0;
     padding: 16px;
     font-size: 12px;
-    color: #94a3b8;
+    color: var(--ui-faint);
     text-align: center;
     font-style: italic;
   }
@@ -64,21 +64,21 @@
   }
 
   &__card {
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--ui-line);
     border-radius: 12px;
-    background: #fff;
+    background: var(--ui-surface);
     padding: 14px 16px;
     transition: border-color 120ms ease, box-shadow 120ms ease;
 
-    &:hover { border-color: #cbd5e1; }
-    &--invalid { border-color: #fecaca; background: #fffaf9; }
-    &--expired { border-color: #fcd34d; background: #fffbeb; }
+    &:hover { border-color: var(--ui-line-strong); }
+    &--invalid { border-color: var(--ui-red-soft-2); background: var(--ui-x-fffaf9); }
+    &--expired { border-color: var(--ui-x-fcd34d); background: var(--ui-amber-soft); }
     // Saved (server-persisted) batches read as locked via the muted surface
     // and the "SAVED" chip in the header — the disabled inputs handle the
     // per-field treatment, so no extra accent stripe is needed.
     &--saved {
-      background: #fafbfc;
-      border-color: #e2e8f0;
+      background: var(--ui-surface-1);
+      border-color: var(--ui-line);
     }
   }
 
@@ -89,7 +89,7 @@
     gap: 10px;
     padding-bottom: 10px;
     margin-bottom: 12px;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--ui-surface-2);
   }
 
   &__card-title {
@@ -101,7 +101,7 @@
   &__card-name {
     font-size: 14px;
     font-weight: 600;
-    color: #0f172a;
+    color: var(--ui-text);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -118,8 +118,8 @@
     letter-spacing: 0.2px;
     text-transform: uppercase;
 
-    &--expired { background: #fef3c7; color: #92400e; }
-    &--saved   { background: #f1f5f9; color: #475569; }
+    &--expired { background: var(--ui-amber-soft); color: var(--ui-amber-text); }
+    &--saved   { background: var(--ui-surface-2); color: var(--ui-text-4); }
   }
 
   &__card-actions {
@@ -134,24 +134,24 @@
     justify-content: center;
     width: 30px;
     height: 30px;
-    background: #fff;
-    border: 1px solid #e5e7eb;
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-line);
     border-radius: 7px;
-    color: #64748b;
+    color: var(--ui-muted);
     cursor: pointer;
     transition: all 120ms ease;
 
     &--primary {
-      background: #eef6fb;
-      border-color: #bee0ee;
+      background: var(--ui-x-eef6fb);
+      border-color: var(--ui-x-bee0ee);
       color: #1e7fa3;
-      &:hover { background: #dcedf6; }
+      &:hover { background: var(--ui-x-dcedf6); }
     }
     &--danger {
-      background: #fef2f2;
-      border-color: #fecaca;
-      color: #dc2626;
-      &:hover { background: #fee2e2; border-color: #fca5a5; }
+      background: var(--ui-red-soft);
+      border-color: var(--ui-red-soft-2);
+      color: var(--ui-red-text);
+      &:hover { background: var(--ui-red-soft); border-color: #fca5a5; }
     }
   }
 
@@ -176,7 +176,7 @@
   &__label {
     font-size: 11.5px;
     font-weight: 500;
-    color: #475569;
+    color: var(--ui-text-4);
   }
 
   // Unit-cost wrapper with "free" warning state.
@@ -185,7 +185,7 @@
 
     &--warn .pf-input {
       border-color: #f59e0b;
-      background: #fffbeb;
+      background: var(--ui-amber-soft);
       padding-inline-end: 32px;
     }
   }
@@ -199,7 +199,7 @@
   }
   &__warn-text {
     font-size: 10.5px;
-    color: #b45309;
+    color: var(--ui-amber-text);
   }
 
   &__card-error {
@@ -210,13 +210,13 @@
   &__totals {
     margin: 4px 0 0;
     font-size: 12px;
-    color: #334155;
+    color: var(--ui-text-3);
     display: flex;
     align-items: center;
     gap: 14px;
     flex-wrap: wrap;
 
-    strong { color: #0f172a; font-weight: 600; }
+    strong { color: var(--ui-text); font-weight: 600; }
   }
   &__total-stat {
     display: inline-flex;
@@ -224,7 +224,7 @@
     gap: 4px;
     white-space: nowrap;
 
-    &--valid   { color: #15803d; }
-    &--expired { color: #b45309; }
+    &--valid   { color: var(--ui-green-text); }
+    &--expired { color: var(--ui-amber-text); }
   }
 }

@@ -30,10 +30,10 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
       justify-content: center; height: 100vh; gap: 10px;
       font-family: 'Inter', sans-serif; text-align: center; padding: 0 16px;
     }
-    .icon { color: #94a3b8; margin-bottom: 8px; }
-    h2   { font-size: 22px; font-weight: 600; color: #111827; margin: 0; }
-    p    { font-size: 14px; color: #6b7280; margin: 0; }
-    .sub { font-size: 13px; color: #9ca3af; }
+    .icon { color: var(--ui-faint); margin-bottom: 8px; }
+    h2   { font-size: 22px; font-weight: 600; color: var(--ui-text); margin: 0; }
+    p    { font-size: 14px; color: var(--ui-muted); margin: 0; }
+    .sub { font-size: 13px; color: var(--ui-faint); }
     .back { margin-top: 12px; color: #32acc1; text-decoration: none; font-weight: 500; font-size: 14px; }
     .back:hover { text-decoration: underline; }
   `],

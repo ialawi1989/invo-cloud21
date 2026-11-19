@@ -58,7 +58,7 @@
   > label {
     font-size: 11px;
     font-weight: 600;
-    color: #64748b;
+    color: var(--ui-muted);
     text-transform: uppercase;
     letter-spacing: 0.04em;
   }
@@ -84,19 +84,19 @@
     margin: 0;
     font-size: 12px;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--ui-text);
   }
 }
 
 .input {
   width: 100%;
   padding: 7px 10px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--ui-line);
   border-radius: 8px;
-  background: #fff;
+  background: var(--ui-surface);
   font: inherit;
   font-size: 13px;
-  color: #0f172a;
+  color: var(--ui-text);
   transition: border-color 120ms ease, box-shadow 120ms ease;
 
   &:focus {
@@ -113,7 +113,7 @@ textarea.input { resize: vertical; min-height: 56px; }
   accent-color: var(--color-brand-600);
 }
 
-.hint { font-size: 11px; color: #94a3b8; }
+.hint { font-size: 11px; color: var(--ui-faint); }
 
 // Option toggles for an `!invoice.lines` table — listed vertically
 // so each line label stays full-width legible. List markers stripped
@@ -134,7 +134,7 @@ textarea.input { resize: vertical; min-height: 56px; }
   // toggle gaps above — only the rule itself signals the grouping.
   &__sep {
     padding-top: 8px;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid var(--ui-line);
   }
 }
 
@@ -159,23 +159,23 @@ textarea.input { resize: vertical; min-height: 56px; }
   justify-content: space-between;
   gap: 10px;
   padding: 8px 10px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--ui-surface-1);
+  border: 1px solid var(--ui-line);
   border-radius: 8px;
   font: inherit;
   cursor: pointer;
   transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
 
   &:hover {
-    background: #fff;
-    border-color: #cbd5e1;
+    background: var(--ui-surface);
+    border-color: var(--ui-line-strong);
   }
 
   // Active state — the modifier is currently applied. Tinted to
   // match the rest of the brand-active surfaces in the editor.
   &--on {
     background: var(--color-brand-50);
-    border-color: var(--color-brand-300, #bae6fd);
+    border-color: var(--color-brand-300, var(--ui-sky-soft-2));
   }
 
   // Token uses monospace + ink colour so the legacy attribute name
@@ -183,7 +183,7 @@ textarea.input { resize: vertical; min-height: 56px; }
   &__token {
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 12px;
-    color: #0f172a;
+    color: var(--ui-text);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -192,10 +192,10 @@ textarea.input { resize: vertical; min-height: 56px; }
   // Eye-icon colour tracks the active state.
   > svg {
     flex-shrink: 0;
-    color: #94a3b8;
+    color: var(--ui-faint);
     transition: color 120ms ease;
   }
-  &--on > svg { color: var(--color-brand-700); }
+  &--on > svg { color: var(--ui-brand-t700); }
 }
 
 // ZATCA hint — confirms the QR value resolves to the Saudi Arabia
@@ -207,10 +207,10 @@ textarea.input { resize: vertical; min-height: 56px; }
   gap: 6px;
   margin-top: 4px;
   padding: 4px 8px;
-  background: #ecfdf5;
-  border: 1px solid #a7f3d0;
+  background: var(--ui-green-soft);
+  border: 1px solid var(--ui-x-a7f3d0);
   border-radius: 6px;
-  color: #047857;
+  color: var(--ui-green-text);
   font-weight: 600;
 }
 
@@ -223,10 +223,10 @@ textarea.input { resize: vertical; min-height: 56px; }
   gap: 6px;
   margin-top: 4px;
   padding: 4px 8px;
-  background: #ecfeff;
-  border: 1px solid #a5f3fc;
+  background: var(--ui-brand-soft);
+  border: 1px solid var(--ui-brand-soft-2);
   border-radius: 6px;
-  color: #0e7490;
+  color: var(--ui-brand-text);
   font-weight: 600;
 }
 
@@ -249,22 +249,22 @@ textarea.input { resize: vertical; min-height: 56px; }
   padding: 0;
   font: inherit;
   font-size: 11px;
-  color: var(--color-brand-700);
+  color: var(--ui-brand-t700);
   cursor: pointer;
   text-decoration: underline;
   text-underline-offset: 2px;
 
-  &:hover { color: var(--color-brand-600); }
+  &:hover { color: var(--ui-brand-t600); }
 }
 
 // ── Segmented control (alignment, line style) ─────────────────────────
 .seg {
   display: inline-flex;
   width: 100%;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--ui-line);
   border-radius: 8px;
   overflow: hidden;
-  background: #f8fafc;
+  background: var(--ui-surface-1);
 
   &__btn {
     flex: 1;
@@ -274,20 +274,20 @@ textarea.input { resize: vertical; min-height: 56px; }
     font: inherit;
     font-size: 11px;
     font-weight: 600;
-    color: #64748b;
+    color: var(--ui-muted);
     cursor: pointer;
     transition: background 120ms ease, color 120ms ease;
     text-transform: capitalize;
 
     &:hover:not(.seg__btn--on) {
-      background: #fff;
-      color: #0f172a;
+      background: var(--ui-surface);
+      color: var(--ui-text);
     }
     &--on {
       background: var(--color-brand-600);
       color: #fff;
     }
-    & + & { border-inline-start: 1px solid #e2e8f0; }
+    & + & { border-inline-start: 1px solid var(--ui-line); }
 
     // Icon-only segment buttons (alignment pickers). Flex-center the
     // glyph and drop the text-transform — there's no text to capitalize.
@@ -316,7 +316,7 @@ textarea.input { resize: vertical; min-height: 56px; }
     position: relative;
     width: 32px; height: 18px;
     border-radius: 999px;
-    background: #cbd5e1;
+    background: var(--ui-line-strong);
     flex-shrink: 0;
     transition: background 120ms ease;
   }
@@ -324,7 +324,7 @@ textarea.input { resize: vertical; min-height: 56px; }
     position: absolute;
     top: 2px; inset-inline-start: 2px;
     width: 14px; height: 14px;
-    background: #fff;
+    background: var(--ui-surface);
     border-radius: 999px;
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.18);
     transition: inset-inline-start 120ms ease;
@@ -332,7 +332,7 @@ textarea.input { resize: vertical; min-height: 56px; }
   input:checked + &__track { background: var(--color-brand-600); }
   input:checked + &__track .toggle__thumb { inset-inline-start: 16px; }
 
-  &__label { font-size: 13px; color: #475569; }
+  &__label { font-size: 13px; color: var(--ui-text-4); }
 
   // Disabled — applied when the master `showOptions` toggle is off.
   // Pointer-events disabled on the whole label so the user can't
@@ -351,8 +351,8 @@ textarea.input { resize: vertical; min-height: 56px; }
   margin: 4px 0 0;
   padding-inline-start: 42px;
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--ui-faint);
   line-height: 1.4;
 }
 
-.logo-preview { max-width: 100%; max-height: 96px; object-fit: contain; border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px; background: #fff; align-self: flex-start; }
+.logo-preview { max-width: 100%; max-height: 96px; object-fit: contain; border: 1px solid var(--ui-line); border-radius: 8px; padding: 6px; background: var(--ui-surface); align-self: flex-start; }

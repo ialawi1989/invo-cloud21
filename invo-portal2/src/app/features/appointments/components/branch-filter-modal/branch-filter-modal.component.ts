@@ -40,12 +40,12 @@ export interface BranchFilterData {
   `,
   styles: [`
     .bf { padding: 16px 24px 22px; }
-    .bf__search { width: 100%; box-sizing: border-box; padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 13px; font-family: inherit; margin-bottom: 10px; }
+    .bf__search { width: 100%; box-sizing: border-box; padding: 8px 12px; border: 1px solid var(--ui-line); border-radius: 8px; font-size: 13px; font-family: inherit; margin-bottom: 10px; }
     .bf__search:focus { outline: none; border-color: #32acc1; }
     .bf__list { list-style: none; margin: 0; padding: 0; max-height: 320px; overflow: auto; }
-    .bf__row { width: 100%; display: flex; align-items: center; gap: 10px; padding: 9px 8px; border: none; border-radius: 8px; background: none; cursor: pointer; font-size: 13.5px; color: #1f2937; text-align: left; font-family: inherit; }
-    .bf__row:hover { background: #f5f7fa; }
-    .bf__row.is-on { background: #e0f2f6; font-weight: 600; }
+    .bf__row { width: 100%; display: flex; align-items: center; gap: 10px; padding: 9px 8px; border: none; border-radius: 8px; background: none; cursor: pointer; font-size: 13.5px; color: var(--ui-text-2); text-align: left; font-family: inherit; }
+    .bf__row:hover { background: var(--ui-x-f5f7fa); }
+    .bf__row.is-on { background: var(--ui-x-e0f2f6); font-weight: 600; }
     .bf__radio { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #94a3b8; flex-shrink: 0; box-sizing: border-box; }
     .is-on .bf__radio { border-color: #2691a4; background: radial-gradient(#2691a4 40%, transparent 45%); }
   `],

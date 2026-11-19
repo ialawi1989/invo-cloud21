@@ -65,11 +65,11 @@ export interface SelectSerialsBatchesData {
   styles: [`
     .body { padding: 8px 24px 20px; min-width: 520px; }
     .tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
-    .tbl th { text-align: start; font-weight: 600; color: #475569; padding: 8px 6px; border-bottom: 1px solid #e5e7eb; }
-    .tbl td { padding: 8px 6px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+    .tbl th { text-align: start; font-weight: 600; color: var(--ui-text-4); padding: 8px 6px; border-bottom: 1px solid var(--ui-line); }
+    .tbl td { padding: 8px 6px; border-bottom: 1px solid var(--ui-surface-2); vertical-align: middle; }
     .sel { width: 45%; }
-    .btn-cancel { padding: 9px 20px; background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 13px; cursor: pointer; }
-    .btn-confirm { padding: 9px 24px; background: #32acc1; color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .btn-cancel { padding: 9px 20px; background: var(--ui-surface-2); border: 1px solid var(--ui-line); border-radius: 8px; font-size: 13px; cursor: pointer; }
+    .btn-confirm { padding: 9px 24px; background: var(--ui-b-32acc1); color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
     .btn-confirm:disabled { opacity: .5; cursor: not-allowed; }
     @media (max-width: 640px) { .body { min-width: 0; } }
   `],

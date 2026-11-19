@@ -11,10 +11,10 @@
 
   &.head {
     margin-bottom: 4px;
-    .col { font-size: 11px; font-weight: 600; color: #9ca3af; text-transform: uppercase; }
+    .col { font-size: 11px; font-weight: 600; color: var(--ui-faint); text-transform: uppercase; }
   }
 
-  .sep { color: #9ca3af; text-align: center; }
+  .sep { color: var(--ui-faint); text-align: center; }
 }
 
 .icon-btn {
@@ -24,13 +24,13 @@
   align-items: center;
   justify-content: center;
   border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  background: #fff;
-  color: #6b7280;
+  border: 1px solid var(--ui-line);
+  background: var(--ui-surface);
+  color: var(--ui-muted);
   cursor: pointer;
   transition: all 0.15s ease;
 
-  &.danger:hover { background: #fef2f2; border-color: #fecaca; color: #ef4444; }
+  &.danger:hover { background: var(--ui-red-soft); border-color: var(--ui-red-soft-2); color: var(--ui-red-text); }
 }
 
 .add-link {

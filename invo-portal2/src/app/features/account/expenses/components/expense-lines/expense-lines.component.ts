@@ -41,11 +41,11 @@ import { DocLinesConfig } from '../../../components/doc-lines-table/doc-lines.ty
     .ex-foot { display: grid; gap: 24px; grid-template-columns: 1fr; margin-top: 16px; }
     @media (min-width: 900px) { .ex-foot { grid-template-columns: 1fr 1fr; } }
     .ex-notes { display: flex; flex-direction: column; gap: 6px; }
-    .ex-notes label { font-size: 13.5px; color: #0f172a; }
-    .ex-notes textarea { background: #fff; border: 1px solid #d0d5dd; border-radius: 6px; padding: 9px 12px; font: inherit; resize: vertical; }
-    .ex-sum { background: #fff; border: 1px solid #e4e7ec; border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
-    .ex-row { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; color: #334155; }
-    .ex-row--total { border-top: 1px solid #e2e8f0; padding-top: 10px; font-size: 18px; color: #0f172a; }
+    .ex-notes label { font-size: 13.5px; color: var(--ui-text); }
+    .ex-notes textarea { background: var(--ui-field); border: 1px solid var(--ui-line-strong); border-radius: 6px; padding: 9px 12px; font: inherit; resize: vertical; }
+    .ex-sum { background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+    .ex-row { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; color: var(--ui-text-3); }
+    .ex-row--total { border-top: 1px solid var(--ui-line); padding-top: 10px; font-size: 18px; color: var(--ui-text); }
   `],
 })
 export class ExpenseLinesComponent {

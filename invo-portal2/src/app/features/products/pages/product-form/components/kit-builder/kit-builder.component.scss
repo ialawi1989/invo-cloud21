@@ -6,8 +6,8 @@
 .pf-kb-total {
   margin-inline-start: auto;
   font-size: 13px;
-  color: #64748b;
-  strong { color: #0f172a; margin-inline-start: 4px; font-variant-numeric: tabular-nums; }
+  color: var(--ui-muted);
+  strong { color: var(--ui-text); margin-inline-start: 4px; font-variant-numeric: tabular-nums; }
 }
 
 .pf-btn {
@@ -21,10 +21,10 @@
   cursor: pointer;
 
   &--outline {
-    background: #fff;
-    color: #0e7490;
-    border: 1px solid #a5f3fc;
-    &:hover { background: #ecfeff; border-color: #67e8f9; }
+    background: var(--ui-surface);
+    color: var(--ui-brand-text);
+    border: 1px solid var(--ui-brand-soft-2);
+    &:hover { background: var(--ui-brand-soft); border-color: var(--ui-x-67e8f9); }
   }
 }
 
@@ -45,7 +45,7 @@
 .pf-kb-head {
   font-size: 11px;
   font-weight: 600;
-  color: #64748b;
+  color: var(--ui-muted);
   text-transform: uppercase;
   letter-spacing: 0.3px;
   padding: 0 2px;
@@ -60,26 +60,26 @@
   &__title {
     font-size: 14px;
     font-weight: 500;
-    color: #0f172a;
+    color: var(--ui-text);
     word-break: break-word;
   }
   &__uom {
     font-size: 11px;
-    color: #94a3b8;
+    color: var(--ui-faint);
   }
 }
 
 .pf-kb-remove {
   padding: 6px;
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
   border-radius: 6px;
-  color: #64748b;
+  color: var(--ui-muted);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  &:hover { background: #fef2f2; border-color: #fecaca; color: #dc2626; }
+  &:hover { background: var(--ui-red-soft); border-color: var(--ui-red-soft-2); color: var(--ui-red-text); }
 }
 
 @media (max-width: 720px) {
@@ -87,7 +87,7 @@
   .pf-kb-row {
     grid-template-columns: 1fr 1fr;
     padding: 10px;
-    border: 1px solid #f1f5f9;
+    border: 1px solid var(--ui-surface-2);
     border-radius: 8px;
     & > *:last-child { grid-column: 2; justify-self: end; }
   }

@@ -9,16 +9,16 @@
 .db__titles { min-width: 0; }
 .db__title {
   margin: 0 0 4px;
-  font-size: 24px; font-weight: 800; color: #0f172a; letter-spacing: -0.02em;
+  font-size: 24px; font-weight: 800; color: var(--ui-text); letter-spacing: -0.02em;
 }
-.db__sub { margin: 0; font-size: 14px; color: #64748b; }
+.db__sub { margin: 0; font-size: 14px; color: var(--ui-muted); }
 
 // Back link shown while editing a role's default dashboard.
 .db__back {
   display: inline-flex; align-items: center; gap: 6px;
   margin-bottom: 6px;
-  font-size: 13px; font-weight: 600; color: #64748b; text-decoration: none;
-  &:hover { color: var(--color-brand-700, #207484); }
+  font-size: 13px; font-weight: 600; color: var(--ui-muted); text-decoration: none;
+  &:hover { color: var(--ui-brand-t700); }
   svg { color: currentColor; }
 }
 
@@ -54,12 +54,12 @@
 .db__empty {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 6px; padding: 72px 16px; text-align: center;
-  background: #fff; border: 1px dashed #cbd5e1; border-radius: 12px;
-  color: #94a3b8;
+  background: var(--ui-surface); border: 1px dashed var(--ui-line-strong); border-radius: 12px;
+  color: var(--ui-faint);
 
   svg { color: #cbd5e1; margin-bottom: 4px; }
 }
-.db__emptyTitle { margin: 0; font-size: 15px; font-weight: 600; color: #475569; }
+.db__emptyTitle { margin: 0; font-size: 15px; font-weight: 600; color: var(--ui-text-4); }
 .db__emptySub   { margin: 0; font-size: 13px; }
 
 // Accent-tinted so the primary action stands out from the neutral date/branch
@@ -67,17 +67,17 @@
 .db__customize {
   display: inline-flex; align-items: center; gap: 7px;
   padding: 8px 13px;
-  border: 1px solid var(--color-brand-200, #afe7ef); border-radius: 9px;
-  background: var(--color-brand-50, #effbfd);
+  border: 1px solid var(--color-brand-200, var(--ui-x-afe7ef)); border-radius: 9px;
+  background: var(--color-brand-50, var(--ui-brand-soft));
   font: inherit; font-size: 13px; font-weight: 600;
-  color: var(--color-brand-700, #207484); cursor: pointer;
+  color: var(--color-brand-700, var(--ui-brand-text)); cursor: pointer;
   transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
 
   svg { color: currentColor; }
   &:hover {
-    background: var(--color-brand-100, #d7f3f7);
+    background: var(--color-brand-100, var(--ui-x-d7f3f7));
     border-color: var(--color-brand-300, #7fd7e2);
-    color: var(--color-brand-800, #1a5f6d);
+    color: var(--ui-brand-t800);
   }
 }
 
@@ -108,6 +108,6 @@
   height: 100%;
   display: flex; flex-direction: column; gap: 10px;
   padding: 14px 16px;
-  background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+  background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: 12px;
 }
-.db__pendingTitle { font-size: 14px; font-weight: 700; color: #0f172a; }
+.db__pendingTitle { font-size: 14px; font-weight: 700; color: var(--ui-text); }

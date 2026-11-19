@@ -71,26 +71,26 @@ export interface UrlModalConfig {
   `,
   styles: [`
     .body { padding: 20px 24px; }
-    .label { display: block; font-size: 13px; font-weight: 500; color: #334155; margin-bottom: 6px; }
+    .label { display: block; font-size: 13px; font-weight: 500; color: var(--ui-text-3); margin-bottom: 6px; }
     .input {
-      width: 100%; height: 42px; border: 1px solid #e2e8f0; border-radius: 8px;
-      padding: 0 14px; font-size: 14px; font-family: inherit; color: #0f172a;
-      background: #fff; outline: none; box-sizing: border-box;
+      width: 100%; height: 42px; border: 1px solid var(--ui-line); border-radius: 8px;
+      padding: 0 14px; font-size: 14px; font-family: inherit; color: var(--ui-text);
+      background: var(--ui-field); outline: none; box-sizing: border-box;
     }
     .input:focus { border-color: var(--color-brand-500); box-shadow: 0 0 0 3px rgba(50,172,193,.12); }
     .input:disabled { opacity: .6; cursor: not-allowed; }
-    .error { font-size: 12px; color: #dc2626; margin: 6px 0 0; }
+    .error { font-size: 12px; color: var(--ui-red-text); margin: 6px 0 0; }
     .preview {
-      margin-top: 12px; border: 1px solid #e2e8f0; border-radius: 8px;
+      margin-top: 12px; border: 1px solid var(--ui-line); border-radius: 8px;
       overflow: hidden; max-height: 200px; display: flex;
-      align-items: center; justify-content: center; background: #f8fafc;
+      align-items: center; justify-content: center; background: var(--ui-surface-1);
     }
     .preview img { max-width: 100%; max-height: 200px; object-fit: contain; }
     .btn-cancel {
-      padding: 9px 20px; background: #f3f4f6; border: 1px solid #e5e7eb;
+      padding: 9px 20px; background: var(--ui-surface-2); border: 1px solid var(--ui-line);
       border-radius: 8px; font-size: 13px; cursor: pointer; font-family: inherit;
     }
-    .btn-cancel:hover { background: #e5e7eb; }
+    .btn-cancel:hover { background: var(--ui-line); }
     .btn-cancel:disabled { opacity: .6; cursor: not-allowed; }
     .btn-save {
       padding: 9px 24px; background: var(--color-brand-600); color: #fff;

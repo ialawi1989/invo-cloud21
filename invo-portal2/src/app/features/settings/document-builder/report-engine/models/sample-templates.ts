@@ -1,6 +1,7 @@
 import { ReportTemplate } from '../core/types/template.types';
 import { Block } from '../core/types/block.types';
 import { makeTemplateId, makeSectionId, makeBlockId } from '../utils/id.utils';
+import { DEFAULT_FONT_STACK } from '../utils/fonts.utils';
 
 /**
  * Sample A4 invoice template. Bindings target the real Invo POS invoice shape
@@ -8,55 +9,63 @@ import { makeTemplateId, makeSectionId, makeBlockId } from '../utils/id.utils';
  * so the preview renders against actual production data without a mapping
  * layer.
  *
- * Layout: page-header with logo + branch info + INVOICE title, body with
+ * Layout: page-header with logo + company/branch info + INVOICE title, body with
  * customer info + metadata grid + line-items table + totals + QR + signature,
  * page-footer with branch info + page number.
  */
+/** Stand-in logo for previews rendered without a tenant logo. */
+const PLACEHOLDER_LOGO =
+  'data:image/svg+xml;utf8,' +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 40">' +
+    '<rect width="80" height="40" rx="4" fill="#1e40af"/>' +
+    '<text x="40" y="26" text-anchor="middle" fill="white" font-family="Inter,Arial" font-size="18" font-weight="700">INVO</text>' +
+    '</svg>',
+  );
+
 export function sampleInvoiceTemplate(): ReportTemplate {
   const now = new Date().toISOString();
-
-  // Inline SVG logo — kept on the block itself because the real invoice
-  // payload has no logo field. Swap to a binding (e.g. `{{branch.logoUrl}}`)
-  // once that field exists upstream.
-  const logoSvg =
-    'data:image/svg+xml;utf8,' +
-    encodeURIComponent(
-      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 40">' +
-      '<rect width="80" height="40" rx="4" fill="#1e40af"/>' +
-      '<text x="40" y="26" text-anchor="middle" fill="white" font-family="Inter,Arial" font-size="18" font-weight="700">INVO</text>' +
-      '</svg>',
-    );
 
   const headerBlocks: Block[] = [
     {
       id: makeBlockId(),
       type: 'image',
-      position: { x: 15, y: 8 },
+      position: { x: 15, y: 6 },
       size: { width: 30, height: 18 },
-      source: logoSvg,
+      // The host injects the tenant's logo as `companyLogo` (see
+      // DocumentBuilderComponent.buildDesignerData), which already falls back
+      // to the Invo house logo when the company has none uploaded. Not a
+      // `default:` filter — a data-URL argument would break filter-arg parsing.
+      source: '{{companyLogo}}',
       fit: 'contain',
       alt: 'Logo',
     },
+    // The letterhead carries the same identity fields the classic builder's
+    // header prints: company name + VAT off the company record, branch name /
+    // address / phone off the document. Newlines render as line breaks in all
+    // three surfaces (canvas, HTML, PDF), so one block holds the address block.
     {
       id: makeBlockId(),
       type: 'text',
-      position: { x: 50, y: 9 },
-      size: { width: 90, height: 7 },
-      text: '{{branchName}}',
-      style: { font: { size: 14, weight: 'bold', color: '#0f172a' } },
+      position: { x: 50, y: 6 },
+      size: { width: 90, height: 6 },
+      text: '{{companyName}}',
+      style: { font: { size: 13, weight: 'bold', color: '#0f172a' } },
     },
     {
       id: makeBlockId(),
-      type: 'text',
-      position: { x: 50, y: 16 },
-      size: { width: 90, height: 12 },
-      text: '{{branchAddress}}\nVAT: {{companyVatNumber}}',
+      type: 'rich-text',
+      // Four 8pt lines need ~18mm, and the block sits above the y30 divider.
+      // Sized tight to 14mm the VAT line was clipped by the header band.
+      position: { x: 50, y: 12 },
+      size: { width: 90, height: 18 },
+      html: '{{branchName}}<br>{{branchAddress}}<br>Phone: {{branchPhone}}<br>VAT: {{companyVatNumber}}',
       style: { font: { size: 8, color: '#475569' } },
     },
     {
       id: makeBlockId(),
       type: 'text',
-      position: { x: 150, y: 8 },
+      position: { x: 150, y: 6 },
       size: { width: 45, height: 9 },
       text: 'INVOICE',
       style: { font: { size: 20, weight: 'bold', color: '#1e40af' }, align: 'right' },
@@ -64,7 +73,7 @@ export function sampleInvoiceTemplate(): ReportTemplate {
     {
       id: makeBlockId(),
       type: 'text',
-      position: { x: 150, y: 17 },
+      position: { x: 150, y: 15 },
       size: { width: 45, height: 6 },
       text: 'فاتورة',
       style: { font: { size: 12, color: '#475569' }, align: 'right', direction: 'rtl' },
@@ -91,10 +100,10 @@ export function sampleInvoiceTemplate(): ReportTemplate {
     },
     {
       id: makeBlockId(),
-      type: 'text',
+      type: 'rich-text',
       position: { x: 15, y: 10 },
       size: { width: 80, height: 18 },
-      text: '{{customerName}}\n{{customerAddress}}\n{{customerPhone}}',
+      html: '{{customerName}}<br>{{customerAddress}}<br>{{customerPhone}}',
       style: { font: { size: 9, color: '#0f172a' } },
     },
     {
@@ -199,8 +208,8 @@ export function sampleInvoiceTemplate(): ReportTemplate {
           // Empty arrays collapse via the ternaries so plain lines stay
           // single-line.
           expression:
-            "{{row.productName}}" +
-            "{{row.subItems.length ? '\\n  • ' + (row.subItems | each:\"{{row.productName}}{{row.options.length ? ' (' + (row.options | pluck:optionName | join:', ') + ')' : ''}}\" | join:'\\n  • ') : ''}}" +
+            "{{(row.selectedItem | localizedName) || row.productName}}" +
+            "{{row.subItems.length ? '\\n  • ' + (row.subItems | each:\"{{(row.selectedItem | localizedName) || row.productName}}{{row.options.length ? ' (' + (row.options | pluck:optionName | join:', ') + ')' : ''}}\" | join:'\\n  • ') : ''}}" +
             "{{row.options.length ? '\\n  (' + (row.options | pluck:optionName | join:', ') + ')' : ''}}",
           width: { kind: 'fraction', fr: 3 },
           headerStyle: { font: { size: 9, weight: 'bold', color: '#ffffff' }, background: '#1e40af' },
@@ -209,17 +218,17 @@ export function sampleInvoiceTemplate(): ReportTemplate {
         {
           id: 'col_qty',
           header: 'Qty',
-          expression: 'row.qty',
+          expression: 'row.qty | Number',
           width: { kind: 'fixed', mm: 18 },
           align: 'right',
           headerStyle: { font: { size: 9, weight: 'bold', color: '#ffffff' }, background: '#1e40af', align: 'right' },
           cellStyle: { font: { size: 9 }, align: 'right' },
-          footer: { kind: 'sum', format: 'number' },
+          footer: { kind: 'sum', format: 'Number' },
         },
         {
           id: 'col_price',
           header: 'Price',
-          expression: "row.price | currency:BHD",
+          expression: "row.price | Currency",
           width: { kind: 'fixed', mm: 28 },
           align: 'right',
           headerStyle: { font: { size: 9, weight: 'bold', color: '#ffffff' }, background: '#1e40af', align: 'right' },
@@ -228,12 +237,12 @@ export function sampleInvoiceTemplate(): ReportTemplate {
         {
           id: 'col_total',
           header: 'Total',
-          expression: 'row.total | currency:BHD',
+          expression: 'row.total | Currency',
           width: { kind: 'fixed', mm: 30 },
           align: 'right',
           headerStyle: { font: { size: 9, weight: 'bold', color: '#ffffff' }, background: '#1e40af', align: 'right' },
           cellStyle: { font: { size: 9, weight: 'bold' }, align: 'right' },
-          footer: { kind: 'custom', expression: 'subTotal', format: 'currency:BHD' },
+          footer: { kind: 'custom', expression: 'subTotal', format: 'Currency' },
         },
       ],
     },
@@ -244,10 +253,10 @@ export function sampleInvoiceTemplate(): ReportTemplate {
       size: { width: 85, height: 30 },
       labelWidth: 45,
       rows: [
-        { label: 'Subtotal', expression: 'itemSubTotal', format: 'currency:BHD' },
-        { label: 'VAT', expression: 'invoiceTaxTotal', format: 'currency:BHD' },
-        { label: 'Discount', expression: 'itemDiscountTotal', format: 'currency:BHD' },
-        { label: 'TOTAL', expression: 'total', format: 'currency:BHD', bold: true },
+        { label: 'Subtotal', expression: 'itemSubTotal', format: 'Currency' },
+        { label: 'VAT', expression: 'invoiceTaxTotal', format: 'Currency' },
+        { label: 'Discount', expression: 'itemDiscountTotal', format: 'Currency' },
+        { label: 'TOTAL', expression: 'total', format: 'Currency', bold: true },
       ],
       style: { font: { size: 9 }, border: { top: { width: 0.5, color: '#cbd5e1', style: 'solid' }, bottom: { width: 0.5, color: '#cbd5e1', style: 'solid' }, left: { width: 0.5, color: '#cbd5e1', style: 'solid' }, right: { width: 0.5, color: '#cbd5e1', style: 'solid' } } },
     },
@@ -256,7 +265,11 @@ export function sampleInvoiceTemplate(): ReportTemplate {
       type: 'rich-text',
       position: { x: 15, y: 130 },
       size: { width: 85, height: 25 },
-      html: '<b>Notes:</b><br>Payment due within 30 days.<br><i>Thank you for your business.</i>',
+      // The company-wide note from company settings — the same source the
+      // classic paper prints. Hidden entirely when it's blank, so there's no
+      // stray "Notes:" heading.
+      html: '<b>Notes:</b><br>{{companyNote}}',
+      visibleWhen: 'companyNote',
       style: { font: { size: 8, color: '#475569' } },
     },
     // Payments table — bound to top-level `invoicePayments[]`.
@@ -279,7 +292,9 @@ export function sampleInvoiceTemplate(): ReportTemplate {
       type: 'qr-code',
       position: { x: 15, y: 190 },
       size: { width: 25, height: 25 },
-      value: '{{invoiceNumber}}',
+      // The document id, not its number: the id is what a scanner can look
+      // the record back up by, and it's unique across branches.
+      value: '{{id}}',
       ecLevel: 'M',
     },
     {
@@ -343,11 +358,16 @@ export function sampleInvoiceTemplate(): ReportTemplate {
       textColor: '#0f172a',
       mutedColor: '#64748b',
       surfaceColor: '#f8fafc',
-      fontFamily: '"Inter", "Helvetica Neue", Arial, sans-serif',
+      // What every "Inherit" block resolves to. Must stay DEFAULT_FONT_STACK:
+      // this template seeds every document type via `starterTemplate()`, and a
+      // family the PDF exporter can't register (Inter, say) would render one
+      // way on the canvas and fall back to Roboto in the export. See
+      // DEFAULT_FONT_STACK for why the stack is Roboto-then-Amiri.
+      fontFamily: DEFAULT_FONT_STACK,
       arabicFontFamily: '"Noto Naskh Arabic", "Cairo", "Tajawal", Arial, sans-serif',
     },
     defaultStyle: {
-      font: { family: '"Inter", Arial, sans-serif', size: 10, color: '#0f172a' },
+      font: { family: DEFAULT_FONT_STACK, size: 10, color: '#0f172a' },
     },
     sections: [
       { id: makeSectionId(), type: 'page-header', height: 32, blocks: headerBlocks },
@@ -388,6 +408,15 @@ export function sampleInvoiceData(): Record<string, unknown> {
   return {
     id: '69b8342c-a184-46ac-9728-b6d452f4d67b',
     branchId: '679cdb62-8807-427d-8bea-9916e726466e',
+    // Company-settings fields. The host overwrites all of these from the real
+    // Company record; these only stand in for standalone sample previews.
+    companyLogo: PLACEHOLDER_LOGO,
+    // `companyVatNumber` is further down, in the copied payload body.
+    companyName: 'Invo Trading Co. W.L.L.',
+    companyCurrency: 'BHD',
+    companyDecimals: 3,
+    companyNote: 'Payment due within 30 days.',
+    companyTerms: 'Goods sold are not returnable after 14 days.',
     refrenceNumber: '4',
     note: '',
     guests: 1,

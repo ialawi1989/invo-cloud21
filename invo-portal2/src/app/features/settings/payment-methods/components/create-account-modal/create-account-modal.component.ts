@@ -79,13 +79,13 @@ export interface CreateAccountModalData {
 
     .btn-cancel {
       padding: 9px 20px;
-      background: #f3f4f6;
-      border: 1px solid #e5e7eb;
+      background: var(--ui-surface-2);
+      border: 1px solid var(--ui-line);
       border-radius: 8px;
       font-size: 13px;
       cursor: pointer;
 
-      &:hover:not(:disabled) { background: #e5e7eb; }
+      &:hover:not(:disabled) { background: var(--ui-line); }
       &:disabled { opacity: 0.5; cursor: not-allowed; }
     }
     .btn-confirm {
@@ -109,7 +109,7 @@ export interface CreateAccountModalData {
       width: 12px;
       height: 12px;
       border: 2px solid rgba(255, 255, 255, 0.4);
-      border-top-color: #fff;
+      border-top-color: var(--ui-surface);
       border-radius: 50%;
       animation: ca-spin 0.7s linear infinite;
     }

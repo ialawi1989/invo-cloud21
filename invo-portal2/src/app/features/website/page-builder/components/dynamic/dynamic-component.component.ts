@@ -453,7 +453,7 @@ import { PageComponent, COMPONENT_LIBRARY } from '../../models/settings.model';
     }
     
     .hero-section .btn-primary {
-      background: white;
+      background: var(--ui-surface);
       color: var(--primary);
     }
     
@@ -577,7 +577,7 @@ import { PageComponent, COMPONENT_LIBRARY } from '../../models/settings.model';
     }
     
     .cta-section.gradient .btn-primary {
-      background: white;
+      background: var(--ui-surface);
       color: var(--primary);
     }
     
@@ -780,11 +780,10 @@ import { PageComponent, COMPONENT_LIBRARY } from '../../models/settings.model';
       padding: 14px 16px;
       border: none;
       border-radius: var(--border-radius);
-      font-size: 16px;
-    }
+      font-size: 16px; background-color: var(--ui-bare-bg); }
     
     .newsletter-form .btn {
-      background: white;
+      background: var(--ui-surface);
       color: var(--primary);
     }
     
@@ -855,7 +854,7 @@ import { PageComponent, COMPONENT_LIBRARY } from '../../models/settings.model';
     }
     
     .product-card {
-      background: var(--surface-color, #f9fafb);
+      background: var(--surface-color, var(--ui-surface-1));
       border-radius: var(--card-radius, var(--border-radius));
       overflow: hidden;
       transition: transform 0.3s, box-shadow 0.3s;
@@ -963,7 +962,7 @@ import { PageComponent, COMPONENT_LIBRARY } from '../../models/settings.model';
     }
     
     .banner-section .btn-primary {
-      background: white;
+      background: var(--ui-surface);
       color: var(--primary);
     }
     

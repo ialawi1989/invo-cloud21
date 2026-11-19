@@ -18,9 +18,12 @@ const mapLine = (l: InvoiceLine): Record<string, unknown> => ({
   taxRate: l.taxPercentage,
   tax: l.taxTotal,
   taxId: l.taxId ?? '',
-  discount: l.discountedAmount,
+  discount: l.discountTotal ?? l.discountedAmount,
   total: l.total,
-  barcode: l.selectedItem?.barcode ?? '',
+  barcode: l.selectedItem?.barcode || (l as any).barcode || '',
+  image: l.mediaUrl ?? '',
+  translation: l.selectedItem?.translation ?? null,
+  customFields: l.selectedItem?.customFields ?? {},
   note: l.selectedItem?.name && l.note ? l.note : '',
   options: (l.options ?? []).map(o => ({ name: o.optionName || o.note, price: o.price })),
   discountedByCoupon: !!l.discountedByCoupon,
@@ -31,6 +34,7 @@ const mapLine = (l: InvoiceLine): Record<string, unknown> => ({
   serial: l.serial ?? '',
   subItems: (l.subItems ?? []).map((s: any) => ({
     name: s.selectedItem?.name || s.note || '',
+    translation: s.selectedItem?.translation ?? null,
     options: (s.options ?? []).map((o: any) => ({ name: o.optionName || o.note || '' })),
   })),
 });
@@ -61,12 +65,17 @@ export function invoiceToRenderData(inv: Invoice): DocumentRenderData {
       date: fmtDate(inv.invoiceDate),
       dueDate: fmtDate(inv.dueDate),
       reference: inv.refrenceNumber,
+      createdDate: fmtDate(inv.createdAt),
       salesRep: inv.salesEmployeeName || inv.salesRepresentative,
-      service: inv.serviceName,
+      // legacy `getTableInfoParts`: "Service: x | Section: y | Table: z", each part only when it has a value
+      service: [inv.serviceName && `Service: ${inv.serviceName}`, inv.tableGroupName && `Section: ${inv.tableGroupName}`, inv.tableName && `Table: ${inv.tableName}`].filter(Boolean).join(' | '),
       orderNo: inv.serviceNo,
       isInclusiveTax: inv.isInclusiveTax,
       status: inv.status,
       customerNote: inv.note,
+      customerSignature: inv.customerSignature || '',
+      applyDiscountBeforeTax: inv.applyDiscountBeforeTax,
+      chargeType: inv.chargeType,
       // promotions: legacy document-builder config carried these into the paper
       couponId: inv.couponId || '',
       couponType: inv.couponType || '',
@@ -81,7 +90,8 @@ export function invoiceToRenderData(inv: Invoice): DocumentRenderData {
     })),
     totals: {
       // An inclusive-tax invoice prints its items total and discount with the tax in them (the labels then say "(inc)").
-      subtotal: inv.isInclusiveTax ? (inv.itemTotalWithTax ?? inv.itemTotalWithoutTax) : inv.itemTotalWithoutTax,
+      subTotal: inv.subTotal,
+      subtotal: inv.isInclusiveTax ? (inv.itemTotalWithTax ?? inv.itemTotalWithoutTax) : (inv.itemSubTotal || inv.itemTotalWithoutTax),
       discount: inv.isInclusiveTax ? (inv.discountTotalWithTax ?? inv.discountTotal) : inv.discountTotal,
       vat: inv.invoiceTaxTotal,
       charge: inv.chargeTotal,
@@ -97,6 +107,6 @@ export function invoiceToRenderData(inv: Invoice): DocumentRenderData {
     lines: inv.lines.filter(l => !l.parentId).map(mapLine),
     notes: inv.note,
     additional: {},
-    customFieldValues: { entity: inv.customFields ?? {}, branch: inv.branchCustomFields ?? {} },
+    customFieldValues: { entity: inv.customFields ?? {}, branch: inv.branchCustomFields ?? {}, customer: inv.customerCustomFields ?? {} },
   };
 }

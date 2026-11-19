@@ -250,8 +250,6 @@ export const builtInFilters: FilterMap = {
   localizedName: (v, args, ctx) => {
     if (!v || typeof v !== 'object') return '';
     const lang = String(ctx.data?.['language'] || ctx.locale || '').split('-')[0].toLowerCase();
-    const field = args[0] || 'name';
-    const row = v as Record<string, unknown>;
-    return resolveLocalizedName(row, lang, field) || String(row[args[1] || field] ?? '');
+    return resolveLocalizedName(v as never, lang, args[0] || 'name') || (args[1] ? String((v as Record<string, unknown>)[String(args[1])] ?? '') : '');
   },
 };

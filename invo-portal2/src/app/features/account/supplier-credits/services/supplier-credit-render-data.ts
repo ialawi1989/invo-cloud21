@@ -14,6 +14,8 @@ const mapLine = (l: SupplierCreditLine): Record<string, unknown> => ({
   barcode: l.barcode || l.selectedItem?.barcode || '',
   note: l.selectedItem?.name && l.note ? l.note : '',
   options: [],
+  customFields: (l as any).selectedItem?.customFields ?? {},
+  translation: (l as any).selectedItem?.translation ?? null,
   voidedItems: [],
 });
 
@@ -29,11 +31,13 @@ export function supplierCreditToRenderData(c: SupplierCredit): DocumentRenderDat
       number: c.supplierCreditNumber,
       date: fmtDate(c.supplierCreditDate),
       dueDate: '',
-      reference: c.reference,
+      reference: c.refrenceNumber || c.reference,
+      allowBillOfEntry: c.allowBillOfEntry,
       isInclusiveTax: c.isInclusiveTax,
-      status: '',
+      status: c.status,
       customerNote: c.note,
       bill: c.billingNumber,
+      original: c.billingNumber,
     },
     invoicePayments: [],
     totals: {

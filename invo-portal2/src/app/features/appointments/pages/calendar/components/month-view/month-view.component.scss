@@ -7,7 +7,7 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: #fff;
+  background: var(--ui-surface);
   border: none;
   border-radius: 0;
   overflow: hidden;
@@ -16,7 +16,7 @@
 .month-grid__weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  border-bottom: 1px solid #e4e7ec;
+  border-bottom: 1px solid var(--ui-line);
 }
 
 .month-grid__weekday {
@@ -25,7 +25,7 @@
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  color: #94a3b8;
+  color: var(--ui-faint);
 }
 
 .month-grid__cells {
@@ -37,9 +37,9 @@
 
 .month-cell {
   border: none;
-  border-right: 1px solid #f1f5f9;
-  border-bottom: 1px solid #f1f5f9;
-  background: #fff;
+  border-right: 1px solid var(--ui-surface-2);
+  border-bottom: 1px solid var(--ui-surface-2);
+  background: var(--ui-surface);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -47,15 +47,15 @@
   cursor: pointer;
   transition: background 120ms ease;
 
-  &:hover { background: #f8fafc; }
-  &.is-outside { background: #fafbfc; color: #cbd5e1; }
+  &:hover { background: var(--ui-surface-1); }
+  &.is-outside { background: var(--ui-surface-1); color: #cbd5e1; }
   &.is-outside .month-cell__num { color: #cbd5e1; }
 }
 
 .month-cell__num {
   font-size: 13px;
   font-weight: 600;
-  color: #1a1d29;
+  color: var(--ui-text-2);
 }
 
 .month-cell.is-today .month-cell__num {
@@ -65,15 +65,15 @@
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: #2691a4;
+  background: var(--ui-b-2691a4);
   color: #fff;
 }
 
 .month-cell__badge {
   margin-top: auto;
   align-self: flex-end;
-  background: #eef7f8;
-  color: #2691a4;
+  background: var(--ui-x-eef7f8);
+  color: var(--ui-brand-text);
   font-size: 11px;
   font-weight: 700;
   padding: 1px 7px;

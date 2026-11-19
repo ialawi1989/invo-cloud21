@@ -48,13 +48,13 @@ import { CustomerPointsSummary, PointsService, PointsSettings } from '../../serv
   `,
   styles: [`
     .pp { display: flex; flex-direction: column; gap: 10px; }
-    .pp__balance { font-weight: 600; color: #334155; }
-    .pp__label { font-size: 13px; font-weight: 600; color: #475569; }
+    .pp__balance { font-weight: 600; color: var(--ui-text-3); }
+    .pp__label { font-size: 13px; font-weight: 600; color: var(--ui-text-4); }
     .pp__points { display: flex; align-items: center; gap: 8px; }
-    .pp__input { flex: 1; border: 1px solid #d0d5dd; border-radius: 8px; padding: 9px 12px; font: inherit; }
-    .pp__input:disabled { background: #f8fafc; }
-    .pp__hint { color: #64748b; }
-    .pp__error { color: #dc2626; font-size: 13px; }
+    .pp__input { flex: 1; border: 1px solid var(--ui-line-strong); border-radius: 8px; padding: 9px 12px; font: inherit; }
+    .pp__input:disabled { background: var(--ui-surface-1); }
+    .pp__hint { color: var(--ui-muted); }
+    .pp__error { color: var(--ui-red-text); font-size: 13px; }
   `],
 })
 export class PointsPaymentComponent implements OnInit {

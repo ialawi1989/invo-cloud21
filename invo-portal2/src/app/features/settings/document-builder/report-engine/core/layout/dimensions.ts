@@ -1,5 +1,12 @@
+import { RepeaterBlock } from '../types/block.types';
 import { Length } from '../types/style.types';
 import { PageSetup } from '../types/template.types';
+
+/** Rows of sample data the CANVAS renders inside a table/repeater/payments
+ *  preview — matches `PREVIEW_ROW_CAP` in `canvas-block.component.ts`. The
+ *  export renderers paginate properly; the canvas only needs enough to show
+ *  layout. */
+export const CANVAS_PREVIEW_ROW_CAP = 15;
 
 /**
  * Page dimensions in mm. Single source of truth — everywhere else converts
@@ -79,3 +86,35 @@ export function approximateTextHeightMm(fontSizePt: number, lines: number, lineH
 export function approximateTextWidthMm(text: string, fontSizePt: number, factor = 0.55): number {
   return text.length * fontSizePt * factor * 0.352778;
 }
+
+/**
+ * A repeater card's real height — the designed `itemHeight` floor, raised to
+ * fit any autoHeight text/rich-text child whose OWN font size needs more
+ * room than the card was drawn for. Both renderers (HTML's `overflow:hidden`
+ * card and pdfmake's un-clippable absolute stack) and pagination's stride
+ * math all key off `itemHeight` directly, so a card whose text got bumped to
+ * a larger font size — no length change, just a bigger font — kept the old
+ * stride: the text overflowed the card's designed box and the next card's
+ * content landed on top of it. Raising the effective height per card fixes
+ * both the visual overlap and the page-break math in one place.
+ *
+ * Static per the block definition, not per data row: the designer template
+ * only tells us `text`, the raw `{{binding}}` expression, not the resolved
+ * value, so this can't (and doesn't try to) size differently per row — it
+ * only reacts to what the template itself controls, font size and layout.
+ */
+export function computeRepeaterItemHeightMm(block: RepeaterBlock): number {
+  let maxBottom = block.itemHeight;
+  for (const child of block.items) {
+    let childHeight = child.size.height;
+    if (child.size.autoHeight && (child.type === 'text' || child.type === 'rich-text')) {
+      const fontSize = child.style?.font?.size ?? 10;
+      const raw = child.type === 'text' ? child.text : child.html.replace(/<[^>]+>/g, '');
+      const lines = Math.max(1, Math.ceil(raw.length / 80));
+      childHeight = Math.max(childHeight, approximateTextHeightMm(fontSize, lines));
+    }
+    maxBottom = Math.max(maxBottom, child.position.y + childHeight);
+  }
+  return maxBottom;
+}
+

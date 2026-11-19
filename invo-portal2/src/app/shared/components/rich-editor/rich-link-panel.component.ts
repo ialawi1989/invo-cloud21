@@ -64,81 +64,81 @@ export const EMPTY_RICH_LINK: RichLinkValue = {
     .re-link-panel { display: flex; flex-direction: column; }
     .re-link-panel__head {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 12px 16px; border-bottom: 1px solid #e2e8f0;
+      padding: 12px 16px; border-bottom: 1px solid var(--ui-line);
       cursor: grab; user-select: none;
     }
     .re-link-panel__head:active { cursor: grabbing; }
-    .re-link-panel__head h4 { margin: 0; font: 700 15px/1.2 inherit; color: #0f172a; }
+    .re-link-panel__head h4 { margin: 0; font: 700 15px/1.2 inherit; color: var(--ui-text); }
     .re-link-panel__close {
       width: 28px; height: 28px; display: inline-flex; align-items: center;
       justify-content: center; border: none; background: transparent;
-      border-radius: 6px; color: #64748b; cursor: pointer;
+      border-radius: 6px; color: var(--ui-muted); cursor: pointer;
     }
-    .re-link-panel__close:hover { background: #f1f5f9; color: #0f172a; }
+    .re-link-panel__close:hover { background: var(--ui-surface-2); color: var(--ui-text); }
     .re-link-panel__body { padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; }
     .re-link-panel__stack { display: flex; flex-direction: column; align-items: stretch; gap: 6px; }
-    .rlp__label { font: 600 12px/1.3 inherit; color: #475569; }
+    .rlp__label { font: 600 12px/1.3 inherit; color: var(--ui-text-4); }
     .rlp__urlInput {
-      width: 100%; padding: 8px 10px; border: 1px solid #e2e8f0; border-radius: 6px;
-      font: 400 13px/1 inherit; color: #0f172a; outline: none; box-sizing: border-box;
+      width: 100%; padding: 8px 10px; border: 1px solid var(--ui-line); border-radius: 6px;
+      font: 400 13px/1 inherit; color: var(--ui-text); outline: none; box-sizing: border-box;
     }
     .rlp__urlInput:focus { border-color: var(--ricos-custom-settings-action-color, #32acc1); }
     /* Section / target picker list */
     .rlp__list {
       display: flex; flex-direction: column; gap: 2px; max-height: 220px;
-      overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 6px; padding: 4px;
+      overflow-y: auto; border: 1px solid var(--ui-line); border-radius: 6px; padding: 4px;
     }
     .rlp__list button {
       display: flex; align-items: center; gap: 8px; padding: 6px 8px;
       background: transparent; border: none; border-radius: 4px; text-align: left; cursor: pointer;
     }
-    .rlp__list button:hover { background: #f1f5f9; }
+    .rlp__list button:hover { background: var(--ui-surface-2); }
     .rlp__list button.is-on {
-      background: color-mix(in srgb, var(--ricos-custom-settings-action-color, #32acc1) 12%, #fff);
+      background: color-mix(in srgb, var(--ricos-custom-settings-action-color, #32acc1) 12%, var(--ui-surface));
       color: var(--ricos-custom-settings-action-color, #32acc1);
     }
     .rlp__tag {
       display: inline-flex; align-items: center; justify-content: center;
-      width: 22px; height: 22px; border-radius: 4px; background: #f1f5f9;
-      color: #475569; font: 700 10px/1 inherit; text-transform: uppercase;
+      width: 22px; height: 22px; border-radius: 4px; background: var(--ui-surface-2);
+      color: var(--ui-text-4); font: 700 10px/1 inherit; text-transform: uppercase;
     }
-    .rlp__itemLabel { font: 500 13px/1.2 inherit; color: #0f172a; }
+    .rlp__itemLabel { font: 500 13px/1.2 inherit; color: var(--ui-text); }
     .rlp__empty {
-      padding: 12px; border: 1px dashed #e2e8f0; border-radius: 6px;
-      font: 400 12px/1.4 inherit; color: #64748b; background: #f8fafc;
+      padding: 12px; border: 1px dashed var(--ui-line); border-radius: 6px;
+      font: 400 12px/1.4 inherit; color: var(--ui-muted); background: var(--ui-surface-1);
     }
     /* rel toggle rows */
     .rlp__row {
       display: flex; align-items: center; justify-content: space-between;
-      font: 400 13px/1.3 inherit; color: #1e293b;
+      font: 400 13px/1.3 inherit; color: var(--ui-text-2);
     }
     .rlp__labelGroup { display: inline-flex; align-items: center; gap: 4px; }
     .rlp__info {
       display: inline-flex; align-items: center; justify-content: center;
-      width: 16px; height: 16px; color: #94a3b8; cursor: help;
+      width: 16px; height: 16px; color: var(--ui-faint); cursor: help;
     }
     .rlp__info:hover { color: #32acc1; }
     .rlp__toggle {
-      display: inline-block; width: 28px; height: 16px; background: #cbd5e1;
+      display: inline-block; width: 28px; height: 16px; background: var(--ui-line-strong);
       border-radius: 999px; position: relative; transition: background 120ms;
       cursor: pointer; flex-shrink: 0;
     }
     .rlp__toggle::after {
       content: ''; position: absolute; top: 2px; left: 2px; width: 12px; height: 12px;
-      background: #fff; border-radius: 50%; transition: transform 120ms;
+      background: var(--ui-surface); border-radius: 50%; transition: transform 120ms;
     }
     .rlp__toggle.is-on { background: var(--ricos-custom-settings-action-color, #32acc1); }
     .rlp__toggle.is-on::after { transform: translateX(12px); }
     .re-link-panel__foot {
       display: flex; justify-content: flex-end; gap: 8px;
-      padding: 12px 16px; border-top: 1px solid #e2e8f0; background: #fff;
+      padding: 12px 16px; border-top: 1px solid var(--ui-line); background: var(--ui-surface);
     }
     .rlp__footBtn {
       padding: 6px 16px; border: 1px solid var(--ricos-custom-settings-action-color, #32acc1);
-      border-radius: 999px; background: #fff; font: 600 13px/1 inherit;
+      border-radius: 999px; background: var(--ui-surface); font: 600 13px/1 inherit;
       color: var(--ricos-custom-settings-action-color, #32acc1); cursor: pointer;
     }
-    .rlp__footBtn:hover { background: color-mix(in srgb, var(--ricos-custom-settings-action-color, #32acc1) 6%, #fff); }
+    .rlp__footBtn:hover { background: color-mix(in srgb, var(--ricos-custom-settings-action-color, #32acc1) 6%, var(--ui-surface)); }
     .rlp__footBtn--primary { background: var(--ricos-custom-settings-action-color, #32acc1); color: #fff; }
     .rlp__footBtn--primary:hover { background: color-mix(in srgb, var(--ricos-custom-settings-action-color, #32acc1) 85%, #000); }
   `],

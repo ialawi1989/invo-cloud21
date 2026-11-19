@@ -51,6 +51,12 @@ import {
 } from '../../services/document-template.types';
 import { CustomFieldsService } from '@features/settings/services/custom-fields.service';
 import type { CustomField } from '@features/settings/models/custom-field.types';
+import { FreeDesignerComponent } from '../../report-engine/designer/free-designer.component';
+import { starterTemplate } from '../../report-engine/models/starter-template';
+import { toReportData } from '../../report-engine/utils/report-data';
+import { CompanyService } from '@core/auth/company.service';
+import type { ReportTemplate } from '../../report-engine/core/types/template.types';
+import { CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { TextStyleEditorComponent } from './components/text-style-editor/text-style-editor.component';
 import { BulkStyleEditorComponent, BulkStylePatch } from './components/bulk-style-editor/bulk-style-editor.component';
 import { DesignerCanvasComponent } from './components/designer-canvas/designer-canvas.component';
@@ -173,6 +179,10 @@ function sanitizeNaN(node: unknown, path = 'docDefinition'): void {
     DesignerInspectorComponent,
     DocumentPaperComponent,
     DropdownMenuBtnComponent,
+    FreeDesignerComponent,
+    CdkDropList,
+    CdkDrag,
+    CdkDragHandle,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './document-builder-form.component.html',
@@ -180,6 +190,7 @@ function sanitizeNaN(node: unknown, path = 'docDefinition'): void {
 })
 export class DocumentBuilderFormComponent implements OnInit, CanLeaveComponent {
   private service    = inject(DocumentBuilderService);
+  private companyService = inject(CompanyService);
   private translate  = inject(TranslateService);
   private destroyRef = inject(DestroyRef);
   private router     = inject(Router);
@@ -555,24 +566,37 @@ export class DocumentBuilderFormComponent implements OnInit, CanLeaveComponent {
   patchHeaderField(field: keyof HeaderCustomization, patch: Partial<TextStyle>): void {
     this.template.update((t) => {
       const current = t.headerCustomization[field] as TextStyle;
+      let next = { ...current, ...patch };
+      // legacy `handleCheckbox2Change`: the company name and the logo can't both be hidden — the page would have no letterhead
+      if (field === 'companyName' && next.show === false && !t.headerCustomization.logo.show) next = { ...next, show: true };
       return {
         ...t,
         headerCustomization: {
           ...t.headerCustomization,
-          [field]: { ...current, ...patch },
+          [field]: next,
         },
       };
     });
   }
 
   patchHeaderLogo(patch: Partial<CompanyLogo>): void {
-    this.template.update((t) => ({
-      ...t,
-      headerCustomization: {
-        ...t.headerCustomization,
-        logo: { ...t.headerCustomization.logo, ...patch },
-      },
-    }));
+    this.template.update((t) => {
+      let next = { ...t.headerCustomization.logo, ...patch };
+      // legacy `handleCheckbox1Change`: hiding the logo while the company name is hidden keeps the logo on
+      if (next.show === false && !t.headerCustomization.companyName.show) next = { ...next, show: true };
+      return { ...t, headerCustomization: { ...t.headerCustomization, logo: next } };
+    });
+  }
+
+  /** Legacy `CompanyLogo.onChangeSize`: changing one side scales the other from the logo's original proportions. */
+  patchHeaderLogoSize(side: 'width' | 'height', value: number): void {
+    const logo = this.template().headerCustomization.logo;
+    const ow = logo.originalWidth || 0;
+    const oh = logo.originalHeight || 0;
+    const round = (n: number) => Math.round(n * 100) / 100;
+    if (!value || value < 0 || !ow || !oh) { this.patchHeaderLogo({ [side]: value || 0 } as Partial<CompanyLogo>); return; }
+    if (side === 'width') this.patchHeaderLogo({ width: value, height: round((value / ow) * oh) });
+    else this.patchHeaderLogo({ height: value, width: round((value / oh) * ow) });
   }
 
   patchHeaderVisibility(patch: Partial<Visibility>): void {
@@ -864,10 +888,17 @@ export class DocumentBuilderFormComponent implements OnInit, CanLeaveComponent {
       entityKey ? this.cfService.getByType(entityKey).catch(() => [] as CustomField[]) : Promise.resolve([] as CustomField[]),
     ]);
     this.branchCustomFields.set(branch.filter((f) => !f.isDeleted));
-    this.entityCustomFields.set(entity.filter((f) => !f.isDeleted));
+    // customer-facing documents also style the customer's own custom fields, in the same list (legacy)
+    const customer = dm?.entityType === 'customer' ? await this.cfService.getByType('customer').catch(() => [] as CustomField[]) : [];
+    this.entityCustomFields.set([...entity, ...customer].filter((f) => !f.isDeleted));
+    const product = await this.cfService.getByType('product').catch(() => [] as CustomField[]);
+    this.productCustomFields.set(product.filter((f) => !f.isDeleted && !!f.id));
   }
 
-  /** Read the CustomFieldStyle entry for a given CF abbr, falling
+  /** The company's product custom fields — each one is a table column `cf_<id>` (legacy builder). */
+  productCustomFields = signal<CustomField[]>([]);
+
+  /** Entries are keyed by the custom field's ID (kept in `abbr`), as the legacy builder and the server PDF read them. Read the CustomFieldStyle entry for a given CF, falling
    *  back to a fresh default when the user hasn't customised it yet.
    *  `scope` decides which template array to read — branch CFs live
    *  on the header, entity CFs on the transactional details. */
@@ -875,7 +906,7 @@ export class DocumentBuilderFormComponent implements OnInit, CanLeaveComponent {
     const list = scope === 'branch'
       ? this.template().headerCustomization.customFields
       : (this.template().transactionalDetailsCustomization.customFields ?? []);
-    const found = list.find((e) => e.abbr === cf.abbr);
+    const found = list.find((e) => e.abbr === cf.id);
     return found?.style ?? DEFAULT_TEXT_STYLE({ size: 10 });
   }
 
@@ -885,14 +916,14 @@ export class DocumentBuilderFormComponent implements OnInit, CanLeaveComponent {
     this.template.update((t) => {
       if (scope === 'branch') {
         const list = [...t.headerCustomization.customFields];
-        const idx = list.findIndex((e) => e.abbr === cf.abbr);
-        const next: CustomFieldStyle = { abbr: cf.abbr, name: cf.name, style };
+        const idx = list.findIndex((e) => e.abbr === cf.id);
+        const next: CustomFieldStyle = { abbr: cf.id, name: cf.name, style };
         if (idx >= 0) list[idx] = next; else list.push(next);
         return { ...t, headerCustomization: { ...t.headerCustomization, customFields: list } };
       }
       const list = [...(t.transactionalDetailsCustomization.customFields ?? [])];
-      const idx = list.findIndex((e) => e.abbr === cf.abbr);
-      const next: CustomFieldStyle = { abbr: cf.abbr, name: cf.name, style };
+      const idx = list.findIndex((e) => e.abbr === cf.id);
+      const next: CustomFieldStyle = { abbr: cf.id, name: cf.name, style };
       if (idx >= 0) list[idx] = next; else list.push(next);
       return {
         ...t,
@@ -927,9 +958,9 @@ export class DocumentBuilderFormComponent implements OnInit, CanLeaveComponent {
       // the seed style.
       const known = new Set(list.map((e) => e.abbr));
       for (const cf of this.branchCustomFields()) {
-        if (known.has(cf.abbr)) continue;
+        if (known.has(cf.id)) continue;
         list.push({
-          abbr: cf.abbr, name: cf.name,
+          abbr: cf.id, name: cf.name,
           style: this.applyBulkPatch(DEFAULT_TEXT_STYLE({ size: 10 }), p),
         });
       }
@@ -945,9 +976,9 @@ export class DocumentBuilderFormComponent implements OnInit, CanLeaveComponent {
       }));
       const known = new Set(list.map((e) => e.abbr));
       for (const cf of this.entityCustomFields()) {
-        if (known.has(cf.abbr)) continue;
+        if (known.has(cf.id)) continue;
         list.push({
-          abbr: cf.abbr, name: cf.name,
+          abbr: cf.id, name: cf.name,
           style: this.applyBulkPatch(DEFAULT_TEXT_STYLE({ size: 10 }), p),
         });
       }
@@ -1149,6 +1180,42 @@ export class DocumentBuilderFormComponent implements OnInit, CanLeaveComponent {
     }
   }
 
+  /** What the active type carries (legacy `dataModel.hasTerms / hasCompanyNote / hasCustomerNote`): the footer only offers those editors. */
+  hasTerms        = computed<boolean>(() => this.dataModel()?.hasTerms ?? false);
+  hasCompanyNote  = computed<boolean>(() => this.dataModel()?.hasCompanyNote ?? false);
+  hasCustomerNote = computed<boolean>(() => this.dataModel()?.hasCustomerNote ?? false);
+
+  // ─── Free Design (legacy report-engine designer) ────────────────────
+  /** The design the Free Design editor shows: the saved `designerTemplate`, else the type's starter layout. */
+  // Narrow computeds: the editor re-ingests its input (and resets its undo history) whenever this object changes, so it must not
+  // change on unrelated edits such as the template name.
+  private readonly savedDesign = computed(() => this.template().reportDesign);
+  private readonly typeOfDoc    = computed(() => this.template().documentType);
+  freeDesign = computed<ReportTemplate>(() => this.savedDesign() ?? starterTemplate(this.typeOfDoc()));
+  /** What the editor's Reset button restores. */
+  starterDesign = computed<ReportTemplate>(() => starterTemplate(this.typeOfDoc()));
+
+  /** The sample record the Free Design preview binds to, with the tenant's logo / name / currency merged in (legacy `toReportData`). */
+  freeDesignData = computed<Record<string, unknown>>(() => {
+    const sample = (this.freeDesign().sampleData ?? {}) as Record<string, unknown>;
+    return toReportData(sample, this.companyService.settings() as never, this.translate.currentLang);
+  });
+
+  onFreeDesignChange(design: ReportTemplate): void {
+    this.template.update((t) => ({ ...t, reportDesign: design }));
+  }
+
+  /** Classic <-> Free Design. Both designs stay in the template; the mode only picks which one renders and prints. */
+  setRenderMode(mode: 'classic' | 'designer'): void {
+    if (this.template().renderMode === mode) return;
+    this.template.update((t) => ({
+      ...t,
+      renderMode: mode,
+      // a template that has never had a free design starts from the type's starter layout
+      reportDesign: mode === 'designer' ? (t.reportDesign ?? starterTemplate(t.documentType)) : t.reportDesign,
+    }));
+  }
+
   async resetToDefault(): Promise<void> {
     const ok = await this.confirm({
       title:   this.translate.instant('DOCUMENT_BUILDER.RESET_TITLE'),
@@ -1157,8 +1224,15 @@ export class DocumentBuilderFormComponent implements OnInit, CanLeaveComponent {
     });
     if (!ok) return;
     const fresh = DEFAULT_TEMPLATE(this.template().documentType);
-    fresh.id           = this.template().id;
-    fresh.templateName = this.template().templateName;
+    const cur = this.template();
+    // legacy resets only the classic design: the template's identity, default flag, render mode and designer layout stay
+    fresh.id           = cur.id;
+    fresh.templateName = cur.templateName;
+    fresh.isDefault    = cur.isDefault;
+    fresh.renderMode   = cur.renderMode;
+    fresh.designerElements = cur.designerElements;
+    fresh.extraPages   = cur.extraPages;
+    fresh.reportDesign = cur.reportDesign;
     this.template.set(fresh);
   }
 
@@ -1259,21 +1333,17 @@ export class DocumentBuilderFormComponent implements OnInit, CanLeaveComponent {
   /** Customer-side fields for the active doc type (drives the
    *  Customer Details panel). */
   customerFieldIds = computed<string[]>(() => {
-    return this.transactionalFields().filter((id) =>
-      DocumentBuilderFormComponent.CUSTOMER_FIELD_RE.test(id) ||
-      DocumentBuilderFormComponent.STAFF_FIELDS.has(id),
-    );
+    // the legacy builder lists the type's own first-column fields (under the key each is saved with)
+    const layout = PAPER_LAYOUT[this.template().documentType];
+    return layout ? layout.firstColumn.map((f) => f.styleKey ?? f.id) : [];
   });
 
   /** Document-level fields — everything that's not customer-side
    *  and not table chrome. Renders in the Document Details panel. */
   documentFieldIds = computed<string[]>(() => {
-    return this.transactionalFields().filter((id) => {
-      if (DocumentBuilderFormComponent.TABLE_CHROME_FIELD_RE.test(id)) return false;
-      if (DocumentBuilderFormComponent.CUSTOMER_FIELD_RE.test(id)) return false;
-      if (DocumentBuilderFormComponent.STAFF_FIELDS.has(id)) return false;
-      return true;
-    });
+    // the type's own second-column fields (document dates, reference, created date, service ...)
+    const layout = PAPER_LAYOUT[this.template().documentType];
+    return layout ? layout.secondColumn.map((f) => f.styleKey ?? f.id) : [];
   });
 
   // Customer Details / Document Details: Fields | Layout sub-tab
@@ -1381,14 +1451,39 @@ export class DocumentBuilderFormComponent implements OnInit, CanLeaveComponent {
    *  When the active doc type isn't registered, falls back to an
    *  empty list so the form renders nothing rather than crashing. */
   tableColumnConfigs = computed<ReadonlyArray<TableColumnConfig>>(() => {
-    return PAPER_LAYOUT[this.template().documentType]?.tableColumns ?? [];
+    const t = this.template();
+    const all: TableColumnConfig[] = [
+      ...(PAPER_LAYOUT[t.documentType]?.tableColumns ?? []),
+      ...this.productCustomFields().map((f) => ({ id: 'cf_' + f.id, defaultLabel: f.name, defaultShow: false })),
+    ];
+    // the order the client saved (legacy `columnOrder`); columns it doesn't list keep their place at the end
+    const order = t.columnOrder ?? [];
+    if (!order.length) return all;
+    const byId = new Map(all.map((c) => [c.id, c]));
+    const ordered = order.map((id) => byId.get(id)).filter((c): c is TableColumnConfig => !!c);
+    const seen = new Set(ordered.map((c) => c.id));
+    all.forEach((c) => { if (!seen.has(c.id)) ordered.push(c); });
+    return ordered;
   });
+
+  /** Whether a column is on: a saved entry decides, else the column's own default (Image / Barcode / custom fields start off). */
+  columnOn(cfg: TableColumnConfig): boolean {
+    const saved = this.template().tableCustomization[cfg.id];
+    return saved ? saved.show !== false : cfg.defaultShow !== false;
+  }
+
+  /** Drag-and-drop in the Columns list saves the new order (legacy `tableCustomization.columnOrder`). */
+  dropTableColumn(ev: CdkDragDrop<unknown>): void {
+    const ids = this.tableColumnConfigs().map((c) => c.id);
+    moveItemInArray(ids, ev.previousIndex, ev.currentIndex);
+    this.template.update((t) => ({ ...t, columnOrder: ids }));
+  }
 
   /** Pull a column safely (returns a fresh default for unknown
    *  columns — defensive against schema drift). */
   tableColumn(id: string): TableColumn {
     return this.template().tableCustomization[id]
-        ?? { show: true, width: 0, label: '', translation: {} };
+        ?? { show: this.tableColumnConfigs().find((c) => c.id === id)?.defaultShow !== false, width: 0, label: '', translation: {} };
   }
 
   /** Effective label for a column row in the form — user override
@@ -1446,6 +1541,31 @@ export class DocumentBuilderFormComponent implements OnInit, CanLeaveComponent {
     const dm = this.dataModel();
     if (!dm) return;
     this.patchTransactionalField(dm.tableLinesField, { ...this.tableLinesField(), ...patch });
+  }
+
+  // ── Product custom-field badge under the item name (legacy `productCustomFieldBadge` + `lineCustomFieldIds`) ──
+  /** The types whose table offers it (legacy "Additional Details": estimate, invoice, purchase order, bill). */
+  hasProductBadge = computed<boolean>(() => ['estimate', 'invoice', 'purchase-order', 'bill'].includes(this.template().documentType));
+  productBadge(): TextStyle {
+    const v = (this.template().transactionalDetailsCustomization as unknown as Record<string, unknown>)['productCustomFieldBadge'] as TextStyle | undefined;
+    return v && typeof v === 'object' ? v : DEFAULT_TEXT_STYLE({ size: '12', color: '#495057', backgroundColor: '#e9ecef', show: false });
+  }
+  patchProductBadge(patch: Partial<TextStyle>): void {
+    this.template.update((t) => ({ ...t, transactionalDetailsCustomization: { ...t.transactionalDetailsCustomization, ['productCustomFieldBadge']: { ...this.productBadge(), ...patch } } as TransactionalDetails }));
+  }
+  lineCfOn(id: string): boolean {
+    const ids = (this.template().transactionalDetailsCustomization as unknown as Record<string, unknown>)['lineCustomFieldIds'];
+    return Array.isArray(ids) && ids.includes(id);
+  }
+  toggleLineCf(id: string, on: boolean): void {
+    this.template.update((t) => {
+      const cur = (t.transactionalDetailsCustomization as unknown as Record<string, unknown>)['lineCustomFieldIds'];
+      const ids = Array.isArray(cur) ? [...(cur as string[])] : [];
+      const at = ids.indexOf(id);
+      if (on && at < 0) ids.push(id);
+      else if (!on && at >= 0) ids.splice(at, 1);
+      return { ...t, transactionalDetailsCustomization: { ...t.transactionalDetailsCustomization, ['lineCustomFieldIds']: ids } as unknown as TransactionalDetails };
+    });
   }
 
   patchTableVoided(patch: Partial<TextStyle>): void {
@@ -1578,9 +1698,22 @@ export class DocumentBuilderFormComponent implements OnInit, CanLeaveComponent {
    *  credit notes / supplier credits don't take payments themselves
    *  but DO need the credit-balance row, so the panel is still
    *  relevant. Adding a new doc type needs only the registry entry. */
-  showPaymentPanels = computed<boolean>(() => {
-    const dm = this.dataModel();
-    return !!dm && (dm.hasPayments || dm.hasCredits);
+  showPaymentPanels = computed<boolean>(() => this.paymentFieldIds().length > 0);
+
+  /** Legacy `paymentFields` per type: invoice (4), bill (payments, credit, balance), credit note (credit only); none for the others. */
+  paymentFieldIds = computed<string[]>(() => {
+    switch (this.template().documentType) {
+      case 'invoice':     return ['payments', 'paymentMethods', 'credit', 'balance'];
+      case 'bill':        return ['payments', 'credit', 'balance'];
+      case 'credit-note': return ['credit'];
+      default:            return [];
+    }
+  });
+
+  /** The total rows the type has (legacy `totalFields`), in the legacy order. */
+  totalFieldIds = computed<string[]>(() => {
+    const allow = new Set(PAPER_LAYOUT[this.template().documentType]?.totalFields ?? []);
+    return ['itemTotal', 'taxTotal', 'subTotal', 'discount', 'charge', 'delevary', 'roundingTotal', 'Total'].filter((f) => allow.has(f));
   });
 
   // ─── Other panel: Fields | Layout sub-tab ───────────────────────────

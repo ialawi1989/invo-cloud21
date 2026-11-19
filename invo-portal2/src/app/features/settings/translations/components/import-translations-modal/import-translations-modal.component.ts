@@ -84,21 +84,21 @@ export interface ImportModalData {
   styles: [`
     .itm { display: flex; flex-direction: column; }
     .itm__head { padding: 20px 24px 4px; }
-    .itm__title { margin: 0 0 4px; font-size: 17px; font-weight: 700; color: #0f172a; }
-    .itm__sub { margin: 0; font-size: 13px; color: #64748b; }
+    .itm__title { margin: 0 0 4px; font-size: 17px; font-weight: 700; color: var(--ui-text); }
+    .itm__sub { margin: 0; font-size: 13px; color: var(--ui-muted); }
 
     .itm__body { padding: 16px 24px; display: flex; flex-direction: column; gap: 14px; }
 
     .itm__stat { display: flex; align-items: baseline; gap: 8px; }
-    .itm__stat-num { font-size: 28px; font-weight: 800; color: #0f172a; }
-    .itm__stat-label { font-size: 13px; color: #475569; }
+    .itm__stat-num { font-size: 28px; font-weight: 800; color: var(--ui-text); }
+    .itm__stat-label { font-size: 13px; color: var(--ui-text-4); }
 
-    .itm__warn-note { margin: 0; font-size: 12px; color: #94a3b8; }
+    .itm__warn-note { margin: 0; font-size: 12px; color: var(--ui-faint); }
 
     .itm__alert { border-radius: 10px; padding: 12px 14px; font-size: 12px; }
     .itm__alert ul { margin: 0; padding-inline-start: 18px; }
-    .itm__alert--error { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; }
-    .itm__alert--warn  { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+    .itm__alert--error { background: var(--ui-red-soft); border: 1px solid var(--ui-red-soft-2); color: var(--ui-red-text); }
+    .itm__alert--warn  { background: var(--ui-amber-soft); border: 1px solid var(--ui-amber-soft-2); color: var(--ui-amber-text); }
     .itm__alert-title { margin: 0 0 6px; font-weight: 700; }
     .itm__id-list { margin: 0; padding-inline-start: 18px; font-family: ui-monospace, monospace; }
 
@@ -107,7 +107,7 @@ export interface ImportModalData {
       justify-content: flex-end;
       gap: 8px;
       padding: 14px 24px 20px;
-      border-top: 1px solid #f1f5f9;
+      border-top: 1px solid var(--ui-surface-2);
     }
   `],
 })

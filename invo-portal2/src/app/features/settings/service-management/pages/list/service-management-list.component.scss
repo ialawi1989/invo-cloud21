@@ -11,31 +11,31 @@
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
-  color: #0f172a;
+  color: var(--ui-text);
 
   thead th {
     text-align: start;
     padding: 10px 14px;
-    background: #f8fafc;
-    color: #64748b;
+    background: var(--ui-surface-1);
+    color: var(--ui-muted);
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.02em;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--ui-line);
     position: sticky;
     top: 0;
     z-index: 1;
   }
   tbody td {
     padding: 12px 14px;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--ui-surface-2);
     vertical-align: middle;
   }
   tbody tr {
     cursor: pointer;
     transition: background 120ms ease;
-    &:hover { background: #f8fafc; }
+    &:hover { background: var(--ui-surface-1); }
   }
 
   &__name    { min-width: 200px; }
@@ -46,7 +46,7 @@
 
 .row-name {
   font-weight: 600;
-  color: #0f172a;
+  color: var(--ui-text);
 }
 
 // Type chips — coloured per service type, mirroring the
@@ -56,26 +56,26 @@
   align-items: center;
   padding: 3px 10px;
   border-radius: 999px;
-  background: var(--color-brand-50, #ecfeff);
-  color: var(--color-brand-700, #0e7490);
+  background: var(--color-brand-50, var(--ui-brand-soft));
+  color: var(--color-brand-700, var(--ui-brand-text));
   font-size: 11px;
   font-weight: 600;
 
-  &[data-type='DineIn']   { background: #ecfeff; color: #0e7490; }
-  &[data-type='PickUp']   { background: #ecfdf5; color: #047857; }
-  &[data-type='Delivery'] { background: #fef3c7; color: #92400e; }
-  &[data-type='CarHop']   { background: #ede9fe; color: #6d28d9; }
-  &[data-type='Salon']    { background: #fce7f3; color: #be185d; }
-  &[data-type='Catering'] { background: #fff7ed; color: #c2410c; }
-  &[data-type='Retail']   { background: #e0e7ff; color: #4338ca; }
+  &[data-type='DineIn']   { background: var(--ui-brand-soft); color: var(--ui-brand-text); }
+  &[data-type='PickUp']   { background: var(--ui-green-soft); color: var(--ui-green-text); }
+  &[data-type='Delivery'] { background: var(--ui-amber-soft); color: var(--ui-amber-text); }
+  &[data-type='CarHop']   { background: var(--ui-x-ede9fe); color: var(--ui-t-6d28d9); }
+  &[data-type='Salon']    { background: var(--ui-x-fce7f3); color: var(--ui-t-be185d); }
+  &[data-type='Catering'] { background: var(--ui-x-fff7ed); color: var(--ui-orange-text); }
+  &[data-type='Retail']   { background: var(--ui-x-e0e7ff); color: var(--ui-t-4338ca); }
 }
 
 .default-chip {
   display: inline-flex;
   padding: 3px 8px;
   border-radius: 4px;
-  background: #f1f5f9;
-  color: #475569;
+  background: var(--ui-surface-2);
+  color: var(--ui-text-4);
   font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
@@ -89,7 +89,7 @@
   border: 1px solid transparent;
   background: transparent;
   border-radius: 6px;
-  color: #64748b;
+  color: var(--ui-muted);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -97,14 +97,14 @@
   transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
 
   &:hover {
-    background: #f1f5f9;
-    color: #0f172a;
-    border-color: #e2e8f0;
+    background: var(--ui-surface-2);
+    color: var(--ui-text);
+    border-color: var(--ui-line);
   }
   &--danger:hover {
-    background: #fef2f2;
-    color: #b91c1c;
-    border-color: #fecaca;
+    background: var(--ui-red-soft);
+    color: var(--ui-red-text);
+    border-color: var(--ui-red-soft-2);
   }
 }
 
@@ -127,23 +127,23 @@
   align-items: center;
   gap: 12px;
   padding: 10px 14px;
-  background: #fff;
+  background: var(--ui-surface);
   border: 1px solid transparent;
   border-radius: 8px;
   font-size: 13px;
-  color: #0f172a;
+  color: var(--ui-text);
   transition: background 120ms ease, border-color 120ms ease;
 
   &:hover {
-    background: #f8fafc;
-    border-color: #e2e8f0;
+    background: var(--ui-surface-1);
+    border-color: var(--ui-line);
   }
 
   // CDK drag-preview lifts off the page — pop the elevation and a
   // visible border so the row reads as the active drag target.
   &.cdk-drag-preview {
-    background: #fff;
-    border-color: #e2e8f0;
+    background: var(--ui-surface);
+    border-color: var(--ui-line);
     box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
   }
   &.cdk-drag-placeholder { opacity: 0; }
@@ -152,13 +152,13 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #94a3b8;
+  color: var(--ui-faint);
   cursor: grab;
   &:active { cursor: grabbing; }
 }
 .reorder-placeholder {
   height: 44px;
   border-radius: 8px;
-  background: #f1f5f9;
-  border: 1px dashed #cbd5e1;
+  background: var(--ui-surface-2);
+  border: 1px dashed var(--ui-line-strong);
 }

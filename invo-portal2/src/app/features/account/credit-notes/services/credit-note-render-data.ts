@@ -16,8 +16,9 @@ export function creditNoteToRenderData(c: CreditNote): DocumentRenderData {
       number: c.creditNoteNumber,
       date: fmtDate(c.creditNoteDate),
       dueDate: '',
-      reference: c.invoiceNumber || c.refrenceNumber,
-      status: '',
+      reference: c.refrenceNumber,
+      original: c.invoiceNumber,
+      status: c.status,
     },
     invoicePayments: [],
   };

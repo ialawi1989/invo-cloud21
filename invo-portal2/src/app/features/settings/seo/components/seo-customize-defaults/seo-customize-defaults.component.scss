@@ -1,8 +1,8 @@
 .cd { display: flex; flex-direction: column; gap: 12px; }
 
 .cd-card {
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
   border-radius: 12px;
   overflow: hidden;
 
@@ -15,20 +15,20 @@
     cursor: pointer;
     transition: background 120ms ease;
 
-    &:hover { background: #f8fafc; }
+    &:hover { background: var(--ui-surface-1); }
   }
   &__title {
     margin: 0;
     font-size: 14px;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--ui-text);
   }
   &__sub {
     margin: 4px 0 0;
     font-size: 12px;
-    color: #64748b;
+    color: var(--ui-muted);
     a {
-      color: var(--color-brand-700);
+      color: var(--ui-brand-t700);
       margin-inline-start: 4px;
       text-decoration: none;
       font-weight: 600;
@@ -42,7 +42,7 @@
     flex-shrink: 0;
   }
   &__chevron {
-    color: #94a3b8;
+    color: var(--ui-faint);
     transition: transform 150ms ease;
   }
   &--open &__chevron { transform: rotate(180deg); }
@@ -57,18 +57,18 @@
     cursor: pointer;
     border: 1px solid transparent;
   }
-  &__edit    { background: #fff;   border-color: #cbd5e1; color: #1e293b; &:hover { background: #f8fafc; } }
-  &__discard { background: #fff;   border-color: #cbd5e1; color: #1e293b; &:hover { background: #f8fafc; } }
+  &__edit    { background: var(--ui-surface);   border-color: var(--ui-line-strong); color: var(--ui-text-2); &:hover { background: var(--ui-surface-1); } }
+  &__discard { background: var(--ui-surface);   border-color: var(--ui-line-strong); color: var(--ui-text-2); &:hover { background: var(--ui-surface-1); } }
   &__save    { background: #94a3b8; color: #fff; cursor: not-allowed; &:hover { background: #64748b; } }
 
   &__body {
     padding: 0 20px 20px;
-    border-top: 1px solid #f1f5f9;
+    border-top: 1px solid var(--ui-surface-2);
   }
 
   &__sub-section {
     padding: 16px 20px;
-    border-top: 1px solid #f1f5f9;
+    border-top: 1px solid var(--ui-surface-2);
   }
 }
 
@@ -85,16 +85,16 @@
   margin: 0 0 4px;
   font-size: 13px;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--ui-text-2);
 
   &--mt { margin-top: 18px; }
 }
 .cd-section-hint {
   margin: 0 0 12px;
   font-size: 12px;
-  color: #64748b;
+  color: var(--ui-muted);
   a {
-    color: var(--color-brand-700);
+    color: var(--ui-brand-t700);
     margin-inline-start: 4px;
     text-decoration: none;
     font-weight: 600;
@@ -118,14 +118,14 @@
   label {
     font-size: 12px;
     font-weight: 600;
-    color: #1e293b;
+    color: var(--ui-text-2);
   }
 
   &__action {
     align-self: flex-start;
     margin-top: 4px;
     font-size: 11px;
-    color: var(--color-brand-700);
+    color: var(--ui-brand-t700);
     font-weight: 600;
     text-decoration: none;
     &:hover { text-decoration: underline; }
@@ -134,13 +134,13 @@
 
 .cd-input {
   padding: 8px 12px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--ui-line-strong);
   border-radius: 8px;
   font-size: 13px;
-  color: #1e293b;
+  color: var(--ui-text-2);
   outline: none;
   width: 100%;
-  background: #fff;
+  background: var(--ui-surface);
   transition: border-color .12s, box-shadow .12s;
   font-family: inherit;
 
@@ -156,7 +156,7 @@
   gap: 10px;
   margin: 6px 0;
   font-size: 13px;
-  color: #1e293b;
+  color: var(--ui-text-2);
 }
 
 .cd-checkbox-row {
@@ -165,7 +165,7 @@
   gap: 8px;
   padding: 6px 0;
   font-size: 13px;
-  color: #1e293b;
+  color: var(--ui-text-2);
   cursor: pointer;
 
   input[type='checkbox'] {
@@ -177,15 +177,15 @@
 .cd-advanced {
   margin-top: 14px;
   padding: 12px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--ui-surface-1);
+  border: 1px solid var(--ui-line);
   border-radius: 8px;
 
   summary {
     cursor: pointer;
     font-size: 12px;
     font-weight: 600;
-    color: var(--color-brand-700);
+    color: var(--ui-brand-t700);
   }
 }
 
@@ -213,10 +213,10 @@
     background: transparent;
     border: 1px solid transparent;
     border-radius: 6px;
-    color: #94a3b8;
+    color: var(--ui-faint);
     cursor: pointer;
 
-    &:hover { background: #fef2f2; color: #dc2626; }
+    &:hover { background: var(--ui-red-soft); color: var(--ui-red-text); }
   }
 }
 .cd-tag-add {
@@ -226,12 +226,12 @@
   padding: 6px 12px;
   margin-top: 4px;
   background: transparent;
-  border: 1px dashed #cbd5e1;
+  border: 1px dashed var(--ui-line-strong);
   border-radius: 8px;
-  color: var(--color-brand-700);
+  color: var(--ui-brand-t700);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
 
-  &:hover { background: #f0fafc; border-color: var(--color-brand-500); }
+  &:hover { background: var(--ui-x-f0fafc); border-color: var(--color-brand-500); }
 }

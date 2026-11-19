@@ -26,7 +26,7 @@
   align-items: center;
   gap: 12px;
   padding: 28px 34px;
-  background: #fff;
+  background: var(--ui-surface);
   border-radius: 14px;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22);
   max-width: 320px;
@@ -36,7 +36,7 @@
 .tg-ai-spinner {
   width: 34px;
   height: 34px;
-  border: 3px solid #e2e8f0;
+  border: 3px solid var(--ui-line);
   border-top-color: var(--color-brand-500, #32acc1);
   border-radius: 50%;
   animation: tg-ai-spin 0.7s linear infinite;
@@ -44,12 +44,12 @@
 
 @keyframes tg-ai-spin { to { transform: rotate(360deg); } }
 
-.tg-ai-text { margin: 0; font-size: 14px; font-weight: 600; color: #0f172a; }
-.tg-ai-hint { margin: 0; font-size: 12px; color: #64748b; }
+.tg-ai-text { margin: 0; font-size: 14px; font-weight: 600; color: var(--ui-text); }
+.tg-ai-hint { margin: 0; font-size: 12px; color: var(--ui-muted); }
 
 .tg-head {
-  &__title { margin: 0 0 2px; font-size: 18px; font-weight: 700; color: #0f172a; }
-  &__sub   { margin: 0; font-size: 13px; color: #64748b; }
+  &__title { margin: 0 0 2px; font-size: 18px; font-weight: 700; color: var(--ui-text); }
+  &__sub   { margin: 0; font-size: 13px; color: var(--ui-muted); }
 }
 
 // Sticky unsaved-changes bar.
@@ -63,10 +63,10 @@
   gap: 12px;
   padding: 10px 14px;
   border-radius: 10px;
-  background: var(--color-brand-50, #ecfeff);
-  border: 1px solid var(--color-brand-200, #a5f3fc);
+  background: var(--color-brand-50, var(--ui-brand-soft));
+  border: 1px solid var(--color-brand-200, var(--ui-brand-soft-2));
 
-  &__note { font-size: 12px; font-weight: 600; color: var(--color-brand-700, #0e7490); }
+  &__note { font-size: 12px; font-weight: 600; color: var(--ui-brand-t700); }
   &__actions { display: inline-flex; gap: 8px; }
 }
 
@@ -83,10 +83,10 @@
   gap: 12px;
   padding: 10px 14px;
   border-radius: 10px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--ui-surface-1);
+  border: 1px solid var(--ui-line);
 
-  &__note { font-size: 12px; font-weight: 600; color: #334155; }
+  &__note { font-size: 12px; font-weight: 600; color: var(--ui-text-3); }
   &__actions { display: inline-flex; gap: 8px; }
 }
 
@@ -97,8 +97,8 @@
 }
 
 .tg-card {
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
   border-radius: 12px;
   overflow: hidden;
 }
@@ -109,7 +109,7 @@
   text-align: center;
   input { cursor: pointer; width: 15px; height: 15px; accent-color: var(--color-brand-600, #0891b2); }
 }
-.tg-row--selected { background: var(--color-brand-50, #ecfeff); }
+.tg-row--selected { background: var(--color-brand-50, var(--ui-brand-soft)); }
 
 .tg-table {
   width: 100%;
@@ -120,11 +120,11 @@
     padding: 12px 16px;
     text-align: start;
     vertical-align: top;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--ui-surface-2);
   }
   thead th {
-    background: #f8fafc;
-    color: #64748b;
+    background: var(--ui-surface-1);
+    color: var(--ui-muted);
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
@@ -144,17 +144,17 @@
   &__record {
     display: block;
     font-size: 11px;
-    color: #94a3b8;
+    color: var(--ui-faint);
     text-transform: uppercase;
     letter-spacing: 0.04em;
     margin-bottom: 2px;
   }
-  &__name { font-size: 13px; font-weight: 600; color: #334155; }
+  &__name { font-size: 13px; font-weight: 600; color: var(--ui-text-3); }
 }
 
 .tg-source {
   font-size: 13px;
-  color: #475569;
+  color: var(--ui-text-4);
   line-height: 1.5;
   white-space: pre-wrap;
   word-break: break-word;
@@ -163,21 +163,21 @@
 .tg-input {
   appearance: none;
   width: 100%;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--ui-line);
   border-radius: 8px;
   padding: 8px 12px;
   font-size: 13px;
-  color: #0f172a;
-  background: #fff;
+  color: var(--ui-text);
+  background: var(--ui-surface);
   font-family: inherit;
   transition: border-color 100ms ease, box-shadow 100ms ease;
 
   &:focus {
     outline: 0;
     border-color: var(--color-brand-400, #7dd3fc);
-    box-shadow: 0 0 0 2px var(--color-brand-100, #e0f2fe);
+    box-shadow: 0 0 0 2px var(--color-brand-100, var(--ui-sky-soft));
   }
-  &::placeholder { color: #94a3b8; }
+  &::placeholder { color: var(--ui-faint); }
 
   &--area { resize: vertical; min-height: 40px; line-height: 1.5; }
 }
@@ -192,9 +192,9 @@
   padding: 3px 9px;
   white-space: nowrap;
 
-  &--translated    { background: #dcfce7; color: #15803d; }
-  &--not-translated { background: #f1f5f9; color: #64748b; }
-  &--needs-update  { background: #fef3c7; color: #b45309; }
+  &--translated    { background: var(--ui-green-soft); color: var(--ui-green-text); }
+  &--not-translated { background: var(--ui-surface-2); color: var(--ui-muted); }
+  &--needs-update  { background: var(--ui-amber-soft); color: var(--ui-amber-text); }
 }
 
 // States.
@@ -202,7 +202,7 @@
 .tg-spinner {
   width: 28px; height: 28px;
   border-radius: 50%;
-  border: 3px solid #e2e8f0;
+  border: 3px solid var(--ui-line);
   border-top-color: var(--color-brand-600, #0891b2);
   animation: tg-spin 0.8s linear infinite;
 }
@@ -211,7 +211,7 @@
 .tg-empty {
   text-align: center;
   padding: 56px 16px;
-  color: #94a3b8;
+  color: var(--ui-faint);
   p { margin: 0; font-size: 13px; }
 }
 
@@ -222,19 +222,19 @@
   gap: 6px;
   margin-inline-start: auto;
 
-  &__range { font-size: 12px; color: #64748b; margin-inline-end: 4px; }
+  &__range { font-size: 12px; color: var(--ui-muted); margin-inline-end: 4px; }
   &__btn {
     width: 28px; height: 28px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--ui-line);
     border-radius: 6px;
-    background: #fff;
-    color: #475569;
+    background: var(--ui-surface);
+    color: var(--ui-text-4);
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     transition: background 120ms ease, color 120ms ease;
-    &:hover:not(:disabled) { background: #f8fafc; color: #0f172a; }
+    &:hover:not(:disabled) { background: var(--ui-surface-1); color: var(--ui-text); }
     &:disabled { opacity: 0.4; cursor: not-allowed; }
   }
 }
@@ -244,9 +244,9 @@
   max-width: 420px;
   margin: 48px auto;
   text-align: center;
-  color: #94a3b8;
+  color: var(--ui-faint);
 
   svg { color: #cbd5e1; margin-bottom: 12px; }
-  &__title { margin: 0 0 6px; font-size: 16px; font-weight: 700; color: #475569; }
+  &__title { margin: 0 0 6px; font-size: 16px; font-weight: 700; color: var(--ui-text-4); }
   &__text { margin: 0; font-size: 13px; line-height: 1.6; }
 }

@@ -15,6 +15,8 @@ export class SelectedItem {
   price: number = 1;
   unitCost: number = 1;
   description: string = '';
+  /** The product's custom-field values by field id (the table's custom-field columns read them). */
+  customFields: { [id: string]: any } = {};
   /** Kept as a real field: ParseJson only copies `key in this`, so without it the server's translation would be dropped on save/reload. */
   translation: any = null;
 
@@ -80,6 +82,8 @@ export class Invoice {
   currencyId = null;
   customFields: { [id: string]: any } = {};
   branchCustomFields: { [id: string]: any } = {};
+  /** The customer's own custom-field values (read-only join from the customer record), printed on the document. */
+  customerCustomFields: { [id: string]: any } = {};
 
   isInclusiveTax = false;
 
@@ -681,6 +685,9 @@ export class Invoice {
             });
           }
         }
+      } else if (key == 'customerCustomFields') {
+        const raw = json[key];
+        this.customerCustomFields = raw && typeof raw === 'object' && !Array.isArray(raw) ? { ...raw } : {};
       } else if (key == 'branchCustomFields') {
         // Handle customFields as object with ID keys
         this.branchCustomFields = {};

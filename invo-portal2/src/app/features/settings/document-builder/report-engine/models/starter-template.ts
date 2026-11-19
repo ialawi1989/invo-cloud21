@@ -2,8 +2,19 @@ import { Block, TableColumn } from '../core/types/block.types';
 import { ReportTemplate, Section } from '../core/types/template.types';
 import { makeTemplateId } from '../utils/id.utils';
 import { sampleInvoiceTemplate } from './sample-templates';
-import { DocumentType } from '../../services/document-template.types';
-import { DOCUMENT_DATA_MODELS, DOCUMENT_DISPLAY_NAMES } from './document-data-model';
+import type { DocumentType } from '../../services/document-template.types';
+import { PAPER_LAYOUT } from '@shared/components/document-paper/paper-config';
+
+/** Legacy `displayName` / `lineNameField` / `paymentsField` of each type's data model (the portal's registry carries the rest). */
+const STARTER_EXTRAS: Record<DocumentType, { displayName: string; lineNameField?: string; paymentsField?: string }> = {
+  'invoice':         { displayName: 'Invoice', paymentsField: 'invoicePayments' },
+  'estimate':        { displayName: 'Estimate' },
+  'credit-note':     { displayName: 'Credit Note' },
+  'purchase-order':  { displayName: 'Purchase Order' },
+  'bill':            { displayName: 'Bill', paymentsField: 'billPayments' },
+  'expense':         { displayName: 'Expense', lineNameField: 'accountName' },
+  'supplier-credit': { displayName: 'Supplier Credit' },
+};
 
 /**
  * Produces the starting template for a document type that has never been
@@ -29,8 +40,9 @@ import { DOCUMENT_DATA_MODELS, DOCUMENT_DISPLAY_NAMES } from './document-data-mo
  */
 export function starterTemplate(documentType: DocumentType): ReportTemplate {
   const base = sampleInvoiceTemplate();
-  const displayName = DOCUMENT_DISPLAY_NAMES[documentType];
-  const model = DOCUMENT_DATA_MODELS[documentType];
+  const extras = STARTER_EXTRAS[documentType];
+  const config = { displayName: extras.displayName };
+  const model = { ...PAPER_LAYOUT[documentType].dataModel, lineNameField: extras.lineNameField, paymentsField: extras.paymentsField };
 
   // Source → target binding renames. Identity entries are harmless; they're
   // filtered out below so the invoice case does no work at all.
@@ -43,8 +55,27 @@ export function starterTemplate(documentType: DocumentType): ReportTemplate {
     // price column would bind a field that doesn't exist on those payloads
     // and silently render blank.
     ['row.price', `row.${model.linePriceField}`],
+    // Expenses list accounts rather than products.
+    ['row.productName', `row.${model.lineNameField ?? 'productName'}`],
+    // The tax roll-up is named after the document (billingTaxTotal,
+    // creditTaxTotal, …), so the totals block has to follow.
+    ['invoiceTaxTotal', model.taxTotalField],
+    ['invoicePayments', model.paymentsField ?? 'invoicePayments'],
   ];
   if (model.dueDateField) renames.push(['dueDate', model.dueDateField]);
+
+  // The entity's other fields have no slot in DataModelConfig — the payload
+  // just swaps the `customer`/`supplier` prefix, which is what `entityType`
+  // records. Without these, a bill or PO bound `customerAddress` against a
+  // supplier payload and rendered the BILL TO block empty.
+  if (model.entityType === 'supplier') {
+    renames.push(
+      ['customerAddress', 'supplierAddress'],
+      ['customerPhone', 'supplierPhone'],
+      ['customerVatNumber', 'supplierVatNumber'],
+      ['customerEmail', 'supplierEmail'],
+    );
+  }
 
   const active = renames.filter(([from, to]) => from !== to);
 
@@ -62,8 +93,8 @@ export function starterTemplate(documentType: DocumentType): ReportTemplate {
   // Literal copy that names the document type. Done after binding renames so
   // the label swap can't be undone by a binding rewrite.
   const rewriteLabels = (text: string): string => {
-    if (text === 'INVOICE') return displayName.toUpperCase();
-    if (text === 'Invoice #') return `${displayName} #`;
+    if (text === 'INVOICE') return config.displayName.toUpperCase();
+    if (text === 'Invoice #') return `${config.displayName} #`;
     return text;
   };
 
@@ -75,8 +106,8 @@ export function starterTemplate(documentType: DocumentType): ReportTemplate {
   return {
     ...base,
     id: makeTemplateId(),
-    name: `${displayName} template`,
-    description: `${displayName} layout bound to the Invo ${displayName.toLowerCase()} payload.`,
+    name: `${config.displayName} template`,
+    description: `${config.displayName} layout bound to the Invo ${config.displayName.toLowerCase()} payload.`,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     sections,

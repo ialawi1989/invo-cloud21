@@ -1,4 +1,4 @@
-@use '../_designer-theme.scss' as *;
+@import '../designer-theme';
 
 .bd {
   &__backdrop {
@@ -184,6 +184,28 @@
     color: $d-primary-hover;
     background: $d-primary-light;
     border-bottom: 1px solid rgba($d-primary, 0.2);
+  }
+
+  // Syntax hint above the Fields list. Muted, not alarming — it explains a
+  // convention rather than reporting a problem.
+  &__hint {
+    flex-shrink: 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 6px 8px;
+    font-size: 10px;
+    line-height: 1.45;
+    color: $d-text-secondary;
+    background: $d-bg-alt;
+    border-bottom: 1px solid $d-border-light;
+
+    .mdi {
+      flex-shrink: 0;
+      font-size: 13px;
+      line-height: 1.2;
+      color: $d-primary;
+    }
   }
 
   &__search {

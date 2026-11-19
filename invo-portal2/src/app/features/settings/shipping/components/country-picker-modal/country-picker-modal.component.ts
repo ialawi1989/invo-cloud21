@@ -108,22 +108,22 @@ export type CountryPickerModalResult = string[] | undefined;
       gap: 6px;
       height: 38px;
       padding: 0 12px;
-      background: #fff;
-      border: 1px solid #e2e8f0;
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-line);
       border-radius: 8px;
 
-      > svg { color: #94a3b8; flex-shrink: 0; }
+      > svg { color: var(--ui-faint); flex-shrink: 0; }
       > input {
         flex: 1 1 auto;
         border: 0;
         outline: 0;
         background: transparent;
         font-size: 13px;
-        color: #0f172a;
+        color: var(--ui-text);
       }
       &:focus-within {
-        border-color: var(--color-brand-300, #bae6fd);
-        box-shadow: 0 0 0 2px var(--color-brand-100, #e0f2fe);
+        border-color: var(--color-brand-300, var(--ui-sky-soft-2));
+        box-shadow: 0 0 0 2px var(--color-brand-100, var(--ui-sky-soft));
       }
     }
 
@@ -132,14 +132,14 @@ export type CountryPickerModalResult = string[] | undefined;
       align-items: center;
       gap: 12px;
       font-size: 12px;
-      color: #475569;
+      color: var(--ui-text-4);
     }
     .cpm__count { font-weight: 600; }
     .cpm__link {
       appearance: none;
       background: transparent;
       border: 0;
-      color: var(--color-brand-700, #0e7490);
+      color: var(--color-brand-700, var(--ui-brand-text));
       cursor: pointer;
       font-size: 12px;
       font-weight: 600;
@@ -153,7 +153,7 @@ export type CountryPickerModalResult = string[] | undefined;
       padding: 0;
       flex: 1;
       overflow-y: auto;
-      border: 1px solid #f1f5f9;
+      border: 1px solid var(--ui-surface-2);
       border-radius: 8px;
       max-height: 420px;
     }
@@ -162,17 +162,17 @@ export type CountryPickerModalResult = string[] | undefined;
       align-items: center;
       gap: 10px;
       padding: 8px 12px;
-      border-bottom: 1px solid #f1f5f9;
+      border-bottom: 1px solid var(--ui-surface-2);
       font-size: 13px;
-      color: #0f172a;
+      color: var(--ui-text);
       cursor: pointer;
 
       &:last-child { border-bottom: 0; }
-      &:hover:not(.is-taken) { background: #f8fafc; }
+      &:hover:not(.is-taken) { background: var(--ui-surface-1); }
 
       &.is-taken {
         cursor: not-allowed;
-        color: #94a3b8;
+        color: var(--ui-faint);
       }
 
       input { accent-color: var(--color-brand-600, #0891b2); }
@@ -182,13 +182,13 @@ export type CountryPickerModalResult = string[] | undefined;
       font-size: 10px;
       font-weight: 700;
       text-transform: uppercase;
-      color: #b45309;
+      color: var(--ui-amber-text);
       letter-spacing: 0.04em;
     }
     .cpm__empty {
       padding: 24px;
       text-align: center;
-      color: #94a3b8;
+      color: var(--ui-faint);
       font-size: 13px;
     }
   `],

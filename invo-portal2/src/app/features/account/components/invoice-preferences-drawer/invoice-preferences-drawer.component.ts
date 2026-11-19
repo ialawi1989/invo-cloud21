@@ -127,39 +127,39 @@ const slugify = (name: string) => name.trim().toLowerCase().replace(/\s+/g, '_')
   `,
   styles: [`
     .ipd { display: flex; flex-direction: column; height: 100%; }
-    .ipd__head { display: flex; align-items: center; gap: 16px; padding: 14px 16px; border-bottom: 1px solid #e4e7ec; }
+    .ipd__head { display: flex; align-items: center; gap: 16px; padding: 14px 16px; border-bottom: 1px solid var(--ui-line); }
     .ipd__tabs { display: flex; gap: 20px; }
-    .ipd__tab { border: 0; background: none; padding: 4px 0; font-size: 14px; font-weight: 600; color: #64748b; cursor: pointer; border-bottom: 2px solid transparent;
-      &.is-active { color: #0f172a; border-bottom-color: #2691a4; } }
-    .ipd__all { margin-inline-start: auto; font-size: 13px; font-weight: 600; color: #2691a4; text-decoration: none; &:hover { text-decoration: underline; } }
-    .ipd__close { border: 0; background: none; color: #64748b; font-size: 16px; cursor: pointer; padding: 4px; &:hover { color: #0f172a; } }
+    .ipd__tab { border: 0; background: none; padding: 4px 0; font-size: 14px; font-weight: 600; color: var(--ui-muted); cursor: pointer; border-bottom: 2px solid transparent;
+      &.is-active { color: var(--ui-text); border-bottom-color: #2691a4; } }
+    .ipd__all { margin-inline-start: auto; font-size: 13px; font-weight: 600; color: var(--ui-brand-text); text-decoration: none; &:hover { text-decoration: underline; } }
+    .ipd__close { border: 0; background: none; color: var(--ui-muted); font-size: 16px; cursor: pointer; padding: 4px; &:hover { color: var(--ui-text); } }
     .ipd__body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
-    .ipd__hint { color: #94a3b8; margin: 0; }
-    .ipd__check { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: #334155; }
+    .ipd__hint { color: var(--ui-faint); margin: 0; }
+    .ipd__check { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--ui-text-3); }
     .ipd__field { display: flex; flex-direction: column; gap: 6px; }
-    .ipd__field label { font-size: 13px; font-weight: 600; color: #334155; }
-    .ipd__field textarea { border: 1px solid #d0d5dd; border-radius: 8px; padding: 8px 12px; font: inherit; resize: vertical;
+    .ipd__field label { font-size: 13px; font-weight: 600; color: var(--ui-text-3); }
+    .ipd__field textarea { border: 1px solid var(--ui-line-strong); border-radius: 8px; padding: 8px 12px; font: inherit; resize: vertical;
       &:focus { outline: none; border-color: #2691a4; box-shadow: 0 0 0 3px rgba(38, 145, 164, .12); } }
 
-    .ipd__fields-text { margin: 0; font-size: 13px; color: #64748b; }
+    .ipd__fields-text { margin: 0; font-size: 13px; color: var(--ui-muted); }
     .ipd__fields-list { display: flex; flex-direction: column; gap: 4px; }
-    .ipd__field-row { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid #e4e7ec; border-radius: 8px; background: #fff;
+    .ipd__field-row { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid var(--ui-line); border-radius: 8px; background: var(--ui-surface);
       &.is-editing { border-color: #2691a4; box-shadow: 0 0 0 3px rgba(38, 145, 164, .12); } }
-    .ipd__field-name { flex: 1; min-width: 0; font-size: 13.5px; font-weight: 600; color: #0f172a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-      &:is(input) { border: 1px solid #d0d5dd; border-radius: 6px; padding: 5px 8px; font: inherit; font-weight: 500; } }
-    .ipd__field-type { font-size: 11.5px; color: #94a3b8; flex: 0 0 auto; }
-    .ipd__req-badge { font-size: 10.5px; font-weight: 700; color: #b45309; background: #fef3c7; border-radius: 999px; padding: 1px 8px; flex: 0 0 auto; }
-    .ipd__system-badge { font-size: 10.5px; font-weight: 700; color: #64748b; background: #f1f5f9; border-radius: 999px; padding: 1px 8px; flex: 0 0 auto; }
-    .ipd__req { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: #475569; flex: 0 0 auto; white-space: nowrap; }
-    .ipd__icon-btn { border: 0; background: none; color: #64748b; padding: 3px; cursor: pointer; display: inline-flex; flex: 0 0 auto;
-      &:hover { color: #0f172a; } &--danger:hover { color: #dc2626; } }
-    .ipd__add-field { align-self: flex-start; border: 1px dashed #cbd5e1; background: #fff; border-radius: 8px; padding: 8px 14px; font-size: 13px; font-weight: 600; color: #2691a4; cursor: pointer;
-      &:hover { background: #f0fafb; } }
-    .ipd__manage-all { font-size: 12.5px; color: #64748b; text-decoration: none; &:hover { text-decoration: underline; color: #2691a4; } }
+    .ipd__field-name { flex: 1; min-width: 0; font-size: 13.5px; font-weight: 600; color: var(--ui-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      &:is(input) { border: 1px solid var(--ui-line-strong); border-radius: 6px; padding: 5px 8px; font: inherit; font-weight: 500; } }
+    .ipd__field-type { font-size: 11.5px; color: var(--ui-faint); flex: 0 0 auto; }
+    .ipd__req-badge { font-size: 10.5px; font-weight: 700; color: var(--ui-amber-text); background: var(--ui-amber-soft); border-radius: 999px; padding: 1px 8px; flex: 0 0 auto; }
+    .ipd__system-badge { font-size: 10.5px; font-weight: 700; color: var(--ui-muted); background: var(--ui-surface-2); border-radius: 999px; padding: 1px 8px; flex: 0 0 auto; }
+    .ipd__req { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--ui-text-4); flex: 0 0 auto; white-space: nowrap; }
+    .ipd__icon-btn { border: 0; background: none; color: var(--ui-muted); padding: 3px; cursor: pointer; display: inline-flex; flex: 0 0 auto;
+      &:hover { color: var(--ui-text); } &--danger:hover { color: var(--ui-red-text); } }
+    .ipd__add-field { align-self: flex-start; border: 1px dashed var(--ui-line-strong); background: var(--ui-surface); border-radius: 8px; padding: 8px 14px; font-size: 13px; font-weight: 600; color: var(--ui-brand-text); cursor: pointer;
+      &:hover { background: var(--ui-x-f0fafb); } }
+    .ipd__manage-all { font-size: 12.5px; color: var(--ui-muted); text-decoration: none; &:hover { text-decoration: underline; color: var(--ui-brand-text); } }
 
-    .ipd__footer { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 16px; border-top: 1px solid #e4e7ec; }
-    .ipd__btn { padding: 9px 16px; border-radius: 8px; border: 1px solid #d0d5dd; background: #fff; color: #334155; font-weight: 600; font-size: 13.5px; cursor: pointer;
-      &--primary { border-color: #2691a4; background: #2691a4; color: #fff; } &:disabled { opacity: .6; cursor: not-allowed; } }
+    .ipd__footer { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 16px; border-top: 1px solid var(--ui-line); }
+    .ipd__btn { padding: 9px 16px; border-radius: 8px; border: 1px solid var(--ui-line-strong); background: var(--ui-surface); color: var(--ui-text-3); font-weight: 600; font-size: 13.5px; cursor: pointer;
+      &--primary { border-color: #2691a4; background: var(--ui-b-2691a4); color: #fff; } &:disabled { opacity: .6; cursor: not-allowed; } }
   `],
 })
 export class InvoicePreferencesDrawerComponent implements OnInit {

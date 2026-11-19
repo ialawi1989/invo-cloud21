@@ -56,24 +56,24 @@ export interface ConfirmModalData {
   `,
   styles: [`
     .body    { padding: 20px 24px; }
-    .message { font-size: 14px; color: #374151; margin: 0; line-height: 1.6; }
+    .message { font-size: 14px; color: var(--ui-text-3); margin: 0; line-height: 1.6; }
 
     .note {
       display: flex; align-items: flex-start; gap: 8px;
       margin-top: 14px; padding: 10px 12px;
-      background: #fef3c7; border: 1px solid #fcd34d;
+      background: var(--ui-amber-soft); border: 1px solid var(--ui-x-fcd34d);
       border-radius: 8px;
-      font-size: 13px; color: #92400e; line-height: 1.5;
+      font-size: 13px; color: var(--ui-amber-text); line-height: 1.5;
     }
     .note svg { flex-shrink: 0; margin-top: 1px; }
     .note--danger {
-      background: #fef2f2; border-color: #fecaca; color: #991b1b;
+      background: var(--ui-red-soft); border-color: var(--ui-red-soft-2); color: var(--ui-red-text);
     }
 
     .btn-cancel {
-      padding: 9px 20px; background: #f3f4f6; border: 1px solid #e5e7eb;
+      padding: 9px 20px; background: var(--ui-surface-2); border: 1px solid var(--ui-line);
       border-radius: 8px; font-size: 13px; cursor: pointer;
-      &:hover { background: #e5e7eb; }
+      &:hover { background: var(--ui-line); }
     }
     .btn-confirm {
       padding: 9px 24px; background: #32acc1; color: #fff;

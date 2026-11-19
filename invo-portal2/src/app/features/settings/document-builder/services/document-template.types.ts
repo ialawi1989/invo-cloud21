@@ -305,6 +305,12 @@ const SECOND_COLUMN_FIELD_IDS: ReadonlyArray<string> = [
   'supplierCreditDate', 'originalBill',
 ];
 
+/** Fields the legacy constructor leaves at the base size '12' (every other field is 10). */
+const LEGACY_SIZE_12 = new Set(['tableTitle', 'taxType', 'barcode', 'customerPhone', 'customerAddress', 'customerVatNumber', 'supplierPhone', 'supplierAddress']);
+const LEGACY_SIZE_12_RE = /TableHeader$|Lines$|VoidedLines$/;
+/** Legacy voided rows: grey text on light grey, stored (not left to CSS). */
+const VOIDED_STYLE: Partial<TextStyle> = { color: '#6c757d', backgroundColor: '#f8f9fa' };
+
 /** Default styling overrides for specific transactional fields. Most
  *  fields default to the standard `DEFAULT_TEXT_STYLE`; these get
  *  bespoke seed values matching the legacy constructor. */
@@ -317,6 +323,10 @@ const TRANSACTIONAL_FIELD_OVERRIDES: Record<string, Partial<TextStyle>> = {
   billTableHeader:           { color: '#fff', backgroundColor: '#3c3d3a' },
   expenseTableHeader:        { color: '#fff', backgroundColor: '#3c3d3a' },
   supplierCreditTableHeader: { color: '#fff', backgroundColor: '#3c3d3a' },
+  // Voided lines — legacy `VOIDED_LINE_STYLE`
+  invoicVoidedLines: VOIDED_STYLE, estimateVoidedLines: VOIDED_STYLE, creditNoteVoidedLines: VOIDED_STYLE,
+  purchaseVoidedLines: VOIDED_STYLE, billVoidedLines: VOIDED_STYLE, expenseVoidedLines: VOIDED_STYLE,
+  supplierCreditVoidedLines: VOIDED_STYLE,
   // Barcode — green default
   barcode:                   { color: '#fff', backgroundColor: '#74b72e' },
   // POS service — hidden by default so existing templates don't
@@ -344,8 +354,11 @@ export const DEFAULT_TRANSACTIONAL = (documentType: DocumentType): Transactional
   Object.values(DOC_TYPE_TRANSACTIONAL_FIELDS).flat().forEach((f) => allFields.add(f));
 
   for (const f of allFields) {
-    out[f] = DEFAULT_TEXT_STYLE({ size: 10, ...TRANSACTIONAL_FIELD_OVERRIDES[f] });
+    out[f] = DEFAULT_TEXT_STYLE({ size: LEGACY_SIZE_12.has(f) || LEGACY_SIZE_12_RE.test(f) ? '12' : 10, ...TRANSACTIONAL_FIELD_OVERRIDES[f] });
   }
+  // legacy always seeds the product custom-field badge (grey on light grey) and its enabled-field list
+  (out as AnyJson)['productCustomFieldBadge'] = DEFAULT_TEXT_STYLE({ size: '12', color: '#495057', backgroundColor: '#e9ecef' });
+  (out as AnyJson)['lineCustomFieldIds'] = [];
   out.customFields = [];
   return out;
 };
@@ -413,13 +426,15 @@ export interface TableCustomization {
 }
 export const DEFAULT_TABLE = (): TableCustomization => ({
   order:         DEFAULT_TABLE_COLUMN({ width: 5,  label: '#'           }),
+  image:         DEFAULT_TABLE_COLUMN({ width: 10, label: 'Image', show: false }),
   description:   DEFAULT_TABLE_COLUMN({ width: 30, label: 'Description' }),
   product:       DEFAULT_TABLE_COLUMN(),
+  barcode:       DEFAULT_TABLE_COLUMN({ show: false }),
   qty:           DEFAULT_TABLE_COLUMN({ width: 10, label: 'Qty'         }),
   price:         DEFAULT_TABLE_COLUMN({ width: 10, label: 'Price'       }),
   taxPercantage: DEFAULT_TABLE_COLUMN({ width: 10, label: 'Tax %'       }),
   tax:           DEFAULT_TABLE_COLUMN({ width: 10, label: 'Tax'         }),
-  discount:      DEFAULT_TABLE_COLUMN({ width: 10, label: 'Discount'    }),
+  discount:      DEFAULT_TABLE_COLUMN({ width: 10, label: 'Disc'        }),
   amount:        DEFAULT_TABLE_COLUMN({ width: 10, label: 'Amount'      }),
   total:         DEFAULT_TABLE_COLUMN(),
   expense:       DEFAULT_TABLE_COLUMN(),
@@ -628,6 +643,8 @@ export interface DocumentTemplate {
   footerCustomization:                FooterCustomization;
   transactionalDetailsCustomization:  TransactionalDetails;
   tableCustomization:                 TableCustomization;
+  /** The column display order the legacy builder saved (`tableCustomization.columnOrder`, column ids). Empty = the type's default order. */
+  columnOrder?:                       string[];
   totalSectionCustomization:          TotalSectionCustomization;
 
   // ─── Phase 2 additions (always present, default-empty) ─────────
@@ -711,6 +728,11 @@ function mergeText(into: TextStyle, raw: unknown): TextStyle {
  *  may have stored the entry as a flat TextStyle keyed by name. */
 function coerceCustomFieldStyle(raw: unknown): CustomFieldStyle | null {
   if (!isObj(raw)) return null;
+  // The legacy builder's shape (and what the server PDF reads): a one-key object `{ "<custom field id>": style }`.
+  const keys = Object.keys(raw);
+  if (typeof raw['abbr'] !== 'string' && typeof raw['key'] !== 'string' && keys.length === 1 && isObj(raw[keys[0]])) {
+    return { abbr: keys[0], name: keys[0], style: mergeText(DEFAULT_TEXT_STYLE({ size: 10 }), raw[keys[0]]) };
+  }
   const abbr = typeof raw['abbr'] === 'string' ? raw['abbr'] :
                typeof raw['key']  === 'string' ? raw['key']  : null;
   if (!abbr) return null;
@@ -803,6 +825,14 @@ export function parseTemplate(raw: AnyJson, fallbackType: DocumentType = 'invoic
         }
         continue;
       }
+      // The client's saved product-custom-field badge style / enabled field ids: kept exactly as the legacy builder saved
+      // them (the legacy `toFilteredJSON` keeps both), so re-saving a template from here never drops them.
+      if (k === 'productCustomFieldBadge' || k === 'lineCustomFieldIds') {
+        const bag = out.transactionalDetailsCustomization as unknown as AnyJson;
+        if (k === 'productCustomFieldBadge' && isObj(td[k]) && isObj(bag[k])) bag[k] = mergeText(bag[k] as unknown as TextStyle, td[k]);
+        else if (k === 'lineCustomFieldIds' && Array.isArray(td[k])) bag[k] = td[k];
+        continue;
+      }
       const existing = out.transactionalDetailsCustomization[k] as TextStyle | undefined;
       if (existing && typeof existing === 'object' && 'show' in existing) {
         out.transactionalDetailsCustomization[k] = mergeText(existing, td[k]);
@@ -819,6 +849,19 @@ export function parseTemplate(raw: AnyJson, fallbackType: DocumentType = 'invoic
     for (const k of Object.keys(out.tableCustomization)) {
       out.tableCustomization[k] = mergeColumn(out.tableCustomization[k], tc[k]);
     }
+    // legacy `setDefaults`: a column saved with width 0 / an empty label takes the default again
+    const COLUMN_DEFAULTS: Record<string, { width: number; label: string }> = {
+      order: { width: 5, label: '#' }, image: { width: 10, label: 'Image' }, description: { width: 30, label: 'Description' },
+      qty: { width: 10, label: 'Qty' }, price: { width: 10, label: 'Price' }, taxPercantage: { width: 10, label: 'Tax %' },
+      tax: { width: 10, label: 'Tax' }, discount: { width: 10, label: 'Disc' }, amount: { width: 10, label: 'Amount' },
+    };
+    for (const [k, d] of Object.entries(COLUMN_DEFAULTS)) {
+      const c = out.tableCustomization[k];
+      if (!c) continue;
+      if (!c.width) c.width = d.width;
+      if (c.label === '') c.label = d.label;
+    }
+    if (Array.isArray(tc['columnOrder'])) out.columnOrder = (tc['columnOrder'] as unknown[]).map(String);
     // Unknown columns ship verbatim
     for (const k of Object.keys(tc)) {
       if (!(k in out.tableCustomization) && isObj(tc[k])) {
@@ -872,6 +915,10 @@ export function parseTemplate(raw: AnyJson, fallbackType: DocumentType = 'invoic
   return out;
 }
 
+/** Custom-field styles go to the wire in the legacy shape `[{ "<custom field id>": style }]`. */
+const toLegacyCustomFields = (list: CustomFieldStyle[] | undefined): AnyJson[] =>
+  (list ?? []).map((e) => ({ [e.abbr]: e.style }));
+
 /** Serialize a template for save — strips transactional fields that
  *  don't apply to the current document type so the wire stays small.
  *  Mirrors legacy `toFilteredJSON()`. */
@@ -880,11 +927,14 @@ export function serializeTemplate(t: DocumentTemplate): AnyJson {
   const allowed = new Set<string>([
     ...COMMON_TRANSACTIONAL_FIELDS,
     ...DOC_TYPE_TRANSACTIONAL_FIELDS[t.documentType],
+    'productCustomFieldBadge', 'lineCustomFieldIds',   // legacy `toFilteredJSON` common fields
   ]);
   const filteredTransactional: TransactionalDetails = {};
   for (const k of Object.keys(t.transactionalDetailsCustomization)) {
     if (allowed.has(k) || k === 'customFields') {
-      filteredTransactional[k] = t.transactionalDetailsCustomization[k];
+      filteredTransactional[k] = k === 'customFields'
+        ? (toLegacyCustomFields(t.transactionalDetailsCustomization.customFields) as unknown as CustomFieldStyle[])
+        : t.transactionalDetailsCustomization[k];
     }
   }
 
@@ -898,10 +948,10 @@ export function serializeTemplate(t: DocumentTemplate): AnyJson {
     textSize:                           t.textSize,
     BackgroundColor:                    t.BackgroundColor,
     margins:                            t.margins,
-    headerCustomization:                t.headerCustomization,
+    headerCustomization:                { ...t.headerCustomization, customFields: toLegacyCustomFields(t.headerCustomization.customFields) },
     footerCustomization:                t.footerCustomization,
     transactionalDetailsCustomization:  filteredTransactional,
-    tableCustomization:                 t.tableCustomization,
+    tableCustomization:                 t.columnOrder?.length ? { ...t.tableCustomization, columnOrder: t.columnOrder } : t.tableCustomization,
     totalSectionCustomization:          t.totalSectionCustomization,
     // New fields go on the wire alongside — server should accept any
     // unknown JSON blob (the customizations endpoint is schemaless).

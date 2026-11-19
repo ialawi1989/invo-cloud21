@@ -67,14 +67,14 @@ export interface ZonesMapModalData {
       flex-direction: column;
       gap: 10px;
     }
-    .zmm__hint   { margin: 0; font-size: 12px; color: #64748b; }
-    .zmm__legend { margin: 0; font-size: 12px; color: #475569; font-weight: 600; }
+    .zmm__hint   { margin: 0; font-size: 12px; color: var(--ui-muted); }
+    .zmm__legend { margin: 0; font-size: 12px; color: var(--ui-text-4); font-weight: 600; }
     .zmm__warn   {
       margin: 0;
       padding: 8px 12px;
-      background: #fffbeb;
-      border: 1px solid #fde68a;
-      color: #92400e;
+      background: var(--ui-amber-soft);
+      border: 1px solid var(--ui-amber-soft-2);
+      color: var(--ui-amber-text);
       border-radius: 8px;
       font-size: 12px;
     }
@@ -83,8 +83,8 @@ export interface ZonesMapModalData {
       width: 100%;
       border-radius: 8px;
       overflow: hidden;
-      border: 1px solid #e2e8f0;
-      background: #f8fafc;
+      border: 1px solid var(--ui-line);
+      background: var(--ui-surface-1);
     }
   `],
 })

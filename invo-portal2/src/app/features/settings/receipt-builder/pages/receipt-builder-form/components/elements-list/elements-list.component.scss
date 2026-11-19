@@ -26,7 +26,7 @@
     padding: 14px 12px;
     text-align: center;
     font-size: 11px;
-    color: #94a3b8;
+    color: var(--ui-faint);
   }
 
   &__item {
@@ -41,8 +41,8 @@
     transition: background 120ms ease, border-color 120ms ease;
 
     &:hover {
-      background: #f8fafc;
-      border-color: #e2e8f0;
+      background: var(--ui-surface-1);
+      border-color: var(--ui-line);
     }
 
     // Selected state mirrors the canvas slot's --selected styling so
@@ -51,14 +51,14 @@
     &--selected,
     &--selected:hover {
       background: var(--color-brand-50);
-      border-color: var(--color-brand-300, #bae6fd);
+      border-color: var(--color-brand-300, var(--ui-sky-soft-2));
     }
 
     // CDK drag visuals.
     &.cdk-drag-preview {
       box-shadow: 0 8px 18px rgba(15, 23, 42, 0.14);
       border-color: var(--color-brand-500);
-      background: #fff;
+      background: var(--ui-surface);
     }
     &.cdk-drag-dragging { transition: none; }
   }
@@ -66,7 +66,7 @@
   &__placeholder {
     height: 28px;
     background: var(--color-brand-50);
-    border: 1px dashed var(--color-brand-300, #bae6fd);
+    border: 1px dashed var(--color-brand-300, var(--ui-sky-soft-2));
     border-radius: 4px;
     margin-bottom: 2px;
   }
@@ -80,7 +80,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: #94a3b8;
+    color: var(--ui-faint);
     background: transparent;
     border-radius: 4px;
     cursor: grab;
@@ -89,8 +89,8 @@
 
     &:active { cursor: grabbing; }
     &:hover  {
-      background: #f1f5f9;
-      color: #0f172a;
+      background: var(--ui-surface-2);
+      color: var(--ui-text);
     }
   }
 
@@ -98,7 +98,7 @@
   // hint that the row is draggable. Pairs with the row's own hover
   // shading so the affordance reads as part of the same gesture.
   &__item:hover &__handle {
-    color: #475569;
+    color: var(--ui-text-4);
   }
 
   // Main row button — clickable surface that selects the element.
@@ -122,19 +122,19 @@
   &__icon {
     display: inline-flex;
     align-items: center;
-    color: #94a3b8;
+    color: var(--ui-faint);
     flex-shrink: 0;
   }
-  &__item--selected &__icon { color: var(--color-brand-700); }
+  &__item--selected &__icon { color: var(--ui-brand-t700); }
 
   &__type {
     font-size: 11px;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--ui-text);
     flex-shrink: 0;
   }
   &__item--selected &__type,
-  &__item--selected &__summary { color: var(--color-brand-700); }
+  &__item--selected &__summary { color: var(--ui-brand-t700); }
 
   // The element's content snippet — truncated to a single line so a
   // long Text value doesn't blow out the rail width.
@@ -143,7 +143,7 @@
     min-width: 0;
     font-size: 12px;
     font-weight: 600;
-    color: #0f172a;
+    color: var(--ui-text);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -163,7 +163,7 @@
     flex-shrink: 0;
     transition: background 120ms ease, color 120ms ease;
 
-    &:hover { background: #f1f5f9; color: #475569; }
-    &--danger:hover { background: #fef2f2; color: #b91c1c; }
+    &:hover { background: var(--ui-surface-2); color: var(--ui-text-4); }
+    &--danger:hover { background: var(--ui-red-soft); color: var(--ui-red-text); }
   }
 }

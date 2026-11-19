@@ -105,24 +105,24 @@ export interface TwoFaResult {
       display: flex; flex-direction: column; align-items: center;
       gap: 16px; padding: 28px 24px 24px;
     }
-    .title   { font-size: 18px; font-weight: 600; color: #111827; margin: 0; text-align: center; }
-    .hint    { font-size: 13px; color: #6b7280; text-align: center; margin: 0; }
+    .title   { font-size: 18px; font-weight: 600; color: var(--ui-text); margin: 0; text-align: center; }
+    .hint    { font-size: 13px; color: var(--ui-muted); text-align: center; margin: 0; }
     .setup-block { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
-    .qr-img  { border-radius: 8px; border: 1px solid #e5e7eb; }
+    .qr-img  { border-radius: 8px; border: 1px solid var(--ui-line); }
     .code-box {
-      font-family: monospace; font-size: 13px; background: #f3f4f6;
+      font-family: monospace; font-size: 13px; background: var(--ui-surface-2);
       padding: 10px 16px; border-radius: 8px; letter-spacing: 2px; word-break: break-all;
     }
     .btn-copy {
-      padding: 8px 20px; background: #f3f4f6; border: 1px solid #e5e7eb;
+      padding: 8px 20px; background: var(--ui-surface-2); border: 1px solid var(--ui-line);
       border-radius: 8px; font-size: 13px; cursor: pointer;
-      &:hover { background: #e5e7eb; }
+      &:hover { background: var(--ui-line); }
     }
 
     .pincode-row { display: flex; gap: 8px; justify-content: center; }
     .pin-input {
       width: 44px; height: 52px; text-align: center; font-size: 20px; font-weight: 600;
-      border: 1.5px solid #e5e7eb; border-radius: 10px; outline: none;
+      border: 1.5px solid var(--ui-line); border-radius: 10px; outline: none;
       transition: border-color .15s;
       &:focus { border-color: #32acc1; box-shadow: 0 0 0 3px rgba(50,172,193,.1); }
     }

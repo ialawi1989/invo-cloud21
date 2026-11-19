@@ -122,7 +122,7 @@
       @if (pageCount() > 1) {
         <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">
           <button type="button" class="btn btn-ghost btn-sm" [disabled]="page() <= 1" (click)="prevPage()"><span class="ui-icon ui-icon-chevron-left"></span></button>
-          <span style="font-size:13px; color:#64748b; align-self:center;">{{ page() }} / {{ pageCount() }}</span>
+          <span style="font-size:13px; color:var(--ui-muted); align-self:center;">{{ page() }} / {{ pageCount() }}</span>
           <button type="button" class="btn btn-ghost btn-sm" [disabled]="page() >= pageCount()" (click)="nextPage()"><span class="ui-icon ui-icon-chevron-right"></span></button>
         </div>
       }

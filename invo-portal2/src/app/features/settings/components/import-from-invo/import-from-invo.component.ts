@@ -93,43 +93,43 @@ import { CompanyService } from '../../../../core/auth/company.service';
 
     .ifi-header {
       padding: 20px 24px 14px;
-      border-bottom: 1px solid #f0f2f5;
+      border-bottom: 1px solid var(--ui-x-f0f2f5);
     }
-    .ifi-title { font-size: 16px; font-weight: 600; color: #111827; margin: 0; }
+    .ifi-title { font-size: 16px; font-weight: 600; color: var(--ui-text); margin: 0; }
 
     .ifi-body { padding: 20px 24px; }
-    .ifi-label { font-size: 13px; font-weight: 500; color: #374151; margin: 0 0 12px; }
+    .ifi-label { font-size: 13px; font-weight: 500; color: var(--ui-text-3); margin: 0 0 12px; }
 
     .ifi-dropzone {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       gap: 8px; padding: 32px 20px;
-      border: 2px dashed #e2e8f0; border-radius: 12px;
+      border: 2px dashed var(--ui-line); border-radius: 12px;
       cursor: pointer; transition: all .15s; text-align: center;
-      background: #fafafa;
-      &:hover { border-color: #32acc1; background: #f0fdf4; }
+      background: var(--ui-x-fafafa);
+      &:hover { border-color: #32acc1; background: var(--ui-x-f0fdf4); }
     }
-    .ifi-dropzone--active { border-color: #32acc1; background: #e6f7f7; }
-    .ifi-dropzone--selected { border-color: #32acc1; border-style: solid; background: #f0fdfb; }
-    .ifi-dropzone--error { border-color: #ef4444; background: #fef2f2; }
+    .ifi-dropzone--active { border-color: #32acc1; background: var(--ui-x-e6f7f7); }
+    .ifi-dropzone--selected { border-color: #32acc1; border-style: solid; background: var(--ui-x-f0fdfb); }
+    .ifi-dropzone--error { border-color: #ef4444; background: var(--ui-red-soft); }
 
     .ifi-filename { font-size: 14px; font-weight: 600; color: #32acc1; }
-    .ifi-hint-main { font-size: 13px; color: #374151; }
-    .ifi-hint { font-size: 12px; color: #94a3b8; }
+    .ifi-hint-main { font-size: 13px; color: var(--ui-text-3); }
+    .ifi-hint { font-size: 12px; color: var(--ui-faint); }
 
     .ifi-error {
-      font-size: 12px; color: #ef4444; margin: 8px 0 0;
+      font-size: 12px; color: var(--ui-red-text); margin: 8px 0 0;
       display: flex; align-items: center; gap: 5px;
     }
     .ifi-success {
       display: flex; align-items: center; gap: 8px;
       margin-top: 12px; padding: 10px 14px; border-radius: 8px;
-      background: #f0fdf4; color: #16a34a; font-size: 13px; font-weight: 500;
-      border: 1px solid #bbf7d0;
+      background: var(--ui-x-f0fdf4); color: #16a34a; font-size: 13px; font-weight: 500;
+      border: 1px solid var(--ui-x-bbf7d0);
     }
 
     .ifi-footer {
       display: flex; gap: 10px; padding: 12px 24px 20px;
-      border-top: 1px solid #f0f2f5;
+      border-top: 1px solid var(--ui-x-f0f2f5);
     }
     .ifi-btn {
       flex: 1; height: 40px; border-radius: 8px; font-size: 14px; font-weight: 500;
@@ -138,12 +138,12 @@ import { CompanyService } from '../../../../core/auth/company.service';
       transition: all .15s;
       &:disabled { opacity: .5; cursor: not-allowed; }
     }
-    .ifi-btn--cancel { background: #f4f5f7; color: #374151; &:hover:not(:disabled) { background: #e9ecef; } }
+    .ifi-btn--cancel { background: var(--ui-x-f4f5f7); color: var(--ui-text-3); &:hover:not(:disabled) { background: var(--ui-x-e9ecef); } }
     .ifi-btn--import { background: #32acc1; color: #fff;  &:hover:not(:disabled) { background: #2b95a8; } }
 
     .ifi-spin {
       width: 14px; height: 14px; border-radius: 50%;
-      border: 2px solid rgba(255,255,255,.3); border-top-color: #fff;
+      border: 2px solid rgba(255,255,255,.3); border-top-color: var(--ui-surface);
       animation: spin .6s linear infinite; display: inline-block;
     }
     @keyframes spin { to { transform: rotate(360deg); } }

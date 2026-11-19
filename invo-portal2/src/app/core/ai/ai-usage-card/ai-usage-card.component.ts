@@ -74,22 +74,22 @@ import { limitsFor } from '../ai-limits';
   `,
   styles: [`
     .uc__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-    .uc__refresh { border: 1px solid #d0d5dd; background: #fff; border-radius: 8px; width: 30px; height: 30px; cursor: pointer; }
+    .uc__refresh { border: 1px solid var(--ui-line-strong); background: var(--ui-surface); border-radius: 8px; width: 30px; height: 30px; cursor: pointer; }
     .uc__refresh:disabled { opacity: .5; }
-    .uc__stats { display: flex; flex-wrap: wrap; gap: 8px 28px; margin-bottom: 10px; font-size: 13.5px; color: #334155; }
-    .uc__label { display: block; font-size: 11.5px; text-transform: uppercase; letter-spacing: .04em; color: #64748b; }
+    .uc__stats { display: flex; flex-wrap: wrap; gap: 8px 28px; margin-bottom: 10px; font-size: 13.5px; color: var(--ui-text-3); }
+    .uc__label { display: block; font-size: 11.5px; text-transform: uppercase; letter-spacing: .04em; color: var(--ui-muted); }
     .uc__scroll { overflow-x: auto; }
     .uc__table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-    .uc__table th, .uc__table td { padding: 8px 10px; text-align: start; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
-    .uc__table th { color: #64748b; font-weight: 600; }
-    .uc__table tr.is-current td { background: #f4fafb; }
-    .uc__table code { font-size: 12px; background: #eef2f6; padding: 1px 5px; border-radius: 4px; }
-    .uc__cur { margin-inline-start: 6px; font-size: 11px; font-weight: 700; color: #166534; background: #dcfce7; padding: 1px 7px; border-radius: 999px; }
-    .uc__sub { color: #64748b; margin-top: 2px; }
-    .uc__bar { height: 5px; background: #e2e8f0; border-radius: 999px; margin: 4px 0 2px; overflow: hidden; max-width: 180px; }
+    .uc__table th, .uc__table td { padding: 8px 10px; text-align: start; border-bottom: 1px solid var(--ui-line); vertical-align: top; }
+    .uc__table th { color: var(--ui-muted); font-weight: 600; }
+    .uc__table tr.is-current td { background: var(--ui-x-f4fafb); }
+    .uc__table code { font-size: 12px; background: var(--ui-surface-2); padding: 1px 5px; border-radius: 4px; }
+    .uc__cur { margin-inline-start: 6px; font-size: 11px; font-weight: 700; color: var(--ui-green-text); background: var(--ui-green-soft); padding: 1px 7px; border-radius: 999px; }
+    .uc__sub { color: var(--ui-muted); margin-top: 2px; }
+    .uc__bar { height: 5px; background: var(--ui-line); border-radius: 999px; margin: 4px 0 2px; overflow: hidden; max-width: 180px; }
     .uc__bar i { display: block; height: 100%; background: #2691a4; }
     .uc__bar.is-hot i { background: #dc2626; }
-    .uc__note { display: block; margin-top: 8px; color: #94a3b8; font-size: 11.5px; }
+    .uc__note { display: block; margin-top: 8px; color: var(--ui-faint); font-size: 11.5px; }
   `],
 })
 export class AiUsageCardComponent implements OnInit {

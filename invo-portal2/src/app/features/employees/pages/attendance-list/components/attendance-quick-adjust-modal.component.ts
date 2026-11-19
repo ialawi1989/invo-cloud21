@@ -102,14 +102,14 @@ export interface QuickAdjustResult {
       @media (max-width: 480px) { flex-direction: column; align-items: stretch; .arrow { display: none; } }
     }
     .field { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
-    .lbl { font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.4px; }
-    .arrow { padding-bottom: 8px; color: #94a3b8; font-size: 18px; }
-    .hint { margin: 12px 0 0; font-size: 12px; color: #94a3b8; }
+    .lbl { font-size: 12px; font-weight: 600; color: var(--ui-muted); text-transform: uppercase; letter-spacing: 0.4px; }
+    .arrow { padding-bottom: 8px; color: var(--ui-faint); font-size: 18px; }
+    .hint { margin: 12px 0 0; font-size: 12px; color: var(--ui-faint); }
     .spacer { flex: 1; }
     .btn-ghost, .btn-cancel {
       padding: 9px 16px; border-radius: 8px; font-size: 13px; font-weight: 500;
-      background: #fff; border: 1px solid #e5e7eb; color: #475569; cursor: pointer;
-      &:hover { background: #f8fafc; }
+      background: var(--ui-surface); border: 1px solid var(--ui-line); color: var(--ui-text-4); cursor: pointer;
+      &:hover { background: var(--ui-surface-1); }
     }
     .btn-save {
       padding: 9px 20px; border-radius: 8px; font-size: 13px; font-weight: 600;

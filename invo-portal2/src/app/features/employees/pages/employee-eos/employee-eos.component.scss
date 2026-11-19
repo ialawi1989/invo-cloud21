@@ -2,28 +2,28 @@
   display: flex; flex-direction: column; gap: 12px; padding: 12px;
 
   &__banner {
-    background: var(--warning-bg, #fffbeb);
+    background: var(--warning-bg, var(--ui-amber-soft));
     border: 1px solid var(--warning-color, #d97706);
     border-radius: 6px; padding: 8px 10px; font-size: 13px; margin: 0;
   }
   &__completed {
-    background: var(--muted-bg, #f3f4f6); border-radius: 6px;
+    background: var(--muted-bg, var(--ui-surface-2)); border-radius: 6px;
     padding: 8px 10px; font-size: 13px; margin: 0;
   }
   &__error {
     display: flex; flex-direction: column; gap: 2px;
-    background: var(--danger-bg, #fef2f2);
+    background: var(--danger-bg, var(--ui-red-soft));
     border: 1px solid var(--danger-color, #dc2626);
     border-radius: 6px; padding: 8px 10px; font-size: 13px;
   }
-  &__error-detail { color: var(--text-muted, #6b7280); font-size: 12px; }
+  &__error-detail { color: var(--text-muted, var(--ui-muted)); font-size: 12px; }
   &__card {
-    border: 1px solid var(--border-color, #e5e7eb); border-radius: 8px; padding: 12px;
+    border: 1px solid var(--border-color, var(--ui-line)); border-radius: 8px; padding: 12px;
     &--blockers { border-color: var(--danger-color, #dc2626); }
   }
   &__title { margin: 0 0 8px; font-size: 15px; }
   &__fields { display: flex; flex-wrap: wrap; gap: 12px; }
-  &__blocker { color: var(--danger-color, #dc2626); font-size: 13px; margin: 0 0 8px; }
+  &__blocker { color: var(--danger-color, var(--ui-red-text)); font-size: 13px; margin: 0 0 8px; }
   &__total { margin: 8px 0; font-size: 14px; }
   &__actions { display: flex; gap: 8px; }
 }
@@ -31,15 +31,15 @@
 .eos-field {
   display: flex; flex-direction: column; gap: 4px; min-width: 180px;
   &--wide { flex: 1 1 100%; }
-  &__label { font-size: 12px; color: var(--text-muted, #6b7280); }
+  &__label { font-size: 12px; color: var(--text-muted, var(--ui-muted)); }
   &__value { font-size: 14px; }
 }
 
 .eos-table {
   width: 100%; border-collapse: collapse;
   th, td { text-align: start; padding: 4px 6px; font-size: 13px; vertical-align: top; }
-  th { color: var(--text-muted, #6b7280); font-weight: 500; }
-  &__empty { color: var(--text-muted, #6b7280); }
+  th { color: var(--text-muted, var(--ui-muted)); font-weight: 500; }
+  &__empty { color: var(--text-muted, var(--ui-muted)); }
 }
 
 // ── Form column + confirmatory rail ─────────────────────────────────────────
@@ -68,9 +68,9 @@
 
 .eos-who {
   padding: 20px 18px;
-  border: 1px solid #e2e8f0;              // slate-200
+  border: 1px solid var(--ui-line);              // slate-200
   border-radius: 12px;
-  background: #ffffff;
+  background: var(--ui-surface);
   text-align: center;
 
   &__avatar {
@@ -80,7 +80,7 @@
     border-radius: 999px;
     overflow: hidden;
     background: var(--color-brand-50);
-    color: var(--color-brand-700);
+    color: var(--ui-brand-t700);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -95,7 +95,7 @@
     margin: 0 0 16px;
     font-size: 17px;
     font-weight: 700;
-    color: #0f172a;                       // slate-900
+    color: var(--ui-text);                       // slate-900
     overflow-wrap: anywhere;
   }
 
@@ -113,11 +113,11 @@
     gap: 12px;
     font-size: 13px;
 
-    dt { margin: 0; color: #64748b; }     // slate-500
+    dt { margin: 0; color: var(--ui-muted); }     // slate-500
     dd {
       margin: 0;
       font-weight: 600;
-      color: #0f172a;
+      color: var(--ui-text);
       text-align: end;
       overflow-wrap: anywhere;
     }
@@ -127,7 +127,7 @@
 .eos__actions .mandatory-legend {
   margin-inline-start: auto;
   font-size: 12px;
-  color: #e11d48;                          // rose-600
+  color: var(--ui-t-e11d48);                          // rose-600
   align-self: center;
 }
 
@@ -147,19 +147,19 @@
 }
 .eos-field--span2 { grid-column: span 2; }
 .eos-field--block { margin-top: 14px; }
-.eos-field .required { color: #ef4444; margin-inline-start: 2px; }
-.field-error { margin: 4px 0 0; font-size: 12px; color: #b91c1c; }
+.eos-field .required { color: var(--ui-red-text); margin-inline-start: 2px; }
+.field-error { margin: 4px 0 0; font-size: 12px; color: var(--ui-red-text); }
 
 // ── Clearance progress ─────────────────────────────────────────────────────
 .eos-progress {
   display: flex; align-items: center; gap: 12px; margin-bottom: 12px;
   &__bar {
-    flex: 1; height: 8px; border-radius: 999px; background: #f1f5f9; overflow: hidden;
+    flex: 1; height: 8px; border-radius: 999px; background: var(--ui-surface-2); overflow: hidden;
     span { display: block; height: 100%; background: var(--color-brand-600); transition: width 0.2s ease; }
   }
-  &__label { font-size: 13px; font-weight: 600; color: #334155; white-space: nowrap; }
+  &__label { font-size: 13px; font-weight: 600; color: var(--ui-text-3); white-space: nowrap; }
 }
-.eos-table__sub { margin: 4px 0 0; font-size: 12px; color: #475569; }
+.eos-table__sub { margin: 4px 0 0; font-size: 12px; color: var(--ui-text-4); }
 
 // ── Footer ─────────────────────────────────────────────────────────────────
 .eos__actions {
@@ -168,7 +168,7 @@
 }
 .eos__lock {
   display: inline-flex; align-items: center; gap: 6px;
-  font-size: 12px; color: #475569;
+  font-size: 12px; color: var(--ui-text-4);
 }
 
 .eos-table td { vertical-align: middle; }
@@ -179,9 +179,9 @@
   margin-inline-end: auto;
   padding: 4px 8px; margin-inline-start: -8px;
   border: 0; border-radius: 6px; background: transparent; cursor: pointer;
-  font: inherit; font-size: 12px; font-weight: 600; color: #b91c1c;
-  svg { color: #dc2626; }
-  &:hover { background: #fef2f2; text-decoration: underline; }
+  font: inherit; font-size: 12px; font-weight: 600; color: var(--ui-red-text);
+  svg { color: var(--ui-red-text); }
+  &:hover { background: var(--ui-red-soft); text-decoration: underline; }
 }
 
 // Finalize stays pale until every gate passes.

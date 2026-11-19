@@ -38,16 +38,16 @@ export interface CancelReasonResult {
   `,
   styles: [`
     .body { padding: 20px 24px; display: flex; flex-direction: column; gap: 8px; }
-    label { font-size: 13px; font-weight: 600; color: #374151; }
+    label { font-size: 13px; font-weight: 600; color: var(--ui-text-3); }
     textarea {
       width: 100%; resize: vertical; padding: 10px 12px;
-      border: 1px solid #e5e7eb; border-radius: 8px; font-size: 13px; font-family: inherit;
+      border: 1px solid var(--ui-line); border-radius: 8px; font-size: 13px; font-family: inherit;
       &:focus { outline: none; border-color: #32acc1; }
     }
     .btn-cancel {
-      padding: 9px 20px; background: #f3f4f6; border: 1px solid #e5e7eb;
+      padding: 9px 20px; background: var(--ui-surface-2); border: 1px solid var(--ui-line);
       border-radius: 8px; font-size: 13px; cursor: pointer;
-      &:hover { background: #e5e7eb; }
+      &:hover { background: var(--ui-line); }
     }
     .btn-confirm {
       padding: 9px 24px; background: #ef4444; color: #fff;

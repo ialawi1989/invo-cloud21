@@ -63,17 +63,17 @@ const PAGE_SIZE = 30;
   `,
   styles: [`
     .map { padding: 16px 20px; min-width: min(560px, 92vw); display: flex; flex-direction: column; gap: 10px; }
-    .map__search { height: 38px; padding: 0 12px; border: 1px solid #d0d5dd; border-radius: 8px; font: inherit; font-size: 14px; outline: none; }
+    .map__search { height: 38px; padding: 0 12px; border: 1px solid var(--ui-line-strong); border-radius: 8px; font: inherit; font-size: 14px; outline: none; }
     .map__search:focus { border-color: #32acc1; box-shadow: 0 0 0 3px rgba(50,172,193,.12); }
     .map__list { list-style: none; margin: 0; padding: 0; max-height: 380px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
-    .map__item { display: flex; align-items: center; gap: 12px; padding: 9px 12px; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; font-size: 14px; }
-    .map__item:hover { background: #f1f5f9; }
+    .map__item { display: flex; align-items: center; gap: 12px; padding: 9px 12px; border: 1px solid var(--ui-line); border-radius: 8px; cursor: pointer; font-size: 14px; }
+    .map__item:hover { background: var(--ui-surface-2); }
     .map__name { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-    .map__name small { color: #64748b; }
-    .map__hand { font-weight: 600; color: #0f172a; min-width: 48px; text-align: end; }
-    .map__empty { padding: 18px; text-align: center; color: #94a3b8; }
-    .map__btn { padding: 9px 16px; border-radius: 8px; border: 1px solid #d0d5dd; background: #fff; color: #334155; font-weight: 600; font-size: 13.5px; cursor: pointer; }
-    .map__btn--primary { border-color: #2691a4; background: #2691a4; color: #fff; }
+    .map__name small { color: var(--ui-muted); }
+    .map__hand { font-weight: 600; color: var(--ui-text); min-width: 48px; text-align: end; }
+    .map__empty { padding: 18px; text-align: center; color: var(--ui-faint); }
+    .map__btn { padding: 9px 16px; border-radius: 8px; border: 1px solid var(--ui-line-strong); background: var(--ui-surface); color: var(--ui-text-3); font-weight: 600; font-size: 13.5px; cursor: pointer; }
+    .map__btn--primary { border-color: #2691a4; background: var(--ui-b-2691a4); color: #fff; }
   `],
 })
 export class ManualAdjustmentPickerComponent implements OnInit, OnDestroy {

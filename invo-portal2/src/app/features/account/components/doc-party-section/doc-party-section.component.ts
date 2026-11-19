@@ -54,8 +54,8 @@ import { CustomerAddress } from '../../customers/models/customer.model';
     .dps-warn { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
     .df-link { background: none; border: 0; padding: 0; margin-top: 6px; cursor: pointer; white-space: nowrap; }
     .dps-warn .df-link { margin-top: 0; }
-    .dps-new { display: flex; align-items: center; gap: 8px; width: 100%; padding: 10px 14px; border: 0; background: none; color: #227d8d; font-weight: 500; cursor: pointer; text-align: start; }
-    .dps-new:hover { background: #f1f5f9; }
+    .dps-new { display: flex; align-items: center; gap: 8px; width: 100%; padding: 10px 14px; border: 0; background: none; color: var(--ui-brand-text); font-weight: 500; cursor: pointer; text-align: start; }
+    .dps-new:hover { background: var(--ui-surface-2); }
     .dps-new__plus { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: #227d8d; color: #fff; font-size: 14px; line-height: 1; }
   `],
 })

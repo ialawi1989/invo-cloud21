@@ -18,14 +18,14 @@
 .hr-error {
   border: 1px solid var(--danger-color, #dc2626);
   border-radius: 6px;
-  background: var(--danger-bg, #fef2f2);
+  background: var(--danger-bg, var(--ui-red-soft));
   padding: 0.75rem 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.375rem;
 
-  &__title { font-weight: 600; color: var(--danger-color, #b91c1c); }
-  &__hint  { font-size: 0.875rem; color: var(--text-color, #111827); }
+  &__title { font-weight: 600; color: var(--danger-color, var(--ui-red-text)); }
+  &__hint  { font-size: 0.875rem; color: var(--text-color, var(--ui-text)); }
 
   &__detail {
     margin: 0;
@@ -35,14 +35,14 @@
     word-break: break-word;
     max-height: 8rem;
     overflow: auto;
-    color: var(--text-muted, #6b7280);
+    color: var(--text-muted, var(--ui-muted));
   }
 
   &__dismiss {
     align-self: flex-start;
     background: none; border: none; padding: 0;
     font-size: 0.8125rem;
-    color: var(--danger-color, #b91c1c);
+    color: var(--danger-color, var(--ui-red-text));
     cursor: pointer;
     text-decoration: underline;
   }
@@ -51,7 +51,7 @@
 .leave-warnings {
   border: 1px solid var(--warning-color, #f59e0b);
   border-radius: 6px;
-  background: var(--warning-bg, #fffbeb);
+  background: var(--warning-bg, var(--ui-amber-soft));
   padding: 0.75rem 1rem;
   font-size: 0.875rem;
 
@@ -60,16 +60,16 @@
 }
 
 .leave-note {
-  border: 1px dashed var(--border-color, #e5e7eb);
+  border: 1px dashed var(--border-color, var(--ui-line));
   border-radius: 6px;
   padding: 0.625rem 0.875rem;
   font-size: 0.875rem;
-  color: var(--text-muted, #6b7280);
+  color: var(--text-muted, var(--ui-muted));
 }
 
 // ─── Balance ─────────────────────────────────────────────────────────────
 .leave-balance {
-  border: 1px solid var(--border-color, #e5e7eb);
+  border: 1px solid var(--border-color, var(--ui-line));
   border-radius: 8px;
   padding: 1rem;
   display: flex;
@@ -79,7 +79,7 @@
   /** The window is a fallback. The whole panel says so, not a footnote. */
   &--fallback {
     border-color: var(--warning-color, #f59e0b);
-    background: var(--warning-bg, #fffbeb);
+    background: var(--warning-bg, var(--ui-amber-soft));
   }
 
   &__head {
@@ -94,26 +94,26 @@
 
   &__period {
     font-size: 0.8125rem;
-    color: var(--text-muted, #6b7280);
+    color: var(--text-muted, var(--ui-muted));
     display: flex;
     align-items: center;
     gap: 0.5rem;
     flex-wrap: wrap;
   }
 
-  &__nowindow { color: var(--danger-color, #b91c1c); font-weight: 500; }
+  &__nowindow { color: var(--danger-color, var(--ui-red-text)); font-weight: 500; }
 
   &__warning {
     margin: 0;
     font-size: 0.875rem;
     font-weight: 500;
-    color: #92400e;
+    color: var(--ui-amber-text);
   }
 
   &__note {
     margin: 0;
     font-size: 0.75rem;
-    color: var(--text-muted, #6b7280);
+    color: var(--text-muted, var(--ui-muted));
   }
 }
 
@@ -123,10 +123,10 @@
   border-radius: 999px;
   font-size: 0.6875rem;
   font-weight: 600;
-  background: var(--chip-bg, #f3f4f6);
-  color: var(--text-muted, #4b5563);
+  background: var(--chip-bg, var(--ui-surface-2));
+  color: var(--text-muted, var(--ui-text-4));
 
-  &--fallback { background: #fef3c7; color: #92400e; }
+  &--fallback { background: var(--ui-amber-soft); color: var(--ui-amber-text); }
 }
 
 .leave-figures {
@@ -135,7 +135,7 @@
   gap: 0.5rem 1rem;
   margin: 0;
 
-  dt { font-size: 0.75rem; color: var(--text-muted, #6b7280); }
+  dt { font-size: 0.75rem; color: var(--text-muted, var(--ui-muted)); }
   dd { margin: 0; font-size: 1.125rem; font-weight: 600; }
 
   &__remaining dd { color: var(--primary-color, #2563eb); }
@@ -145,7 +145,7 @@
   list-style: none;
   margin: 0;
   padding: 0;
-  border-top: 1px solid var(--border-color, #e5e7eb);
+  border-top: 1px solid var(--border-color, var(--ui-line));
   padding-top: 0.5rem;
   display: flex;
   flex-direction: column;
@@ -154,7 +154,7 @@
   li { display: flex; gap: 0.75rem; font-size: 0.8125rem; }
   &__name { flex: 1; min-width: 0; }
   &__days { font-weight: 600; }
-  &__flag { color: var(--text-muted, #9ca3af); font-size: 0.75rem; }
+  &__flag { color: var(--text-muted, var(--ui-faint)); font-size: 0.75rem; }
 }
 
 // ─── Header / editor ─────────────────────────────────────────────────────
@@ -168,7 +168,7 @@
 }
 
 .leave-form {
-  border: 1px solid var(--border-color, #e5e7eb);
+  border: 1px solid var(--border-color, var(--ui-line));
   border-radius: 8px;
   padding: 1rem;
 
@@ -197,18 +197,18 @@
   &__label {
     font-size: 0.8125rem;
     font-weight: 500;
-    color: var(--text-muted, #6b7280);
+    color: var(--text-muted, var(--ui-muted));
 
-    em { color: var(--danger-color, #dc2626); font-style: normal; }
+    em { color: var(--danger-color, var(--ui-red-text)); font-style: normal; }
   }
 
-  &__hint { font-size: 0.75rem; color: var(--text-muted, #6b7280); }
+  &__hint { font-size: 0.75rem; color: var(--text-muted, var(--ui-muted)); }
 
   /** The suggestion's caveat. Quiet, but always present while it applies. */
   &__caveat {
     font-size: 0.75rem;
     font-style: italic;
-    color: #92400e;
+    color: var(--ui-amber-text);
   }
 }
 
@@ -217,7 +217,7 @@
 .leave-empty {
   padding: 2rem 0;
   text-align: center;
-  color: var(--text-muted, #6b7280);
+  color: var(--text-muted, var(--ui-muted));
   font-size: 0.875rem;
 }
 
@@ -228,7 +228,7 @@
 }
 
 .leave-card {
-  border: 1px solid var(--border-color, #e5e7eb);
+  border: 1px solid var(--border-color, var(--ui-line));
   border-radius: 8px;
   padding: 0.875rem 1rem;
   display: flex;
@@ -252,7 +252,7 @@
   }
 
   &__type { font-weight: 600; }
-  &__dates { font-size: 0.875rem; color: var(--text-muted, #4b5563); }
+  &__dates { font-size: 0.875rem; color: var(--text-muted, var(--ui-text-4)); }
   &__days { font-size: 0.875rem; font-weight: 600; }
 
   &__state { display: flex; align-items: center; gap: 0.5rem; }
@@ -261,7 +261,7 @@
   &__decision {
     margin: 0;
     font-size: 0.875rem;
-    color: var(--text-muted, #4b5563);
+    color: var(--text-muted, var(--ui-text-4));
   }
 
   &__actions {
@@ -269,7 +269,7 @@
     flex-wrap: wrap;
     align-items: center;
     gap: 0.625rem;
-    border-top: 1px solid var(--border-color, #e5e7eb);
+    border-top: 1px solid var(--border-color, var(--ui-line));
     padding-top: 0.5rem;
   }
 }
@@ -282,16 +282,16 @@
   font-weight: 600;
   white-space: nowrap;
 
-  &--approved  { background: #dcfce7; color: #166534; }
-  &--pending   { background: #fef3c7; color: #92400e; }
-  &--rejected  { background: #fee2e2; color: #991b1b; }
-  &--cancelled { background: #f3f4f6; color: #6b7280; }
-  &--draft     { background: #e0e7ff; color: #3730a3; }
+  &--approved  { background: var(--ui-green-soft); color: var(--ui-green-text); }
+  &--pending   { background: var(--ui-amber-soft); color: var(--ui-amber-text); }
+  &--rejected  { background: var(--ui-red-soft); color: var(--ui-red-text); }
+  &--cancelled { background: var(--ui-surface-2); color: var(--ui-muted); }
+  &--draft     { background: var(--ui-x-e0e7ff); color: var(--ui-t-3730a3); }
 
   /** No status from the server. Its own look, never a real state's. */
   &--unknown {
-    background: repeating-linear-gradient(45deg, #f3f4f6, #f3f4f6 4px, #e5e7eb 4px, #e5e7eb 8px);
-    color: #4b5563;
+    background: repeating-linear-gradient(45deg, var(--ui-surface-2), var(--ui-surface-2) 4px, var(--ui-line) 4px, var(--ui-line) 8px);
+    color: var(--ui-text-4);
   }
 }
 
@@ -300,8 +300,8 @@
   padding: 0.0625rem 0.5rem;
   border-radius: 999px;
   font-size: 0.6875rem;
-  background: var(--chip-bg, #f3f4f6);
-  color: var(--text-muted, #4b5563);
+  background: var(--chip-bg, var(--ui-surface-2));
+  color: var(--text-muted, var(--ui-text-4));
 }
 
 .leave-decide {
@@ -321,7 +321,7 @@
 .leave-selfnote {
   font-size: 0.8125rem;
   font-style: italic;
-  color: var(--text-muted, #6b7280);
+  color: var(--text-muted, var(--ui-muted));
 }
 
 .leave-files {
@@ -338,14 +338,14 @@
   min-width: 0;
 
   &__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  &__size { color: var(--text-muted, #6b7280); font-size: 0.75rem; }
+  &__size { color: var(--text-muted, var(--ui-muted)); font-size: 0.75rem; }
 }
 
 .leave-upload { align-self: flex-start; cursor: pointer; }
 
 // ─── The leave profile ───────────────────────────────────────────────────
 .leave-profile {
-  border: 1px solid var(--border-color, #e5e7eb);
+  border: 1px solid var(--border-color, var(--ui-line));
   border-radius: 8px;
   padding: 0.875rem 1rem;
   display: flex;
@@ -365,7 +365,7 @@
   &__empty {
     margin: 0;
     font-size: 0.875rem;
-    color: #92400e;
+    color: var(--ui-amber-text);
   }
 
   &__facts {
@@ -374,7 +374,7 @@
     gap: 0.375rem 1rem;
     margin: 0;
 
-    dt { font-size: 0.75rem; color: var(--text-muted, #6b7280); }
+    dt { font-size: 0.75rem; color: var(--text-muted, var(--ui-muted)); }
     dd { margin: 0; font-size: 0.9375rem; font-weight: 600; }
   }
 
@@ -382,7 +382,7 @@
     display: block;
     font-size: 0.75rem;
     font-weight: 400;
-    color: var(--text-muted, #6b7280);
+    color: var(--text-muted, var(--ui-muted));
   }
 
   /**
@@ -394,7 +394,7 @@
     margin: 0;
     font-size: 0.75rem;
     font-style: italic;
-    color: #92400e;
+    color: var(--ui-amber-text);
   }
 }
 
@@ -408,7 +408,7 @@
 .leave-balance__caveat {
   margin: 0;
   font-size: 0.75rem;
-  color: #92400e;
+  color: var(--ui-amber-text);
   line-height: 1.35;
 }
 
@@ -423,7 +423,7 @@
 .leave-field__error {
   font-size: 0.8125rem;
   font-weight: 500;
-  color: var(--danger-color, #b91c1c);
+  color: var(--danger-color, var(--ui-red-text));
 }
 
 .form-control.is-invalid { border-color: var(--danger-color, #dc2626); }
@@ -436,7 +436,7 @@
 .info-tip {
   position: relative;
   display: inline-flex;
-  color: #64748b;
+  color: var(--ui-muted);
   cursor: help;
   &:focus-visible { outline: 2px solid var(--color-brand-500); outline-offset: 2px; border-radius: 50%; }
 
@@ -450,7 +450,7 @@
     max-width: 80vw;
     padding: 10px 12px;
     border-radius: 8px;
-    background: #0f172a;
+    background: var(--ui-ink);
     color: #fff;
     font-size: 12px;
     font-weight: 400;
@@ -465,19 +465,19 @@
 }
 
 // All five tiles share one text colour; Remaining is tinted only when low/negative.
-.leave-figures dd { color: #0f172a; }
-.leave-figures__remaining[data-tone='warn'] dd { color: #b45309; }
-.leave-figures__remaining[data-tone='danger'] dd { color: #b91c1c; }
+.leave-figures dd { color: var(--ui-text); }
+.leave-figures__remaining[data-tone='warn'] dd { color: var(--ui-amber-text); }
+.leave-figures__remaining[data-tone='danger'] dd { color: var(--ui-red-text); }
 
 .leave-header__actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.leave-field__hint { display: block; margin-top: 4px; font-size: 12px; color: #64748b; line-height: 1.4; }
-.leave-accrual { margin: 8px 0 0; font-size: 12px; color: #92400e; background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 6px 10px; }
-.leave-ent small { color: #64748b; font-weight: 400; }
+.leave-field__hint { display: block; margin-top: 4px; font-size: 12px; color: var(--ui-muted); line-height: 1.4; }
+.leave-accrual { margin: 8px 0 0; font-size: 12px; color: var(--ui-amber-text); background: var(--ui-amber-soft); border: 1px solid var(--ui-amber-soft-2); border-radius: 8px; padding: 6px 10px; }
+.leave-ent small { color: var(--ui-muted); font-weight: 400; }
 
-.leave-accrual--skip { background: #f8fafc; border-color: #e2e8f0; color: #475569; margin-top: 4px; }
-.leave-comp { margin: 8px 0 0; font-size: 13px; color: #0f172a; background: #ecfeff; border: 1px solid #a5f3fc; border-radius: 8px; padding: 6px 10px; }
+.leave-accrual--skip { background: var(--ui-surface-1); border-color: var(--ui-line); color: var(--ui-text-4); margin-top: 4px; }
+.leave-comp { margin: 8px 0 0; font-size: 13px; color: var(--ui-text); background: var(--ui-brand-soft); border: 1px solid var(--ui-brand-soft-2); border-radius: 8px; padding: 6px 10px; }
 .leave-ledger { margin-top: 16px; }
-.leave-ledger__list small { display: block; font-weight: 400; color: #64748b; font-size: 12px; }
-.leave-ledger__comment { color: #334155; }
-.leave-ledger__neg { color: #b91c1c; }
+.leave-ledger__list small { display: block; font-weight: 400; color: var(--ui-muted); font-size: 12px; }
+.leave-ledger__comment { color: var(--ui-text-3); }
+.leave-ledger__neg { color: var(--ui-red-text); }
 .leave-field--wide { grid-column: 1 / -1; }

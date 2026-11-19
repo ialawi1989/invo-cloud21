@@ -205,6 +205,12 @@ export interface TableBlock extends BlockBase {
   zebra?: boolean;
   zebraColor?: string;
   rowMinHeight?: number; // mm
+  /** Caps how tall the table's row band may grow on a single page (mm),
+   *  independent of how much page space is actually left. When set, the
+   *  table stops filling rows at this height even if the page has more
+   *  room, and continues the remaining rows on the next page at the same
+   *  position — same mechanism as a natural page-end overflow. */
+  maxHeightMm?: number;
   /** Per-row filter expression. Evaluated against each row's binding context
    *  (so `row.x` is available). Falsy → row is skipped, including in footer
    *  aggregates. Independent of the block-level `visibleWhen` which toggles
@@ -251,15 +257,17 @@ export interface PaymentColumnDef {
   weight: number;
   /** Binding expression evaluated per row (relative to the row context). */
   expression: string;
-  /** True for the Amount column — the renderer appends `currency:<code>`
-   *  using the block's `currency` field at render time. */
+  /** True for the Amount column — the renderer appends the money pipe from
+   *  `paymentAmountPipe()` at render time. */
   isAmount?: boolean;
 }
 
 export const PAYMENT_COLUMN_CATALOG: readonly PaymentColumnDef[] = [
   { id: 'method',    label: 'Method',    align: 'left',  weight: 2, expression: 'row.paymentMethodName' },
   { id: 'reference', label: 'Reference', align: 'left',  weight: 3, expression: 'row.referenceNumber' },
-  { id: 'date',      label: 'Date',      align: 'left',  weight: 3, expression: 'row.createdAt' },
+  // Formatted here rather than left to the renderers: the payload's raw
+  // `createdAt` is an ISO timestamp, which printed as 2026-08-10T09:12:02.001Z.
+  { id: 'date',      label: 'Date',      align: 'left',  weight: 3, expression: "row.createdAt | date:'medium'" },
   { id: 'amount',    label: 'Amount',    align: 'right', weight: 2, expression: 'row.amount', isAmount: true },
   { id: 'status',    label: 'Status',    align: 'left',  weight: 2, expression: 'row.status' },
   { id: 'rate',      label: 'Rate',      align: 'right', weight: 1, expression: 'row.rate' },
@@ -268,6 +276,18 @@ export const PAYMENT_COLUMN_CATALOG: readonly PaymentColumnDef[] = [
 export const DEFAULT_PAYMENT_COLUMNS: readonly PaymentColumnId[] = [
   'method', 'reference', 'date', 'amount',
 ];
+
+/**
+ * Pipe the renderers append to the Amount column.
+ *
+ * Unset means "use the tenant's own money format" — `Currency`, which reads
+ * the company's symbol and decimal count off the data context, matching the
+ * app-wide pipe of the same name. A block that pins an explicit ISO code opts
+ * into Intl formatting instead.
+ */
+export function paymentAmountPipe(currency?: string): string {
+  return currency ? `currency:${currency}` : 'Currency';
+}
 
 /**
  * Renders a configurable table of payment records from `dataSource`

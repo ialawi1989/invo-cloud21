@@ -67,11 +67,11 @@ interface DialOption { value: string; label: string; names: string[] }
     .pi { display: flex; gap: 8px; align-items: stretch; }
     .pi__code { width: 130px; flex: 0 0 auto; }
     .pi__number {
-      flex: 1; min-width: 0; padding: 9px 12px; border: 1px solid #d0d5dd; border-radius: 8px;
-      font-size: 13.5px; color: #0f172a; font-family: inherit;
+      flex: 1; min-width: 0; padding: 9px 12px; border: 1px solid var(--ui-line-strong); border-radius: 8px;
+      font-size: 13.5px; color: var(--ui-text); font-family: inherit;
     }
     .pi__number:focus { outline: none; border-color: #2691a4; box-shadow: 0 0 0 3px rgba(38,145,164,.12); }
-    .pi--disabled .pi__number { background: #f8fafc; color: #94a3b8; }
+    .pi--disabled .pi__number { background: var(--ui-surface-1); color: var(--ui-faint); }
   `],
 })
 export class PhoneInputComponent implements ControlValueAccessor, OnInit, OnChanges {

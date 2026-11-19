@@ -1,8 +1,8 @@
 // The receipt is drawn like the invoice paper: an A4 sheet centred in the viewer's grey frame, above the tabs.
-.pvw-viewer { border: 1px solid #e5e7eb; border-radius: 12px; background: #f1f5f9; padding: 16px; overflow-x: auto; margin-bottom: 16px;
+.pvw-viewer { border: 1px solid var(--ui-line); border-radius: 12px; background: var(--ui-surface-2); padding: 16px; overflow-x: auto; margin-bottom: 16px;
   // never shrink to the body's height: the page (receipt + Logs) is the one vertical scroll, not the frame — same as the invoice paper
   flex: 0 0 auto; }
 .pvw-sheet {
   box-sizing: border-box; width: 210mm; max-width: 100%; min-height: 297mm; margin: 0 auto; padding: 14mm 12mm;
-  background: #fff; box-shadow: 0 1px 3px rgba(15, 23, 42, .12), 0 1px 2px rgba(15, 23, 42, .24);
+  background: var(--ui-surface); box-shadow: 0 1px 3px rgba(15, 23, 42, .12), 0 1px 2px rgba(15, 23, 42, .24);
 }

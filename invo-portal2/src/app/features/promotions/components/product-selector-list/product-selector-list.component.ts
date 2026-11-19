@@ -35,12 +35,12 @@ import { PromoProductPickerComponent } from '../product-picker/product-picker.co
     .psl__row { display: flex; gap: 8px; align-items: center; }
     .psl__picker { flex: 1; min-width: 0; }
     .psl__rm {
-      width: 32px; height: 32px; border-radius: 8px; border: 1px solid #fecaca; background: #fff;
-      color: #dc2626; font-size: 18px; line-height: 1; cursor: pointer;
+      width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--ui-red-soft-2); background: var(--ui-surface);
+      color: var(--ui-red-text); font-size: 18px; line-height: 1; cursor: pointer;
     }
     .psl__add {
       align-self: flex-start; padding: 7px 14px; border-radius: 8px; border: 1px dashed #94a3b8;
-      background: #fff; color: #2691a4; font-size: 13px; font-weight: 600; cursor: pointer;
+      background: var(--ui-surface); color: var(--ui-brand-text); font-size: 13px; font-weight: 600; cursor: pointer;
     }
   `],
 })

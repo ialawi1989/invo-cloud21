@@ -22,20 +22,20 @@ export interface ManageFieldsDrawerData {
 
     .mfd-head {
       padding:22px 20px 18px;
-      border-bottom:1px solid #f1f5f9;
+      border-bottom:1px solid var(--ui-surface-2);
       flex-shrink:0;
     }
-    .mfd-title { font-size:18px; font-weight:600; color:#111827; margin:0 0 5px; }
-    .mfd-sub   { font-size:13px; color:#6b7280; line-height:1.5; margin:0; }
+    .mfd-title { font-size:18px; font-weight:600; color:var(--ui-text); margin:0 0 5px; }
+    .mfd-sub   { font-size:13px; color:var(--ui-muted); line-height:1.5; margin:0; }
 
     .mfd-body  { flex:1; overflow-y:auto; padding:6px 0; }
 
     .mfd-row {
       display:flex; align-items:center; gap:12px;
       padding:11px 18px; transition:background .08s; position:relative;
-      border-bottom:1px solid #f1f5f9;
+      border-bottom:1px solid var(--ui-surface-2);
     }
-    .mfd-row:hover { background:#f8fafc; }
+    .mfd-row:hover { background:var(--ui-surface-1); }
     .mfd-row.drag-over { border-top:2px solid #32acc1; }
     .mfd-row.dragging  { opacity:.3; }
 
@@ -44,7 +44,7 @@ export interface ManageFieldsDrawerData {
       color:#cbd5e1; flex-shrink:0;
     }
     .mfd-grip:active { cursor:grabbing; }
-    .mfd-row:hover .mfd-grip { color:#94a3b8; }
+    .mfd-row:hover .mfd-grip { color:var(--ui-faint); }
 
     .mfd-chk-wrap {
       width:20px; height:20px; flex-shrink:0; cursor:pointer; position:relative;
@@ -55,8 +55,8 @@ export interface ManageFieldsDrawerData {
     }
     .mfd-chk-box {
       width:20px; height:20px; border-radius:6px;
-      border:1.5px solid #cbd5e1;
-      background:#fff;
+      border:1.5px solid var(--ui-line-strong);
+      background:var(--ui-surface);
       display:flex; align-items:center; justify-content:center;
       transition:all .13s;
     }
@@ -64,16 +64,16 @@ export interface ManageFieldsDrawerData {
       background:#32acc1; border-color:#32acc1;
     }
     .mfd-chk-wrap.locked .mfd-chk-box {
-      background:#f1f5f9; border-color:#e2e8f0;
+      background:var(--ui-surface-2); border-color:var(--ui-line);
     }
     .mfd-chk-wrap.locked input:checked + .mfd-chk-box {
-      background:#a8d8e0; border-color:#a8d8e0;
+      background:var(--ui-x-a8d8e0); border-color:var(--ui-x-a8d8e0);
     }
     .mfd-chk-box svg { display:none; }
     .mfd-chk-wrap input:checked + .mfd-chk-box svg { display:block; }
 
     /* system row locked style */
-    .mfd-row.sys-locked .mfd-name { color:#6b7280; }
+    .mfd-row.sys-locked .mfd-name { color:var(--ui-muted); }
     .mfd-row.sys-locked .mfd-ico.sys { opacity:.6; }
 
     /* lock icon */
@@ -86,56 +86,56 @@ export interface ManageFieldsDrawerData {
       width:30px; height:30px; border-radius:7px;
       display:flex; align-items:center; justify-content:center; flex-shrink:0;
     }
-    .mfd-ico.sys  { background:#f1f5f9; color:#94a3b8; }
-    .mfd-ico.cust { background:#e6f7fa; color:#32acc1; }
+    .mfd-ico.sys  { background:var(--ui-surface-2); color:var(--ui-faint); }
+    .mfd-ico.cust { background:var(--ui-x-e6f7fa); color:#32acc1; }
 
-    .mfd-name { font-size:14px; color:#111827; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .mfd-name { font-size:14px; color:var(--ui-text); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
     .mfd-tag {
       font-size:11px; font-weight:500; padding:2px 9px;
       border-radius:20px; flex-shrink:0;
     }
-    .mfd-tag.sys { background:#f1f5f9; color:#6b7280; }
-    .mfd-tag.pri { background:#e6f7fa; color:#0e7a8a; }
+    .mfd-tag.sys { background:var(--ui-surface-2); color:var(--ui-muted); }
+    .mfd-tag.pri { background:var(--ui-x-e6f7fa); color:var(--ui-t-0e7a8a); }
 
     /* 3-dot context menu */
     .ctx-wrap { position:relative; flex-shrink:0; }
     .ctx-btn {
       width:28px; height:28px; border:none; background:transparent;
       cursor:pointer; border-radius:6px; display:flex;
-      align-items:center; justify-content:center; color:#9ca3af;
+      align-items:center; justify-content:center; color:var(--ui-faint);
       opacity:0; transition:opacity .1s, background .1s;
     }
     .mfd-row:hover .ctx-btn { opacity:1; }
-    .ctx-btn:hover { background:#e5e7eb; color:#374151; }
+    .ctx-btn:hover { background:var(--ui-line); color:var(--ui-text-3); }
     .ctx-menu {
       position:absolute; right:0; top:100%;
-      background:#fff; border:1px solid #e5e7eb; border-radius:10px;
+      background:var(--ui-surface); border:1px solid var(--ui-line); border-radius:10px;
       box-shadow:0 8px 24px rgba(0,0,0,.12); min-width:220px; z-index:600;
       padding:4px; animation:ctxIn .12s ease;
     }
     @keyframes ctxIn { from{opacity:0;transform:scale(.96) translateY(-4px)} to{opacity:1;transform:none} }
     .ctx-item {
       display:flex; align-items:center; gap:10px;
-      padding:9px 12px; font-size:14px; color:#111827;
+      padding:9px 12px; font-size:14px; color:var(--ui-text);
       cursor:pointer; border-radius:7px; transition:background .08s;
       border:none; background:transparent; width:100%; text-align:left; font-family:inherit;
     }
-    .ctx-item:hover { background:#f3f4f6; }
-    .ctx-item.danger { color:#ef4444; }
-    .ctx-item.danger:hover { background:#fef2f2; }
-    .ctx-sep { height:1px; background:#f1f5f9; margin:3px 0; }
+    .ctx-item:hover { background:var(--ui-surface-2); }
+    .ctx-item.danger { color:var(--ui-red-text); }
+    .ctx-item.danger:hover { background:var(--ui-red-soft); }
+    .ctx-sep { height:1px; background:var(--ui-surface-2); margin:3px 0; }
 
     /* footer */
     .mfd-foot {
       padding:16px 18px;
-      border-top:1px solid #f1f5f9;
+      border-top:1px solid var(--ui-surface-2);
       flex-shrink:0;
     }
     .mfd-add-btn {
       display:flex; align-items:center; justify-content:center; gap:7px;
       width:100%; height:44px; border-radius:11px;
-      border:none; background:#32acc1; color:#fff;
+      border:none; background:var(--ui-b-32acc1); color:#fff;
       font-size:15px; font-weight:600; cursor:pointer;
       font-family:inherit; transition:background .13s;
     }

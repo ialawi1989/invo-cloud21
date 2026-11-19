@@ -111,7 +111,7 @@ export interface ColorPickerModalData {
       letter-spacing: 0.02em;
       box-shadow: 0 4px 10px rgba(15, 23, 42, 0.10);
     }
-    .heading { margin: 8px 0 4px; font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; }
+    .heading { margin: 8px 0 4px; font-size: 11px; font-weight: 600; color: var(--ui-muted); text-transform: uppercase; letter-spacing: 0.04em; }
     .grid {
       display: grid;
       grid-template-columns: repeat(8, 1fr);
@@ -129,13 +129,13 @@ export interface ColorPickerModalData {
     .custom { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
     .custom__field {
       display: flex; flex-direction: column; gap: 4px;
-      font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em;
+      font-size: 11px; font-weight: 600; color: var(--ui-muted); text-transform: uppercase; letter-spacing: 0.04em;
       app-color-picker { display: block; }
     }
     .btn-cancel {
-      padding: 9px 20px; background: #f3f4f6; border: 1px solid #e5e7eb;
+      padding: 9px 20px; background: var(--ui-surface-2); border: 1px solid var(--ui-line);
       border-radius: 8px; font-size: 13px; cursor: pointer;
-      &:hover { background: #e5e7eb; }
+      &:hover { background: var(--ui-line); }
     }
     .btn-confirm {
       padding: 9px 24px; background: var(--color-brand-600); color: #fff;

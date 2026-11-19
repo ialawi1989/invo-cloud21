@@ -8,16 +8,16 @@ $sa-shadow-hover: 0 4px 12px rgba(15, 23, 42, .08), 0 2px 4px rgba(15, 23, 42, .
 .sa { width: 100%; }
 
 .sa__head { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 22px; }
-.sa__title { margin: 0 0 4px; font-size: 28px; font-weight: 800; color: #0f172a; letter-spacing: -0.02em; }
-.sa__sub { margin: 0; font-size: 14px; color: #64748b; }
+.sa__title { margin: 0 0 4px; font-size: 28px; font-weight: 800; color: var(--ui-text); letter-spacing: -0.02em; }
+.sa__sub { margin: 0; font-size: 14px; color: var(--ui-muted); }
 .sa__range { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
-.sa__compare { font-size: 13px; color: #64748b; }
+.sa__compare { font-size: 13px; color: var(--ui-muted); }
 
 // Section label with a small brand tick, so the eye catches group starts.
 .sa__section {
   display: flex; align-items: center; gap: 8px;
   margin: 30px 0 14px; font-size: 12.5px; font-weight: 700;
-  text-transform: uppercase; letter-spacing: .06em; color: #475569;
+  text-transform: uppercase; letter-spacing: .06em; color: var(--ui-text-4);
 }
 .sa__section::before {
   content: ''; width: 3px; height: 14px; border-radius: 2px;
@@ -28,10 +28,10 @@ $sa-shadow-hover: 0 4px 12px rgba(15, 23, 42, .08), 0 2px 4px rgba(15, 23, 42, .
 
 // ── Cards ────────────────────────────────────────────────────────────
 .sa__card {
-  background: #fff; border: 0; border-radius: 14px;
+  background: var(--ui-surface); border: 0; border-radius: 14px;
   box-shadow: $sa-shadow; padding: 18px 20px; margin-bottom: 16px;
 }
-.sa__cardTitle { margin: 0 0 14px; font-size: 14px; font-weight: 700; color: #0f172a; }
+.sa__cardTitle { margin: 0 0 14px; font-size: 14px; font-weight: 700; color: var(--ui-text); }
 
 .sa__grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 16px; align-items: start; }
 @media (max-width: 900px) { .sa__grid { grid-template-columns: 1fr; } }
@@ -39,18 +39,18 @@ $sa-shadow-hover: 0 4px 12px rgba(15, 23, 42, .08), 0 2px 4px rgba(15, 23, 42, .
 // ── Connect banners ──────────────────────────────────────────────────
 .sa__connect {
   display: flex; align-items: center; gap: 16px;
-  background: linear-gradient(100deg, #eef9fb, #fff);
-  border: 1px solid #cdeaf0; border-radius: 14px;
+  background: linear-gradient(100deg, var(--ui-x-eef9fb), var(--ui-surface));
+  border: 1px solid var(--ui-x-cdeaf0); border-radius: 14px;
   padding: 16px 18px; margin-bottom: 16px;
 }
 .sa__connectIco {
   flex: 0 0 auto; width: 46px; height: 46px; border-radius: 12px;
   display: inline-flex; align-items: center; justify-content: center;
-  background: #fff; box-shadow: $sa-shadow; color: var(--color-brand-700, #2691a4);
+  background: var(--ui-surface); box-shadow: $sa-shadow; color: var(--ui-brand-t700);
 }
 .sa__connectBody { flex: 1; min-width: 0; }
-.sa__connectBody h2 { margin: 0 0 2px; font-size: 15px; font-weight: 700; color: #0f172a; }
-.sa__connectBody p { margin: 0; font-size: 13px; color: #64748b; }
+.sa__connectBody h2 { margin: 0 0 2px; font-size: 15px; font-weight: 700; color: var(--ui-text); }
+.sa__connectBody p { margin: 0; font-size: 13px; color: var(--ui-muted); }
 .sa__connectBtn {
   flex: 0 0 auto; padding: 9px 18px; border-radius: 999px;
   background: var(--color-brand-600, #2691a4); color: #fff;
@@ -63,54 +63,54 @@ $sa-shadow-hover: 0 4px 12px rgba(15, 23, 42, .08), 0 2px 4px rgba(15, 23, 42, .
 // ── KPI tiles ────────────────────────────────────────────────────────
 .sa__kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 16px; }
 .sa__kpi {
-  position: relative; background: #fff; border: 0; border-radius: 14px;
+  position: relative; background: var(--ui-surface); border: 0; border-radius: 14px;
   box-shadow: $sa-shadow; padding: 16px 18px;
   transition: box-shadow 140ms ease, transform 140ms ease;
 }
 .sa__kpi:hover { box-shadow: $sa-shadow-hover; transform: translateY(-1px); }
 // Accent tile (revenue) — brand gradient + a left rail so it reads as primary.
 .sa__kpi--accent {
-  background: linear-gradient(135deg, #f0fbfc, #e3f6f9);
+  background: linear-gradient(135deg, var(--ui-x-f0fbfc), var(--ui-x-e3f6f9));
   box-shadow: inset 3px 0 0 var(--color-brand-500, #32acc1), $sa-shadow;
 }
-.sa__kpi--accent .sa__kpiVal { color: var(--color-brand-700, #167082); }
-.sa__kpiVal { display: block; font-size: 25px; font-weight: 800; color: #0f172a; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
-.sa__kpiLbl { display: block; margin-top: 3px; font-size: 12px; font-weight: 500; color: #64748b; text-transform: uppercase; letter-spacing: .03em; }
+.sa__kpi--accent .sa__kpiVal { color: var(--ui-brand-t700); }
+.sa__kpiVal { display: block; font-size: 25px; font-weight: 800; color: var(--ui-text); letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+.sa__kpiLbl { display: block; margin-top: 3px; font-size: 12px; font-weight: 500; color: var(--ui-muted); text-transform: uppercase; letter-spacing: .03em; }
 
 // ── Chart ────────────────────────────────────────────────────────────
 .sa__chartHead { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
 .sa__chartHead .sa__cardTitle { margin: 0; }
-.sa__seg { display: inline-flex; background: #f1f5f9; border-radius: 9px; padding: 3px; }
+.sa__seg { display: inline-flex; background: var(--ui-surface-2); border-radius: 9px; padding: 3px; }
 .sa__seg button {
   border: 0; background: transparent; padding: 6px 13px; border-radius: 7px;
-  font-size: 12.5px; font-weight: 600; color: #64748b; cursor: pointer;
+  font-size: 12.5px; font-weight: 600; color: var(--ui-muted); cursor: pointer;
   transition: color 120ms ease, background 120ms ease;
 }
-.sa__seg button:hover:not(.is-on) { color: #334155; }
-.sa__seg button.is-on { background: #fff; color: var(--color-brand-700, #2691a4); box-shadow: 0 1px 2px rgba(15,23,42,.10); }
+.sa__seg button:hover:not(.is-on) { color: var(--ui-text-3); }
+.sa__seg button.is-on { background: var(--ui-surface); color: var(--ui-brand-t700); box-shadow: 0 1px 2px rgba(15,23,42,.10); }
 .sa__chartSvg { width: 100%; height: 210px; display: block; overflow: visible; }
-.sa__chartAxis { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #94a3b8; margin-top: 10px; }
-.sa__chartMax { font-weight: 600; color: #64748b; }
+.sa__chartAxis { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--ui-faint); margin-top: 10px; }
+.sa__chartMax { font-weight: 600; color: var(--ui-muted); }
 
 // ── Tables ───────────────────────────────────────────────────────────
 .sa__table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .sa__table th {
-  text-align: start; padding: 9px 12px; color: #64748b; font-weight: 600;
+  text-align: start; padding: 9px 12px; color: var(--ui-muted); font-weight: 600;
   font-size: 11.5px; text-transform: uppercase; letter-spacing: .03em;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--ui-line);
 }
-.sa__table td { padding: 12px; border-bottom: 1px solid #f1f5f9; color: #0f172a; }
+.sa__table td { padding: 12px; border-bottom: 1px solid var(--ui-surface-2); color: var(--ui-text); }
 .sa__table tbody tr { transition: background 120ms ease; }
-.sa__table tbody tr:hover { background: #f8fafc; }
+.sa__table tbody tr:hover { background: var(--ui-surface-1); }
 .sa__table tbody tr:last-child td { border-bottom: 0; }
 .sa__num { text-align: end; white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 600; }
-.sa__pagePath { display: inline-block; max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: bottom; color: var(--color-brand-700, #2691a4); }
+.sa__pagePath { display: inline-block; max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: bottom; color: var(--ui-brand-t700); }
 
 // ── Traffic sources (with share bars) ────────────────────────────────
 .sa__sources { list-style: none; margin: 0; padding: 0; }
 .sa__sources li {
   position: relative; display: flex; align-items: center; justify-content: space-between;
-  gap: 12px; padding: 11px 10px; font-size: 13px; color: #334155;
+  gap: 12px; padding: 11px 10px; font-size: 13px; color: var(--ui-text-3);
   border-radius: 8px; overflow: hidden;
 }
 .sa__sources li + li { margin-top: 2px; }
@@ -120,19 +120,19 @@ $sa-shadow-hover: 0 4px 12px rgba(15, 23, 42, .08), 0 2px 4px rgba(15, 23, 42, .
   background: linear-gradient(90deg, rgba(50,172,193,.16), rgba(50,172,193,.06));
   border-radius: 8px;
 }
-.sa__srcName { position: relative; z-index: 1; color: var(--color-brand-700, #2691a4); font-weight: 600; }
+.sa__srcName { position: relative; z-index: 1; color: var(--ui-brand-t700); font-weight: 600; }
 .sa__srcVals { position: relative; z-index: 1; display: inline-flex; align-items: baseline; gap: 8px; white-space: nowrap; }
-.sa__srcVals b { color: #0f172a; font-variant-numeric: tabular-nums; }
-.sa__srcVals em { font-style: normal; font-size: 12px; color: #94a3b8; min-width: 40px; text-align: end; font-variant-numeric: tabular-nums; }
+.sa__srcVals b { color: var(--ui-text); font-variant-numeric: tabular-nums; }
+.sa__srcVals em { font-style: normal; font-size: 12px; color: var(--ui-faint); min-width: 40px; text-align: end; font-variant-numeric: tabular-nums; }
 
 // ── Placeholders ─────────────────────────────────────────────────────
-.sa__ph { display: flex; align-items: center; justify-content: center; height: 200px; color: #94a3b8; font-size: 13px; border: 1px dashed #dbe3ec; border-radius: 12px; background: #fbfdfe; }
+.sa__ph { display: flex; align-items: center; justify-content: center; height: 200px; color: var(--ui-faint); font-size: 13px; border: 1px dashed var(--ui-x-dbe3ec); border-radius: 12px; background: var(--ui-x-fbfdfe); }
 .sa__ph--sm { height: 120px; }
 
 // ── Realtime ─────────────────────────────────────────────────────────
 .sa__rt {
   display: grid; grid-template-columns: auto 1fr auto; gap: 24px; align-items: center;
-  background: linear-gradient(120deg, #f2fbfc, #fff 60%);
+  background: linear-gradient(120deg, var(--ui-x-f2fbfc), var(--ui-surface) 60%);
   box-shadow: inset 3px 0 0 #16a34a, $sa-shadow;
 }
 @media (max-width: 760px) { .sa__rt { grid-template-columns: 1fr; } }
@@ -140,13 +140,13 @@ $sa-shadow-hover: 0 4px 12px rgba(15, 23, 42, .08), 0 2px 4px rgba(15, 23, 42, .
 .sa__rtDot { width: 10px; height: 10px; border-radius: 50%; background: #16a34a; box-shadow: 0 0 0 0 rgba(22,163,74,.5); animation: sa-pulse 1.8s infinite; }
 @keyframes sa-pulse { 0% { box-shadow: 0 0 0 0 rgba(22,163,74,.5); } 70% { box-shadow: 0 0 0 8px rgba(22,163,74,0); } 100% { box-shadow: 0 0 0 0 rgba(22,163,74,0); } }
 @media (prefers-reduced-motion: reduce) { .sa__rtDot { animation: none; } }
-.sa__rtNum { font-size: 32px; font-weight: 800; color: #0f172a; line-height: 1; font-variant-numeric: tabular-nums; }
-.sa__rtLbl { font-size: 12.5px; color: #64748b; margin-top: 4px; }
+.sa__rtNum { font-size: 32px; font-weight: 800; color: var(--ui-text); line-height: 1; font-variant-numeric: tabular-nums; }
+.sa__rtLbl { font-size: 12.5px; color: var(--ui-muted); margin-top: 4px; }
 .sa__rtSpark { min-width: 0; }
-.sa__rtSparkLbl { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: #94a3b8; margin-bottom: 6px; }
+.sa__rtSparkLbl { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--ui-faint); margin-bottom: 6px; }
 .sa__rtBars { display: flex; align-items: flex-end; gap: 2px; height: 48px; }
 .sa__rtBar { flex: 1; min-width: 2px; background: var(--color-brand-400, #38bdf8); border-radius: 2px 2px 0 0; opacity: .85; }
 .sa__rtPages { min-width: 180px; }
 .sa__rtPages ul { list-style: none; margin: 0; padding: 0; }
-.sa__rtPages li { display: flex; justify-content: space-between; gap: 10px; font-size: 12.5px; padding: 4px 0; color: #334155; }
+.sa__rtPages li { display: flex; justify-content: space-between; gap: 10px; font-size: 12.5px; padding: 4px 0; color: var(--ui-text-3); }
 .sa__rtPath { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

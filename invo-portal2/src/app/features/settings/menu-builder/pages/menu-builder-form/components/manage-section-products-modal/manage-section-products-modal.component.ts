@@ -118,36 +118,36 @@ interface PageRow {
     .search {
       display: inline-flex; align-items: center; gap: 8px;
       padding: 7px 10px;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
+      background: var(--ui-surface-1);
+      border: 1px solid var(--ui-line);
       border-radius: 8px;
-      color: #94a3b8;
+      color: var(--ui-faint);
       flex: 1;
       min-width: 0;
       input {
         flex: 1; min-width: 0; border: none; outline: none; font: inherit; font-size: 13px;
-        background: transparent; color: #0f172a;
-        &::placeholder { color: #94a3b8; }
+        background: transparent; color: var(--ui-text);
+        &::placeholder { color: var(--ui-faint); }
       }
     }
     .auto-btn {
       display: inline-flex; align-items: center; gap: 6px;
       padding: 7px 12px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--ui-line);
       border-radius: 8px;
-      background: #fff;
+      background: var(--ui-surface);
       font: inherit;
       font-size: 12px;
       font-weight: 600;
-      color: #475569;
+      color: var(--ui-text-4);
       cursor: pointer;
       flex-shrink: 0;
       transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
 
       &:hover:not(:disabled) {
         background: var(--color-brand-50);
-        border-color: var(--color-brand-300, #bae6fd);
-        color: var(--color-brand-700);
+        border-color: var(--color-brand-300, var(--ui-sky-soft-2));
+        color: var(--ui-brand-t700);
       }
       &:disabled { opacity: 0.5; cursor: not-allowed; }
     }
@@ -157,12 +157,12 @@ interface PageRow {
       overflow-y: auto;
       padding-bottom: 12px;
     }
-    .empty { margin: 0; padding: 32px 8px; text-align: center; color: #94a3b8; font-size: 13px; }
+    .empty { margin: 0; padding: 32px 8px; text-align: center; color: var(--ui-faint); font-size: 13px; }
     .page-heading {
       margin: 12px 0 4px;
       font-size: 11px;
       font-weight: 700;
-      color: #475569;
+      color: var(--ui-text-4);
       text-transform: uppercase;
       letter-spacing: 0.04em;
       &:first-child { margin-top: 0; }
@@ -171,12 +171,12 @@ interface PageRow {
     .row {
       display: inline-flex; align-items: center; gap: 12px;
       padding: 8px 12px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--ui-line);
       border-radius: 10px;
-      background: #fff;
+      background: var(--ui-surface);
       transition: background 120ms ease, border-color 120ms ease;
 
-      &:hover { background: #f8fafc; }
+      &:hover { background: var(--ui-surface-1); }
 
       &__dot {
         width: 14px; height: 14px;
@@ -185,7 +185,7 @@ interface PageRow {
         flex-shrink: 0;
       }
       &__name {
-        flex: 1; font-size: 13px; font-weight: 500; color: #0f172a;
+        flex: 1; font-size: 13px; font-weight: 500; color: var(--ui-text);
         overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
       }
       &__edit {
@@ -203,9 +203,9 @@ interface PageRow {
       }
     }
     .btn-cancel {
-      padding: 9px 20px; background: #f3f4f6; border: 1px solid #e5e7eb;
+      padding: 9px 20px; background: var(--ui-surface-2); border: 1px solid var(--ui-line);
       border-radius: 8px; font-size: 13px; cursor: pointer;
-      &:hover { background: #e5e7eb; }
+      &:hover { background: var(--ui-line); }
     }
     .btn-confirm {
       padding: 9px 24px; background: var(--color-brand-600); color: #fff;

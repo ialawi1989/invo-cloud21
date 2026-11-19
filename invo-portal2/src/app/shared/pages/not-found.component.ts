@@ -90,7 +90,7 @@ import { RouterModule } from '@angular/router';
   styles: [`
     .page {
       display: flex; align-items: center; justify-content: center;
-      min-height: 100vh; background: #f8fafc;
+      min-height: 100vh; background: var(--ui-surface-1);
       font-family: 'Inter', -apple-system, sans-serif;
       padding: 24px;
     }
@@ -107,11 +107,11 @@ import { RouterModule } from '@angular/router';
       margin: 0; line-height: 1; letter-spacing: -4px;
     }
     .title {
-      font-size: 22px; font-weight: 600; color: #1e293b;
+      font-size: 22px; font-weight: 600; color: var(--ui-text-2);
       margin: 8px 0 12px;
     }
     .desc {
-      font-size: 14px; color: #64748b; line-height: 1.6;
+      font-size: 14px; color: var(--ui-muted); line-height: 1.6;
       margin: 0 0 28px;
     }
 
@@ -128,11 +128,11 @@ import { RouterModule } from '@angular/router';
     }
     .btn-secondary {
       display: inline-flex; align-items: center; gap: 7px;
-      padding: 10px 22px; background: #fff; color: #475569;
-      border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 14px;
+      padding: 10px 22px; background: var(--ui-surface); color: var(--ui-text-4);
+      border: 1.5px solid var(--ui-line); border-radius: 10px; font-size: 14px;
       font-weight: 500; cursor: pointer; font-family: inherit;
       transition: background .2s, border-color .2s;
-      &:hover { background: #f8fafc; border-color: #cbd5e1; }
+      &:hover { background: var(--ui-surface-1); border-color: var(--ui-line-strong); }
     }
   `]
 })

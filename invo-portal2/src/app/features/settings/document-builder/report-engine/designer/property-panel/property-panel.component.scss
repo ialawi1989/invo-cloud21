@@ -1,4 +1,4 @@
-@use '../_designer-theme.scss' as *;
+@import '../designer-theme';
 
 :host {
   display: block;
@@ -133,11 +133,6 @@
       }
     }
 
-    // Pulls the row up out of the fieldset's 12px gap when it sits directly
-    // under its own label, so the pair reads as one labelled control.
-    &--under-label {
-      margin-top: -6px;
-    }
   }
 
   &__grow {
@@ -165,6 +160,13 @@
 
   &__label {
     @include d-label;
+
+    // The fieldset's 12px gap separates distinct rows, but a label and the
+    // control it names are one row. Pull the control up to the same 6px
+    // pp__field gives an input nested inside its own <label>.
+    + * {
+      margin-top: -6px;
+    }
   }
 
   &__mini-label {
@@ -264,6 +266,152 @@
         border-color: $d-danger;
       }
     }
+
+    &--primary {
+      color: $d-white;
+      background: $d-primary;
+      border-color: $d-primary;
+
+      &:hover:not(:disabled) {
+        background: $d-primary-hover;
+        border-color: $d-primary-hover;
+      }
+    }
+  }
+
+  // ── Sample data modal ────────────────────────────────────────
+  &__modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.4);
+  }
+
+  &__modal {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: min(720px, 90vw);
+    max-height: 85vh;
+    padding: 16px;
+    background: $d-white;
+    border-radius: $d-radius;
+    box-shadow: $d-shadow-lg;
+
+    &--wide {
+      width: min(920px, 92vw);
+    }
+  }
+
+  &__modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__modal-title {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: $d-text-label;
+  }
+
+  &__modal-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+    color: $d-text-secondary;
+    background: transparent;
+    border: none;
+    border-radius: $d-radius-sm;
+    cursor: pointer;
+
+    &:hover {
+      background: $d-border-light;
+    }
+  }
+
+  &__modal-import {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .pp__label {
+      flex-shrink: 0;
+      margin: 0;
+    }
+  }
+
+  &__modal-import-spinner {
+    font-size: 16px;
+    color: $d-primary;
+  }
+
+  &__modal-editor-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+
+    .pp__feedback {
+      margin: 0;
+    }
+  }
+
+  &__modal-foot {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  // ── JSON editor: a plain textarea with a line-number gutter beside it (not
+  // overlapping it — an overlay layer stacked on the textarea, tried first,
+  // fought the browser for clicks/focus and made the caret unreliable). No
+  // syntax highlighting; a real editor library is the right tool for that.
+  &__json-editor {
+    display: flex;
+    flex: 1;
+    min-height: 360px;
+    background: #1e1e1e;
+    border: 1px solid $d-border-input;
+    border-radius: $d-radius-sm;
+    overflow: hidden;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 12.5px;
+    line-height: 1.6;
+  }
+
+  &__json-editor-gutter {
+    flex-shrink: 0;
+    width: 40px;
+    padding: 10px 8px;
+    overflow: hidden;
+    color: #6e7681;
+    text-align: right;
+    user-select: none;
+    background: #1a1a1a;
+  }
+
+  &__json-editor-input {
+    flex: 1;
+    margin: 0;
+    padding: 10px 12px;
+    white-space: pre;
+    font: inherit;
+    line-height: inherit;
+    color: #d4d4d4;
+    background: transparent;
+    border: none;
+    outline: none;
+    resize: none;
+    overflow: auto;
+    caret-color: #d4d4d4;
   }
 
   &__icon-btn {

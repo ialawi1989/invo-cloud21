@@ -28,7 +28,7 @@
   }
   .num { text-align: end; font-variant-numeric: tabular-nums; }
   .strong { font-weight: 600; }
-  tbody tr:nth-child(even):not(.total) td { background: #fafbfd; }
+  tbody tr:nth-child(even):not(.total) td { background: var(--ui-x-fafbfd); }
   tbody tr:hover:not(.total) td { background: var(--rp-brand-soft); }
   /* The total row: brand-tinted, so it reads as the sum of the rows above. */
   .total td { background: var(--rp-brand-soft); color: var(--rp-brand); font-weight: 700; border-top: 2px solid var(--rp-brand); border-bottom: 0; }
@@ -50,7 +50,7 @@
 .ss-totals {
   margin: 8px 8px 6px; padding: 6px 0 0;
   .row { display: flex; justify-content: space-between; gap: 12px; padding: 8px 12px; font-size: 13px; color: var(--rp-text-2); font-variant-numeric: tabular-nums; border-radius: 8px; }
-  .row:nth-child(odd) { background: #fafbfd; }
+  .row:nth-child(odd) { background: var(--ui-x-fafbfd); }
   .strong { font-weight: 700; color: var(--rp-text); }
   .top { margin-top: 6px; border-top: 1px solid var(--rp-border); border-radius: 0 0 8px 8px; padding-top: 10px; }
   /* The bottom line (Net revenue / Net income): a tinted band. */

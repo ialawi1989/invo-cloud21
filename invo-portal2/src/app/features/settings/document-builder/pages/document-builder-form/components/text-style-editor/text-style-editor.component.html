@@ -84,7 +84,7 @@
               [wcagAgainst]="value().backgroundColor || '#ffffff'"
               [showSpectrum]="true"
               [showRainbowPresets]="true"
-              (ngModelChange)="patch({ color: $event })"
+              (ngModelChange)="patch({ color: $event, labelColor: $event })"
             />
           </div>
         </div>

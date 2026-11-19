@@ -89,8 +89,8 @@ import { TabBuilderSettingsService } from '../../services/tab-builder.service';
     .page-header__titles { min-width: 0; flex: 1; }
     .page-header__actions { flex-shrink: 0; }
 
-    .page-title { font-size: 20px; font-weight: 700; color: #1e293b; margin: 6px 0 0; }
-    .page-sub   { font-size: 13px; color: #64748b; margin: 2px 0 0; }
+    .page-title { font-size: 20px; font-weight: 700; color: var(--ui-text-2); margin: 6px 0 0; }
+    .page-sub   { font-size: 13px; color: var(--ui-muted); margin: 2px 0 0; }
 
     .btn {
       padding: 8px 18px; border-radius: 8px; border: none;
@@ -105,19 +105,19 @@ import { TabBuilderSettingsService } from '../../services/tab-builder.service';
     .hint-banner {
       display: flex; align-items: flex-start; gap: 10px;
       padding: 14px 16px; margin-bottom: 16px;
-      background: #eff9fb; border: 1px solid #a6d8df; border-radius: 10px;
-      color: #0f172a;
+      background: var(--ui-x-eff9fb); border: 1px solid var(--ui-x-a6d8df); border-radius: 10px;
+      color: var(--ui-text);
 
       svg   { color: #32acc1; flex-shrink: 0; margin-top: 2px; }
-      &__title { margin: 0; font-size: 13px; font-weight: 600; color: #0f172a; }
-      &__sub   { margin: 3px 0 0; font-size: 12px; color: #64748b; }
+      &__title { margin: 0; font-size: 13px; font-weight: 600; color: var(--ui-text); }
+      &__sub   { margin: 3px 0 0; font-size: 12px; color: var(--ui-muted); }
     }
 
     .loading { display: flex; justify-content: center; padding: 60px 0; }
 
     .spinner {
       width: 28px; height: 28px; border-radius: 50%;
-      border: 3px solid #e2e8f0; border-top-color: #32acc1;
+      border: 3px solid var(--ui-line); border-top-color: #32acc1;
       display: inline-block; animation: spin .8s linear infinite;
 
       &--lg { width: 32px; height: 32px; }

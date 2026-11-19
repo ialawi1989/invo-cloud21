@@ -151,10 +151,10 @@ import { ListSearchComponent } from '@shared/components/list-search/list-search.
       margin: 8px 0 4px;
       font-size: 22px;
       font-weight: 700;
-      color: #0f172a;
+      color: var(--ui-text);
       letter-spacing: -0.01em;
     }
-    .ls-sub { margin: 0; font-size: 14px; color: #64748b; }
+    .ls-sub { margin: 0; font-size: 14px; color: var(--ui-muted); }
 
     .ls-toolbar {
       display: flex;
@@ -173,28 +173,28 @@ import { ListSearchComponent } from '@shared/components/list-search/list-search.
     }
     .ls-pager__range {
       font-size: 12px;
-      color: #64748b;
+      color: var(--ui-muted);
       margin-inline-end: 4px;
     }
     .ls-pager__btn {
       width: 28px;
       height: 28px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--ui-line);
       border-radius: 6px;
-      background: #fff;
-      color: #475569;
+      background: var(--ui-surface);
+      color: var(--ui-text-4);
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       transition: background 120ms ease, color 120ms ease;
     }
-    .ls-pager__btn:hover:not(:disabled) { background: #f8fafc; color: #0f172a; }
+    .ls-pager__btn:hover:not(:disabled) { background: var(--ui-surface-1); color: var(--ui-text); }
     .ls-pager__btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
     .ls-card {
-      background: #fff;
-      border: 1px solid #e2e8f0;
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-line);
       border-radius: 12px;
       overflow: hidden;
     }
@@ -209,7 +209,7 @@ import { ListSearchComponent } from '@shared/components/list-search/list-search.
     .ls-spinner {
       width: 28px; height: 28px;
       border-radius: 50%;
-      border: 3px solid #e2e8f0;
+      border: 3px solid var(--ui-line);
       border-top-color: var(--color-brand-600, #0891b2);
       animation: ls-spin 0.8s linear infinite;
       display: inline-block;
@@ -219,7 +219,7 @@ import { ListSearchComponent } from '@shared/components/list-search/list-search.
     .ls-empty {
       text-align: center;
       padding: 60px 16px;
-      color: #94a3b8;
+      color: var(--ui-faint);
     }
     .ls-empty :where(svg) { color: #cbd5e1; margin-bottom: 8px; }
     .ls-empty :where(p) { margin: 0 0 12px; font-size: 13px; }

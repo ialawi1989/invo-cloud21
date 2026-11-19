@@ -16,31 +16,31 @@
 .adm__label {
   font-size: 12px;
   font-weight: 600;
-  color: #475569;
+  color: var(--ui-text-4);
 }
 
 .adm__input {
   appearance: none;
   width: 100%;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--ui-line);
   border-radius: 8px;
   padding: 9px 12px;
   font-size: 13px;
-  color: #0f172a;
-  background: #fff;
+  color: var(--ui-text);
+  background: var(--ui-surface);
 
   &:focus {
     outline: 0;
     border-color: var(--color-brand-400, #7dd3fc);
-    box-shadow: 0 0 0 2px var(--color-brand-100, #e0f2fe);
+    box-shadow: 0 0 0 2px var(--color-brand-100, var(--ui-sky-soft));
   }
-  &::placeholder { color: #94a3b8; }
+  &::placeholder { color: var(--ui-faint); }
   &--err {
-    border-color: #fecaca;
-    &:focus { box-shadow: 0 0 0 2px #fee2e2; }
+    border-color: var(--ui-red-soft-2);
+    &:focus { box-shadow: 0 0 0 2px var(--ui-red-soft); }
   }
 }
-.adm__err { font-size: 11px; color: #b91c1c; font-weight: 600; }
+.adm__err { font-size: 11px; color: var(--ui-red-text); font-weight: 600; }
 
 // ── Suggestions ───────────────────────────────────────────────────
 .adm__suggestions {
@@ -51,18 +51,18 @@
 .adm__chip {
   appearance: none;
   padding: 6px 14px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--ui-line);
   border-radius: 999px;
-  background: #fff;
+  background: var(--ui-surface);
   font-size: 12px;
   font-weight: 500;
-  color: #0f172a;
+  color: var(--ui-text);
   cursor: pointer;
   transition: border-color 100ms ease, background 100ms ease;
 
   &:hover {
-    border-color: var(--color-brand-300, #bae6fd);
-    background: var(--color-brand-50, #ecfeff);
+    border-color: var(--color-brand-300, var(--ui-sky-soft-2));
+    background: var(--color-brand-50, var(--ui-brand-soft));
   }
 }
 
@@ -73,22 +73,22 @@
   gap: 6px;
   height: 38px;
   padding: 0 12px;
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
   border-radius: 8px;
 
-  > svg { color: #94a3b8; flex-shrink: 0; }
+  > svg { color: var(--ui-faint); flex-shrink: 0; }
   > input {
     flex: 1 1 auto;
     border: 0;
     outline: 0;
     background: transparent;
     font-size: 13px;
-    color: #0f172a;
+    color: var(--ui-text);
   }
   &:focus-within {
-    border-color: var(--color-brand-300, #bae6fd);
-    box-shadow: 0 0 0 2px var(--color-brand-100, #e0f2fe);
+    border-color: var(--color-brand-300, var(--ui-sky-soft-2));
+    box-shadow: 0 0 0 2px var(--color-brand-100, var(--ui-sky-soft));
   }
 }
 
@@ -97,7 +97,7 @@
   margin: 0;
   padding: 0;
   overflow-y: auto;
-  border: 1px solid #f1f5f9;
+  border: 1px solid var(--ui-surface-2);
   border-radius: 8px;
   max-height: 240px;
 }
@@ -107,12 +107,12 @@
   justify-content: space-between;
   gap: 10px;
   padding: 9px 12px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--ui-surface-2);
   cursor: pointer;
 
   &:last-child { border-bottom: 0; }
-  &:hover { background: #f8fafc; }
-  &.is-selected { background: var(--color-brand-50, #ecfeff); }
+  &:hover { background: var(--ui-surface-1); }
+  &.is-selected { background: var(--color-brand-50, var(--ui-brand-soft)); }
   &.is-taken {
     opacity: 0.55;
     cursor: not-allowed;
@@ -128,17 +128,17 @@
 .adm__row-name {
   font-size: 13px;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--ui-text);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.adm__row-meta { font-size: 11px; color: #94a3b8; }
+.adm__row-meta { font-size: 11px; color: var(--ui-faint); }
 .adm__row-tag {
   font-size: 10px;
   font-weight: 600;
-  color: #64748b;
-  background: #f1f5f9;
+  color: var(--ui-muted);
+  background: var(--ui-surface-2);
   padding: 2px 8px;
   border-radius: 999px;
   flex-shrink: 0;
@@ -148,7 +148,7 @@
 .adm__loading {
   padding: 20px;
   text-align: center;
-  color: #94a3b8;
+  color: var(--ui-faint);
   font-size: 13px;
   list-style: none;
 }
@@ -162,7 +162,7 @@
 .spinner {
   width: 14px;
   height: 14px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--ui-line);
   border-top-color: var(--color-brand-500, #0891b2);
   border-radius: 50%;
   animation: adm-spin 0.7s linear infinite;

@@ -11,12 +11,12 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    color: #94a3b8;
+    color: var(--ui-faint);
     font-size: 12px;
     font-weight: 600;
     flex-shrink: 0;
 
-    &--active { color: var(--color-brand-700, #0e7490); }
+    &--active { color: var(--ui-brand-t700); }
     &--done   { color: var(--color-success, #16a34a); }
 
     &--active .ws__dot,
@@ -31,9 +31,9 @@
     width: 22px;
     height: 22px;
     border-radius: 999px;
-    background: #fff;
-    border: 1px solid #cbd5e1;
-    color: #64748b;
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-line-strong);
+    color: var(--ui-muted);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -45,7 +45,7 @@
   &__line {
     width: 24px;
     height: 1px;
-    background: #e2e8f0;
+    background: var(--ui-line);
     margin-inline: 6px;
   }
 }

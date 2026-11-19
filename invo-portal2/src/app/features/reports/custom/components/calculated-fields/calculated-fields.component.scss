@@ -4,7 +4,7 @@ $border: #e0e0e0;
 
 .calc-fields {
   border-top: 1px solid $border;
-  background: #fff;
+  background: var(--ui-surface);
 }
 
 .calc-header {
@@ -12,7 +12,7 @@ $border: #e0e0e0;
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--ui-x-f0f0f0);
 }
 
 .calc-title {
@@ -50,8 +50,8 @@ $border: #e0e0e0;
   align-items: center;
   justify-content: space-between;
   padding: 6px 12px;
-  border-bottom: 1px solid #f8f8f8;
-  &:hover { background: #f9f9f9; }
+  border-bottom: 1px solid var(--ui-x-f8f8f8);
+  &:hover { background: var(--ui-x-f9f9f9); }
 }
 
 .calc-item-info {
@@ -64,7 +64,7 @@ $border: #e0e0e0;
 .calc-item-name {
   font-size: 11px;
   font-weight: 600;
-  color: #333;
+  color: var(--ui-text-2);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -73,7 +73,7 @@ $border: #e0e0e0;
 .calc-item-formula {
   font-size: 9px;
   color: #999;
-  background: #f0f0f0;
+  background: var(--ui-x-f0f0f0);
   padding: 1px 6px;
   border-radius: 3px;
   white-space: nowrap;
@@ -96,8 +96,8 @@ $border: #e0e0e0;
   display: flex;
   align-items: center;
   justify-content: center;
-  &:hover { background: #f0f0f0; color: #333; }
-  &--danger:hover { background: #ffebee; color: #ef5350; }
+  &:hover { background: var(--ui-x-f0f0f0); color: var(--ui-text-2); }
+  &--danger:hover { background: var(--ui-x-ffebee); color: #ef5350; }
 }
 
 .calc-empty {
@@ -112,7 +112,7 @@ $border: #e0e0e0;
 .calc-editor {
   padding: 12px;
   border-top: 1px solid $border;
-  background: #fafafa;
+  background: var(--ui-x-fafafa);
 }
 
 .editor-row {
@@ -136,8 +136,8 @@ $border: #e0e0e0;
   border-radius: 4px;
   font-size: 12px;
   font-family: inherit;
-  color: #333;
-  background: #fff;
+  color: var(--ui-text-2);
+  background: var(--ui-surface);
   outline: none;
   &:focus { border-color: $accent; }
   &--short { max-width: 80px; }
@@ -164,12 +164,12 @@ $border: #e0e0e0;
   font-size: 10px;
   font-weight: 600;
   color: #666;
-  background: #f0f0f0;
+  background: var(--ui-x-f0f0f0);
   border-radius: 4px;
 
   &.mode-math { color: $accent; background: $accent-light; }
-  &.mode-summary { color: #e65100; background: #fff3e0; }
-  &.mode-concat { color: #5c6bc0; background: #e8eaf6; }
+  &.mode-summary { color: var(--ui-t-e65100); background: var(--ui-x-fff3e0); }
+  &.mode-concat { color: var(--ui-t-5c6bc0); background: var(--ui-x-e8eaf6); }
 }
 
 .agg-chips {
@@ -179,9 +179,9 @@ $border: #e0e0e0;
 
 .agg-chip {
   padding: 4px 10px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--ui-x-dddddd);
   border-radius: 4px;
-  background: #fff;
+  background: var(--ui-surface);
   font-family: inherit;
   font-size: 10px;
   font-weight: 700;
@@ -192,8 +192,8 @@ $border: #e0e0e0;
   &:hover { border-color: #bbb; }
   &.active {
     border-color: #e65100;
-    background: #fff3e0;
-    color: #e65100;
+    background: var(--ui-x-fff3e0);
+    color: var(--ui-t-e65100);
   }
 }
 
@@ -222,12 +222,12 @@ $border: #e0e0e0;
 
 .operand-type {
   padding: 4px 6px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--ui-x-dddddd);
   border-radius: 3px;
   font-size: 10px;
   font-family: inherit;
-  color: #666;
-  background: #fff;
+  color: var(--ui-t-666666);
+  background: var(--ui-surface);
   cursor: pointer;
   flex-shrink: 0;
   width: 70px;
@@ -237,12 +237,12 @@ $border: #e0e0e0;
   flex: 1;
   min-width: 80px;
   padding: 4px 6px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--ui-x-dddddd);
   border-radius: 3px;
   font-size: 11px;
   font-family: inherit;
-  color: #333;
-  background: #fff;
+  color: var(--ui-text-2);
+  background: var(--ui-surface);
   outline: none;
   &:focus { border-color: $accent; }
 }
@@ -270,7 +270,7 @@ $border: #e0e0e0;
 .operand-add {
   padding: 4px 8px;
   background: none;
-  border: 1px dashed #ddd;
+  border: 1px dashed var(--ui-x-dddddd);
   border-radius: 3px;
   font-size: 10px;
   font-family: inherit;
@@ -298,9 +298,9 @@ $border: #e0e0e0;
   border: none;
 
   &--cancel {
-    background: #f0f0f0;
+    background: var(--ui-x-f0f0f0);
     color: #666;
-    &:hover { background: #e0e0e0; }
+    &:hover { background: var(--ui-x-e0e0e0); }
   }
 
   &--save {

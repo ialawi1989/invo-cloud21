@@ -107,14 +107,14 @@ interface ParentOption { id: string; name: string; }
   `,
   styles: [`
     .body { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
-    .hint { margin: 0; font-size: 13px; color: #64748b; }
+    .hint { margin: 0; font-size: 13px; color: var(--ui-muted); }
     .field { display: flex; flex-direction: column; gap: 6px; }
-    .lbl { font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.4px; }
-    .field-hint { margin: 0; font-size: 12px; color: #94a3b8; b { color: #475569; } }
+    .lbl { font-size: 12px; font-weight: 600; color: var(--ui-muted); text-transform: uppercase; letter-spacing: 0.4px; }
+    .field-hint { margin: 0; font-size: 12px; color: var(--ui-faint); b { color: var(--ui-text-4); } }
     .btn-cancel {
       padding: 9px 16px; border-radius: 8px; font-size: 13px; font-weight: 500;
-      background: #fff; border: 1px solid #e5e7eb; color: #475569; cursor: pointer;
-      &:hover { background: #f8fafc; }
+      background: var(--ui-surface); border: 1px solid var(--ui-line); color: var(--ui-text-4); cursor: pointer;
+      &:hover { background: var(--ui-surface-1); }
     }
     .btn-save {
       margin-inline-start: 8px;

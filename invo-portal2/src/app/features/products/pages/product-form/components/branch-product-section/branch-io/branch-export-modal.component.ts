@@ -119,18 +119,18 @@ export interface BranchExportResult {
   styles: [`
     .bx { padding: 18px; display: flex; flex-direction: column; gap: 18px; }
     .bx__field { display: flex; flex-direction: column; gap: 6px; }
-    .bx__label { font-size: 12px; font-weight: 600; color: #64748b; }
+    .bx__label { font-size: 12px; font-weight: 600; color: var(--ui-muted); }
     .bx__inline { display: flex; gap: 18px; }
     .bx__radio, .bx__check {
       display: flex; align-items: center; gap: 8px;
-      font-size: 13px; color: #334155; cursor: pointer; padding: 3px 0;
+      font-size: 13px; color: var(--ui-text-3); cursor: pointer; padding: 3px 0;
     }
     .bx__radio--off { opacity: .45; cursor: not-allowed; }
-    .bx__count { margin-inline-start: auto; font-size: 12px; color: #94a3b8; }
+    .bx__count { margin-inline-start: auto; font-size: 12px; color: var(--ui-faint); }
     .bx__cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 4px 14px; }
     .bx__note {
       margin: 0; padding: 10px 12px; border-radius: 8px;
-      background: #eff6ff; color: #1e40af; font-size: 12px; line-height: 1.6;
+      background: var(--ui-x-eff6ff); color: var(--ui-t-1e40af); font-size: 12px; line-height: 1.6;
     }
     .bx__note-strong { display: block; margin-top: 4px; }
   `],

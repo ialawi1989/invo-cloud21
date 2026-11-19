@@ -1,13 +1,13 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 import { CdkDrag, CdkDropList } from '@angular/cdk/drag-drop';
 import { TranslateModule } from '@ngx-translate/core';
 import { blockRegistry, BlockDefinition } from '../../core/registry/block-registry';
 import { DesignerStateService } from '../../services/designer-state.service';
 import { Block, BlockType } from '../../core/types/block.types';
-import { Section } from '../../core/types/template.types';
+import { MASTER_PAGE_ID, Section } from '../../core/types/template.types';
 
-import { TooltipDirective } from '@shared/directives/tooltip.directive';
 type ToolboxTab = 'blocks' | 'layers';
 
 /**
@@ -72,10 +72,17 @@ export class DesignerToolboxComponent {
     ].filter((g) => g.blocks.length > 0);
   });
 
-  /** Sections + their blocks straight from the template. Reads in section
-   *  order so header blocks sit above body above footer — matching the
-   *  canvas's top-to-bottom layout. */
-  readonly layerSections = computed<Section[]>(() => this.state.template()?.sections ?? []);
+  /** Sections + their blocks straight from the template, scoped to the
+   *  currently active page (see `Section.pageId`) so the Layers tab doesn't
+   *  mix an extra page's blocks in with the master's. Reads in section order
+   *  so header blocks sit above body above footer — matching the canvas's
+   *  top-to-bottom layout. */
+  readonly layerSections = computed<Section[]>(() => {
+    const t = this.state.template();
+    if (!t) return [];
+    const page = this.state.activePageId();
+    return t.sections.filter((s) => (s.pageId ?? MASTER_PAGE_ID) === page);
+  });
 
   isSelected(id: string): boolean {
     return this.state.selectedIds().has(id);

@@ -92,25 +92,25 @@ export interface CountUnitsResult { serials: CountSerial[]; batches: CountBatch[
   styles: [`
     .pcu { padding: 16px 20px; min-width: min(560px, 92vw); display: flex; flex-direction: column; gap: 12px; }
     .pcu__sub { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-    .pcu__sum { color: #64748b; font-size: 13px; }
+    .pcu__sum { color: var(--ui-muted); font-size: 13px; }
     .pcu__tools { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-    .pcu__input { flex: 1; min-width: 160px; height: 36px; padding: 0 12px; border: 1px solid #d0d5dd; border-radius: 8px; font: inherit; font-size: 14px; outline: none; }
+    .pcu__input { flex: 1; min-width: 160px; height: 36px; padding: 0 12px; border: 1px solid var(--ui-line-strong); border-radius: 8px; font: inherit; font-size: 14px; outline: none; }
     .pcu__input:focus { border-color: #32acc1; box-shadow: 0 0 0 3px rgba(50,172,193,.12); }
     .pcu__list { list-style: none; margin: 0; padding: 0; max-height: 360px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
-    .pcu__row { display: flex; align-items: center; gap: 12px; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; font-size: 14px; }
-    .pcu__row:hover { background: #f1f5f9; }
+    .pcu__row { display: flex; align-items: center; gap: 12px; padding: 8px 12px; border: 1px solid var(--ui-line); border-radius: 8px; cursor: pointer; font-size: 14px; }
+    .pcu__row:hover { background: var(--ui-surface-2); }
     .pcu__name { flex: 1; min-width: 0; word-break: break-all; }
-    .pcu__empty { padding: 18px; text-align: center; color: #94a3b8; }
+    .pcu__empty { padding: 18px; text-align: center; color: var(--ui-faint); }
     .pcu__table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-    .pcu__table th { background: #f8fafc; color: #64748b; font-size: 12px; text-transform: uppercase; text-align: start; padding: 8px 10px; }
-    .pcu__table td { padding: 6px 10px; border-top: 1px solid #f1f5f9; }
+    .pcu__table th { background: var(--ui-surface-1); color: var(--ui-muted); font-size: 12px; text-transform: uppercase; text-align: start; padding: 8px 10px; }
+    .pcu__table td { padding: 6px 10px; border-top: 1px solid var(--ui-surface-2); }
     .pcu__table .end { text-align: end; }
-    .pcu__num { width: 100px; height: 34px; padding: 0 8px; border: 1px solid #d0d5dd; border-radius: 8px; font: inherit; text-align: end; }
-    .pcu__num:disabled { background: #f8fafc; color: #64748b; }
-    .pcu__neg { color: #b91c1c; font-weight: 600; }
-    .pcu__pos { color: #15803d; font-weight: 600; }
-    .pcu__btn { padding: 8px 14px; border-radius: 8px; border: 1px solid #d0d5dd; background: #fff; color: #334155; font-weight: 600; font-size: 13.5px; cursor: pointer; }
-    .pcu__btn--primary { border-color: #2691a4; background: #2691a4; color: #fff; }
+    .pcu__num { width: 100px; height: 34px; padding: 0 8px; border: 1px solid var(--ui-line-strong); border-radius: 8px; font: inherit; text-align: end; }
+    .pcu__num:disabled { background: var(--ui-surface-1); color: var(--ui-muted); }
+    .pcu__neg { color: var(--ui-red-text); font-weight: 600; }
+    .pcu__pos { color: var(--ui-green-text); font-weight: 600; }
+    .pcu__btn { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--ui-line-strong); background: var(--ui-surface); color: var(--ui-text-3); font-weight: 600; font-size: 13.5px; cursor: pointer; }
+    .pcu__btn--primary { border-color: #2691a4; background: var(--ui-b-2691a4); color: #fff; }
   `],
 })
 export class PhysicalCountUnitsModalComponent {

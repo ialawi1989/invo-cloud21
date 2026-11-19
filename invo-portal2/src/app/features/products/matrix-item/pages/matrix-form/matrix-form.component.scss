@@ -10,7 +10,7 @@
 }
 
 .page-header { display: flex; flex-direction: column; gap: 4px; }
-.page-title  { margin: 0; font-size: 22px; font-weight: 700; color: #0f172a;
+.page-title  { margin: 0; font-size: 22px; font-weight: 700; color: var(--ui-text);
   @media (max-width: 640px) { font-size: 19px; }
 }
 
@@ -19,17 +19,17 @@ form { display: flex; flex-direction: column; gap: 16px;
 }
 
 .card {
-  background: #fff;
+  background: var(--ui-surface);
   border-radius: 12px;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
   overflow: hidden;
 
   &__head {
     padding: 14px 16px;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--ui-surface-2);
     @media (max-width: 640px) { padding: 12px 14px; }
   }
-  &__title { margin: 0; font-size: 14px; font-weight: 700; color: #0f172a; }
+  &__title { margin: 0; font-size: 14px; font-weight: 700; color: var(--ui-text); }
   &__body {
     padding: 16px;
     display: flex;
@@ -89,9 +89,9 @@ form { display: flex; flex-direction: column; gap: 16px;
   appearance: none;
   width: 100%;
   aspect-ratio: 1 / 1;
-  border: 1.5px dashed #cbd5e1;
+  border: 1.5px dashed var(--ui-line-strong);
   border-radius: 12px;
-  background: #f8fafc;
+  background: var(--ui-surface-1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -100,12 +100,12 @@ form { display: flex; flex-direction: column; gap: 16px;
   padding: 0;
   transition: border-color 120ms ease, background 120ms ease;
 
-  &:hover { border-color: #94a3b8; background: #f1f5f9; }
-  &--filled { border-style: solid; border-color: #e2e8f0; background: #fff; }
+  &:hover { border-color: #94a3b8; background: var(--ui-surface-2); }
+  &--filled { border-style: solid; border-color: var(--ui-line); background: var(--ui-surface); }
 }
 .mf-media__img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .mf-media__placeholder {
-  display: flex; flex-direction: column; align-items: center; gap: 8px; color: #94a3b8;
+  display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--ui-faint);
 }
 .mf-media__hint { font-size: 13px; font-weight: 500; }
 .mf-media__actions { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -118,33 +118,33 @@ form { display: flex; flex-direction: column; gap: 16px;
   &__label {
     font-size: 12px;
     font-weight: 600;
-    color: #475569;
+    color: var(--ui-text-4);
     display: inline-flex;
     align-items: center;
     justify-content: space-between;
     gap: 6px;
   }
-  &__hint  { font-size: 11px; color: #94a3b8; &--warn { color: #b45309; } }
-  &__err   { font-size: 11px; color: #b91c1c; font-weight: 600; }
+  &__hint  { font-size: 11px; color: var(--ui-faint); &--warn { color: var(--ui-amber-text); } }
+  &__err   { font-size: 11px; color: var(--ui-red-text); font-weight: 600; }
 
   &__input {
     appearance: none;
     width: 100%;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--ui-line);
     border-radius: 8px;
     padding: 9px 12px;
     font-size: 13px;
-    color: #0f172a;
-    background: #fff;
+    color: var(--ui-text);
+    background: var(--ui-surface);
     transition: border-color 100ms ease, box-shadow 100ms ease;
 
     &:focus {
       outline: 0;
       border-color: var(--color-brand-400, #7dd3fc);
-      box-shadow: 0 0 0 2px var(--color-brand-100, #e0f2fe);
+      box-shadow: 0 0 0 2px var(--color-brand-100, var(--ui-sky-soft));
     }
-    &::placeholder { color: #94a3b8; }
-    &--err { border-color: #fecaca; &:focus { box-shadow: 0 0 0 2px #fee2e2; } }
+    &::placeholder { color: var(--ui-faint); }
+    &--err { border-color: var(--ui-red-soft-2); &:focus { box-shadow: 0 0 0 2px var(--ui-red-soft); } }
   }
 }
 
@@ -152,7 +152,7 @@ form { display: flex; flex-direction: column; gap: 16px;
   appearance: none;
   border: 0;
   background: transparent;
-  color: var(--color-brand-700, #0e7490);
+  color: var(--color-brand-700, var(--ui-brand-text));
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -178,8 +178,8 @@ form { display: flex; flex-direction: column; gap: 16px;
     height: 72px;
     border-radius: 10px;
     object-fit: cover;
-    background: #f1f5f9;
-    border: 1px solid #e2e8f0;
+    background: var(--ui-surface-2);
+    border: 1px solid var(--ui-line);
 
     &--empty {
       display: inline-flex;
@@ -195,10 +195,10 @@ form { display: flex; flex-direction: column; gap: 16px;
   margin: 8px 0 0;
   font-size: 15px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--ui-text);
 }
-.sub-title { margin: 8px 0 4px; font-size: 13px; font-weight: 600; color: #475569; }
-.hint-line { margin: 4px 0 0; font-size: 13px; color: #94a3b8; }
+.sub-title { margin: 8px 0 4px; font-size: 13px; font-weight: 600; color: var(--ui-text-4); }
+.hint-line { margin: 4px 0 0; font-size: 13px; color: var(--ui-faint); }
 
 /* Branch pane (shared chips + Single/Bulk toggle, like the product form). */
 .branch-mode-row { display: flex; justify-content: flex-end; margin: 10px 0 8px; }
@@ -208,9 +208,9 @@ form { display: flex; flex-direction: column; gap: 16px;
   margin: 18px 0 6px;
   font-size: 13px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--ui-text);
   padding-bottom: 4px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--ui-line);
 }
 .branch-bulk-title:first-of-type { margin-top: 8px; }
 
@@ -218,7 +218,7 @@ form { display: flex; flex-direction: column; gap: 16px;
   display: flex;
   gap: 4px;
   flex-wrap: wrap;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--ui-line);
   padding-bottom: 0;
 }
 .branch-tab {
@@ -229,19 +229,19 @@ form { display: flex; flex-direction: column; gap: 16px;
   padding: 8px 12px;
   font-size: 13px;
   font-weight: 600;
-  color: #64748b;
+  color: var(--ui-muted);
   cursor: pointer;
   margin-bottom: -1px;
 
-  &:hover { color: #0f172a; }
-  &--active { color: var(--color-brand-700, #0e7490); border-bottom-color: var(--color-brand-700, #0e7490); }
+  &:hover { color: var(--ui-text); }
+  &--active { color: var(--ui-brand-t700); border-bottom-color: var(--color-brand-700, #0e7490); }
 }
 
 .table-scroll {
   overflow-x: auto;
-  border: 1px solid #e7edf3;
+  border: 1px solid var(--ui-x-e7edf3);
   border-radius: 12px;
-  background: #fff;
+  background: var(--ui-surface);
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
@@ -254,29 +254,29 @@ form { display: flex; flex-direction: column; gap: 16px;
     padding: 11px 14px;
     text-align: start;
     font-size: 13px;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--ui-surface-2);
     white-space: nowrap;
     vertical-align: middle;
   }
   thead th {
-    background: #f7f9fc;
-    color: #94a3b8;
+    background: var(--ui-x-f7f9fc);
+    color: var(--ui-faint);
     font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    border-bottom: 1px solid #e6ecf2;
+    border-bottom: 1px solid var(--ui-x-e6ecf2);
   }
-  tbody tr:nth-child(even) td { background: #fbfcfe; }
-  tbody tr:hover td { background: #f0f9ff; }
+  tbody tr:nth-child(even) td { background: var(--ui-x-fbfcfe); }
+  tbody tr:hover td { background: var(--ui-x-f0f9ff); }
   tbody tr:last-child td { border-bottom: 0; }
-  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; color: #52627a; }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; color: var(--ui-t-52627a); }
 
   /* Read-only On-Hand reads as "locked", matching the pivot. */
   .cell-input--ro {
     border-color: transparent;
-    background: #f1f5f9;
-    color: #64748b;
+    background: var(--ui-surface-2);
+    color: var(--ui-muted);
     font-weight: 500;
   }
 }
@@ -296,22 +296,22 @@ form { display: flex; flex-direction: column; gap: 16px;
   border: 0;
   padding: 0;
   font: inherit;
-  color: #0f172a;
+  color: var(--ui-text);
   font-weight: 500;
   cursor: pointer;
   text-align: start;
-  &:hover, &:focus-visible { color: #0284c7; text-decoration: underline; }
+  &:hover, &:focus-visible { color: var(--ui-t-0284c7); text-decoration: underline; }
   &:focus-visible { outline: 0; }
 }
 
 .cell-input {
   width: 110px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--ui-line);
   border-radius: 6px;
   padding: 6px 8px;
   font-size: 13px;
-  &:focus { outline: 0; border-color: #7dd3fc; box-shadow: 0 0 0 2px #e0f2fe; }
-  &--ro { background: #f8fafc; color: #64748b; }
+  &:focus { outline: 0; border-color: #7dd3fc; box-shadow: 0 0 0 2px var(--ui-sky-soft); }
+  &--ro { background: var(--ui-surface-1); color: var(--ui-muted); }
 }
 
 .variant-img-btn {
@@ -319,24 +319,24 @@ form { display: flex; flex-direction: column; gap: 16px;
   align-items: center;
   gap: 6px;
   padding: 4px 8px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--ui-line);
   border-radius: 6px;
-  background: #fff;
-  color: #475569;
+  background: var(--ui-surface);
+  color: var(--ui-text-4);
   font-size: 12px;
   cursor: pointer;
   transition: border-color .12s, background .12s;
-  &:hover, &:focus-visible { border-color: #7dd3fc; background: #f0f9ff; }
-  &:focus-visible { outline: 0; box-shadow: 0 0 0 2px #e0f2fe; }
+  &:hover, &:focus-visible { border-color: #7dd3fc; background: var(--ui-x-f0f9ff); }
+  &:focus-visible { outline: 0; box-shadow: 0 0 0 2px var(--ui-sky-soft); }
 }
 .variant-img-thumb {
   width: 22px;
   height: 22px;
   border-radius: 4px;
   object-fit: cover;
-  background: #f1f5f9;
+  background: var(--ui-surface-2);
 }
-.variant-img-count { font-weight: 600; color: #0f172a; }
+.variant-img-count { font-weight: 600; color: var(--ui-text); }
 
 /* ── Bulk-edit pivot grid ──────────────────────────────────────────────
    One row per variant; the variant identity + image are frozen in a sticky
@@ -349,9 +349,9 @@ form { display: flex; flex-direction: column; gap: 16px;
   overflow: auto;
   max-height: 68vh;
   overscroll-behavior: contain;
-  border: 1px solid #e7edf3;
+  border: 1px solid var(--ui-x-e7edf3);
   border-radius: 12px;
-  background: #fff;
+  background: var(--ui-surface);
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 .pivot {
@@ -376,15 +376,15 @@ form { display: flex; flex-direction: column; gap: 16px;
   top: 0;
   z-index: 4;
   box-sizing: border-box;
-  background: #f7f9fc;
-  border-bottom: 1px solid #e6ecf2;
+  background: var(--ui-x-f7f9fc);
+  border-bottom: 1px solid var(--ui-x-e6ecf2);
 }
 .pivot .pv-branch-head {
   height: 38px;
   text-align: center;
   font-weight: 600;
   font-size: 13px;
-  color: #334155;
+  color: var(--ui-text-3);
   padding-bottom: 6px;
 }
 .pivot .pv-sub {
@@ -394,24 +394,24 @@ form { display: flex; flex-direction: column; gap: 16px;
   font-size: 10px;
   letter-spacing: .05em;
   text-transform: uppercase;
-  color: #94a3b8;
+  color: var(--ui-faint);
   padding-top: 4px;
 }
 /* Divider between branch column-groups. */
-.pivot .pv-group-start { border-inline-start: 1px solid #eaeff4; }
+.pivot .pv-group-start { border-inline-start: 1px solid var(--ui-x-eaeff4); }
 
 /* Frozen identity column — subtle shadow on its trailing edge signals that it
    stays put while the branch columns scroll. */
 .pivot .pv-sticky {
   position: sticky;
   inset-inline-start: 0;
-  background: #fff;
+  background: var(--ui-surface);
   z-index: 2;
-  border-inline-end: 1px solid #e6ecf2;
+  border-inline-end: 1px solid var(--ui-x-e6ecf2);
   box-shadow: 10px 0 10px -10px rgba(15, 23, 42, 0.18);
 }
 .pivot thead .pv-sticky {
-  background: #f7f9fc;
+  background: var(--ui-x-f7f9fc);
   z-index: 6; /* frozen top-left corner sits above both sticky axes */
 }
 .pivot .pv-variant-head {
@@ -421,7 +421,7 @@ form { display: flex; flex-direction: column; gap: 16px;
   font-size: 11px;
   letter-spacing: .05em;
   text-transform: uppercase;
-  color: #94a3b8;
+  color: var(--ui-faint);
 }
 .pivot .pv-variant-cell {
   min-width: 232px;
@@ -436,7 +436,7 @@ form { display: flex; flex-direction: column; gap: 16px;
 }
 .pv-variant-name {
   font-weight: 600;
-  color: #0f172a;
+  color: var(--ui-text);
   white-space: normal;
   line-height: 1.25;
 }
@@ -451,7 +451,7 @@ button.pv-variant-name,
   align-items: baseline;
   gap: 6px;
   font-size: 11px;
-  color: #64748b;
+  color: var(--ui-muted);
 }
 .pv-sub-label {
   flex: 0 0 auto;
@@ -462,7 +462,7 @@ button.pv-variant-name,
   letter-spacing: .04em;
   color: #aeb9c6;
 }
-.pv-variant-sub .mono { color: #52627a; }
+.pv-variant-sub .mono { color: var(--ui-t-52627a); }
 .pv-variant-actions { display: flex; gap: 6px; margin-top: 6px; }
 
 /* Variant image as a real thumbnail tile with a count badge. */
@@ -474,10 +474,10 @@ button.pv-variant-name,
   padding: 0;
   justify-content: center;
   gap: 0;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--ui-line);
   border-radius: 8px;
-  background: #f8fafc;
-  color: #94a3b8;
+  background: var(--ui-surface-1);
+  color: var(--ui-faint);
   overflow: visible;
 }
 .pv-variant-cell .variant-img-btn svg {
@@ -487,8 +487,8 @@ button.pv-variant-name,
 .pv-variant-cell .variant-img-btn:hover,
 .pv-variant-cell .variant-img-btn:focus-visible {
   border-color: #7dd3fc;
-  background: #f0f9ff;
-  color: #0284c7;
+  background: var(--ui-x-f0f9ff);
+  color: var(--ui-t-0284c7);
 }
 .pv-variant-cell .variant-img-thumb {
   width: 100%;
@@ -511,7 +511,7 @@ button.pv-variant-name,
   font-size: 10px;
   font-weight: 700;
   line-height: 1;
-  box-shadow: 0 0 0 2px #fff;
+  box-shadow: 0 0 0 2px var(--ui-surface);
 }
 
 /* Value cells — center the input under its centered On Hand / Price header. */
@@ -524,17 +524,17 @@ button.pv-variant-name,
 /* Read-only On-Hand reads as "locked", not an empty editable field. */
 .pivot .cell-input--ro {
   border-color: transparent;
-  background: #f1f5f9;
-  color: #64748b;
+  background: var(--ui-surface-2);
+  color: var(--ui-muted);
   font-weight: 500;
 }
 
 /* Zebra + hover — keep the sticky cell opaque so scrolled cells don't bleed. */
-.pivot tbody td { border-bottom: 1px solid #f1f5f9; }
+.pivot tbody td { border-bottom: 1px solid var(--ui-surface-2); }
 .pivot tbody tr:nth-child(even) td,
-.pivot tbody tr:nth-child(even) td.pv-sticky { background: #fbfcfe; }
+.pivot tbody tr:nth-child(even) td.pv-sticky { background: var(--ui-x-fbfcfe); }
 .pivot tbody tr:hover td,
-.pivot tbody tr:hover td.pv-sticky { background: #f0f9ff; }
+.pivot tbody tr:hover td.pv-sticky { background: var(--ui-x-f0f9ff); }
 .pivot tbody tr:last-child td { border-bottom: 0; }
 
 /* ── Mobile: reflow the pivot into one card per variant ────────────────────
@@ -557,9 +557,9 @@ button.pv-variant-name,
   .pivot tbody tr {
     display: block;
     margin-bottom: 12px;
-    border: 1px solid #e7edf3;
+    border: 1px solid var(--ui-x-e7edf3);
     border-radius: 12px;
-    background: #fff;
+    background: var(--ui-surface);
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
     overflow: hidden;
   }
@@ -578,7 +578,7 @@ button.pv-variant-name,
     content: attr(data-label);
     font-size: 12px;
     font-weight: 600;
-    color: #475569;
+    color: var(--ui-text-4);
   }
   /* Cancel the desktop zebra/hover in card mode. */
   .pivot tbody tr:nth-child(even) td,
@@ -588,8 +588,8 @@ button.pv-variant-name,
      a faint one splits the two rows within it. */
   .pivot tbody td.pv-group-start {
     border-inline-start: 0;
-    border-top: 1px solid #e2e8f0;   /* branch separator */
-    border-bottom: 1px solid #f4f6f9; /* On Hand ↔ Price split */
+    border-top: 1px solid var(--ui-line);   /* branch separator */
+    border-bottom: 1px solid var(--ui-x-f4f6f9); /* On Hand ↔ Price split */
   }
 
   /* Variant cell = card header (unfrozen, full width, no label). */
@@ -602,7 +602,7 @@ button.pv-variant-name,
     display: block;
     min-width: 0;
     padding: 12px 14px;
-    background: #f8fafc;
+    background: var(--ui-surface-1);
     border-bottom: 0; /* the first branch's top divider separates it from the header */
   }
   .pivot .pv-variant-cell::before { content: none; }
@@ -620,18 +620,17 @@ button.pv-variant-name,
   align-items: center;
   gap: 8px;
   padding: 10px 20px;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(8px);
-  border-top: 1px solid #e2e8f0;
+  background: var(--ui-footer-bg);
+  border-top: 1px solid var(--ui-line);
 }
 
-.danger:hover { color: #b91c1c; }
+.danger:hover { color: var(--ui-red-text); }
 
 .spinner {
   width: 14px;
   height: 14px;
   border: 2px solid rgba(255, 255, 255, 0.4);
-  border-top-color: #fff;
+  border-top-color: var(--ui-surface);
   border-radius: 50%;
   animation: mf-spin 0.7s linear infinite;
 }

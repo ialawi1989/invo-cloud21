@@ -86,19 +86,19 @@ export const DEFAULT_GALLERY_CONFIG: GalleryConfig = {
     .re-gal-panel { display: flex; flex-direction: column; width: 320px; max-width: 90vw; }
     .re-gal-panel__head {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 12px 16px; border-bottom: 1px solid #e2e8f0; cursor: grab; user-select: none;
+      padding: 12px 16px; border-bottom: 1px solid var(--ui-line); cursor: grab; user-select: none;
     }
     .re-gal-panel__head:active { cursor: grabbing; }
-    .re-gal-panel__head h4 { margin: 0; font-weight: 700; font-size: 15px; line-height: 1.2; color: #0f172a; }
+    .re-gal-panel__head h4 { margin: 0; font-weight: 700; font-size: 15px; line-height: 1.2; color: var(--ui-text); }
     .re-gal-panel__close {
       width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;
-      border: none; background: transparent; border-radius: 6px; color: #64748b; cursor: pointer;
+      border: none; background: transparent; border-radius: 6px; color: var(--ui-muted); cursor: pointer;
     }
-    .re-gal-panel__close:hover { background: #f1f5f9; color: #0f172a; }
-    .re-gal-tabs { display: flex; border-bottom: 1px solid #e2e8f0; }
+    .re-gal-panel__close:hover { background: var(--ui-surface-2); color: var(--ui-text); }
+    .re-gal-tabs { display: flex; border-bottom: 1px solid var(--ui-line); }
     .re-gal-tab {
       flex: 1; padding: 10px 8px; background: transparent; border: none; cursor: pointer;
-      font-weight: 600; font-size: 13px; line-height: 1; color: #64748b; border-bottom: 2px solid transparent;
+      font-weight: 600; font-size: 13px; line-height: 1; color: var(--ui-muted); border-bottom: 2px solid transparent;
     }
     .re-gal-tab.is-on { color: var(--ricos-custom-settings-action-color, #32acc1);
       border-bottom-color: var(--ricos-custom-settings-action-color, #32acc1); }
@@ -111,12 +111,12 @@ export const DEFAULT_GALLERY_CONFIG: GalleryConfig = {
     .re-gal-thumbs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
     .re-gal-add {
       display: flex; align-items: center; justify-content: center; aspect-ratio: 1;
-      border: 1px dashed #cbd5e1; border-radius: 8px; background: #f8fafc;
+      border: 1px dashed var(--ui-line-strong); border-radius: 8px; background: var(--ui-surface-1);
       color: var(--ricos-custom-settings-action-color, #32acc1); cursor: pointer;
     }
     .re-gal-add:hover { border-color: var(--ricos-custom-settings-action-color, #32acc1); }
     .re-gal-thumb { position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden;
-      border: 1px solid #e2e8f0; cursor: grab; }
+      border: 1px solid var(--ui-line); cursor: grab; }
     .re-gal-thumb.is-drag-over { outline: 2px solid var(--ricos-custom-settings-action-color, #32acc1); }
     .re-gal-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .re-gal-thumb__rm {
@@ -128,8 +128,8 @@ export const DEFAULT_GALLERY_CONFIG: GalleryConfig = {
 
     /* Layout tab */
     .re-gal-section {
-      font-weight: 600; font-size: 13px; line-height: 1; color: #0f172a;
-      margin-top: 4px; padding-top: 14px; border-top: 1px solid #e2e8f0;
+      font-weight: 600; font-size: 13px; line-height: 1; color: var(--ui-text);
+      margin-top: 4px; padding-top: 14px; border-top: 1px solid var(--ui-line);
     }
     .re-gal-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
     /* Each option = a bordered icon box with the label OUTSIDE below
@@ -138,15 +138,15 @@ export const DEFAULT_GALLERY_CONFIG: GalleryConfig = {
     .re-gal-opt {
       display: flex; flex-direction: column; align-items: center; gap: 5px;
       background: none; border: none; padding: 0; cursor: pointer;
-      color: #475569; position: relative; min-width: 0;
+      color: var(--ui-text-4); position: relative; min-width: 0;
     }
     .re-gal-optBox {
       position: relative;
       width: 100%; aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center;
-      border: 1px solid #e2e8f0; border-radius: 8px; background: #fff;
-      color: #5b6472; transition: border-color 120ms, box-shadow 120ms;
+      border: 1px solid var(--ui-line); border-radius: 8px; background: var(--ui-surface);
+      color: var(--ui-t-5b6472); transition: border-color 120ms, box-shadow 120ms;
     }
-    .re-gal-opt:hover .re-gal-optBox { border-color: #cbd5e1; }
+    .re-gal-opt:hover .re-gal-optBox { border-color: var(--ui-line-strong); }
     .re-gal-opt.is-on .re-gal-optBox {
       border-color: var(--ricos-custom-settings-action-color, #32acc1);
       box-shadow: 0 0 0 1px var(--ricos-custom-settings-action-color, #32acc1);
@@ -166,8 +166,8 @@ export const DEFAULT_GALLERY_CONFIG: GalleryConfig = {
     .re-gal-seg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .re-gal-segBtn {
       display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px;
-      border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; cursor: pointer;
-      font-weight: 600; font-size: 13px; line-height: 1; color: #475569;
+      border: 1px solid var(--ui-line); border-radius: 8px; background: var(--ui-surface); cursor: pointer;
+      font-weight: 600; font-size: 13px; line-height: 1; color: var(--ui-text-4);
     }
     .re-gal-segBtn.is-on { border-color: var(--ricos-custom-settings-action-color, #32acc1);
       color: var(--ricos-custom-settings-action-color, #32acc1); }
@@ -179,15 +179,15 @@ export const DEFAULT_GALLERY_CONFIG: GalleryConfig = {
     .re-gal-ratio {
       display: flex; flex-direction: column; align-items: center; gap: 5px;
       background: none; border: none; padding: 0; cursor: pointer;
-      color: #475569; position: relative; min-width: 0;
+      color: var(--ui-text-4); position: relative; min-width: 0;
     }
     .re-gal-ratioBox {
       position: relative;
       width: 100%; aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center;
-      border: 1px solid #e2e8f0; border-radius: 8px; background: #fff;
-      color: #5b6472; transition: border-color 120ms, box-shadow 120ms;
+      border: 1px solid var(--ui-line); border-radius: 8px; background: var(--ui-surface);
+      color: var(--ui-t-5b6472); transition: border-color 120ms, box-shadow 120ms;
     }
-    .re-gal-ratio:hover .re-gal-ratioBox { border-color: #cbd5e1; }
+    .re-gal-ratio:hover .re-gal-ratioBox { border-color: var(--ui-line-strong); }
     .re-gal-ratio.is-on .re-gal-ratioBox {
       border-color: var(--ricos-custom-settings-action-color, #32acc1);
       box-shadow: 0 0 0 1px var(--ricos-custom-settings-action-color, #32acc1);
@@ -217,27 +217,27 @@ export const DEFAULT_GALLERY_CONFIG: GalleryConfig = {
       height: 4px; border-radius: 999px;
       background: linear-gradient(to right,
         var(--ricos-custom-settings-action-color, #32acc1) var(--fill),
-        #e2e8f0 var(--fill));
+        var(--ui-line) var(--fill));
     }
     .re-gal-slider::-moz-range-track {
       height: 4px; border-radius: 999px;
       background: linear-gradient(to right,
         var(--ricos-custom-settings-action-color, #32acc1) var(--fill),
-        #e2e8f0 var(--fill));
+        var(--ui-line) var(--fill));
     }
     .re-gal-slider::-webkit-slider-thumb {
       -webkit-appearance: none; appearance: none;
       width: 16px; height: 16px; margin-top: -6px; border-radius: 50%;
       background: var(--ricos-custom-settings-action-color, #32acc1);
-      border: 2px solid #fff; box-shadow: 0 1px 4px rgba(15,23,42,.25);
+      border: 2px solid var(--ui-surface); box-shadow: 0 1px 4px rgba(15,23,42,.25);
     }
     .re-gal-slider::-moz-range-thumb {
       width: 16px; height: 16px; border-radius: 50%;
       background: var(--ricos-custom-settings-action-color, #32acc1);
-      border: 2px solid #fff; box-shadow: 0 1px 4px rgba(15,23,42,.25);
+      border: 2px solid var(--ui-surface); box-shadow: 0 1px 4px rgba(15,23,42,.25);
     }
     .re-gal-num {
-      width: 56px; padding: 6px 8px; border: 1px solid #e2e8f0; border-radius: 6px;
+      width: 56px; padding: 6px 8px; border: 1px solid var(--ui-line); border-radius: 6px;
       font-weight: 500; font-size: 13px; line-height: 1; text-align: center; box-sizing: border-box;
     }
     .re-gal-num:focus { outline: none; border-color: var(--ricos-custom-settings-action-color, #32acc1); }
@@ -245,18 +245,18 @@ export const DEFAULT_GALLERY_CONFIG: GalleryConfig = {
     /* Settings tab */
     .re-gal-toggleRow {
       display: flex; align-items: center; justify-content: space-between;
-      font-weight: 400; font-size: 13px; line-height: 1.3; color: #1e293b;
+      font-weight: 400; font-size: 13px; line-height: 1.3; color: var(--ui-text-2);
     }
     .re-gal-labelGroup { display: inline-flex; align-items: center; gap: 4px; }
-    .re-gal-autoHead { font-weight: 700; font-size: 14px; color: #0f172a; margin-top: 14px; padding-top: 14px; border-top: 1px solid #eef2f6; }
+    .re-gal-autoHead { font-weight: 700; font-size: 14px; color: var(--ui-text); margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--ui-surface-2); }
     .re-gal-info { display: inline-flex; align-items: center; justify-content: center;
-      width: 16px; height: 16px; color: #94a3b8; cursor: help; }
+      width: 16px; height: 16px; color: var(--ui-faint); cursor: help; }
     .re-gal-toggle {
-      display: inline-block; width: 28px; height: 16px; background: #cbd5e1; border-radius: 999px;
+      display: inline-block; width: 28px; height: 16px; background: var(--ui-line-strong); border-radius: 999px;
       position: relative; transition: background 120ms; cursor: pointer; flex-shrink: 0;
     }
     .re-gal-toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 12px; height: 12px;
-      background: #fff; border-radius: 50%; transition: transform 120ms; }
+      background: var(--ui-surface); border-radius: 50%; transition: transform 120ms; }
     .re-gal-toggle.is-on { background: var(--ricos-custom-settings-action-color, #32acc1); }
     .re-gal-toggle.is-on::after { transform: translateX(12px); }
   `],

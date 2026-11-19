@@ -18,8 +18,8 @@
   &__actions { flex-shrink: 0; }
 }
 
-.page-title { font-size: 20px; font-weight: 700; color: #1e293b; margin: 6px 0 0; }
-.page-sub   { font-size: 13px; color: #64748b;  margin: 2px 0 0; }
+.page-title { font-size: 20px; font-weight: 700; color: var(--ui-text-2); margin: 6px 0 0; }
+.page-sub   { font-size: 13px; color: var(--ui-muted);  margin: 2px 0 0; }
 
 .btn {
   padding: 8px 18px;
@@ -43,7 +43,7 @@
 .loading { display: flex; justify-content: center; padding: 60px 0; }
 .spinner {
   width: 28px; height: 28px; border-radius: 50%;
-  border: 3px solid #e2e8f0; border-top-color: #32acc1;
+  border: 3px solid var(--ui-line); border-top-color: #32acc1;
   display: inline-block; animation: img-spin .8s linear infinite;
   &--lg { width: 32px; height: 32px; }
 }
@@ -62,16 +62,16 @@
 
 // ── Cards ───────────────────────────────────────────────────────────────
 .card {
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
   border-radius: 12px;
 
   &__head {
     padding: 16px 20px 12px;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--ui-surface-2);
   }
-  &__title { margin: 0; font-size: 15px; font-weight: 600; color: #0f172a; }
-  &__sub   { margin: 4px 0 0; font-size: 12px; color: #64748b; }
+  &__title { margin: 0; font-size: 15px; font-weight: 600; color: var(--ui-text); }
+  &__sub   { margin: 4px 0 0; font-size: 12px; color: var(--ui-muted); }
 
   &__body { padding: 18px 20px; }
 }
@@ -84,13 +84,13 @@
   display: block;
   font-size: 13px;
   font-weight: 500;
-  color: #0f172a;
+  color: var(--ui-text);
   margin-bottom: 4px;
 }
 .field-hint {
   margin: 0 0 10px;
   font-size: 12px;
-  color: #64748b;
+  color: var(--ui-muted);
 }
 
 // Segmented control (Cover / Contain / Fill) now uses
@@ -102,14 +102,14 @@
   grid-template-columns: repeat(3, 56px);
   grid-template-rows:    repeat(3, 56px);
   gap: 6px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--ui-surface-1);
+  border: 1px solid var(--ui-line);
   border-radius: 12px;
   padding: 6px;
 
   &__cell {
-    background: #fff;
-    border: 1px solid #e2e8f0;
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-line);
     border-radius: 8px;
     cursor: pointer;
     display: flex;
@@ -117,9 +117,9 @@
     justify-content: center;
     transition: background 120ms ease, border-color 120ms ease;
 
-    &:hover { background: #ecfeff; border-color: #67e8f9; }
+    &:hover { background: var(--ui-brand-soft); border-color: var(--ui-x-67e8f9); }
     &--active {
-      background: #ecfeff;
+      background: var(--ui-brand-soft);
       border-color: #32acc1;
       box-shadow: 0 0 0 2px rgba(50, 172, 193, 0.18);
     }
@@ -127,7 +127,7 @@
   &__dot {
     width: 10px; height: 10px;
     border-radius: 50%;
-    background: #cbd5e1;
+    background: var(--ui-line-strong);
     transition: background 120ms ease, transform 120ms ease;
   }
   &__cell--active &__dot {
@@ -151,27 +151,27 @@
   &__label {
     font-size: 12px;
     font-weight: 600;
-    color: #475569;
+    color: var(--ui-text-4);
     margin-inline-end: 4px;
   }
 
   &__btn {
     appearance: none;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background: var(--ui-surface-1);
+    border: 1px solid var(--ui-line);
     border-radius: 999px;
     padding: 4px 12px;
     font-size: 12px;
     font-weight: 500;
-    color: #475569;
+    color: var(--ui-text-4);
     cursor: pointer;
     transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
 
-    &:hover { background: #ecfeff; border-color: #67e8f9; color: #0e7490; }
+    &:hover { background: var(--ui-brand-soft); border-color: var(--ui-x-67e8f9); color: var(--ui-brand-text); }
 
     &--active,
     &--active:hover {
-      background: #32acc1;
+      background: var(--ui-b-32acc1);
       border-color: #32acc1;
       color: #fff;
     }
@@ -193,8 +193,8 @@
 
   &__frame {
     width: 100%;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background: var(--ui-surface-1);
+    border: 1px solid var(--ui-line);
     border-radius: 10px;
     overflow: hidden;
     position: relative;
@@ -216,7 +216,7 @@
 
   figcaption {
     font-size: 12px;
-    color: #64748b;
+    color: var(--ui-muted);
     text-align: center;
   }
 }

@@ -19,7 +19,7 @@
   position: relative;
   user-select: none; -webkit-user-select: none;
   cursor: col-resize;
-  background: #e2e8f0;
+  background: var(--ui-line);
   touch-action: none;
   transition: background 120ms ease;
 
@@ -35,26 +35,26 @@
 // ── Left: available widgets ─────────────────────────────────────────
 .cm__source {
   min-height: 0; display: flex; flex-direction: column;
-  background: #fbfcfd;
+  background: var(--ui-x-fbfcfd);
 }
 .cm__sourceHead {
   display: flex; align-items: center; gap: 8px;
   padding: 14px 16px 10px;
-  h4 { margin: 0; flex: 1; font-size: 14px; font-weight: 700; color: #0f172a; }
+  h4 { margin: 0; flex: 1; font-size: 14px; font-weight: 700; color: var(--ui-text); }
 }
 .cm__count {
   min-width: 22px; padding: 1px 8px; border-radius: 999px;
-  background: var(--color-brand-50, #effbfd); color: var(--color-brand-700, #207484);
+  background: var(--color-brand-50, var(--ui-brand-soft)); color: var(--ui-brand-t700);
   font-size: 11.5px; font-weight: 700; text-align: center;
 }
 
 .cm__search {
   position: relative; display: flex; align-items: center; margin: 0 16px 10px;
-  svg { position: absolute; inset-inline-start: 10px; color: #94a3b8; pointer-events: none; }
+  svg { position: absolute; inset-inline-start: 10px; color: var(--ui-faint); pointer-events: none; }
   input {
     width: 100%; padding: 9px 12px; padding-inline-start: 34px;
-    font-size: 13px; border: 1px solid #e2e8f0; border-radius: 9px; background: #fff;
-    &::placeholder { color: #94a3b8; }
+    font-size: 13px; border: 1px solid var(--ui-line); border-radius: 9px; background: var(--ui-surface);
+    &::placeholder { color: var(--ui-faint); }
     &:focus { outline: none; border-color: #32acc1; box-shadow: 0 0 0 3px rgba(50,172,193,.12); }
   }
 }
@@ -62,11 +62,11 @@
 .cm__tabs { display: flex; gap: 6px; padding: 0 16px 10px; flex-wrap: wrap; }
 .cm__tab {
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 5px 12px; border: 1px solid #e2e8f0; border-radius: 999px;
-  background: #fff; font: inherit; font-size: 12px; font-weight: 600;
-  color: #64748b; cursor: pointer;
+  padding: 5px 12px; border: 1px solid var(--ui-line); border-radius: 999px;
+  background: var(--ui-surface); font: inherit; font-size: 12px; font-weight: 600;
+  color: var(--ui-muted); cursor: pointer;
 
-  &:hover { background: #f1f5f9; }
+  &:hover { background: var(--ui-surface-2); }
   &.is-on {
     background: var(--color-brand-500, #32acc1);
     border-color: var(--color-brand-500, #32acc1);
@@ -83,7 +83,7 @@
 
 .cm__group {
   margin: 12px 0 6px; font-size: 11px; font-weight: 700;
-  text-transform: uppercase; letter-spacing: .04em; color: #94a3b8;
+  text-transform: uppercase; letter-spacing: .04em; color: var(--ui-faint);
 }
 
 .cm__cardWrap { position: relative; }
@@ -92,11 +92,11 @@
   width: 100%;
   display: flex; align-items: center; gap: 10px;
   padding: 11px 12px; margin-bottom: 8px;
-  background: #fff; border: 1px solid #e8edf2; border-radius: 10px;
+  background: var(--ui-surface); border: 1px solid var(--ui-x-e8edf2); border-radius: 10px;
   font: inherit; text-align: start; cursor: pointer;
   transition: border-color 120ms ease, background 120ms ease;
 
-  &:hover, &.is-open { border-color: var(--color-brand-300, #7ad3df); background: var(--color-brand-50, #effbfd); }
+  &:hover, &.is-open { border-color: var(--color-brand-300, #7ad3df); background: var(--color-brand-50, var(--ui-brand-soft)); }
 }
 
 // ── Row picker ──────────────────────────────────────────────────────
@@ -106,54 +106,54 @@
   margin: -4px 0 10px;
   max-height: 240px; overflow-y: auto;
   padding: 6px;
-  background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
+  background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: 10px;
   box-shadow: 0 12px 28px rgba(15, 23, 42, .14);
 }
 .cm__pickerHead {
   margin: 2px 6px 6px; font-size: 11px; font-weight: 700;
-  text-transform: uppercase; letter-spacing: .04em; color: #94a3b8;
+  text-transform: uppercase; letter-spacing: .04em; color: var(--ui-faint);
 }
 .cm__pickerItem {
   width: 100%; display: flex; align-items: center; gap: 8px;
   padding: 7px 8px; border: 0; border-radius: 7px;
-  background: transparent; font: inherit; font-size: 12.5px; color: #0f172a;
+  background: transparent; font: inherit; font-size: 12.5px; color: var(--ui-text);
   text-align: start; cursor: pointer;
 
-  &:hover { background: var(--color-brand-50, #effbfd); }
-  &--new { color: var(--color-brand-700, #207484); font-weight: 600; }
+  &:hover { background: var(--color-brand-50, var(--ui-brand-soft)); }
+  &--new { color: var(--ui-brand-t700); font-weight: 600; }
 }
 .cm__pickerName { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 // Free space left in the row. Amber when the widget won't fit at its default
 // width — still choosable, since resizing afterwards is legitimate.
 .cm__pickerFree {
-  flex-shrink: 0; font-size: 11px; font-weight: 600; color: #64748b;
+  flex-shrink: 0; font-size: 11px; font-weight: 600; color: var(--ui-muted);
   font-variant-numeric: tabular-nums;
-  .cm__pickerItem.is-tight & { color: #b45309; }
+  .cm__pickerItem.is-tight & { color: var(--ui-amber-text); }
 }
 .cm__cardIcon {
   flex-shrink: 0; width: 30px; height: 30px;
   display: inline-flex; align-items: center; justify-content: center;
-  border-radius: 8px; background: #f1f5f9; color: #64748b;
+  border-radius: 8px; background: var(--ui-surface-2); color: var(--ui-muted);
 }
 .cm__cardName {
-  flex: 1 1 auto; min-width: 0; font-size: 13px; color: #0f172a;
+  flex: 1 1 auto; min-width: 0; font-size: 13px; color: var(--ui-text);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 
 .cm__badge {
   flex-shrink: 0; padding: 2px 7px; border-radius: 6px;
-  background: #f1f5f9; color: #64748b;
+  background: var(--ui-surface-2); color: var(--ui-muted);
   font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
 
-  &--custom { background: var(--color-brand-50, #effbfd); color: var(--color-brand-700, #207484); }
+  &--custom { background: var(--color-brand-50, var(--ui-brand-soft)); color: var(--ui-brand-t700); }
   // Amber, not brand — this is a caveat about the data, not an identity tag.
-  &--global { background: #fef3c7; color: #92400e; }
+  &--global { background: var(--ui-amber-soft); color: var(--ui-amber-text); }
 }
 
 .cm__add {
   flex-shrink: 0; width: 24px; height: 24px;
   display: inline-flex; align-items: center; justify-content: center;
-  font-size: 18px; font-weight: 700; color: var(--color-brand-600, #2691a4);
+  font-size: 18px; font-weight: 700; color: var(--ui-brand-t600);
 }
 
 // ── Right: rows ─────────────────────────────────────────────────────
@@ -162,7 +162,7 @@
 .cm__layoutHead {
   display: flex; align-items: center; gap: 8px;
   padding: 14px 18px 10px;
-  h4 { margin: 0; font-size: 14px; font-weight: 700; color: #0f172a; }
+  h4 { margin: 0; font-size: 14px; font-weight: 700; color: var(--ui-text); }
 }
 
 .cm__layoutSpacer { flex: 1; }
@@ -170,9 +170,9 @@
 .cm__addRow {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 7px 13px; border: 0; border-radius: 9px;
-  background: var(--color-brand-50, #effbfd); color: var(--color-brand-700, #207484);
+  background: var(--color-brand-50, var(--ui-brand-soft)); color: var(--color-brand-700, var(--ui-brand-text));
   font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
-  &:hover { background: var(--color-brand-100, #d6f4f8); }
+  &:hover { background: var(--color-brand-100, var(--ui-x-d6f4f8)); }
 }
 
 // Dragging a row must not paint a text selection across the labels it passes.
@@ -182,8 +182,8 @@
 }
 
 .cm__row {
-  border: 1px solid #e8edf2; border-radius: 12px;
-  background: #fbfcfd; margin-bottom: 14px; overflow: hidden;
+  border: 1px solid var(--ui-x-e8edf2); border-radius: 12px;
+  background: var(--ui-x-fbfcfd); margin-bottom: 14px; overflow: hidden;
   transition: border-color 220ms ease, box-shadow 220ms ease;
 
   // Scrolling a new row into view still leaves "which one is it?" — the flash
@@ -200,23 +200,23 @@
 .cm__rowHead {
   display: flex; align-items: center; gap: 10px;
   padding: 10px 12px;
-  background: #fff; border-bottom: 1px solid #f1f5f9;
+  background: var(--ui-surface); border-bottom: 1px solid var(--ui-surface-2);
 }
 .cm__rowGrip {
   flex-shrink: 0; width: 26px; height: 26px;
   display: inline-flex; align-items: center; justify-content: center;
-  border-radius: 7px; background: #f1f5f9; color: #94a3b8;
+  border-radius: 7px; background: var(--ui-surface-2); color: var(--ui-faint);
 }
-.cm__rowName { flex: 1; font-size: 13px; font-weight: 700; color: #0f172a; }
+.cm__rowName { flex: 1; font-size: 13px; font-weight: 700; color: var(--ui-text); }
 
 .cm__rowMoves {
   display: inline-flex; gap: 2px;
   button {
     width: 24px; height: 24px;
     display: inline-flex; align-items: center; justify-content: center;
-    border: 1px solid #e2e8f0; border-radius: 6px; background: #fff;
-    color: #64748b; cursor: pointer;
-    &:hover:not(:disabled) { background: #f8fafc; color: #0f172a; }
+    border: 1px solid var(--ui-line); border-radius: 6px; background: var(--ui-surface);
+    color: var(--ui-muted); cursor: pointer;
+    &:hover:not(:disabled) { background: var(--ui-surface-1); color: var(--ui-text); }
     &:disabled { opacity: .4; cursor: not-allowed; }
   }
 }
@@ -225,13 +225,13 @@
 // the same 12/12 readout; the amber state for an over-filled row is new.
 .cm__meter { display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .cm__meterVal {
-  font-size: 11.5px; font-weight: 600; color: #64748b;
+  font-size: 11.5px; font-weight: 600; color: var(--ui-muted);
   font-variant-numeric: tabular-nums;
-  .cm__meter.is-over & { color: #b45309; }
+  .cm__meter.is-over & { color: var(--ui-amber-text); }
 }
 .cm__meterTrack {
   width: 62px; height: 5px; border-radius: 999px;
-  background: #e8edf2; overflow: hidden;
+  background: var(--ui-x-e8edf2); overflow: hidden;
 }
 .cm__meterFill {
   display: block; height: 100%; max-width: 100%;
@@ -242,8 +242,8 @@
 .cm__rowDel {
   flex-shrink: 0; width: 28px; height: 28px;
   display: inline-flex; align-items: center; justify-content: center;
-  border: 0; border-radius: 7px; background: transparent; color: #94a3b8; cursor: pointer;
-  &:hover { background: #fef2f2; color: #dc2626; }
+  border: 0; border-radius: 7px; background: transparent; color: var(--ui-faint); cursor: pointer;
+  &:hover { background: var(--ui-red-soft); color: var(--ui-red-text); }
 }
 
 // The row body mirrors the dashboard's own 12-column grid, so two 1/2 widgets
@@ -264,8 +264,8 @@
 .cm__rowEmpty {
   grid-column: 1 / -1;
   margin: 0; padding: 12px;
-  border: 1px dashed #cbd5e1; border-radius: 9px;
-  text-align: center; font-size: 12.5px; color: #94a3b8;
+  border: 1px dashed var(--ui-line-strong); border-radius: 9px;
+  text-align: center; font-size: 12.5px; color: var(--ui-faint);
 }
 
 // Two deliberate lines instead of free-form wrapping: identity on top (grip,
@@ -277,7 +277,7 @@
   position: relative;
   display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
   padding: 8px 10px;
-  background: #fff; border: 1px solid #e8edf2; border-radius: 10px;
+  background: var(--ui-surface); border: 1px solid var(--ui-x-e8edf2); border-radius: 10px;
 }
 .cm__placed--open {
   border-color: var(--color-brand-400, #7ccbd6);
@@ -285,13 +285,13 @@
 }
 .cm__spacer { flex: 1 1 auto; }
 .cm__grip {
-  flex-shrink: 0; color: #94a3b8; cursor: grab;
+  flex-shrink: 0; color: var(--ui-faint); cursor: grab;
   display: inline-flex; align-items: center;
   &:active { cursor: grabbing; }
 }
 .cm__name {
   flex: 0 1 auto; min-width: 0;
-  font-size: 13px; color: #0f172a;
+  font-size: 13px; color: var(--ui-text);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 
@@ -299,14 +299,14 @@
 .cm__gear {
   flex-shrink: 0; width: 28px; height: 28px;
   display: inline-flex; align-items: center; justify-content: center;
-  border: 1px solid #e8edf2; border-radius: 8px; background: #fff;
-  color: #64748b; cursor: pointer;
+  border: 1px solid var(--ui-x-e8edf2); border-radius: 8px; background: var(--ui-surface);
+  color: var(--ui-muted); cursor: pointer;
   transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
-  &:hover { background: #f4f7fa; color: #0f172a; }
+  &:hover { background: var(--ui-x-f4f7fa); color: var(--ui-text); }
   &.is-on {
-    background: var(--color-brand-50, #eefbfd);
+    background: var(--color-brand-50, var(--ui-x-eefbfd));
     border-color: var(--color-brand-400, #7ccbd6);
-    color: var(--color-brand-600, #2691a4);
+    color: var(--ui-brand-t600);
   }
 }
 
@@ -317,27 +317,27 @@
   flex-basis: 100%;
   display: flex; flex-wrap: wrap; gap: 18px;
   margin-top: 6px; padding: 10px 12px;
-  background: #f8fafc; border: 1px solid #eef2f6; border-radius: 8px;
+  background: var(--ui-surface-1); border: 1px solid var(--ui-surface-2); border-radius: 8px;
 }
 .cm__settings-group { display: flex; flex-direction: column; gap: 6px; }
 .cm__settings-label {
   font-size: 10.5px; font-weight: 600; text-transform: uppercase;
-  letter-spacing: .4px; color: #94a3b8;
+  letter-spacing: .4px; color: var(--ui-faint);
 }
 
 // Form picker — icons, since six words wouldn't fit beside the width control.
 .cm__views {
   display: inline-flex; flex-shrink: 0; gap: 2px;
-  padding: 2px; border-radius: 8px; background: #f4f7fa;
+  padding: 2px; border-radius: 8px; background: var(--ui-x-f4f7fa);
 }
 .cm__view {
   width: 26px; height: 24px;
   display: inline-flex; align-items: center; justify-content: center;
   border: 0; border-radius: 6px; background: transparent;
-  color: #94a3b8; cursor: pointer;
+  color: var(--ui-faint); cursor: pointer;
 
-  &:hover { color: #475569; background: #e8eef4; }
-  &.is-on { background: #fff; color: var(--color-brand-600, #2691a4); box-shadow: 0 1px 2px rgba(15,23,42,.10); }
+  &:hover { color: var(--ui-text-4); background: var(--ui-x-e8eef4); }
+  &.is-on { background: var(--ui-surface); color: var(--ui-brand-t600); box-shadow: 0 1px 2px rgba(15,23,42,.10); }
 }
 
 // Inside the settings popover — wraps freely, no auto margin.
@@ -346,20 +346,20 @@
   min-width: 30px; padding: 4px 6px;
   border: 0; border-radius: 7px;
   background: transparent; font: inherit; font-size: 11.5px; font-weight: 600;
-  color: #94a3b8; cursor: pointer;
+  color: var(--ui-faint); cursor: pointer;
 
-  &:hover { background: #f1f5f9; color: #475569; }
+  &:hover { background: var(--ui-surface-2); color: var(--ui-text-4); }
   &.is-on { background: var(--color-brand-500, #32acc1); color: #fff; }
 }
 
 .cm__remove {
   flex-shrink: 0; width: 26px; height: 26px;
   display: inline-flex; align-items: center; justify-content: center;
-  border: 0; border-radius: 7px; background: transparent; color: #94a3b8; cursor: pointer;
-  &:hover { background: #fef2f2; color: #dc2626; }
+  border: 0; border-radius: 7px; background: transparent; color: var(--ui-faint); cursor: pointer;
+  &:hover { background: var(--ui-red-soft); color: var(--ui-red-text); }
 }
 
-.cm__hint { margin: 16px; font-size: 13px; color: #94a3b8; text-align: center; }
+.cm__hint { margin: 16px; font-size: 13px; color: var(--ui-faint); text-align: center; }
 .cm__reset { margin-inline-end: auto; }
 
 // ── Drag affordances ────────────────────────────────────────────────

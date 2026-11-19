@@ -11,7 +11,7 @@
   svg {
     position: absolute;
     inset-inline-start: 10px;
-    color: #94a3b8;
+    color: var(--ui-faint);
     pointer-events: none;
   }
 
@@ -20,16 +20,16 @@
     padding: 8px 10px 8px 32px;
     padding-inline-start: 32px;
     font-size: 13px;
-    color: #0f172a;
-    background: #fff;
-    border: 1px solid #e2e8f0;
+    color: var(--ui-text);
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-line);
     border-radius: 8px;
     &:focus {
       outline: none;
       border-color: #32acc1;
       box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.12);
     }
-    &::placeholder { color: #94a3b8; }
+    &::placeholder { color: var(--ui-faint); }
   }
 }
 
@@ -38,7 +38,7 @@
   margin: 4px 0 10px;
   font-size: 14px;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--ui-text);
 }
 
 // ── Tile grid ────────────────────────────────────────────────────────────
@@ -58,7 +58,7 @@
   gap: 12px;
   margin-top: 16px;
   padding-top: 16px;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid var(--ui-surface-2);
 }
 
 .pf-attr-tile {
@@ -68,22 +68,22 @@
   justify-content: space-between;
   gap: 10px;
   padding: 10px 12px;
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
   border-radius: 10px;
   font: inherit;
-  color: #0f172a;
+  color: var(--ui-text);
   text-align: start;
   cursor: pointer;
   transition: background 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
 
   &:hover {
-    background: #f8fafc;
-    border-color: #cbd5e1;
+    background: var(--ui-surface-1);
+    border-color: var(--ui-line-strong);
   }
 
   &--checked {
-    background: #eff9fb;
+    background: var(--ui-x-eff9fb);
     border-color: #32acc1;
     box-shadow: 0 0 0 2px rgba(50, 172, 193, 0.15);
   }

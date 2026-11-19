@@ -2,8 +2,8 @@
 // one screen rather than six; only the tokens differ.
 .benefits {
   &__card {
-    background: var(--card-bg, #fff);
-    border: 1px solid var(--border-color, #e6e8ec);
+    background: var(--card-bg, var(--ui-surface));
+    border: 1px solid var(--border-color, var(--ui-x-e6e8ec));
     border-radius: 8px;
     padding: 1rem 1.25rem;
     margin-bottom: 1rem;
@@ -18,20 +18,20 @@
   }
 
   &__field { display: flex; flex-direction: column; gap: .15rem; }
-  &__label { font-size: .75rem; color: var(--text-muted, #6b7280); }
+  &__label { font-size: .75rem; color: var(--text-muted, var(--ui-muted)); }
   &__value { font-size: .875rem; }
-  &__value--muted { color: var(--text-muted, #6b7280); }
+  &__value--muted { color: var(--text-muted, var(--ui-muted)); }
 
-  &__hint { font-size: .75rem; color: var(--text-muted, #6b7280); margin: 0 0 .5rem; }
+  &__hint { font-size: .75rem; color: var(--text-muted, var(--ui-muted)); margin: 0 0 .5rem; }
   // The housing rule's explanation — deliberately not styled as an error, since
   // being blocked is a correct state rather than a fault.
-  &__hint--block { color: var(--warning-text, #92400e); }
+  &__hint--block { color: var(--warning-text, var(--ui-amber-text)); }
 
-  &__empty { font-size: .875rem; color: var(--text-muted, #6b7280); margin: 0; }
+  &__empty { font-size: .875rem; color: var(--text-muted, var(--ui-muted)); margin: 0; }
   &__error {
     font-size: .8125rem;
-    color: var(--danger-text, #991b1b);
-    background: var(--danger-bg, #fef2f2);
+    color: var(--danger-text, var(--ui-red-text));
+    background: var(--danger-bg, var(--ui-red-soft));
     border-radius: 6px;
     padding: .5rem .75rem;
     margin-bottom: .75rem;
@@ -42,11 +42,11 @@
     font-size: .75rem;
     padding: .1rem .45rem;
     border-radius: 999px;
-    background: var(--chip-bg, #eef2ff);
+    background: var(--chip-bg, var(--ui-x-eef2ff));
     margin-inline-end: .25rem;
   }
-  &__chip--ok   { background: var(--success-bg, #ecfdf5); color: var(--success-text, #065f46); }
-  &__chip--warn { background: var(--danger-bg, #fef2f2);  color: var(--danger-text, #991b1b); }
+  &__chip--ok   { background: var(--success-bg, var(--ui-green-soft)); color: var(--success-text, var(--ui-t-065f46)); }
+  &__chip--warn { background: var(--danger-bg, var(--ui-red-soft));  color: var(--danger-text, var(--ui-red-text)); }
 
   &__list { list-style: none; margin: 0; padding: 0; }
   &__row {
@@ -55,14 +55,14 @@
     gap: .75rem;
     align-items: center;
     padding: .4rem 0;
-    border-bottom: 1px solid var(--border-color, #e6e8ec);
+    border-bottom: 1px solid var(--border-color, var(--ui-x-e6e8ec));
     &:last-child { border-bottom: 0; }
   }
   &__row-name  { font-size: .875rem; }
   &__row-value { font-size: .875rem; font-variant-numeric: tabular-nums; }
-  &__row-dates { font-size: .75rem; color: var(--text-muted, #6b7280); }
+  &__row-dates { font-size: .75rem; color: var(--text-muted, var(--ui-muted)); }
 
   &__files { list-style: none; margin: .5rem 0 0; padding: 0; font-size: .8125rem; }
   &__link  { text-decoration: underline; }
-  &__loading { font-size: .875rem; color: var(--text-muted, #6b7280); }
+  &__loading { font-size: .875rem; color: var(--text-muted, var(--ui-muted)); }
 }

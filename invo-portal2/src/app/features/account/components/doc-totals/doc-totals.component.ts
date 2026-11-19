@@ -78,19 +78,19 @@ import { DocumentLineEditor } from '../../services/document-line-editor';
     .it { display: grid; gap: 24px; grid-template-columns: 1fr; margin-top: 8px; }
     @media (min-width: 900px) { .it { grid-template-columns: 1fr 1fr; } .it--simple { grid-template-columns: 1fr minmax(320px, 420px); } .it--simple .it__totals { grid-column: 2; } }
     .it__notes { display: flex; flex-direction: column; gap: 6px; }
-    .it__notes label { font-size: 13.5px; color: #0f172a; }
-    .it__notes textarea { background: #fff; border: 1px solid #d0d5dd; border-radius: 6px; padding: 9px 12px; font: inherit; resize: vertical; }
-    .it__notes small { color: #64748b; }
-    .it__totals { background: #fff; border: 1px solid #e4e7ec; border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; }
-    .it__row { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 14px; color: #334155; }
+    .it__notes label { font-size: 13.5px; color: var(--ui-text); }
+    .it__notes textarea { background: var(--ui-field); border: 1px solid var(--ui-line-strong); border-radius: 6px; padding: 9px 12px; font: inherit; resize: vertical; }
+    .it__notes small { color: var(--ui-muted); }
+    .it__totals { background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; }
+    .it__row { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 14px; color: var(--ui-text-3); }
     .it__row--field { display: grid; grid-template-columns: 110px 240px minmax(90px, 1fr); align-items: center; }
     .it__row--field > :last-child { text-align: end; white-space: nowrap; }
-    .it__row--total { border-top: 1px solid #e2e8f0; padding-top: 12px; font-size: 18px; color: #0f172a; }
+    .it__row--total { border-top: 1px solid var(--ui-line); padding-top: 12px; font-size: 18px; color: var(--ui-text); }
     @media (max-width: 560px) {
       .it__row--field { grid-template-columns: 96px minmax(0, 1fr); }
       .it__row--field > :last-child { grid-column: 1 / -1; }
     }
-    .it__num { background: #fff; border: 1px solid #d0d5dd; border-radius: 8px; padding: 8px 10px; font: inherit; text-align: end; width: 100%; height: 38px; box-sizing: border-box; }
+    .it__num { background: var(--ui-surface); border: 1px solid var(--ui-line-strong); border-radius: 8px; padding: 8px 10px; font: inherit; text-align: end; width: 100%; height: 38px; box-sizing: border-box; }
   `],
 })
 export class DocTotalsComponent {

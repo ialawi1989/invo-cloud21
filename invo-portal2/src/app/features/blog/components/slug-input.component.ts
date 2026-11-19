@@ -51,9 +51,9 @@ import { generateSlug } from '../utils/blog-utils';
       width: 100%;
       padding: 9px 12px;
       font-size: 14px;
-      color: #0f172a;
-      background: #fff;
-      border: 1px solid #e2e8f0;
+      color: var(--ui-text);
+      background: var(--ui-field);
+      border: 1px solid var(--ui-line);
       border-radius: 8px;
       font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
       transition: border-color 120ms ease;
@@ -71,20 +71,20 @@ import { generateSlug } from '../utils/blog-utils';
       align-items: center;
       gap: 6px;
       font-size: 11px;
-      color: #94a3b8;
+      color: var(--ui-faint);
     }
     .si__previewLabel { white-space: nowrap; }
     .si__preview code {
       font-size: 11px;
-      color: #475569;
-      background: #f8fafc;
+      color: var(--ui-text-4);
+      background: var(--ui-surface-1);
       padding: 2px 6px;
       border-radius: 4px;
     }
-    .si__preview strong { color: #0f172a; }
+    .si__preview strong { color: var(--ui-text); }
     .si__msg { margin: 0; font-size: 12px; }
-    .si__msg--hint { color: #94a3b8; }
-    .si__msg--err  { color: #dc2626; }
+    .si__msg--hint { color: var(--ui-faint); }
+    .si__msg--err  { color: var(--ui-red-text); }
   `],
 })
 export class SlugInputComponent {

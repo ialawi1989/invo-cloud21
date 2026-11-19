@@ -45,26 +45,26 @@
   // Status — same values the rest of the portal uses for toasts and badges.
   --success-color: #10b981;
   --warning-color: #f59e0b;
-  --error-color:   #ef4444;
+  --error-color:   var(--ui-red-text);
 
   // Surfaces
-  --bg-white:    #ffffff;
-  --bg-gray-50:  #f8fafc;
-  --bg-gray-100: #f1f5f9;
-  --bg-gray-200: #e2e8f0;
-  --bg-input:    #f1f5f9;
+  --bg-white:    var(--ui-surface);
+  --bg-gray-50:  var(--ui-surface-1);
+  --bg-gray-100: var(--ui-surface-2);
+  --bg-gray-200: var(--ui-line);
+  --bg-input:    var(--ui-surface-2);
   // The builder's chrome bar. The prototype used near-black (#1a1a2e); the
   // portal's darkest brand shade keeps it recessive without reading as a
   // different product bolted into the page.
   --bg-dark:     #143742;
 
   // Text — slate, matching the portal's body copy rather than pure greys.
-  --text-primary:   #0f172a;
-  --text-secondary: #64748b;
-  --text-muted:     #94a3b8;
+  --text-primary:   var(--ui-text);
+  --text-secondary: var(--ui-muted);
+  --text-muted:     var(--ui-faint);
 
   // Borders + shape
-  --border-color:  #e2e8f0;
+  --border-color:  var(--ui-line);
   --border-radius: 8px;
 
   // Shadows — flatter than the prototype's, in line with the portal's cards.

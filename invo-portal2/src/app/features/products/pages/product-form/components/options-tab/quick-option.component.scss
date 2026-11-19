@@ -13,9 +13,9 @@
   cursor: pointer;
 
   &--outline {
-    background: #fff;
-    color: #0e7490;
-    border: 1px solid #a5f3fc;
-    &:hover { background: #ecfeff; border-color: #67e8f9; }
+    background: var(--ui-surface);
+    color: var(--ui-brand-text);
+    border: 1px solid var(--ui-brand-soft-2);
+    &:hover { background: var(--ui-brand-soft); border-color: var(--ui-x-67e8f9); }
   }
 }

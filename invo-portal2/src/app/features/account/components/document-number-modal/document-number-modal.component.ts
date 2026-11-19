@@ -73,18 +73,18 @@ export interface DocumentNumberResult { mode: NumberMode; prefixChanged: boolean
   `,
   styles: [`
     .dn { padding: 16px 20px; min-width: min(520px, 90vw); display: flex; flex-direction: column; gap: 10px; }
-    .dn p { margin: 0 0 4px; color: #334155; }
+    .dn p { margin: 0 0 4px; color: var(--ui-text-3); }
     .dn__opt { display: flex; align-items: center; gap: 8px; cursor: pointer; }
     .dn__fields { display: flex; flex-wrap: wrap; gap: 12px; margin-inline-start: 24px; align-items: flex-start; }
-    .dn__field { display: flex; flex-direction: column; gap: 4px; label { font-size: 12.5px; color: #475569; } }
-    .dn__input { border: 1px solid #d0d5dd; border-radius: 6px; padding: 8px 10px; font: inherit; width: 150px; }
-    .dn__input--err { border-color: #f87171; background: #fef2f2; }
-    .dn__err { color: #dc2626; }
-    .dn__preview { width: 100%; color: #475569; }
+    .dn__field { display: flex; flex-direction: column; gap: 4px; label { font-size: 12.5px; color: var(--ui-text-4); } }
+    .dn__input { border: 1px solid var(--ui-line-strong); border-radius: 6px; padding: 8px 10px; font: inherit; width: 150px; }
+    .dn__input--err { border-color: #f87171; background: var(--ui-red-soft); }
+    .dn__err { color: var(--ui-red-text); }
+    .dn__preview { width: 100%; color: var(--ui-text-4); }
     .dn input[type=radio] { accent-color: #2691a4; width: 16px; height: 16px; }
-    .dn__hint { margin-inline-start: 24px; color: #64748b; }
-    .dn__btn { padding: 8px 18px; border-radius: 6px; border: 1px solid #d0d5dd; background: #f3f4f6; font-weight: 500; cursor: pointer; }
-    .dn__btn--primary { background: #2691a4; border-color: #2691a4; color: #fff; }
+    .dn__hint { margin-inline-start: 24px; color: var(--ui-muted); }
+    .dn__btn { padding: 8px 18px; border-radius: 6px; border: 1px solid var(--ui-line-strong); background: var(--ui-surface-2); font-weight: 500; cursor: pointer; }
+    .dn__btn--primary { background: var(--ui-b-2691a4); border-color: #2691a4; color: #fff; }
     .dn__btn:disabled { opacity: .5; cursor: not-allowed; }
   `],
 })

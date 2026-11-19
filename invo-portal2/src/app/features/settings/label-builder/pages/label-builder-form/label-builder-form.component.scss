@@ -7,7 +7,7 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: #f8fafc;
+  background: var(--ui-surface-1);
   overflow: hidden;
 }
 
@@ -18,8 +18,8 @@
   gap: 8px;
   padding: 10px 16px;
   min-height: 56px;
-  background: #fff;
-  border-bottom: 1px solid #e5e7eb;
+  background: var(--ui-surface);
+  border-bottom: 1px solid var(--ui-line);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   z-index: 10;
   flex-shrink: 0;
@@ -30,24 +30,24 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: #fff;
-    border: 1px solid #e5e7eb;
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-line);
     border-radius: 8px;
-    color: #64748b;
+    color: var(--ui-muted);
     cursor: pointer;
     transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
 
     &:hover {
-      background: #f9fafb;
+      background: var(--ui-surface-1);
       color: var(--color-brand-500);
-      border-color: var(--color-brand-300, #bae6fd);
+      border-color: var(--color-brand-300, var(--ui-sky-soft-2));
     }
   }
 
   &__divider {
     width: 1px;
     height: 24px;
-    background: #e5e7eb;
+    background: var(--ui-line);
     margin: 0 4px;
   }
 
@@ -57,16 +57,16 @@
     padding: 8px 12px;
     border: 1px solid transparent;
     border-radius: 6px;
-    background: #f9fafb;
+    background: var(--ui-surface-1);
     font: inherit;
     font-size: 14px;
     font-weight: 500;
-    color: #1f2937;
+    color: var(--ui-text-2);
     transition: background 120ms ease, border-color 120ms ease;
 
     &:focus {
       outline: none;
-      background: #fff;
+      background: var(--ui-surface);
       border-color: var(--color-brand-500);
       box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.10);
     }
@@ -78,14 +78,14 @@
     font-size: 11px;
     font-weight: 600;
     background: var(--color-brand-50);
-    color: var(--color-brand-700);
+    color: var(--ui-brand-t700);
     border-radius: 999px;
     text-transform: uppercase;
     letter-spacing: 0.04em;
 
     &--kitchen {
-      background: #fef3c7;
-      color: #92400e;
+      background: var(--ui-amber-soft);
+      color: var(--ui-amber-text);
     }
   }
 
@@ -99,7 +99,7 @@
     align-items: center;
     gap: 2px;
     padding: 2px;
-    background: #f1f5f9;
+    background: var(--ui-surface-2);
     border-radius: 8px;
     flex-shrink: 0;
   }
@@ -113,13 +113,13 @@
     background: transparent;
     border: none;
     border-radius: 6px;
-    color: #475569;
+    color: var(--ui-text-4);
     cursor: pointer;
     transition: background 120ms ease, color 120ms ease;
 
     &:hover:not(:disabled) {
-      background: #fff;
-      color: var(--color-brand-700);
+      background: var(--ui-surface);
+      color: var(--ui-brand-t700);
       box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
     }
 
@@ -138,23 +138,23 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: #fff;
-    border: 1px solid #e5e7eb;
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-line);
     border-radius: 8px;
-    color: #64748b;
+    color: var(--ui-muted);
     cursor: pointer;
     transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
 
     &:hover {
-      background: #f9fafb;
-      color: #0f172a;
-      border-color: #cbd5e1;
+      background: var(--ui-surface-1);
+      color: var(--ui-text);
+      border-color: var(--ui-line-strong);
     }
 
     &[aria-pressed="true"] {
       background: var(--color-brand-50);
-      border-color: var(--color-brand-300, #bae6fd);
-      color: var(--color-brand-700);
+      border-color: var(--color-brand-300, var(--ui-sky-soft-2));
+      color: var(--ui-brand-t700);
     }
   }
 }
@@ -246,12 +246,12 @@
 
   &__head {
     padding: 12px 14px;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid var(--ui-line);
     h3 {
       margin: 0;
       font-size: 13px;
       font-weight: 700;
-      color: #0f172a;
+      color: var(--ui-text);
     }
   }
 
@@ -284,15 +284,15 @@
   &__tile {
     width: 100%;
     appearance: none;
-    border: 1px solid #e2e8f0;
-    background: #fff;
+    border: 1px solid var(--ui-line);
+    background: var(--ui-surface);
     border-radius: 8px;
     padding: 8px 10px;
     display: inline-flex;
     align-items: center;
     gap: 10px;
     cursor: grab;
-    color: #475569;
+    color: var(--ui-text-4);
     font: inherit;
     font-size: 12px;
     font-weight: 600;
@@ -301,8 +301,8 @@
 
     &:hover {
       background: var(--color-brand-50);
-      border-color: var(--color-brand-300, #bae6fd);
-      color: var(--color-brand-700);
+      border-color: var(--color-brand-300, var(--ui-sky-soft-2));
+      color: var(--ui-brand-t700);
     }
 
     &:active { cursor: grabbing; }
@@ -315,7 +315,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: #64748b;
+    color: var(--ui-muted);
   }
 
   &__label {
@@ -343,11 +343,11 @@
   &__hint {
     margin: 0;
     padding: 10px 14px;
-    border-top: 1px solid #f1f5f9;
-    border-bottom: 1px solid #f1f5f9;
+    border-top: 1px solid var(--ui-surface-2);
+    border-bottom: 1px solid var(--ui-surface-2);
     font-size: 11px;
     line-height: 1.4;
-    color: #94a3b8;
+    color: var(--ui-faint);
   }
 }
 
@@ -366,7 +366,7 @@
   &__empty {
     padding: 12px;
     font-size: 11px;
-    color: #94a3b8;
+    color: var(--ui-faint);
     text-align: center;
   }
 }
@@ -383,15 +383,15 @@
   border-radius: 6px;
   cursor: default;
   font-size: 12px;
-  color: #334155;
+  color: var(--ui-text-3);
   transition: background 120ms ease;
   background: transparent;
 
-  &:hover { background: #f8fafc; }
+  &:hover { background: var(--ui-surface-1); }
 
   // Row-hover brightens the handle so users discover that the row
   // is reorderable without having to mouse the handle directly.
-  &:hover .lbf-layer__handle { color: #475569; }
+  &:hover .lbf-layer__handle { color: var(--ui-text-4); }
   // Reveal the trailing action cluster only when the row is hovered
   // or is the focused selection. Cleaner read at rest, matches the
   // receipt-builder pattern.
@@ -420,8 +420,8 @@
 
     &:active { cursor: grabbing; }
     &:hover {
-      background: #f1f5f9;
-      color: #0f172a;
+      background: var(--ui-surface-2);
+      color: var(--ui-text);
     }
   }
 
@@ -463,7 +463,7 @@
   // CDK adds these classes during drag — give the row a soft lift
   // so the user can see what they're dragging.
   &.cdk-drag-preview {
-    background: #fff;
+    background: var(--ui-surface);
     box-shadow: 0 8px 20px -4px rgba(15, 23, 42, 0.20),
                 0 2px 6px -1px rgba(15, 23, 42, 0.10);
     border-radius: 6px;
@@ -477,8 +477,8 @@
   // active inspector target stays visually distinct.
   &--selected,
   &--selected:hover {
-    background: var(--color-brand-50, #ecfeff);
-    color: var(--color-brand-700, #0e7490);
+    background: var(--color-brand-50, var(--ui-brand-soft));
+    color: var(--ui-brand-t700);
   }
 
   &--focused {
@@ -492,7 +492,7 @@
 
   &__icon {
     flex-shrink: 0;
-    color: #64748b;
+    color: var(--ui-muted);
   }
 
   &__label {
@@ -507,7 +507,7 @@
     appearance: none;
     border: none;
     background: transparent;
-    color: #94a3b8;
+    color: var(--ui-faint);
     width: 22px;
     height: 22px;
     border-radius: 4px;
@@ -520,21 +520,21 @@
 
     &:hover {
       background: rgba(15, 23, 42, 0.06);
-      color: #0f172a;
+      color: var(--ui-text);
     }
 
     // Danger variant — used for the per-row Delete button so the
     // gesture reads as destructive on hover.
     &--danger:hover {
       background: rgba(239, 68, 68, 0.10);
-      color: #b91c1c;
+      color: var(--ui-red-text);
     }
 
     // Eye variant — sits left of the icon + label like Photoshop.
     // Always-visible (not just on hover) so users can scan
     // visibility state by glancing down the column.
     &--eye {
-      color: #475569;
+      color: var(--ui-text-4);
     }
   }
 }
@@ -553,7 +553,7 @@
   gap: 8px;
   margin-top: 6px;
   padding: 8px 10px;
-  background: #0f172a;
+  background: var(--ui-ink);
   color: #f8fafc;
   border-radius: 8px;
   box-shadow: 0 6px 16px -4px rgba(15, 23, 42, 0.30);
@@ -606,20 +606,20 @@
   align-items: flex-start;
   justify-content: center;
   background:
-    repeating-linear-gradient(45deg, #f1f5f9 0 1px, transparent 1px 14px),
-    #f8fafc;
+    repeating-linear-gradient(45deg, var(--ui-surface-2) 0 1px, transparent 1px 14px),
+    var(--ui-surface-1);
 }
 
 .lbf-canvas {
   position: relative;
-  background: #fff;
-  border: 1px solid #cbd5e1;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line-strong);
   box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
   // The grid pattern hints at the print surface — toned down so it
   // doesn't fight the elements visually.
   background-image:
-    linear-gradient(to right,  #f8fafc 1px, transparent 1px),
-    linear-gradient(to bottom, #f8fafc 1px, transparent 1px);
+    linear-gradient(to right,  var(--ui-surface-1) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--ui-surface-1) 1px, transparent 1px);
   background-size: 20px 20px;
 
   // CDK adds .cdk-drop-list-receiving while a palette item is hovered
@@ -664,7 +664,7 @@
   // brand-300 so the user sees which members of the group will move
   // together without pulling focus from the active inspector target.
   &--selected {
-    outline: 1px solid var(--color-brand-300, #bae6fd);
+    outline: 1px solid var(--color-brand-300, var(--ui-sky-soft-2));
   }
 
   // Focused (= inspector target). Wins visually over `--selected`.
@@ -689,7 +689,7 @@
 .lbf-chip {
   position: absolute;
   z-index: 6;
-  background: #0f172a;
+  background: var(--ui-ink);
   color: #f1f5f9;
   font-family: 'JetBrains Mono', 'Courier New', monospace;
   font-size: 11px;
@@ -737,7 +737,7 @@
   position: absolute;
   width: 9px;
   height: 9px;
-  background: #fff;
+  background: var(--ui-surface);
   border: 1.5px solid var(--color-brand-500);
   border-radius: 2px;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.15);
@@ -762,7 +762,7 @@
 .lbf-el-text {
   display: inline-block;
   white-space: pre-wrap;
-  color: #0f172a;
+  color: var(--ui-text);
   line-height: 1.2;
 }
 
@@ -771,22 +771,22 @@
 // their own minimal styling — no canvas-side rules needed.
 
 .lbf-el-rect {
-  border: 1px solid #0f172a;
+  border: 1px solid var(--ui-ink);
   background: transparent;
 }
 
 .lbf-el-circle {
-  border: 1px solid #0f172a;
+  border: 1px solid var(--ui-ink);
   background: transparent;
   border-radius: 50%;
 }
 
 .lbf-el-hline {
-  background: #0f172a;
+  background: var(--ui-ink);
 }
 
 .lbf-el-vline {
-  background: #0f172a;
+  background: var(--ui-ink);
 }
 
 .lbf-el-img {
@@ -798,15 +798,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f1f5f9;
-  border: 1px dashed #cbd5e1;
-  color: #94a3b8;
+  background: var(--ui-surface-2);
+  border: 1px dashed var(--ui-line-strong);
+  color: var(--ui-faint);
   font-size: 10px;
   font-weight: 600;
 
   &--logo {
-    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-    color: #64748b;
+    background: linear-gradient(135deg, var(--ui-surface-2) 0%, var(--ui-line) 100%);
+    color: var(--ui-muted);
   }
 }
 
@@ -825,8 +825,8 @@
 
   &--card {
     position: relative;
-    background: #fff;
-    border: 1px solid #e2e8f0;
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-line);
     border-radius: 12px;
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04),
                 0 8px 24px rgba(15, 23, 42, 0.04);
@@ -907,7 +907,7 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    border-top: 1px solid #f1f5f9;
+    border-top: 1px solid var(--ui-surface-2);
     padding-top: 8px;
   }
 }
@@ -921,20 +921,20 @@
   align-items: center;
   justify-content: space-between;
   padding: 4px 4px 10px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--ui-surface-2);
   margin-bottom: 4px;
 
   > h2 {
     margin: 0;
     font-size: 13px;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--ui-text);
   }
 }
 
 .lbf-panel {
-  background: #f8fafc;
-  border: 1px solid #e5e7eb;
+  background: var(--ui-surface-1);
+  border: 1px solid var(--ui-line);
   border-radius: 8px;
   padding: 12px;
 
@@ -944,7 +944,7 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: #64748b;
+    color: var(--ui-muted);
   }
 }
 
@@ -956,7 +956,7 @@
   margin: -2px 0 8px;
   font-size: 11px;
   line-height: 1.4;
-  color: #94a3b8;
+  color: var(--ui-faint);
 }
 
 // Inspector form rows.
@@ -969,7 +969,7 @@
 
   > span {
     flex: 0 0 90px;
-    color: #475569;
+    color: var(--ui-text-4);
   }
 
   > input,
@@ -978,12 +978,12 @@
     flex: 1;
     min-width: 0;
     padding: 6px 8px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--ui-line);
     border-radius: 6px;
     font: inherit;
     font-size: 12px;
-    color: #0f172a;
-    background: #fff;
+    color: var(--ui-text);
+    background: var(--ui-surface);
 
     &:focus {
       outline: none;
@@ -992,8 +992,8 @@
     }
 
     &:disabled {
-      background: #f1f5f9;
-      color: #94a3b8;
+      background: var(--ui-surface-2);
+      color: var(--ui-faint);
     }
   }
 
@@ -1012,12 +1012,12 @@
     &::-webkit-slider-runnable-track {
       height: 4px;
       border-radius: 999px;
-      background: #e2e8f0;
+      background: var(--ui-line);
     }
     &::-moz-range-track {
       height: 4px;
       border-radius: 999px;
-      background: #e2e8f0;
+      background: var(--ui-line);
     }
 
     // Filled portion (Gecko only — WebKit doesn't expose this).
@@ -1035,7 +1035,7 @@
       margin-top: -5px; // (track 4 - thumb 14) / 2 = -5 to vertically center
       border-radius: 999px;
       background: var(--color-brand-500);
-      border: 2px solid #fff;
+      border: 2px solid var(--ui-surface);
       box-shadow: 0 0 0 1px var(--color-brand-500);
       cursor: pointer;
       transition: box-shadow 120ms ease;
@@ -1045,7 +1045,7 @@
       height: 14px;
       border-radius: 999px;
       background: var(--color-brand-500);
-      border: 2px solid #fff;
+      border: 2px solid var(--ui-surface);
       box-shadow: 0 0 0 1px var(--color-brand-500);
       cursor: pointer;
     }
@@ -1058,7 +1058,7 @@
     flex: 0 0 36px;
     font-style: normal;
     font-size: 11px;
-    color: #64748b;
+    color: var(--ui-muted);
     text-align: end;
   }
 
@@ -1069,12 +1069,12 @@
 textarea {
   width: 100%;
   padding: 8px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--ui-line);
   border-radius: 6px;
   font: inherit;
   font-size: 12px;
-  color: #0f172a;
-  background: #fff;
+  color: var(--ui-text);
+  background: var(--ui-surface);
   resize: vertical;
 
   &:focus {
@@ -1095,10 +1095,10 @@ textarea {
 .lbf-toggle-group {
   display: inline-flex;
   width: 100%;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--ui-line);
   border-radius: 8px;
   overflow: hidden;
-  background: #f8fafc;
+  background: var(--ui-surface-1);
 
   > button {
     flex: 1;
@@ -1108,7 +1108,7 @@ textarea {
     font: inherit;
     font-size: 13px;
     font-weight: 600;
-    color: #64748b;
+    color: var(--ui-muted);
     cursor: pointer;
     transition: background 120ms ease, color 120ms ease;
     display: inline-flex;
@@ -1117,11 +1117,11 @@ textarea {
     height: 32px;
 
     &:hover:not(.lbf-toggle--on) {
-      background: #fff;
-      color: #0f172a;
+      background: var(--ui-surface);
+      color: var(--ui-text);
     }
 
-    & + button { border-inline-start: 1px solid #e2e8f0; }
+    & + button { border-inline-start: 1px solid var(--ui-line); }
   }
 }
 
@@ -1142,12 +1142,12 @@ textarea {
   align-items: center;
   gap: 8px;
   padding: 6px 10px;
-  background: var(--color-brand-50, #ecfeff);
-  border: 1px solid var(--color-brand-300, #bae6fd);
+  background: var(--color-brand-50, var(--ui-brand-soft));
+  border: 1px solid var(--color-brand-300, var(--ui-sky-soft-2));
   border-radius: 6px;
   font-size: 12px;
   font-weight: 500;
-  color: var(--color-brand-700, #0e7490);
+  color: var(--color-brand-700, var(--ui-brand-text));
   max-width: 100%;
 
   > span {
@@ -1157,14 +1157,14 @@ textarea {
     white-space: nowrap;
   }
 
-  > svg { color: var(--color-brand-600, #0891b2); flex-shrink: 0; }
+  > svg { color: var(--ui-brand-t600); flex-shrink: 0; }
 }
 
 .lbf-sample-clear {
   appearance: none;
   border: none;
   background: transparent;
-  color: var(--color-brand-700, #0e7490);
+  color: var(--color-brand-700, var(--ui-brand-text));
   width: 22px; height: 22px;
   border-radius: 999px;
   cursor: pointer;
@@ -1183,12 +1183,12 @@ textarea {
   > input {
     width: 100%;
     padding: 8px 10px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--ui-line);
     border-radius: 6px;
     font: inherit;
     font-size: 12px;
-    color: #0f172a;
-    background: #fff;
+    color: var(--ui-text);
+    background: var(--ui-surface);
 
     &:focus {
       outline: none;
@@ -1208,8 +1208,8 @@ textarea {
   padding: 4px;
   max-height: 220px;
   overflow-y: auto;
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
   border-radius: 8px;
   box-shadow: 0 12px 24px -8px rgba(15, 23, 42, 0.18),
               0 2px 6px -1px rgba(15, 23, 42, 0.08);
@@ -1223,7 +1223,7 @@ textarea {
   align-items: baseline;
   gap: 8px;
   font-size: 12px;
-  color: #0f172a;
+  color: var(--ui-text);
   transition: background 120ms ease;
 
   > strong {
@@ -1238,21 +1238,21 @@ textarea {
   &__barcode {
     font-family: 'JetBrains Mono', 'Courier New', monospace;
     font-size: 10.5px;
-    color: #64748b;
+    color: var(--ui-muted);
     flex-shrink: 0;
   }
 
   &:hover {
-    background: var(--color-brand-50, #ecfeff);
-    > strong          { color: var(--color-brand-700, #0e7490); }
-    .lbf-sample-result__barcode { color: var(--color-brand-600, #0891b2); }
+    background: var(--color-brand-50, var(--ui-brand-soft));
+    > strong          { color: var(--ui-brand-t700); }
+    .lbf-sample-result__barcode { color: var(--ui-brand-t600); }
   }
 }
 
 .lbf-sample-hint {
   margin: 8px 0 0;
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--ui-faint);
   line-height: 1.4;
 }
 
@@ -1275,30 +1275,30 @@ textarea {
 
   &__chain {
     appearance: none;
-    background: #fff;
-    border: 1px solid #e5e7eb;
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-line);
     border-radius: 6px;
     width: 22px;
     height: 44px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: #64748b;
+    color: var(--ui-muted);
     cursor: pointer;
     padding: 0;
     transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
 
     &--on {
       background: var(--color-brand-50);
-      border-color: var(--color-brand-300, #bae6fd);
-      color: var(--color-brand-700);
+      border-color: var(--color-brand-300, var(--ui-sky-soft-2));
+      color: var(--ui-brand-t700);
     }
     &--hidden {
       visibility: hidden;
       pointer-events: none;
     }
     &:hover:not(.lbf-ps-xy__chain--hidden) {
-      border-color: var(--color-brand-300, #bae6fd);
+      border-color: var(--color-brand-300, var(--ui-sky-soft-2));
     }
   }
 
@@ -1312,16 +1312,16 @@ textarea {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    background: #fff;
-    border: 1px solid #e5e7eb;
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-line);
     border-radius: 6px;
     padding: 4px 8px;
-    color: #334155;
+    color: var(--ui-text-3);
     font-size: 12px;
 
     > span {
       font-weight: 600;
-      color: #64748b;
+      color: var(--ui-muted);
       width: 12px;
       flex: 0 0 auto;
       text-align: center;
@@ -1347,7 +1347,7 @@ textarea {
     }
     &:focus-within {
       border-color: var(--color-brand-400, #7dd3fc);
-      box-shadow: 0 0 0 2px var(--color-brand-100, #e0f2fe);
+      box-shadow: 0 0 0 2px var(--color-brand-100, var(--ui-sky-soft));
     }
 
     // Dimmed when the field doesn't apply to the active element
@@ -1356,7 +1356,7 @@ textarea {
     // jump between selections — just visually flagged as inert.
     &--disabled {
       opacity: 0.5;
-      background: #f8fafc;
+      background: var(--ui-surface-1);
       cursor: not-allowed;
 
       > input { cursor: not-allowed; }
@@ -1375,7 +1375,7 @@ textarea {
   &__caption {
     font-size: 11px;
     font-weight: 600;
-    color: #64748b;
+    color: var(--ui-muted);
     text-transform: uppercase;
     letter-spacing: 0.04em;
     margin-top: 4px;
@@ -1391,29 +1391,29 @@ textarea {
   &__sep {
     width: 1px;
     height: 18px;
-    background: #e2e8f0;
+    background: var(--ui-line);
     margin: 0 4px;
   }
 
   &__btn {
     appearance: none;
-    background: #fff;
-    border: 1px solid #e5e7eb;
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-line);
     border-radius: 6px;
     width: 30px;
     height: 28px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: #475569;
+    color: var(--ui-text-4);
     cursor: pointer;
     padding: 0;
     transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
 
     &:hover:not(:disabled) {
       background: var(--color-brand-50);
-      border-color: var(--color-brand-300, #bae6fd);
-      color: var(--color-brand-700);
+      border-color: var(--color-brand-300, var(--ui-sky-soft-2));
+      color: var(--ui-brand-t700);
     }
     &:disabled {
       opacity: 0.35;
@@ -1434,11 +1434,11 @@ textarea {
 
   > button {
     appearance: none;
-    border: 1px solid #e5e7eb;
-    background: #fff;
+    border: 1px solid var(--ui-line);
+    background: var(--ui-surface);
     border-radius: 6px;
     padding: 6px 0;
-    color: #475569;
+    color: var(--ui-text-4);
     cursor: pointer;
     display: inline-flex;
     align-items: center;
@@ -1447,8 +1447,8 @@ textarea {
 
     &:hover:not(:disabled) {
       background: var(--color-brand-50);
-      border-color: var(--color-brand-300, #bae6fd);
-      color: var(--color-brand-700);
+      border-color: var(--color-brand-300, var(--ui-sky-soft-2));
+      color: var(--ui-brand-t700);
     }
 
     &:disabled {
@@ -1464,9 +1464,9 @@ textarea {
   max-width: 100%;
   max-height: 120px;
   margin: 0 auto 8px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--ui-line);
   border-radius: 6px;
-  background: repeating-conic-gradient(#f1f5f9 0 25%, #fff 0 50%) 0 0 / 8px 8px;
+  background: repeating-conic-gradient(var(--ui-surface-2) 0 25%, var(--ui-surface) 0 50%) 0 0 / 8px 8px;
   object-fit: contain;
 }
 
@@ -1476,19 +1476,19 @@ textarea {
   justify-content: center;
   width: 100%;
   padding: 8px 10px;
-  border: 1px dashed #cbd5e1;
+  border: 1px dashed var(--ui-line-strong);
   border-radius: 6px;
-  background: #fff;
-  color: #475569;
+  background: var(--ui-surface);
+  color: var(--ui-text-4);
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
 
   &:hover {
-    background: #f0fdfa;
-    border-color: var(--color-brand-300, #bae6fd);
-    color: var(--color-brand-700);
+    background: var(--ui-x-f0fdfa);
+    border-color: var(--color-brand-300, var(--ui-sky-soft-2));
+    color: var(--ui-brand-t700);
   }
 }
 
@@ -1497,7 +1497,7 @@ textarea {
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  color: #475569;
+  color: var(--ui-text-4);
   cursor: pointer;
 
   > input { accent-color: var(--color-brand-500); }
@@ -1517,10 +1517,10 @@ textarea {
   transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
 
   &-default {
-    background: #fff;
-    border-color: #e5e7eb;
-    color: #64748b;
-    &:hover { background: #f9fafb; border-color: #94a3b8; }
+    background: var(--ui-surface);
+    border-color: var(--ui-line);
+    color: var(--ui-muted);
+    &:hover { background: var(--ui-surface-1); border-color: #94a3b8; }
   }
 
   &-primary {
@@ -1535,11 +1535,11 @@ textarea {
   }
 
   &-danger {
-    background: #fff;
-    color: #b91c1c;
-    border-color: #fecaca;
+    background: var(--ui-surface);
+    color: var(--ui-red-text);
+    border-color: var(--ui-red-soft-2);
     align-self: flex-start;
-    &:hover { background: #fef2f2; border-color: #ef4444; color: #991b1b; }
+    &:hover { background: var(--ui-red-soft); border-color: #ef4444; color: var(--ui-red-text); }
   }
 }
 
@@ -1553,8 +1553,8 @@ textarea {
   align-self: stretch;
   min-height: 0;
   overflow: hidden;
-  background: #fff;
-  border-inline-end: 1px solid #e2e8f0;
+  background: var(--ui-surface);
+  border-inline-end: 1px solid var(--ui-line);
   @media (max-width: 768px) { display: none; }
 }
 // Tools: a fixed 64px strip of icon tiles, the name is a tooltip.
@@ -1563,10 +1563,10 @@ textarea {
   height: 100%;
   overflow-y: auto;
   padding: 10px 8px;
-  border-inline-end: 1px solid #e2e8f0;
+  border-inline-end: 1px solid var(--ui-line);
   .lbf-palette__list { padding: 0; gap: 4px; }
   .lbf-palette__tile { justify-content: center; padding: 9px 0; gap: 0; border-color: transparent; background: transparent; }
-  .lbf-palette__tile:hover { background: #f1f5f9; }
+  .lbf-palette__tile:hover { background: var(--ui-surface-2); }
 }
 // Layers: its own full-height column.
 .lbf-layers-col {
@@ -1574,7 +1574,7 @@ textarea {
   min-width: 0;
   height: 100%;
   overflow-y: auto;
-  ::ng-deep app-rbf-widget { border: 0; border-radius: 0; box-shadow: none; background: #fff; }
+  ::ng-deep app-rbf-widget { border: 0; border-radius: 0; box-shadow: none; background: var(--ui-surface); }
   .lbf-layers { max-height: none; }
 }
 
@@ -1587,16 +1587,16 @@ textarea {
   padding: 0;
   gap: 0;
   border: 0;
-  border-inline-start: 1px solid #e2e8f0;
+  border-inline-start: 1px solid var(--ui-line);
   border-radius: 0;
   box-shadow: none;
 }
-.lbf-inspector ::ng-deep app-rbf-widget { border: 0; border-bottom: 1px solid #e2e8f0; border-radius: 0; box-shadow: none; background: #fff; }
+.lbf-inspector ::ng-deep app-rbf-widget { border: 0; border-bottom: 1px solid var(--ui-line); border-radius: 0; box-shadow: none; background: var(--ui-surface); }
 .lbf-inspector .lbf-panel-title { padding: 12px 14px; margin: 0; }
 .lbf-inspector__editor { gap: 0; }
 
 // Grey canvas area.
-.lbf-canvas-wrap { background: #e9ecf1; }
+.lbf-canvas-wrap { background: var(--ui-x-e9ecf1); }
 
 // Resize handles sit on the panel seams.
 .lbf-splitter { top: 0; bottom: 0; inset-inline-end: calc(var(--lbf-right-rail-w, 320px) - 6px); }
@@ -1606,7 +1606,7 @@ textarea {
 }
 // Hovering the layers handle must not light up the properties panel's border.
 .lbf-splitter--layers:hover ~ .lbf-inspector--card,
-.lbf-splitter--layers.lbf-splitter--active ~ .lbf-inspector--card { border-color: #e2e8f0; box-shadow: none; }
+.lbf-splitter--layers.lbf-splitter--active ~ .lbf-inspector--card { border-color: var(--ui-line); box-shadow: none; }
 
 // ══ Right-click menu on a layer / element (same look as the other builders' context menus) ═══════════════
 .lbf-ctx-backdrop { position: fixed; inset: 0; z-index: 1055; }
@@ -1616,8 +1616,8 @@ textarea {
   z-index: 1056;
   min-width: 210px;
   padding: 6px 0;
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
   border-radius: 12px;
   box-shadow: 0 12px 32px rgba(15, 23, 42, 0.16);
   user-select: none;
@@ -1631,25 +1631,25 @@ textarea {
     font: inherit;
     font-size: 13px;
     text-align: start;
-    color: #334155;
+    color: var(--ui-text-3);
     background: transparent;
     border: 0;
     cursor: pointer;
     transition: background 100ms ease;
 
-    > svg { flex-shrink: 0; color: #64748b; }
+    > svg { flex-shrink: 0; color: var(--ui-muted); }
     > span { flex: 1; }
-    kbd { font: inherit; font-size: 11px; color: #94a3b8; }
+    kbd { font: inherit; font-size: 11px; color: var(--ui-faint); }
 
-    &:hover:not(:disabled) { background: #f1f5f9; }
+    &:hover:not(:disabled) { background: var(--ui-surface-2); }
     &:disabled { opacity: 0.4; cursor: default; }
 
     &--danger {
-      color: #dc2626;
+      color: var(--ui-red-text);
       > svg, kbd { color: rgba(220, 38, 38, 0.7); }
       &:hover:not(:disabled) { background: rgba(220, 38, 38, 0.08); }
     }
   }
 
-  &__divider { height: 1px; margin: 4px 0; background: #e2e8f0; }
+  &__divider { height: 1px; margin: 4px 0; background: var(--ui-line); }
 }

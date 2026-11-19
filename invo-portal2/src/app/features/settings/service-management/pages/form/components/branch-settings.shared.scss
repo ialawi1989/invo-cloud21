@@ -27,7 +27,7 @@
 .bs-label {
   font-size: 12px;
   font-weight: 600;
-  color: #475569;
+  color: var(--ui-text-4);
 }
 
 .bs-toggles {
@@ -40,9 +40,9 @@
   align-items: flex-start;
   gap: 10px;
   padding: 10px 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--ui-line);
   border-radius: 8px;
-  background: #f8fafc;
+  background: var(--ui-surface-1);
   cursor: pointer;
 
   input[type='checkbox'] {
@@ -54,8 +54,8 @@
     display: flex;
     flex-direction: column;
     gap: 2px;
-    > strong { font-size: 13px; font-weight: 600; color: #0f172a; }
-    > small  { font-size: 11px; color: #64748b; line-height: 1.5; }
+    > strong { font-size: 13px; font-weight: 600; color: var(--ui-text); }
+    > small  { font-size: 11px; color: var(--ui-muted); line-height: 1.5; }
   }
 }
 
@@ -64,15 +64,15 @@
 .bs-input {
   appearance: none;
   width: 100%;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--ui-line);
   border-radius: 8px;
   padding: 9px 12px;
   font-size: 13px;
-  color: #0f172a;
-  background: #fff;
+  color: var(--ui-text);
+  background: var(--ui-surface);
   &:focus {
     outline: 0;
     border-color: var(--color-brand-400, #7dd3fc);
-    box-shadow: 0 0 0 2px var(--color-brand-100, #e0f2fe);
+    box-shadow: 0 0 0 2px var(--color-brand-100, var(--ui-sky-soft));
   }
 }

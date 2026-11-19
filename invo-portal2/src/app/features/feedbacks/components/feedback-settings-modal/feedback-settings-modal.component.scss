@@ -1,29 +1,29 @@
 .fs-body { padding: 16px 24px; display: flex; flex-direction: column; gap: 20px; }
 .fs-sec {
   display: flex; flex-direction: column; gap: 6px;
-  padding: 16px; border: 1px solid #e2e8f0; border-radius: 12px;
-  h5 { margin: 0; font-size: 14px; font-weight: 700; color: #0f172a; }
+  padding: 16px; border: 1px solid var(--ui-line); border-radius: 12px;
+  h5 { margin: 0; font-size: 14px; font-weight: 700; color: var(--ui-text); }
 }
-.fs-desc { margin: 0 0 6px; font-size: 12px; color: #64748b; }
-.fs-label { margin-top: 8px; font-size: 12px; font-weight: 600; color: #475569; }
-.fs-hint { font-size: 11px; color: #94a3b8; }
+.fs-desc { margin: 0 0 6px; font-size: 12px; color: var(--ui-muted); }
+.fs-label { margin-top: 8px; font-size: 12px; font-weight: 600; color: var(--ui-text-4); }
+.fs-hint { font-size: 11px; color: var(--ui-faint); }
 .fs-input {
-  width: 100%; padding: 9px 12px; font-size: 13px; color: #0f172a; background: #fff;
-  border: 1px solid #e2e8f0; border-radius: 8px;
-  &:focus { outline: 0; border-color: var(--color-brand-400, #7dd3fc); box-shadow: 0 0 0 2px var(--color-brand-100, #e0f2fe); }
+  width: 100%; padding: 9px 12px; font-size: 13px; color: var(--ui-text); background: var(--ui-surface);
+  border: 1px solid var(--ui-line); border-radius: 8px;
+  &:focus { outline: 0; border-color: var(--color-brand-400, #7dd3fc); box-shadow: 0 0 0 2px var(--color-brand-100, var(--ui-sky-soft)); }
 }
 .fs-chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .fs-chip {
   padding: 6px 14px; border-radius: 99px; font-size: 12px; font-weight: 600; cursor: pointer;
-  background: #fff; border: 1px solid #e2e8f0; color: #475569;
+  background: var(--ui-surface); border: 1px solid var(--ui-line); color: var(--ui-text-4);
   &.is-on { color: #fff; }
   &--success.is-on { background: #22c55e; border-color: #22c55e; }
   &--warning.is-on { background: #f59e0b; border-color: #f59e0b; }
   &--danger.is-on  { background: #ef4444; border-color: #ef4444; }
 }
 .btn-cancel {
-  padding: 9px 20px; background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 13px; cursor: pointer;
-  &:hover { background: #e5e7eb; }
+  padding: 9px 20px; background: var(--ui-surface-2); border: 1px solid var(--ui-line); border-radius: 8px; font-size: 13px; cursor: pointer;
+  &:hover { background: var(--ui-line); }
 }
 .btn-save {
   padding: 9px 24px; background: #32acc1; color: #fff; border: 0; border-radius: 8px; font-size: 13px; cursor: pointer;

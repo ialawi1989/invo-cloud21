@@ -371,31 +371,31 @@ interface TabOption {
       flex: 1 1 auto;
       height: 100%;
       min-height: 0;
-      background: #f8fafc;
+      background: var(--ui-surface-1);
     }
 
     .state {
       padding: 40px 24px;
       text-align: center;
-      color: #475569;
+      color: var(--ui-text-4);
       font-size: 14px;
     }
-    .state--error  { color: #b91c1c; }
-    .state--muted  { color: #94a3b8; font-size: 13px; }
+    .state--error  { color: var(--ui-red-text); }
+    .state--muted  { color: var(--ui-faint); font-size: 13px; }
 
     /* ── Header ────────────────────────────────────────────── */
     .drawer-head {
       display: flex; align-items: center; gap: 14px;
       padding: 18px 64px 18px 24px;     /* right pad leaves room for drawer close X */
-      background: #fff;
-      border-bottom: 1px solid #e2e8f0;
+      background: var(--ui-surface);
+      border-bottom: 1px solid var(--ui-line);
     }
     .thumb {
       width: 56px; height: 56px; border-radius: 12px;
-      background: #f1f5f9; color: #94a3b8;
+      background: var(--ui-surface-2); color: var(--ui-faint);
       display: flex; align-items: center; justify-content: center;
       overflow: hidden; flex-shrink: 0;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--ui-line);
       box-shadow: 0 1px 3px rgba(0, 0, 0, .06);
     }
     .thumb-img { width: 100%; height: 100%; object-fit: cover; }
@@ -404,13 +404,13 @@ interface TabOption {
     .head-text { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
     .head-title {
       margin: 0;
-      font-size: 18px; font-weight: 600; color: #0f172a;
+      font-size: 18px; font-weight: 600; color: var(--ui-text);
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .type-badge {
       align-self: flex-start;
       padding: 2px 10px; border-radius: 999px;
-      background: #e0f2f7; color: #0e7490;
+      background: var(--ui-x-e0f2f7); color: var(--ui-brand-text);
       font-size: 11px; font-weight: 600; text-transform: capitalize;
     }
 
@@ -418,23 +418,23 @@ interface TabOption {
       display: inline-flex; align-items: center; gap: 6px;
       padding: 8px 16px; border-radius: 8px;
       font-size: 13px; font-weight: 600;
-      border: 1px solid #e2e8f0; background: #fff; color: #0f172a;
+      border: 1px solid var(--ui-line); background: var(--ui-surface); color: var(--ui-text);
       cursor: pointer; transition: all .15s;
       white-space: nowrap;
     }
     .btn:hover {
-      background: #f8fafc;
-      border-color: #cbd5e1;
+      background: var(--ui-surface-1);
+      border-color: var(--ui-line-strong);
       box-shadow: 0 1px 3px rgba(0, 0, 0, .06);
     }
-    .btn svg { color: #64748b; }
+    .btn svg { color: var(--ui-muted); }
 
     /* ── Tabs ──────────────────────────────────────────────── */
     .tabs {
       display: flex; gap: 4px;
       padding: 0 24px;
-      background: #fff;
-      border-bottom: 1px solid #e2e8f0;
+      background: var(--ui-surface);
+      border-bottom: 1px solid var(--ui-line);
       /* Only scroll when content truly overflows; hide the visible scrollbar
          so the tab strip reads as a clean, flat bar at full width. */
       overflow-x: auto;
@@ -446,12 +446,12 @@ interface TabOption {
       position: relative;
       padding: 10px 14px;
       border: none; background: transparent;
-      font-size: 13px; font-weight: 600; color: #64748b;
+      font-size: 13px; font-weight: 600; color: var(--ui-muted);
       cursor: pointer; white-space: nowrap;
       transition: color .12s;
     }
-    .tab:hover { color: #0f172a; }
-    .tab--active { color: #0e7490; }
+    .tab:hover { color: var(--ui-text); }
+    .tab--active { color: var(--ui-brand-text); }
     .tab--active::after {
       content: '';
       position: absolute; left: 10px; right: 10px; bottom: -1px;
@@ -467,7 +467,7 @@ interface TabOption {
 
     .section-title {
       margin: 0 0 14px;
-      font-size: 16px; font-weight: 600; color: #0f172a;
+      font-size: 16px; font-weight: 600; color: var(--ui-text);
     }
 
     /* Stack of sales widgets */
@@ -525,16 +525,16 @@ interface TabOption {
     }
 
     .card {
-      background: #fff;
-      border: 1px solid #e2e8f0;
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-line);
       border-radius: 10px;
       overflow: hidden;
     }
     .card-head {
       padding: 10px 14px;
-      background: #f8fafc;
-      border-bottom: 1px solid #e2e8f0;
-      font-size: 13px; font-weight: 600; color: #0f172a;
+      background: var(--ui-surface-1);
+      border-bottom: 1px solid var(--ui-line);
+      font-size: 13px; font-weight: 600; color: var(--ui-text);
     }
     .card-body { padding: 12px 14px; }
     .card-body.tbl-wrap { padding: 0; }
@@ -544,14 +544,14 @@ interface TabOption {
     .info-row   {
       display: flex; align-items: flex-start; justify-content: space-between;
       padding: 8px 2px; gap: 12px;
-      border-bottom: 1px solid #f1f5f9;
+      border-bottom: 1px solid var(--ui-surface-2);
     }
     .info-row:last-child { border-bottom: none; }
     .info-row dt {
-      margin: 0; color: #64748b; font-size: 12px; font-weight: 500;
+      margin: 0; color: var(--ui-muted); font-size: 12px; font-weight: 500;
     }
     .info-row dd {
-      margin: 0; color: #0f172a; font-size: 13px; font-weight: 500;
+      margin: 0; color: var(--ui-text); font-size: 13px; font-weight: 500;
       text-align: end; max-width: 60%;
       overflow-wrap: anywhere;
     }
@@ -559,24 +559,24 @@ interface TabOption {
     /* Branch stock table */
     .tbl { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
     .tbl thead th {
-      background: #f8fafc; color: #64748b;
+      background: var(--ui-surface-1); color: var(--ui-muted);
       font-weight: 600; font-size: 11px;
       text-transform: uppercase; letter-spacing: .04em;
       padding: 10px 14px;
-      border-bottom: 1px solid #e2e8f0;
+      border-bottom: 1px solid var(--ui-line);
     }
     .tbl tbody td {
       padding: 10px 14px;
-      border-bottom: 1px solid #f1f5f9;
-      color: #0f172a;
+      border-bottom: 1px solid var(--ui-surface-2);
+      color: var(--ui-text);
     }
     .tbl tbody tr:last-child td { border-bottom: none; }
-    .tbl tbody tr:hover { background: #f8fafc; }
+    .tbl tbody tr:hover { background: var(--ui-surface-1); }
     .tbl tfoot th {
       padding: 10px 14px;
-      background: #f8fafc;
-      border-top: 1px solid #e2e8f0;
-      color: #0f172a; font-weight: 700; font-size: 13px;
+      background: var(--ui-surface-1);
+      border-top: 1px solid var(--ui-line);
+      color: var(--ui-text); font-weight: 700; font-size: 13px;
       text-transform: none; letter-spacing: 0;
     }
     .start { text-align: start; }
@@ -586,24 +586,24 @@ interface TabOption {
     .status-pill {
       display: inline-flex; padding: 2px 10px; border-radius: 999px;
       font-size: 11px; font-weight: 600;
-      background: #f1f5f9; color: #64748b;
+      background: var(--ui-surface-2); color: var(--ui-muted);
     }
-    .status-pill--ok     { background: #dcfce7; color: #15803d; }
-    .status-pill--warn   { background: #fef9c3; color: #854d0e; }
-    .status-pill--danger { background: #fee2e2; color: #b91c1c; }
+    .status-pill--ok     { background: var(--ui-green-soft); color: var(--ui-green-text); }
+    .status-pill--warn   { background: var(--ui-x-fef9c3); color: var(--ui-t-854d0e); }
+    .status-pill--danger { background: var(--ui-red-soft); color: var(--ui-red-text); }
 
     /* Activity rows — links, badges, muted */
-    .link         { color: #0e7490; font-weight: 500; text-decoration: none; }
+    .link         { color: var(--ui-brand-text); font-weight: 500; text-decoration: none; }
     .link:hover   { text-decoration: underline; }
-    .link--plain  { color: #0f172a; font-weight: 500; }
-    .muted        { color: #94a3b8; font-size: 12px; margin-inline-start: 6px; }
+    .link--plain  { color: var(--ui-text); font-weight: 500; }
+    .muted        { color: var(--ui-faint); font-size: 12px; margin-inline-start: 6px; }
     .qty-badge {
       display: inline-flex; margin-inline-start: 6px;
       padding: 2px 8px; border-radius: 999px;
-      background: #e0f2f7; color: #0e7490;
+      background: var(--ui-x-e0f2f7); color: var(--ui-brand-text);
       font-size: 11px; font-weight: 600;
     }
-    .supplier-name { color: #0e7490; font-weight: 500; }
+    .supplier-name { color: var(--ui-brand-text); font-weight: 500; }
 
     /* ── Skeletons ─────────────────────────────────────────── */
     @keyframes skeleton-shimmer {
@@ -612,7 +612,7 @@ interface TabOption {
     }
     .skeleton {
       display: inline-block;
-      background: linear-gradient(90deg, #e2e8f0 0%, #f1f5f9 50%, #e2e8f0 100%);
+      background: linear-gradient(90deg, var(--ui-line) 0%, var(--ui-surface-2) 50%, var(--ui-line) 100%);
       background-size: 200% 100%;
       animation: skeleton-shimmer 1.4s ease-in-out infinite;
       border-radius: 6px;

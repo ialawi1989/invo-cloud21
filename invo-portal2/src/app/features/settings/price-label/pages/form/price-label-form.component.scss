@@ -11,7 +11,7 @@
   justify-content: space-between;
   gap: 16px;
   padding-bottom: 12px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--ui-line);
 
   &__titles {
     display: flex;
@@ -28,7 +28,7 @@
   margin: 0;
   font-size: 22px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--ui-text);
 }
 
 // Two-column row that hosts the Products + Options cards. Stacks
@@ -43,8 +43,8 @@
 }
 
 .card {
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
   border-radius: 12px;
   display: flex;
   flex-direction: column;
@@ -56,13 +56,13 @@
     justify-content: space-between;
     gap: 12px;
     padding: 12px 16px;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--ui-surface-2);
   }
   &__title {
     margin: 0;
     font-size: 14px;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--ui-text);
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -75,8 +75,8 @@
 .badge {
   padding: 2px 8px;
   border-radius: 999px;
-  background: var(--color-brand-50, #ecfeff);
-  color: var(--color-brand-700, #0e7490);
+  background: var(--color-brand-50, var(--ui-brand-soft));
+  color: var(--ui-brand-t700);
   font-size: 11px;
   font-weight: 700;
 }
@@ -89,20 +89,20 @@
   &__label {
     font-size: 12px;
     font-weight: 600;
-    color: #475569;
+    color: var(--ui-text-4);
   }
   > input {
     appearance: none;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--ui-line);
     border-radius: 8px;
     padding: 8px 12px;
     font-size: 13px;
-    color: #0f172a;
-    background: #fff;
+    color: var(--ui-text);
+    background: var(--ui-surface);
     &:focus {
       outline: 0;
       border-color: var(--color-brand-400, #7dd3fc);
-      box-shadow: 0 0 0 2px var(--color-brand-100, #e0f2fe);
+      box-shadow: 0 0 0 2px var(--color-brand-100, var(--ui-sky-soft));
     }
   }
 }
@@ -113,7 +113,7 @@
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  color: #64748b;
+  color: var(--ui-muted);
   > p { margin: 0; font-size: 13px; }
 }
 
@@ -129,14 +129,14 @@
   justify-content: space-between;
   gap: 8px;
   padding: 8px 16px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--ui-surface-2);
 
   &__select-all {
     display: inline-flex;
     align-items: center;
     gap: 6px;
     font-size: 12px;
-    color: #475569;
+    color: var(--ui-text-4);
     cursor: pointer;
     > input { margin: 0; }
   }
@@ -154,7 +154,7 @@
   &__label {
     font-size: 12px;
     font-weight: 600;
-    color: #0e7490;
+    color: var(--ui-brand-text);
     white-space: nowrap;
   }
   &__dropdown {
@@ -165,11 +165,11 @@
   }
   &__amount {
     width: 80px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--ui-line);
     border-radius: 6px;
     padding: 5px 8px;
     font-size: 12px;
-    background: #fff;
+    background: var(--ui-surface);
     &:focus {
       outline: 0;
       border-color: var(--color-brand-400, #7dd3fc);
@@ -190,7 +190,7 @@
     align-items: center;
     gap: 12px;
     padding: 10px 16px;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--ui-surface-2);
     &:last-child { border-bottom: 0; }
   }
 
@@ -208,7 +208,7 @@
   }
   &__name {
     font-size: 13px;
-    color: #0f172a;
+    color: var(--ui-text);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -222,15 +222,15 @@
   }
 
   &__meta {
-    color: #94a3b8;
+    color: var(--ui-faint);
     font-size: 11px;
   }
 
   &__barcode {
     align-self: flex-start;
     padding: 2px 6px;
-    background: var(--color-brand-50, #ecfeff);
-    color: var(--color-brand-700, #0e7490);
+    background: var(--color-brand-50, var(--ui-brand-soft));
+    color: var(--ui-brand-t700);
     border-radius: 999px;
     font-size: 11px;
     font-weight: 600;
@@ -240,14 +240,14 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    background: #fff;
-    border: 1px solid #e2e8f0;
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-line);
     border-radius: 8px;
     padding: 4px 10px;
 
     &-label {
       font-size: 11px;
-      color: #94a3b8;
+      color: var(--ui-faint);
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.04em;
@@ -259,7 +259,7 @@
       background: transparent;
       font-size: 13px;
       font-weight: 600;
-      color: #0f172a;
+      color: var(--ui-text);
       text-align: end;
       &::-webkit-outer-spin-button,
       &::-webkit-inner-spin-button {
@@ -268,8 +268,8 @@
       }
     }
     &:focus-within {
-      border-color: var(--color-brand-300, #bae6fd);
-      box-shadow: 0 0 0 2px var(--color-brand-100, #e0f2fe);
+      border-color: var(--color-brand-300, var(--ui-sky-soft-2));
+      box-shadow: 0 0 0 2px var(--color-brand-100, var(--ui-sky-soft));
     }
   }
 
@@ -287,11 +287,11 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: #94a3b8;
+    color: var(--ui-faint);
     border-radius: 6px;
     cursor: pointer;
     transition: background 120ms ease, color 120ms ease;
-    &:hover { background: #fef2f2; color: #b91c1c; }
+    &:hover { background: var(--ui-red-soft); color: var(--ui-red-text); }
   }
 }
 
@@ -304,10 +304,8 @@
   inset-inline: 0;
   bottom: 0;
   z-index: 60;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: saturate(180%) blur(6px);
-  -webkit-backdrop-filter: saturate(180%) blur(6px);
-  border-top: 1px solid #e5e7eb;
+  background: var(--ui-footer-bg);
+  border-top: 1px solid var(--ui-line);
   box-shadow: 0 -4px 12px rgba(15, 23, 42, 0.06);
   padding: 12px 24px;
   display: flex;
@@ -324,7 +322,7 @@
   width: 14px;
   height: 14px;
   border: 2px solid rgba(255,255,255,0.4);
-  border-top-color: #fff;
+  border-top-color: var(--ui-surface);
   border-radius: 50%;
   animation: plf-spin 0.7s linear infinite;
 }

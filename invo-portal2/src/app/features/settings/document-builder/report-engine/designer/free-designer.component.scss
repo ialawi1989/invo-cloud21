@@ -1,0 +1,196 @@
+@import 'designer-theme';
+
+:host {
+  display: block;
+  height: 100%;
+  min-height: 0;
+}
+
+.fd {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background: $d-bg;
+
+  // ── Toolbar ──────────────────────────────────────────────────
+  &__toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    min-height: 56px;
+    padding: 0 16px;
+    background: $d-white;
+    border-bottom: 1px solid $d-border;
+    box-shadow: $d-shadow-sm;
+    // Above the canvas so the property panel's popovers can't overlap it.
+    z-index: 5;
+  }
+
+  &__name {
+    max-width: 260px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 14px;
+    font-weight: 600;
+    color: $d-text;
+  }
+
+  &__spacer {
+    flex: 1;
+  }
+
+  &__cluster {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  &__divider {
+    width: 1px;
+    height: 24px;
+    margin: 0 6px;
+    background: $d-border;
+  }
+
+  &__btn {
+    @include d-button;
+
+    // Icon-only buttons collapse to a square; the label variants keep the
+    // classic header's roomier 16-20px gutters.
+    min-width: $d-control-height;
+    padding: 0 10px;
+
+    .mdi { font-size: 17px; }
+
+    &--label {
+      padding: 0 16px;
+    }
+
+    &--primary {
+      padding: 0 20px;
+      font-size: 14px;
+      color: $d-white;
+      background: $d-primary;
+      border-color: $d-primary;
+
+      &:hover:not(:disabled) {
+        color: $d-white;
+        background: $d-primary-hover;
+        border-color: $d-primary-hover;
+      }
+    }
+  }
+
+  &__zoom {
+    min-width: 52px;
+    height: $d-control-height-sm;
+    font-size: $d-font;
+    font-variant-numeric: tabular-nums;
+    color: $d-text-label;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: $d-radius-sm;
+    cursor: pointer;
+    transition: all $d-transition;
+
+    &:hover {
+      background: $d-bg;
+      border-color: $d-border;
+    }
+  }
+
+  // ── Page tabs ────────────────────────────────────────────────
+  &__pages {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    padding: 6px 16px;
+    background: $d-white;
+    border-bottom: 1px solid $d-border;
+  }
+
+  &__page-tab {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: $d-control-height-sm;
+    padding: 0 10px;
+    font-size: $d-font;
+    color: $d-text-label;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: $d-radius-sm;
+    cursor: pointer;
+    transition: all $d-transition;
+
+    &:hover {
+      background: $d-bg;
+    }
+
+    &--active {
+      color: $d-primary;
+      background: $d-bg;
+      border-color: $d-border;
+      font-weight: 600;
+    }
+  }
+
+  &__page-remove {
+    font-size: 14px;
+    border-radius: 50%;
+    padding: 1px;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.08);
+    }
+  }
+
+  &__page-rename {
+    width: 90px;
+    height: 22px;
+    padding: 0 4px;
+    font-size: $d-font;
+    border: 1px solid $d-primary;
+    border-radius: $d-radius-sm;
+  }
+
+  &__page-add {
+    @include d-button;
+    width: $d-control-height-sm;
+    min-width: $d-control-height-sm;
+    height: $d-control-height-sm;
+
+    .mdi { font-size: 16px; }
+  }
+
+  // ── Body ─────────────────────────────────────────────────────
+  &__body {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+  }
+
+  &__rail {
+    flex-shrink: 0;
+  }
+
+  &__canvas {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+// mdi has no spin animation of its own; the Save button needs one while
+// the host persists.
+.mdi-spin {
+  animation: fd-spin 1s linear infinite;
+}
+
+@keyframes fd-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

@@ -79,15 +79,15 @@ interface AppliedCredit {
     .ac__body { padding: 16px 20px; min-width: 560px; max-width: 100%; display: flex; flex-direction: column; gap: 14px; }
     .ac__balance { text-align: end; }
     .ac__table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-    .ac__table th { text-align: start; background: #f8fafc; color: #64748b; font-size: 12px; text-transform: uppercase; padding: 10px 12px; }
-    .ac__table td { padding: 8px 12px; border-top: 1px solid #f1f5f9; }
-    .ac__empty { text-align: center; color: #94a3b8; padding: 20px; }
-    .ac__input { width: 100%; border: 1px solid #d0d5dd; border-radius: 8px; padding: 8px 10px; font: inherit; }
-    .ac__totals { align-self: flex-end; min-width: 260px; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+    .ac__table th { text-align: start; background: var(--ui-surface-1); color: var(--ui-muted); font-size: 12px; text-transform: uppercase; padding: 10px 12px; }
+    .ac__table td { padding: 8px 12px; border-top: 1px solid var(--ui-surface-2); }
+    .ac__empty { text-align: center; color: var(--ui-faint); padding: 20px; }
+    .ac__input { width: 100%; border: 1px solid var(--ui-line-strong); border-radius: 8px; padding: 8px 10px; font: inherit; }
+    .ac__totals { align-self: flex-end; min-width: 260px; border: 1px solid var(--ui-line); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
     .ac__totals div { display: flex; justify-content: space-between; gap: 16px; }
-    .ac__btn { padding: 9px 18px; border-radius: 8px; border: 1px solid #d0d5dd; background: #fff; color: #334155; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+    .ac__btn { padding: 9px 18px; border-radius: 8px; border: 1px solid var(--ui-line-strong); background: var(--ui-surface); color: var(--ui-text-3); font-size: 13.5px; font-weight: 600; cursor: pointer; }
     .ac__btn:disabled { opacity: .5; cursor: not-allowed; }
-    .ac__btn--primary { border-color: #2691a4; background: #2691a4; color: #fff; }
+    .ac__btn--primary { border-color: #2691a4; background: var(--ui-b-2691a4); color: #fff; }
   `],
 })
 export class ApplyCreditModalComponent implements OnInit {

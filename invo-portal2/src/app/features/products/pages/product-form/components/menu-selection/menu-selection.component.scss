@@ -14,8 +14,8 @@
 .pf-ms-total {
   margin-inline-start: auto;
   font-size: 13px;
-  color: #64748b;
-  strong { color: #0f172a; margin-inline-start: 4px; font-variant-numeric: tabular-nums; }
+  color: var(--ui-muted);
+  strong { color: var(--ui-text); margin-inline-start: 4px; font-variant-numeric: tabular-nums; }
 }
 
 .pf-btn {
@@ -39,10 +39,10 @@
     &:hover { background: #15803d; border-color: #15803d; }
   }
   &--outline {
-    background: #fff;
-    color: #0e7490;
-    border-color: #a5f3fc;
-    &:hover { background: #ecfeff; border-color: #67e8f9; }
+    background: var(--ui-surface);
+    color: var(--ui-brand-text);
+    border-color: var(--ui-brand-soft-2);
+    &:hover { background: var(--ui-brand-soft); border-color: var(--ui-x-67e8f9); }
   }
 }
 
@@ -50,22 +50,22 @@
 .pf-ms-zero {
   text-align: center;
   padding: 28px 18px;
-  border: 1px dashed #e2e8f0;
+  border: 1px dashed var(--ui-line);
   border-radius: 12px;
-  background: #f8fafc;
+  background: var(--ui-surface-1);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12px;
 
-  &__icon { color: #ef4444; }
-  &__text { color: #475569; font-size: 13px; margin: 0; }
+  &__icon { color: var(--ui-red-text); }
+  &__text { color: var(--ui-text-4); font-size: 13px; margin: 0; }
 
   // Required-but-empty: error tint so it reads as a problem to fix.
   &--error {
     border-color: #fca5a5;
-    background: #fef2f2;
-    .pf-ms-zero__text { color: #b91c1c; font-weight: 500; }
+    background: var(--ui-red-soft);
+    .pf-ms-zero__text { color: var(--ui-red-text); font-weight: 500; }
   }
 }
 
@@ -100,7 +100,7 @@
   &__title {
     font-size: 11px;
     font-weight: 700;
-    color: #64748b;
+    color: var(--ui-muted);
     text-transform: uppercase;
     letter-spacing: 0.4px;
   }
@@ -119,19 +119,19 @@
   gap: 8px;
   align-items: start;
   padding: 12px;
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
   border-radius: 10px;
   cursor: pointer;
   transition: background 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
 
   &:hover {
-    background: #f8fafc;
-    border-color: #cbd5e1;
+    background: var(--ui-surface-1);
+    border-color: var(--ui-line-strong);
   }
 
   &--active {
-    background: #ecfeff;
+    background: var(--ui-brand-soft);
     border-color: #32acc1;
     box-shadow: 0 0 0 2px rgba(50, 172, 193, 0.18);
   }
@@ -141,9 +141,9 @@
   // cyan highlight then takes over so the active level doesn't shout at
   // you while you're working on it.
   &--invalid:not(.pf-ms-card--active) {
-    border-color: #fecaca;
-    background: #fff;
-    .pf-ms-card__name { color: #b91c1c; }
+    border-color: var(--ui-red-soft-2);
+    background: var(--ui-surface);
+    .pf-ms-card__name { color: var(--ui-red-text); }
   }
 
   &__handle {
@@ -152,7 +152,7 @@
     justify-content: center;
     width: 22px;
     height: 32px;
-    color: #94a3b8;
+    color: var(--ui-faint);
     cursor: grab;
     align-self: center;
     &:active { cursor: grabbing; }
@@ -170,17 +170,17 @@
     padding: 6px 8px;
     font-size: 13px;
     font-weight: 600;
-    color: #0f172a;
-    background: #fff;
+    color: var(--ui-text);
+    background: var(--ui-surface);
     border: 1px solid transparent;
     border-radius: 6px;
     cursor: text;
     transition: background 120ms ease, border-color 120ms ease;
 
-    &:hover { background: #f1f5f9; }
+    &:hover { background: var(--ui-surface-2); }
     &:focus {
       outline: none;
-      background: #fff;
+      background: var(--ui-surface);
       border-color: #32acc1;
       box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.12);
     }
@@ -192,7 +192,7 @@
     align-items: center;
     gap: 8px;
     font-size: 12px;
-    color: #64748b;
+    color: var(--ui-muted);
     padding-inline-start: 2px;
   }
 
@@ -207,9 +207,9 @@
       padding: 3px 6px;
       font-size: 12px;
       text-align: center;
-      color: #0f172a;
-      background: #fff;
-      border: 1px solid #e2e8f0;
+      color: var(--ui-text);
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-line);
       border-radius: 6px;
       &:focus {
         outline: none;
@@ -219,8 +219,8 @@
     }
   }
 
-  &__items-count { color: #94a3b8; }
-  &__unlimited { color: #b45309; font-weight: 500; }
+  &__items-count { color: var(--ui-faint); }
+  &__unlimited { color: var(--ui-amber-text); font-weight: 500; }
 
   &__remove {
     width: 28px;
@@ -228,21 +228,21 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: #fff;
-    border: 1px solid #e5e7eb;
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-line);
     border-radius: 6px;
-    color: #64748b;
+    color: var(--ui-muted);
     cursor: pointer;
     align-self: center;
-    &:hover { background: #fef2f2; border-color: #fecaca; color: #dc2626; }
+    &:hover { background: var(--ui-red-soft); border-color: var(--ui-red-soft-2); color: var(--ui-red-text); }
   }
 }
 
 // ── Active panel ───────────────────────────────────────────────────────
 .pf-ms-panel {
   min-width: 0;
-  background: #fff;
-  border: 1px solid #f1f5f9;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-surface-2);
   border-radius: 12px;
   padding: 14px;
 
@@ -253,7 +253,7 @@
     gap: 10px;
     margin-bottom: 12px;
     padding-bottom: 10px;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--ui-surface-2);
   }
 
   &__head-text {
@@ -267,17 +267,17 @@
     margin: 0;
     font-size: 14px;
     font-weight: 600;
-    color: #0f172a;
+    color: var(--ui-text);
     word-break: break-word;
     min-width: 0;
   }
 
   &__hint {
     font-size: 11px;
-    color: #64748b;
+    color: var(--ui-muted);
     font-weight: 500;
 
-    &--invalid { color: #b91c1c; }
+    &--invalid { color: var(--ui-red-text); }
   }
 
   &__empty {
@@ -286,7 +286,7 @@
     align-items: center;
     gap: 10px;
     padding: 28px 14px;
-    color: #b91c1c;
+    color: var(--ui-red-text);
     text-align: center;
 
     svg { color: #fca5a5; }
@@ -307,15 +307,15 @@
   gap: 10px;
   align-items: center;
   padding: 8px 12px;
-  background: #f8fafc;
-  border: 1px solid #f1f5f9;
+  background: var(--ui-surface-1);
+  border: 1px solid var(--ui-surface-2);
   border-radius: 8px;
 
   &__handle {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: #94a3b8;
+    color: var(--ui-faint);
     cursor: grab;
     &:active { cursor: grabbing; }
   }
@@ -323,7 +323,7 @@
   &__name {
     font-size: 13px;
     font-weight: 500;
-    color: #0f172a;
+    color: var(--ui-text);
     word-break: break-word;
     min-width: 0;
   }
@@ -333,8 +333,8 @@
     align-items: center;
     padding: 2px 10px;
     border-radius: 999px;
-    background: #dbeafe;
-    color: #1d4ed8;
+    background: var(--ui-x-dbeafe);
+    color: var(--ui-t-1d4ed8);
     font-size: 12px;
     font-weight: 600;
     font-variant-numeric: tabular-nums;
@@ -346,19 +346,19 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: #fff;
-    border: 1px solid #e5e7eb;
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-line);
     border-radius: 50%;
-    color: #64748b;
+    color: var(--ui-muted);
     cursor: pointer;
-    &:hover { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
+    &:hover { background: var(--ui-red-soft); color: var(--ui-red-text); border-color: var(--ui-red-soft-2); }
   }
 }
 
 // ── CDK drag-drop visuals ──────────────────────────────────────────────
 .cdk-drag-preview {
-  background: #fff;
-  border: 1px solid #cbd5e1;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line-strong);
   border-radius: 10px;
   box-shadow: 0 8px 18px rgba(15, 23, 42, 0.15);
   padding: 12px;

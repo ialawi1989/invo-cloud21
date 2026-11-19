@@ -21,6 +21,7 @@
   [style.background]="printPreview() ? null : template().BackgroundColor"
   [style.color]="template().textColor"
   [style.fontSize.pt]="template().textSize"
+  [style.padding]="classicPadding()"
 >
   @if (renderMode() === 'designer') {
     <!-- ── DESIGNER mode (master page) ─────────────────────────── -->
@@ -64,7 +65,7 @@
                [style.background]="template().BackgroundColor || '#fff'">
 
             @if (page.isFirst && documentStatus()) {
-              <div class="dp__ribbon" [class]="'dp__ribbon ' + ribbonClass()"><div class="dp__ribbon-clip"><div class="dp__ribbon-inner" [class]="'dp__ribbon-inner ' + ribbonClass()">{{ documentStatus() }}</div></div></div>
+              <div class="dp__ribbon" [class]="'dp__ribbon ' + ribbonClass()"><div class="dp__ribbon-clip"><div class="dp__ribbon-inner" [class]="'dp__ribbon-inner ' + ribbonClass()">{{ statusText() }}</div></div></div>
             }
 
             <!-- Page header — repeats on every printed page. -->
@@ -124,7 +125,7 @@
     } @else {
       <!-- ═══ Single-paper Classic (default) ═════════════════════ -->
       @if (documentStatus()) {
-        <div class="dp__ribbon" [class]="'dp__ribbon ' + ribbonClass()"><div class="dp__ribbon-clip"><div class="dp__ribbon-inner" [class]="'dp__ribbon-inner ' + ribbonClass()">{{ documentStatus() }}</div></div></div>
+        <div class="dp__ribbon" [class]="'dp__ribbon ' + ribbonClass()"><div class="dp__ribbon-clip"><div class="dp__ribbon-inner" [class]="'dp__ribbon-inner ' + ribbonClass()">{{ statusText() }}</div></div></div>
       }
       <ng-container *ngTemplateOutlet="classicHeaderTpl"/>
       <ng-container *ngTemplateOutlet="classicMetaFieldsTpl"/>
@@ -145,7 +146,8 @@
        [style.minHeight.px]="paperHeightPx()"
        [style.background]="template().BackgroundColor"
        [style.color]="template().textColor"
-       [style.fontSize.pt]="template().textSize">
+       [style.fontSize.pt]="template().textSize"
+       [style.padding]="classicPadding()">
     <footer class="dp__footer">
       <ng-container *ngTemplateOutlet="termsBlockTpl"/>
     </footer>
@@ -313,56 +315,55 @@
       <header class="dp__header">
         <div class="dp__header-left">
           @if (template().headerCustomization.logo.show) {
-            <div class="dp__logo"
-                 [class.dp__logo--placeholder]="!realLogoUrl()"
-                 [style.width.px]="template().headerCustomization.logo.width"
-                 [style.height.px]="template().headerCustomization.logo.height">
+            <!-- Legacy `paper-header`: the company logo at the template's width (height follows); with no logo the INVO default logo at
+                 the template's width and height. -->
+            <div class="dp__logo">
               @if (realLogoUrl()) {
-                <img [src]="realLogoUrl()" alt="Company logo"/>
+                <img [src]="realLogoUrl()" alt="Company logo" [style.width.px]="template().headerCustomization.logo.width"/>
               } @else {
-                <span>LOGO</span>
+                <img src="images/invo-logo-black.svg" alt="logo"
+                     [style.width.px]="template().headerCustomization.logo.width"
+                     [style.height.px]="template().headerCustomization.logo.height"/>
               }
             </div>
           }
           @if (template().headerCustomization.companyName.show) {
-            <h4 class="dp__company-name" [ngStyle]="textStyle(template().headerCustomization.companyName)">{{ r('{{company.name}}') }}</h4>
+            <h4 class="dp__company-name" [ngStyle]="fontColor(template().headerCustomization.companyName)">{{ r('{{company.name}}') }}</h4>
           }
           @if (template().headerCustomization.vatNumber.show && r('{{company.vat}}')) {
-            <div [ngStyle]="textStyle(template().headerCustomization.vatNumber)">
-              <strong [style.color]="template().headerCustomization.vatNumber.labelColor || 'inherit'">{{ (template().headerCustomization.vatNumber.label && template().headerCustomization.vatNumber.label.trim()) || 'Vat number' }}: </strong>
-              {{ r('{{company.vat}}') }}
+            <div [ngStyle]="font(template().headerCustomization.vatNumber)">
+              <strong [style.color]="template().headerCustomization.vatNumber.labelColor || null">{{ (template().headerCustomization.vatNumber.label && template().headerCustomization.vatNumber.label.trim()) || tr('DOCUMENT_PAPER.MISC.VAT_NUMBER', 'Vat number') }}: </strong>
+              <span [style.color]="template().headerCustomization.vatNumber.color || null">{{ r('{{company.vat}}') }}</span>
             </div>
           }
         </div>
         <div class="dp__header-right">
           @if (template().headerCustomization.title.show) {
-            <h4 class="dp__title" [ngStyle]="textStyle(template().headerCustomization.title)">{{ titleLabel() }}</h4>
+            <h4 class="dp__title" [ngStyle]="fontColor(template().headerCustomization.title)">{{ titleLabel() }}</h4>
           }
           @if (template().headerCustomization.name.show && r('{{branch.name}}')) {
-            <div [ngStyle]="textStyle(template().headerCustomization.name)">
-              <strong [style.color]="template().headerCustomization.name.labelColor || 'inherit'">{{ (template().headerCustomization.name.label && template().headerCustomization.name.label.trim()) || 'Branch' }}: </strong>
-              {{ r('{{branch.name}}') }}
+            <div [ngStyle]="font(template().headerCustomization.name)">
+              <strong [style.color]="template().headerCustomization.name.labelColor || null">{{ (template().headerCustomization.name.label && template().headerCustomization.name.label.trim()) || tr('DOCUMENT_PAPER.MISC.BRANCH', 'Branch') }}: </strong>
+              <span [style.color]="template().headerCustomization.name.color || null">{{ r('{{branch.name}}') }}</span>
             </div>
           }
           @if (template().headerCustomization.address.show && r('{{branch.address}}')) {
-            <div [ngStyle]="textStyle(template().headerCustomization.address)">
-              <strong [style.color]="template().headerCustomization.address.labelColor || 'inherit'">{{ (template().headerCustomization.address.label && template().headerCustomization.address.label.trim()) || 'Branch Address' }}: </strong>
-              {{ r('{{branch.address}}') }}
+            <div [ngStyle]="font(template().headerCustomization.address)">
+              <strong [style.color]="template().headerCustomization.address.labelColor || null">{{ (template().headerCustomization.address.label && template().headerCustomization.address.label.trim()) || tr('DOCUMENT_PAPER.MISC.ADDRESS', 'Branch Address') }}: </strong>
+              <span [style.color]="template().headerCustomization.address.color || null">{{ r('{{branch.address}}') }}</span>
             </div>
           }
-          @if (template().headerCustomization.phone.show && r('{{branch.phone}}')) {
-            <div [ngStyle]="textStyle(template().headerCustomization.phone)">
-              <strong [style.color]="template().headerCustomization.phone.labelColor || 'inherit'">{{ (template().headerCustomization.phone.label && template().headerCustomization.phone.label.trim()) || 'Phone' }}: </strong>
-              {{ r('{{branch.phone}}') }}
+          @if (template().headerCustomization.phone.show && (builderMode() || r('{{branch.phone}}'))) {
+            <div [ngStyle]="font(template().headerCustomization.phone)">
+              <strong [style.color]="template().headerCustomization.phone.labelColor || null">{{ (template().headerCustomization.phone.label && template().headerCustomization.phone.label.trim()) || tr('DOCUMENT_PAPER.MISC.PHONE', 'Phone') }}: </strong>
+              <span [style.color]="template().headerCustomization.phone.color || null">{{ r('{{branch.phone}}') }}</span>
             </div>
           }
           <!-- Branch custom fields — tenant-defined extras that sit with the branch info. -->
           @for (cf of branchCustomFieldRows(); track cf.abbr) {
-            <div [ngStyle]="textStyle(cf.style)">
-              @if (cf.style.showLabel !== false) {
-                <strong [style.color]="cf.style.labelColor || 'inherit'">{{ cf.label }}: </strong>
-              }
-              <span>{{ cf.value }}</span>
+            <div [ngStyle]="cf.bare ? null : font(cf.style)">
+              <strong [style.color]="cf.bare ? null : (cf.style.labelColor || null)">{{ cf.label }}: </strong>
+              <span [style.color]="cf.bare ? null : (cf.style.color || null)">{{ cf.value }}</span>
             </div>
           }
         </div>
@@ -379,15 +380,6 @@
     <!-- Additional data — header position. Inherits the shared
          `additionalDataStyle` so the Other-Details Layout sub-tab
          can re-style every row in one move. -->
-    @if (additionalAt('header').length > 0) {
-      <div class="dp__additional" [ngStyle]="textStyle(template().additionalDataStyle)">
-        @for (a of additionalAt('header'); track a.key) {
-          <span class="dp__additional-pair">
-            <strong [style.color]="template().additionalDataStyle.labelColor || 'inherit'">{{ a.label }}:</strong> {{ a.value }}
-          </span>
-        }
-      </div>
-    }
 
     <!-- Document title was here historically; it now lives inside
          the header row's trailing column (above) so a "TAX INVOICE"
@@ -400,62 +392,62 @@
     <div class="dp__fields">
       <div class="dp__fields-col">
         @for (f of fieldsFirstColumn(); track f.id) {
-          <div class="dp__field" [ngStyle]="textStyle(f.style)">
-            @if (f.style.showLabel !== false) {
-              <strong [style.color]="f.style.labelColor || 'inherit'">{{ f.label }}:</strong>
+          <div class="dp__field" [ngStyle]="font(f.style)">
+            @if (f.style.showLabel !== false && f.label) {
+              <strong [style.color]="f.style.labelColor || defaultInk">{{ f.label }}:</strong>
             }
-            <span>{{ f.value }}</span>
+            <span [style.color]="f.style.color || defaultInk">
+              @if (f.id === 'service') {
+                @for (p of serviceParts(f.value); track $index) {
+                  @if (!$first) { <span> | </span> }
+                  <strong>{{ p.label }}</strong> {{ p.value }}
+                }
+              } @else { {{ f.value }} }
+            </span>
+          </div>
+        }
+        @for (cf of entityCfFirstColumn(); track cf.abbr) {
+          <div class="dp__field dp__cf" [ngStyle]="font(cf.style)">
+            <strong [style.color]="cf.style.labelColor || null">{{ cf.label }}: </strong>
+            <span [style.color]="cf.style.color || null">{{ cf.value }}</span>
           </div>
         }
       </div>
       <div class="dp__fields-col dp__fields-col--right">
         @for (f of fieldsSecondColumn(); track f.id) {
-          <div class="dp__field" [ngStyle]="textStyle(f.style)">
-            @if (f.style.showLabel !== false) {
-              <strong [style.color]="f.style.labelColor || 'inherit'">{{ f.label }}:</strong>
+          <div class="dp__field" [ngStyle]="font(f.style)">
+            @if (f.style.showLabel !== false && f.label) {
+              <strong [style.color]="f.style.labelColor || defaultInk">{{ f.label }}:</strong>
             }
-            <span>{{ f.value }}</span>
+            <span [style.color]="f.style.color || defaultInk">
+              @if (f.id === 'service') {
+                @for (p of serviceParts(f.value); track $index) {
+                  @if (!$first) { <span> | </span> }
+                  <strong>{{ p.label }}</strong> {{ p.value }}
+                }
+              } @else { {{ f.value }} }
+            </span>
+          </div>
+        }
+        @for (cf of entityCfSecondColumn(); track cf.abbr) {
+          <div class="dp__field dp__cf" [ngStyle]="font(cf.style)">
+            <strong [style.color]="cf.style.labelColor || null">{{ cf.label }}: </strong>
+            <span [style.color]="cf.style.color || null">{{ cf.value }}</span>
           </div>
         }
       </div>
     </div>
 
-    <!-- Entity custom fields — per-document-type extras (Invoice CFs,
-         Bill CFs, …). Rendered as a flowing row beneath the two-column
-         field block so they don't disrupt the firstColumn /
-         secondColumn alignment. -->
-    @if (entityCustomFieldRows().length > 0) {
-      <div class="dp__cf-row">
-        @for (cf of entityCustomFieldRows(); track cf.abbr) {
-          <div class="dp__field dp__cf" [ngStyle]="textStyle(cf.style)">
-            @if (cf.style.showLabel !== false) {
-              <strong [style.color]="cf.style.labelColor || 'inherit'">{{ cf.label }}:</strong>
-            }
-            <span>{{ cf.value }}</span>
-          </div>
-        }
-      </div>
-    }
-
     <!-- Additional data — meta position -->
-    @if (additionalAt('meta').length > 0) {
-      <div class="dp__additional dp__additional--meta" [ngStyle]="textStyle(template().additionalDataStyle)">
-        @for (a of additionalAt('meta'); track a.key) {
-          <div class="dp__additional-pair">
-            <strong [style.color]="template().additionalDataStyle.labelColor || 'inherit'">{{ a.label }}:</strong> {{ a.value }}
-          </div>
-        }
-      </div>
-    }
 
     <!-- Order summary heading + tax-mode chip (Inclusive/Exclusive) -->
-    <div class="dp__items-heading"
-         [ngStyle]="textStyle(txStyle('tableTitle'))">
-      <strong>Order summary</strong>
-      <span class="dp__tax-mode"
-            [ngStyle]="textStyle(txStyle('taxType'))">
-        {{ isInclusiveTax() ? 'Inclusive Tax' : 'Exclusive Tax' }}
-      </span>
+    <div class="dp__items-heading">
+      <strong [ngStyle]="fontColor(txStyle('tableTitle'))">{{ tr('DOCUMENT_PAPER.MISC.ORDER_SUMMARY', 'Order summary') }}</strong>
+      @if (hasTaxType()) {
+        <span class="dp__tax-mode" [ngStyle]="fontColor(txStyle('taxType'))">
+          {{ isInclusiveTax() ? tr('DOCUMENT_PAPER.MISC.INCLUSIVE_TAX', 'Inclusive Tax') : tr('DOCUMENT_PAPER.MISC.EXCLUSIVE_TAX', 'Exclusive Tax') }}
+        </span>
+      }
     </div>
 </ng-template>
 
@@ -475,32 +467,37 @@
     @if (visibleColumns().length > 0 && lines && lines.length > 0) {
       <table class="dp__items">
         <thead>
-          <tr [ngStyle]="textStyle(tableHeaderStyle())">
+          <tr [style.font-size.pt]="tableHeaderStyle()?.size || null">
             @for (col of visibleColumns(); track col.id) {
               <th [class.dp__col-num]="isRightAlignedColumn(col.id)"
+                  [style.background-color]="tableHeaderStyle()?.backgroundColor || null"
+                  [style.color]="tableHeaderStyle()?.color || null"
                   [style.width.%]="col.width || null">{{ col.label }}</th>
             }
           </tr>
         </thead>
         <tbody>
           @for (ln of lines; track trackLine($index, ln); let i = $index) {
-            <tr>
+            <tr [style.font-size.pt]="linesStyle()?.size">
               @for (col of visibleColumns(); track col.id) {
-                <td [class.dp__col-num]="isRightAlignedColumn(col.id)">
+                <td [class.dp__col-num]="isRightAlignedColumn(col.id)"
+                    [style.color]="linesStyle()?.color" [style.background-color]="linesStyle()?.backgroundColor || null">
                   @if (col.id === 'order') {
                     {{ startIndex + i + 1 }}
-                  } @else if (col.id === 'description' || col.id === 'product') {
+                  } @else if (col.id === 'image') {
+                    @if (ln['image']) { <img class="dp__line-img" [src]="ln['image']" alt=""/> }
+                  } @else if (col.id === 'description' || col.id === 'product' || col.id === 'expense') {
                     <!-- Description column — rich content matches the legacy: the
                          item name, a barcode badge, line note, and option pills.
                          Uses shared `.app-product-badge*` classes so the chip
                          style matches the products-list and POS surfaces. -->
                     <div class="dp__line-desc">
-                      <span class="dp__line-name">{{ ln.desc }}</span>
-                      @if (ln.barcode) {
-                        <span class="dp__badge dp__badge--success" [ngStyle]="textStyle(barcodeCfg())">{{ ln.barcode }}</span>
+                      <span class="dp__line-name">{{ lineName(ln) }}</span>
+                      @if (ln.barcode && barcodeCfg()?.show) {
+                        <span class="dp__badge dp__badge--success" [ngStyle]="badgeLook(barcodeCfg())">{{ ln.barcode || '' }}</span>
                       }
-                      @if (ln['uom']) {
-                        <span class="dp__badge dp__badge--info">{{ ln['uom'] }}</span>
+                      @for (b of lineCfBadges(ln); track $index) {
+                        <span class="dp__badge dp__badge--cf" [ngStyle]="badgeLook(badgeStyle())">{{ b.name }}: {{ b.value }}</span>
                       }
                       @if (ln['createdAt'] && template().documentType === 'invoice') {
                         <small class="dp__no-print dp__line-created">Created At: {{ fmtDateTime(ln['createdAt']) }}</small>
@@ -511,7 +508,7 @@
                             <span class="dp__badge dp__badge--info dp__badge--pill">
                               {{ opt.name }}
                               @if (opt.price > 0) {
-                                <i>({{ asNum(opt.price).toFixed(3) }})</i>
+                                <i>({{ num(opt.price) }})</i>
                               }
                             </span>
                           }
@@ -554,20 +551,24 @@
 
             <!-- Voided sub-rows — struck-through, table-light bg.
                  Mirrors legacy `voidedItems` rendering. -->
+            @if (voidedStyle(); as vs) {
             @for (vl of voidedFor(ln); track $index) {
-              <tr class="dp__items-voided">
+              <tr class="dp__items-voided" [style.font-size.pt]="vs.size">
                 @for (col of visibleColumns(); track col.id) {
-                  <td [class.dp__col-num]="isRightAlignedColumn(col.id)">
+                  <td [class.dp__col-num]="isRightAlignedColumn(col.id)" [style.color]="vs.color" [style.background-color]="vs.color === vs.backgroundColor ? '#fff' : (vs.backgroundColor || null)">
                     @if (col.id === 'order') {
                       {{ startIndex + i + 1 }}
-                    } @else if (col.id === 'description' || col.id === 'product') {
+                    } @else if (col.id === 'description' || col.id === 'product' || col.id === 'expense') {
                       {{ vl['desc'] }}
+                    } @else if (col.id === 'image') {
+                      @if (vl['image']) { <img class="dp__line-img" [src]="vl['image']" alt=""/> }
                     } @else {
                       {{ cellFor(vl, col.id) }}
                     }
                   </td>
                 }
               </tr>
+            }
             }
           }
         </tbody>
@@ -587,12 +588,12 @@
     }
     <!-- Totals + payments + balance, all driven by visibility flags. -->
     @if (template().totalSectionCustomization.totalTable.show && visibleTotalRows().length > 0) {
-      <div class="dp__totals" [style.background]="template().totalSectionCustomization.totalTable.backgroundColor || 'transparent'">
+      <div class="dp__totals" [style.background]="template().totalSectionCustomization.totalTable.backgroundColor || 'white'">
         @for (row of visibleTotalRows(); track row.id) {
           <div class="dp__totals-row"
                [class.dp__totals-row--grand]="row.id === 'Total'"
-               [ngStyle]="textStyle(row.style)">
-            <span>{{ row.label }}</span>
+               [ngStyle]="fontColor(row.style)">
+            <span [style.color]="row.style.labelColor">{{ row.label }}</span>
             <span>{{ row.value }}</span>
           </div>
         }
@@ -603,22 +604,24 @@
       <div class="dp__payments"
            [style.background]="template().totalSectionCustomization.paymentTable.backgroundColor || '#f1b44c'">
         @for (row of visiblePaymentRows(); track row.id) {
-          <div class="dp__payments-row" [ngStyle]="textStyle(row.style)">
-            <span>{{ row.label }}</span>
+          <div class="dp__payments-row" [ngStyle]="fontColor(row.style)">
+            <span [style.color]="row.style.labelColor">{{ row.label }}</span>
             <span>{{ row.value }}</span>
           </div>
         }
         <!-- Per-payment-method rows from `data.invoicePayments`.
              Mirrors the legacy `paymentMethods` block — one row per
              SUCCESS payment with method name + reference + amount. -->
+        @if (paymentMethodsOn()) {
         @for (p of paymentEntries(); track $index) {
-          <div class="dp__payments-row dp__payments-row--method">
+          <div class="dp__payments-row dp__payments-row--method" [ngStyle]="fontColor(paymentMethodsStyle())">
             <span>
               {{ p.method }}
-              @if (p.ref) { <small> · Ref# {{ p.ref }}</small> }
+              @if (p.ref) { <small> Ref.# {{ p.ref }}</small> }
             </span>
-            <span>BHD {{ p.amount.toFixed(3) }}</span>
+            <span>{{ money(p.amount) }}</span>
           </div>
+        }
         }
       </div>
     }
@@ -634,11 +637,12 @@
 
     <!-- Customer note — yellow band styled per `footerCustomization.customerNote`.
          Sits between the totals block and the company note. -->
-    @if (customerNote() && template().footerCustomization.customerNote.show) {
+    @if (showCustomerNote()) {
       <div class="dp__customer-note"
-           [ngStyle]="textStyle(template().footerCustomization.customerNote)"
-           [style.text-align]="template().footerCustomization.customerNote.alignment || 'center'">
-        {{ customerNote() }}
+           [style.text-align]="template().footerCustomization.customerNote.alignment || null">
+        <span [style.color]="template().footerCustomization.customerNote.color || null"
+              [style.font-size.pt]="template().footerCustomization.customerNote.size || null"
+              style="white-space: pre-wrap">{{ customerNote() }}</span>
       </div>
     }
 
@@ -658,44 +662,44 @@
      or, when `termAsSeparatePage` is on, as its own page after the main one (single-paper Classic
      only — see the `.dp--terms-page` box below). -->
 <ng-template #termsBlockTpl>
-  <div [ngStyle]="textStyle(template().footerCustomization.term)"
-       [style.text-align]="template().footerCustomization.term.alignment || 'left'">
-    <strong [style.color]="template().footerCustomization.term.labelColor || 'inherit'">
+  <div [style.font-size.pt]="template().footerCustomization.term.size || null"
+       [style.text-align]="template().footerCustomization.term.alignment || null">
+    <strong [style.color]="template().footerCustomization.term.labelColor || null"
+            [style.font-weight]="template().footerCustomization.term.bold ? 'bold' : 'normal'"
+            [style.font-style]="template().footerCustomization.term.italic ? 'italic' : 'normal'"
+            [style.text-decoration]="template().footerCustomization.term.underline ? 'underline' : 'none'">
       {{ (template().footerCustomization.term.label || 'Terms & Conditions') }}:
     </strong>
     <br/>
-    <span>{{ r('{{terms}}') }}</span>
+    <span [style.color]="template().footerCustomization.term.color || null"
+          [style.font-weight]="template().footerCustomization.term.bold ? 'bold' : 'normal'"
+          [style.font-style]="template().footerCustomization.term.italic ? 'italic' : 'normal'"
+          [style.text-decoration]="template().footerCustomization.term.underline ? 'underline' : 'none'"
+          style="white-space: pre-wrap">{{ r('{{company.terms}}') || r('{{terms}}') }}</span>
   </div>
 </ng-template>
 
 <ng-template #classicFooterTpl>
+    <!-- Company note: legacy prints it on its own, whether or not the footer is shown. -->
+    @if (supportsCompanyNote() && template().footerCustomization.note.show && (builderMode() || r('{{company.note}}'))) {
+      <div class="dp__company-note" [ngStyle]="font(template().footerCustomization.note)"
+           [style.text-align]="template().footerCustomization.note.alignment || null">
+        <strong [style.color]="template().footerCustomization.note.labelColor || null">
+          {{ (template().footerCustomization.note.label || 'Note') }}:
+        </strong>
+        <span [style.color]="template().footerCustomization.note.color || null"
+              style="white-space: pre-wrap">{{ r('{{company.note}}') || r('{{notes}}') }}</span>
+      </div>
+    }
     @if (template().footerCustomization.visibility.visible) {
       <footer class="dp__footer">
-        @if (template().footerCustomization.note.show) {
-          <div [ngStyle]="textStyle(template().footerCustomization.note)"
-               [style.text-align]="template().footerCustomization.note.alignment || 'left'">
-            <strong [style.color]="template().footerCustomization.note.labelColor || 'inherit'">
-              {{ (template().footerCustomization.note.label || 'Note') }}:
-            </strong>
-            <span>{{ r('{{notes}}') }}</span>
-          </div>
-        }
         <!-- Rendered here UNLESS it's set to show as its own separate page (single-paper Classic
              only — paginated print-preview keeps its existing per-page behaviour either way). -->
-        @if (template().footerCustomization.term.show && !showTermsAsSeparatePage()) {
+        @if (showTerms() && !showTermsAsSeparatePage()) {
           <ng-container *ngTemplateOutlet="termsBlockTpl"/>
         }
-        @if (additionalAt('footer').length > 0) {
-          <div class="dp__additional dp__additional--footer" [ngStyle]="textStyle(template().additionalDataStyle)">
-            @for (a of additionalAt('footer'); track a.key) {
-              <div class="dp__additional-pair">
-                <strong [style.color]="template().additionalDataStyle.labelColor || 'inherit'">{{ a.label }}:</strong> {{ a.value }}
-              </div>
-            }
-          </div>
-        }
       </footer>
-    } @else {
+    } @else if (supportsTerms()) {
       <div [style.height.px]="template().footerCustomization.visibility.height"></div>
     }
 </ng-template>

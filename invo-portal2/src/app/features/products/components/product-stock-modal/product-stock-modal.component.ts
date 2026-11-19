@@ -106,19 +106,19 @@ export interface ProductStockModalData {
   `,
   styles: [`
     .body   { padding: 16px 20px; }
-    .state  { padding: 32px 8px; text-align: center; color: #64748b; font-size: 13px; }
+    .state  { padding: 32px 8px; text-align: center; color: var(--ui-muted); font-size: 13px; }
     .state--error {
       margin: 0 0 12px; padding: 10px 12px;
-      background: #fef2f2; border: 1px solid #fecaca;
-      color: #991b1b; border-radius: 8px; font-size: 12px; text-align: start;
+      background: var(--ui-red-soft); border: 1px solid var(--ui-red-soft-2);
+      color: var(--ui-red-text); border-radius: 8px; font-size: 12px; text-align: start;
     }
 
     /* Rounded, bordered container so the table reads as one unit */
     .tbl-wrap {
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--ui-line);
       border-radius: 10px;
       overflow: hidden;
-      background: #fff;
+      background: var(--ui-surface);
     }
 
     .tbl {
@@ -126,26 +126,26 @@ export interface ProductStockModalData {
       font-size: 13px;
     }
     .tbl thead th {
-      background: #f8fafc; color: #64748b;
+      background: var(--ui-surface-1); color: var(--ui-muted);
       font-weight: 600; font-size: 11px;
       text-transform: uppercase; letter-spacing: .04em;
       padding: 10px 14px;
-      border-bottom: 1px solid #e2e8f0;
+      border-bottom: 1px solid var(--ui-line);
     }
     .tbl tbody td {
       padding: 10px 14px;
-      border-bottom: 1px solid #f1f5f9;
-      color: #0f172a;
+      border-bottom: 1px solid var(--ui-surface-2);
+      color: var(--ui-text);
       vertical-align: middle;
     }
     .tbl tbody tr:last-child td { border-bottom: none; }
-    .tbl tbody tr:hover { background: #f8fafc; }
+    .tbl tbody tr:hover { background: var(--ui-surface-1); }
 
     .tbl tfoot th {
       padding: 10px 14px;
-      background: #f8fafc;
-      border-top: 1px solid #e2e8f0;
-      color: #0f172a; font-weight: 700; font-size: 13px;
+      background: var(--ui-surface-1);
+      border-top: 1px solid var(--ui-line);
+      color: var(--ui-text); font-weight: 700; font-size: 13px;
       text-transform: none; letter-spacing: 0;
     }
 
@@ -156,23 +156,23 @@ export interface ProductStockModalData {
     .qty-col    { width: 110px; }
     .action-col { width: 150px; }
 
-    .branch { font-weight: 500; color: #0f172a; }
+    .branch { font-weight: 500; color: var(--ui-text); }
 
     /* Numeric display */
-    .mono { font-variant-numeric: tabular-nums; color: #0f172a; }
+    .mono { font-variant-numeric: tabular-nums; color: var(--ui-text); }
 
     /* On-hand pill — visual focus on the number */
     .qty-pill {
       display: inline-flex; min-width: 36px; justify-content: center;
       padding: 3px 10px; border-radius: 999px;
-      background: #e0f2f7; color: #0e7490;
+      background: var(--ui-x-e0f2f7); color: var(--ui-brand-text);
       font-weight: 600; font-size: 12px; font-variant-numeric: tabular-nums;
     }
     .qty-pill--zero {
-      background: #f1f5f9; color: #94a3b8;
+      background: var(--ui-surface-2); color: var(--ui-faint);
     }
     .qty-pill--total {
-      background: #cffafe; color: #0e7490;
+      background: var(--ui-x-cffafe); color: var(--ui-brand-text);
     }
 
     /* Compact action buttons with an icon */
@@ -187,16 +187,16 @@ export interface ProductStockModalData {
     }
     .btn-small:disabled { opacity: .45; cursor: not-allowed; }
     .btn-small--success {
-      background: #ecfeff; border-color: #a5f3fc; color: #0e7490;
+      background: var(--ui-brand-soft); border-color: var(--ui-brand-soft-2); color: var(--ui-brand-text);
     }
     .btn-small--success:hover:not(:disabled) {
-      background: #cffafe; border-color: #67e8f9;
+      background: var(--ui-x-cffafe); border-color: var(--ui-x-67e8f9);
     }
     .btn-small--danger {
-      background: #fef2f2; border-color: #fecaca; color: #b91c1c;
+      background: var(--ui-red-soft); border-color: var(--ui-red-soft-2); color: var(--ui-red-text);
     }
     .btn-small--danger:hover:not(:disabled) {
-      background: #fee2e2; border-color: #fca5a5;
+      background: var(--ui-red-soft); border-color: #fca5a5;
     }
   `],
 })

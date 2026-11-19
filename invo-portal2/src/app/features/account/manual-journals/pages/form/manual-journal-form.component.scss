@@ -21,13 +21,13 @@
 .mjf-title {
   font-size: 20px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--ui-text);
   margin: 0;
 }
 
 .mjf-card {
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
   border-radius: 12px;
   padding: 20px;
   display: flex;
@@ -38,7 +38,7 @@
 .mjf-card-title {
   font-size: 15px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--ui-text);
   margin: 0;
 }
 
@@ -53,7 +53,7 @@
   flex-direction: column;
   gap: 6px;
   font-size: 13px;
-  color: #475569;
+  color: var(--ui-text-4);
   font-weight: 600;
 
   &--wide {
@@ -65,9 +65,9 @@
     font: inherit;
     font-weight: 400;
     padding: 8px 10px;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--ui-line-strong);
     border-radius: 8px;
-    color: #0f172a;
+    color: var(--ui-text);
     resize: vertical;
   }
 }
@@ -85,8 +85,8 @@
   gap: 6px;
   padding: 4px 10px;
   border-radius: 999px;
-  background: #f1f5f9;
-  color: #334155;
+  background: var(--ui-surface-2);
+  color: var(--ui-text-3);
   font-size: 12px;
   font-weight: 500;
 
@@ -94,11 +94,11 @@
     border: none;
     background: none;
     cursor: pointer;
-    color: #94a3b8;
+    color: var(--ui-faint);
     font-size: 14px;
     line-height: 1;
 
-    &:hover { color: #dc2626; }
+    &:hover { color: var(--ui-red-text); }
   }
 }
 
@@ -110,22 +110,22 @@
     padding: 8px 10px;
     text-align: start;
     vertical-align: middle;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--ui-surface-2);
   }
 
   thead th {
     font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 0.02em;
-    color: #64748b;
-    background: #f8fafc;
+    color: var(--ui-muted);
+    background: var(--ui-surface-1);
   }
 
   tfoot th {
     font-size: 13px;
     font-weight: 700;
-    color: #0f172a;
-    border-top: 2px solid #e2e8f0;
+    color: var(--ui-text);
+    border-top: 2px solid var(--ui-line);
     border-bottom: none;
   }
 
@@ -137,20 +137,20 @@
     width: 100%;
     font: inherit;
     padding: 6px 8px;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--ui-line-strong);
     border-radius: 6px;
   }
 
   input[type="number"] { text-align: end; }
 
   .mjf-desc-row td {
-    background: #fafafa;
+    background: var(--ui-x-fafafa);
     padding-top: 0;
   }
 }
 
 .mjf-balance {
-  &--bad { color: #dc2626; }
+  &--bad { color: var(--ui-red-text); }
   &--ok  { color: #16a34a; }
 }
 
@@ -166,9 +166,9 @@
   font-weight: 500;
 
   &--danger {
-    background: #fef2f2;
-    color: #b91c1c;
-    border: 1px solid #fecaca;
+    background: var(--ui-red-soft);
+    color: var(--ui-red-text);
+    border: 1px solid var(--ui-red-soft-2);
   }
 }
 
@@ -181,24 +181,24 @@
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  border: 1px solid #e2e8f0;
-  background: #fff;
-  color: #475569;
+  border: 1px solid var(--ui-line);
+  background: var(--ui-surface);
+  color: var(--ui-text-4);
 
-  &:hover { background: #f8fafc; color: #0f172a; }
+  &:hover { background: var(--ui-surface-1); color: var(--ui-text); }
 
   &--ghost {
-    background: #fff;
+    background: var(--ui-surface);
   }
 
   &--danger-ghost {
-    border-color: #fecaca;
-    color: #b91c1c;
+    border-color: var(--ui-red-soft-2);
+    color: var(--ui-red-text);
 
-    &:hover { background: #fef2f2; }
+    &:hover { background: var(--ui-red-soft); }
   }
 }
 
 // Table look shared with the item table.
-.mjf-lines-table thead th { color: #475569; font-weight: 600; background: #f8fafc; }
-.mjf-lines-table td { background: #fff; }
+.mjf-lines-table thead th { color: var(--ui-text-4); font-weight: 600; background: var(--ui-surface-1); }
+.mjf-lines-table td { background: var(--ui-surface); }

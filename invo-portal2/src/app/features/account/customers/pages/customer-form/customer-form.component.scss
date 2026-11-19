@@ -10,22 +10,22 @@
   gap: 8px;
   margin-bottom: 20px;
   padding-bottom: 16px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--ui-line);
 
-  &__title { margin: 0; font-size: 24px; font-weight: 700; color: #0f172a; }
+  &__title { margin: 0; font-size: 24px; font-weight: 700; color: var(--ui-text); }
 }
 
 .cfp-btn {
   padding: 9px 18px;
   border-radius: 8px;
-  border: 1px solid #d0d5dd;
-  background: #fff;
-  color: #334155;
+  border: 1px solid var(--ui-line-strong);
+  background: var(--ui-surface);
+  color: var(--ui-text-3);
   font-size: 13.5px;
   font-weight: 600;
   cursor: pointer;
 
-  &:hover { background: #f8fafc; }
+  &:hover { background: var(--ui-surface-1); }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
   &--primary { border-color: #2691a4; background: #2691a4; color: #fff; &:hover:not(:disabled) { background: #227d8d; } }
 }

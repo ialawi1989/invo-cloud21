@@ -61,17 +61,17 @@ export interface CreditReturnData { line: SupplierCreditLine; }
   `,
   styles: [`
     .cr { padding: 16px 20px; min-width: 520px; max-width: 100%; display: flex; flex-direction: column; gap: 12px; }
-    .cr__item { margin: 0; font-weight: 600; color: #0f172a; }
-    .cr__scroll { max-height: 320px; overflow: auto; border: 1px solid #e5e7eb; border-radius: 10px; }
+    .cr__item { margin: 0; font-weight: 600; color: var(--ui-text); }
+    .cr__scroll { max-height: 320px; overflow: auto; border: 1px solid var(--ui-line); border-radius: 10px; }
     .cr__table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-    .cr__table th { text-align: start; background: #f8fafc; color: #64748b; font-size: 12px; padding: 8px 10px; position: sticky; top: 0; }
-    .cr__table td { padding: 6px 10px; border-top: 1px solid #f1f5f9; }
-    .cr__empty { text-align: center; color: #94a3b8; padding: 18px; }
-    .cr__input { border: 1px solid #d0d5dd; border-radius: 8px; padding: 8px 10px; font: inherit; box-sizing: border-box; }
+    .cr__table th { text-align: start; background: var(--ui-surface-1); color: var(--ui-muted); font-size: 12px; padding: 8px 10px; position: sticky; top: 0; }
+    .cr__table td { padding: 6px 10px; border-top: 1px solid var(--ui-surface-2); }
+    .cr__empty { text-align: center; color: var(--ui-faint); padding: 18px; }
+    .cr__input { border: 1px solid var(--ui-line-strong); border-radius: 8px; padding: 8px 10px; font: inherit; box-sizing: border-box; }
     .cr__num { width: 110px; }
-    .cr__sum { align-self: flex-end; color: #334155; }
-    .cr__btn { padding: 9px 18px; border-radius: 8px; border: 1px solid #d0d5dd; background: #fff; color: #334155; font-size: 13.5px; font-weight: 600; cursor: pointer; }
-    .cr__btn--primary { border-color: #2691a4; background: #2691a4; color: #fff; }
+    .cr__sum { align-self: flex-end; color: var(--ui-text-3); }
+    .cr__btn { padding: 9px 18px; border-radius: 8px; border: 1px solid var(--ui-line-strong); background: var(--ui-surface); color: var(--ui-text-3); font-size: 13.5px; font-weight: 600; cursor: pointer; }
+    .cr__btn--primary { border-color: #2691a4; background: var(--ui-b-2691a4); color: #fff; }
   `],
 })
 export class CreditReturnModalComponent {

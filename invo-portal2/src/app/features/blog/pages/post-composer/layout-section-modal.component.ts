@@ -55,17 +55,17 @@ import { ModalHeaderComponent } from '@shared/modal/modal-header.component';
   `,
   styles: [`
     .lm__body { padding: 16px 20px 20px; display: flex; flex-direction: column; gap: 18px; max-height: 70vh; overflow: auto; }
-    .lm__group { margin: 0 0 10px; font-size: 13px; font-weight: 700; color: #0f172a; }
+    .lm__group { margin: 0 0 10px; font-size: 13px; font-weight: 700; color: var(--ui-text); }
     .lm__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .lm__tile {
       display: flex; flex-direction: column; align-items: center; gap: 8px;
-      padding: 14px; border: 1.5px solid #e2e8f0; border-radius: 10px; background: #fff; cursor: pointer;
+      padding: 14px; border: 1.5px solid var(--ui-line); border-radius: 10px; background: var(--ui-surface); cursor: pointer;
       transition: border-color .1s, background .1s;
     }
-    .lm__tile:hover { border-color: #32acc1; background: #f0fafc; }
+    .lm__tile:hover { border-color: #32acc1; background: var(--ui-x-f0fafc); }
     .lm__thumb { display: flex; gap: 6px; width: 90px; height: 56px; }
-    .lm__thumb i { flex: 1; border: 1.5px solid #cbd5e1; border-radius: 4px; }
-    .lm__name { font-size: 12px; color: #475569; }
+    .lm__thumb i { flex: 1; border: 1.5px solid var(--ui-line-strong); border-radius: 4px; }
+    .lm__name { font-size: 12px; color: var(--ui-text-4); }
     .lm__pthumb { display: block; width: 110px; height: 64px; }
     .lm__pthumb :where(svg) { width: 100%; height: 100%; }
   `],

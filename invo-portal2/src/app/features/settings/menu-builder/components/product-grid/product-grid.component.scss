@@ -3,7 +3,7 @@
 // CDK inserts the placeholder clone outside this component's encapsulation, so it is styled through ::ng-deep.
 :host ::ng-deep .cdk-drag-placeholder {
   border: 2px dashed #32acc1 !important;
-  background: #f1f5f9 !important;
+  background: var(--ui-surface-2) !important;
   box-shadow: none !important;
   opacity: 1 !important;
   border-radius: 10px;
@@ -14,8 +14,8 @@
 .pg {
   display: grid;
   gap: 8px;
-  background: #f1f5f9;
-  border: 1px solid #e2e8f0;
+  background: var(--ui-surface-2);
+  border: 1px solid var(--ui-line);
   border-radius: 12px;
   padding: 10px;
   // Square 6x6: cell width equals cell height, so the drag and resize maths are symmetric.
@@ -30,16 +30,16 @@
 
 .cell {
   background: rgba(255, 255, 255, 0.6);
-  border: 1px dashed #cbd5e1;
+  border: 1px dashed var(--ui-line-strong);
   border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #94a3b8;
+  color: var(--ui-faint);
   cursor: pointer;
   padding: 0;
   transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
-  &:hover, &--over { background: var(--color-brand-50, #ecfeff); color: var(--color-brand-700, #207484); border-color: var(--color-brand-300, #7dd3e0); }
+  &:hover, &--over { background: var(--color-brand-50, var(--ui-brand-soft)); color: var(--ui-brand-t700); border-color: var(--color-brand-300, #7dd3e0); }
   &--over { border-style: solid; }
   &:focus-visible { outline: 2px solid var(--color-brand-600, #2691a4); outline-offset: 1px; }
 }
@@ -54,11 +54,11 @@
 }
 
 .tile {
-  --tile-color: var(--color-brand-600, #2691a4);
+  --tile-color: var(--color-brand-600, var(--ui-brand-text));
   position: relative;
   border: 2px solid var(--tile-color);
   border-radius: 10px;
-  background: #fff;
+  background: var(--ui-surface);
   cursor: grab;
   box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06);
   overflow: visible;
@@ -75,10 +75,10 @@
   }
   &__img { width: 46%; aspect-ratio: 1 / 1; object-fit: contain; }
   &__name {
-    font-size: 11px; font-weight: 600; line-height: 1.2; color: #0f172a; max-width: 100%;
+    font-size: 11px; font-weight: 600; line-height: 1.2; color: var(--ui-text); max-width: 100%;
     display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
   }
-  &__price { font-size: 10px; font-weight: 700; color: #475569; font-variant-numeric: tabular-nums; }
+  &__price { font-size: 10px; font-weight: 700; color: var(--ui-text-4); font-variant-numeric: tabular-nums; }
 
   // Actions are shown on hover AND on keyboard focus (so they are never mouse-only).
   &__actions { position: absolute; top: 3px; inset-inline-end: 3px; display: flex; gap: 2px; opacity: 0; transition: opacity 120ms ease; z-index: 2; }
@@ -86,7 +86,7 @@
   &__x {
     width: 22px; height: 22px; border: 0; border-radius: 6px; background: rgba(15, 23, 42, 0.62); color: #fff; cursor: pointer;
     display: inline-flex; align-items: center; justify-content: center;
-    &:hover { background: #b91c1c; } &:focus-visible { outline: 2px solid #fff; outline-offset: -3px; }
+    &:hover { background: #b91c1c; } &:focus-visible { outline: 2px solid var(--ui-surface); outline-offset: -3px; }
   }
   &__actions ::ng-deep .rm__btn { width: 22px; height: 22px; border-radius: 6px; background: rgba(15, 23, 42, 0.62); color: #fff; &:hover { background: rgba(15, 23, 42, 0.85); color: #fff; } }
 
@@ -97,5 +97,5 @@
   &:hover &__handle { opacity: 0.85; }
 }
 
-.pg__notice { margin: 8px 0 0; text-align: center; font-size: 12px; font-weight: 600; color: #b45309; }
+.pg__notice { margin: 8px 0 0; text-align: center; font-size: 12px; font-weight: 600; color: var(--ui-amber-text); }
 @media (prefers-reduced-motion: reduce) { .tile, .cell, .tile__actions, .tile__handle { transition: none; } }

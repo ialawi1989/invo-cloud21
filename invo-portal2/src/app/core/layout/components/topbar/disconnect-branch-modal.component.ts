@@ -66,27 +66,27 @@ import { BranchConnectionService, BranchConnection } from '../../services/branch
     .dm-icon-wrap { display: flex; justify-content: center; margin-bottom: 16px; }
     .dm-icon {
       width: 68px; height: 68px; border-radius: 50%;
-      background: #fffbeb; border: 2px solid #fef3c7;
+      background: var(--ui-amber-soft); border: 2px solid var(--ui-amber-soft);
       display: flex; align-items: center; justify-content: center;
     }
     .dm-msg {
-      font-size: 14px; color: #374151; line-height: 1.6; margin: 0 0 20px;
+      font-size: 14px; color: var(--ui-text-3); line-height: 1.6; margin: 0 0 20px;
     }
 
     .dm-input-wrap { position: relative; margin-bottom: 4px; }
     .dm-input {
       width: 100%; height: 44px; padding: 0 38px 0 14px; box-sizing: border-box;
-      border: 1.5px solid #e5e7eb; border-radius: 8px;
-      font-size: 16px; font-family: inherit; color: #111827; outline: none;
+      border: 1.5px solid var(--ui-line); border-radius: 8px;
+      font-size: 16px; font-family: inherit; color: var(--ui-text); outline: none;
       text-align: center;
       &:focus { border-color: #32acc1; }
-      &::placeholder { color: #9ca3af; }
+      &::placeholder { color: var(--ui-faint); }
     }
     .dm-input--err { border-color: #ef4444 !important; }
     .dm-input-err-icon {
       position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
     }
-    .dm-err { font-size: 12px; color: #ef4444; margin: 4px 0 16px; }
+    .dm-err { font-size: 12px; color: var(--ui-red-text); margin: 4px 0 16px; }
 
     .dm-footer { display: flex; gap: 10px; margin-top: 8px; }
     .dm-btn {
@@ -96,12 +96,12 @@ import { BranchConnectionService, BranchConnection } from '../../services/branch
       transition: all .15s;
       &:disabled { opacity: .6; cursor: not-allowed; }
     }
-    .dm-btn--cancel  { background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; &:hover:not(:disabled) { background: #fee2e2; } }
+    .dm-btn--cancel  { background: var(--ui-red-soft); color: var(--ui-red-text); border: 1px solid var(--ui-red-soft-2); &:hover:not(:disabled) { background: var(--ui-red-soft); } }
     .dm-btn--confirm { background: #32acc1; color: #fff; &:hover:not(:disabled) { background: #2b95a8; } }
 
     .dm-spin {
       width: 14px; height: 14px; border-radius: 50%;
-      border: 2px solid rgba(255,255,255,.3); border-top-color: #fff;
+      border: 2px solid rgba(255,255,255,.3); border-top-color: var(--ui-surface);
       animation: spin .6s linear infinite; display: inline-block;
     }
     @keyframes spin { to { transform: rotate(360deg); } }

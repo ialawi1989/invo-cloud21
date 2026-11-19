@@ -106,9 +106,9 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
       --qi-h: 36px;
       height: var(--qi-h);
       align-items: stretch;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--ui-line);
       border-radius: 8px;
-      background: #fff;
+      background: var(--ui-surface);
       overflow: hidden;
       transition: border-color 150ms ease, box-shadow 150ms ease;
       box-sizing: border-box;
@@ -119,8 +119,8 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
       }
 
       &--disabled {
-        background: #f8fafc;
-        color: #94a3b8;
+        background: var(--ui-surface-1);
+        color: var(--ui-faint);
       }
     }
 
@@ -133,14 +133,14 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
       min-width: var(--qi-h);   // hold against flex shrink in tight cells
       background: transparent;
       border: 0;
-      color: #475569;
+      color: var(--ui-text-4);
       cursor: pointer;
       transition: background 120ms ease, color 120ms ease;
       flex-shrink: 0;
 
       &:hover:not(:disabled) {
-        background: #f1f5f9;
-        color: #0f172a;
+        background: var(--ui-surface-2);
+        color: var(--ui-text);
       }
 
       &:disabled {
@@ -148,8 +148,8 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
         cursor: not-allowed;
       }
 
-      &--minus { border-inline-end: 1px solid #e2e8f0; }
-      &--plus  { border-inline-start: 1px solid #e2e8f0; }
+      &--minus { border-inline-end: 1px solid var(--ui-line); }
+      &--plus  { border-inline-start: 1px solid var(--ui-line); }
     }
 
     .qi__field {
@@ -161,7 +161,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
       background: transparent;
       font: inherit;
       font-size: 14px;
-      color: #0f172a;
+      color: var(--ui-text);
       text-align: center;
       font-variant-numeric: tabular-nums;
 
@@ -174,7 +174,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
       }
 
       &:disabled {
-        color: #64748b;
+        color: var(--ui-muted);
         cursor: not-allowed;
       }
     }

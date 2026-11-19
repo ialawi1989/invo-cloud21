@@ -12,10 +12,10 @@
   cursor: pointer;
 
   &--outline {
-    background: #fff;
-    color: #0e7490;
-    border: 1px solid #a5f3fc;
-    &:hover { background: #ecfeff; border-color: #67e8f9; }
+    background: var(--ui-surface);
+    color: var(--ui-brand-text);
+    border: 1px solid var(--ui-brand-soft-2);
+    &:hover { background: var(--ui-brand-soft); border-color: var(--ui-x-67e8f9); }
   }
 }
 
@@ -34,13 +34,13 @@
   justify-content: space-between;
   gap: 8px;
   padding: 9px 12px;
-  border: 1px solid #f1f5f9;
-  background: #fff;
+  border: 1px solid var(--ui-surface-2);
+  background: var(--ui-surface);
   border-radius: 8px;
 
   &__name {
     font-size: 13px;
-    color: #0f172a;
+    color: var(--ui-text);
     min-width: 0;
     word-break: break-word;
   }
@@ -52,11 +52,11 @@
     align-items: center;
     justify-content: center;
     background: transparent;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--ui-line);
     border-radius: 50%;
-    color: #64748b;
+    color: var(--ui-muted);
     font-size: 11px;
     cursor: pointer;
-    &:hover { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
+    &:hover { background: var(--ui-red-soft); color: var(--ui-red-text); border-color: var(--ui-red-soft-2); }
   }
 }

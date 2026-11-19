@@ -17,8 +17,10 @@ export function estimateToRenderData(e: Estimate): DocumentRenderData {
       number: e.estimateNumber,
       date: fmtDate(e.estimateDate),
       dueDate: fmtDate(e.estimateExpDate),
-      status: '',
+      status: e.status,
     },
+    // An estimate's tax comes back as `estimateTaxTotal` (legacy `taxTotalField`), not `invoiceTaxTotal`.
+    totals: { ...(data['totals'] as Record<string, unknown>), vat: e.estimateTaxTotal || e.invoiceTaxTotal },
     invoicePayments: [],
   };
 }

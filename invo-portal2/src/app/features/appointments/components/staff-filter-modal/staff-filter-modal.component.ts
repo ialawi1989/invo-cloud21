@@ -52,16 +52,16 @@ export interface StaffFilterData {
   styles: [`
     .sf { padding: 16px 24px; }
     .sf__tools { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-    .sf__search { flex: 1; min-width: 0; padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 13px; font-family: inherit; }
+    .sf__search { flex: 1; min-width: 0; padding: 8px 12px; border: 1px solid var(--ui-line); border-radius: 8px; font-size: 13px; font-family: inherit; }
     .sf__search:focus { outline: none; border-color: #32acc1; }
-    .sf__link { background: none; border: none; color: #2691a4; font-size: 12.5px; font-weight: 600; cursor: pointer; padding: 0; white-space: nowrap; }
+    .sf__link { background: none; border: none; color: var(--ui-brand-text); font-size: 12.5px; font-weight: 600; cursor: pointer; padding: 0; white-space: nowrap; }
     .sf__link:hover { text-decoration: underline; }
     .sf__list { list-style: none; margin: 0; padding: 0; max-height: 340px; overflow: auto; }
-    .sf__row { display: flex; align-items: center; gap: 10px; padding: 8px 6px; border-radius: 8px; cursor: pointer; font-size: 13.5px; color: #1f2937; }
-    .sf__row:hover { background: #f5f7fa; }
+    .sf__row { display: flex; align-items: center; gap: 10px; padding: 8px 6px; border-radius: 8px; cursor: pointer; font-size: 13.5px; color: var(--ui-text-2); }
+    .sf__row:hover { background: var(--ui-x-f5f7fa); }
     .sf__dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-    .sf__btn { padding: 9px 20px; background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 13px; cursor: pointer; }
-    .sf__btn--primary { background: #2691a4; border-color: #2691a4; color: #fff; font-weight: 600; }
+    .sf__btn { padding: 9px 20px; background: var(--ui-surface-2); border: 1px solid var(--ui-line); border-radius: 8px; font-size: 13px; cursor: pointer; }
+    .sf__btn--primary { background: var(--ui-b-2691a4); border-color: #2691a4; color: #fff; font-weight: 600; }
   `],
 })
 export class StaffFilterModalComponent {

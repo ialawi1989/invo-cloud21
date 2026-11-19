@@ -14,13 +14,13 @@
   margin: 0 0 4px;
   font-size: 20px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--ui-text);
 }
 
 .wh-modal__sub {
   margin: 0 0 16px;
   font-size: 13px;
-  color: #64748b;
+  color: var(--ui-muted);
 }
 
 .wh-modal__footer {
@@ -28,7 +28,7 @@
   justify-content: flex-end;
   gap: 8px;
   padding: 14px 28px 18px;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid var(--ui-surface-2);
 }
 
 .btn {
@@ -47,7 +47,7 @@
     &:not(:disabled):hover { background: #2a93a6; border-color: #2a93a6; }
   }
   &-ghost {
-    background: #fff; color: #475569; border-color: #e5e7eb;
-    &:hover { background: #f8fafc; color: #0f172a; }
+    background: var(--ui-surface); color: var(--ui-text-4); border-color: var(--ui-line);
+    &:hover { background: var(--ui-surface-1); color: var(--ui-text); }
   }
 }

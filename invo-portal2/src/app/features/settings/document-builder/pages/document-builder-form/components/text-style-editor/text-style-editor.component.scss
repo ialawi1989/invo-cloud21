@@ -6,13 +6,13 @@
 // bulk-style editor (label on the left, control on the right) so a
 // panel of these reads as a clean form rather than a dense grid.
 .tse {
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
   border-radius: 8px;
   margin-bottom: 6px;
   transition: border-color 120ms ease, box-shadow 120ms ease;
 
-  &:hover { border-color: #d1d5db; }
+  &:hover { border-color: var(--ui-line-strong); }
 
   &--disabled { opacity: 0.55; pointer-events: none; }
 
@@ -23,7 +23,7 @@
   // Expanded state — gear is on; body is shown. Subtle highlight so
   // the user can see at a glance which row's editor is open.
   &--expanded {
-    border-color: var(--color-brand-300, #bae6fd);
+    border-color: var(--color-brand-300, var(--ui-sky-soft-2));
     box-shadow: 0 0 0 2px rgba(50, 172, 193, 0.10);
   }
 
@@ -54,7 +54,7 @@
   &__label {
     font-size: 13px;
     font-weight: 500;
-    color: #1f2937;
+    color: var(--ui-text-2);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -65,7 +65,7 @@
   // entity-form required indicators elsewhere in the app.
   &__required-badge {
     margin-inline-start: 4px;
-    color: #ef4444;
+    color: var(--ui-red-text);
     font-weight: 700;
   }
 
@@ -89,28 +89,28 @@
     background: transparent;
     border: 1px solid transparent;
     border-radius: 6px;
-    color: #94a3b8;
+    color: var(--ui-faint);
     cursor: pointer;
     transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
 
     &:hover {
-      background: #f9fafb;
-      border-color: #e5e7eb;
-      color: #1f2937;
+      background: var(--ui-surface-1);
+      border-color: var(--ui-line);
+      color: var(--ui-text-2);
     }
 
     &--on,
     &--on:hover {
       background: var(--color-brand-50);
-      border-color: var(--color-brand-300, #bae6fd);
-      color: var(--color-brand-700);
+      border-color: var(--color-brand-300, var(--ui-sky-soft-2));
+      color: var(--ui-brand-t700);
     }
   }
 
   &__body {
     padding: 12px 14px 14px;
-    border-top: 1px solid #f3f4f6;
-    background: #f9fafb;
+    border-top: 1px solid var(--ui-surface-2);
+    background: var(--ui-surface-1);
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -129,7 +129,7 @@
     flex: 0 0 96px;
     font-size: 12px;
     font-weight: 500;
-    color: #1f2937;
+    color: var(--ui-text-2);
   }
 
   &__row-control {
@@ -148,12 +148,12 @@
   &__input {
     width: 100%;
     padding: 7px 30px 7px 12px;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--ui-line-strong);
     border-radius: 6px;
-    background: #fff;
+    background: var(--ui-surface);
     font: inherit;
     font-size: 13px;
-    color: #1f2937;
+    color: var(--ui-text-2);
 
     &:focus {
       outline: none;
@@ -168,7 +168,7 @@
     top: 50%;
     transform: translateY(-50%);
     font-size: 12px;
-    color: #94a3b8;
+    color: var(--ui-faint);
     pointer-events: none;
   }
 
@@ -216,7 +216,7 @@
     flex-direction: column;
     gap: 10px;
     padding-top: 10px;
-    border-top: 1px dashed #e5e7eb;
+    border-top: 1px dashed var(--ui-line);
   }
 
   &__advanced-heading {
@@ -224,12 +224,12 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: #94a3b8;
+    color: var(--ui-faint);
   }
 
   &__btn-group {
     display: inline-flex;
-    background: #f1f5f9;
+    background: var(--ui-surface-2);
     border-radius: 6px;
     padding: 2px;
     gap: 2px;
@@ -241,7 +241,7 @@
     border: none;
     background: transparent;
     border-radius: 4px;
-    color: #64748b;
+    color: var(--ui-muted);
     cursor: pointer;
     display: inline-flex;
     align-items: center;
@@ -252,12 +252,12 @@
 
     > strong, > em, > u { font-size: 12px; }
 
-    &:hover:not(.tse__btn--on):not(:disabled) { color: #0f172a; }
+    &:hover:not(.tse__btn--on):not(:disabled) { color: var(--ui-text); }
 
     &--on,
     &--on:hover {
-      background: #fff;
-      color: var(--color-brand-700);
+      background: var(--ui-surface);
+      color: var(--ui-brand-t700);
       box-shadow: 0 1px 2px rgba(15, 23, 42, 0.10);
     }
   }

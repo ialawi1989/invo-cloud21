@@ -65,21 +65,21 @@ const FIELDS: SearchField[] = ['all', 'name', 'email', 'phone'];
   styles: [`
     .cs { width: 100%; box-sizing: border-box; padding: 16px 20px; display: flex; flex-direction: column; gap: 12px; }
     .cs__bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-    .cs__group { display: flex; align-items: stretch; flex: 1 1 260px; min-width: 0; border: 1px solid #d0d5dd; border-radius: 8px; background: #fff; overflow: hidden; }
+    .cs__group { display: flex; align-items: stretch; flex: 1 1 260px; min-width: 0; border: 1px solid var(--ui-line-strong); border-radius: 8px; background: var(--ui-surface); overflow: hidden; }
     .cs__group:focus-within { border-color: #2691a4; box-shadow: 0 0 0 3px rgba(38, 145, 164, .12); }
-    .cs__field { flex: 0 0 170px; border-inline-end: 1px solid #e4e7ec; }
+    .cs__field { flex: 0 0 170px; border-inline-end: 1px solid var(--ui-line); }
     .cs__field ::ng-deep .sd-trigger, .cs__field ::ng-deep button { border: 0; border-radius: 0; box-shadow: none; }
-    .cs__input { flex: 1; border: 0; outline: none; padding: 9px 12px; font: inherit; font-size: 13.5px; min-width: 0; }
-    .cs__btn { border: 1px solid #2691a4; background: #2691a4; color: #fff; border-radius: 8px; padding: 9px 20px; font-weight: 600; font-size: 13.5px; cursor: pointer; }
+    .cs__input { flex: 1; border: 0; outline: none; padding: 9px 12px; font: inherit; font-size: 13.5px; min-width: 0; background-color: var(--ui-bare-bg); }
+    .cs__btn { border: 1px solid #2691a4; background: var(--ui-b-2691a4); color: #fff; border-radius: 8px; padding: 9px 20px; font-weight: 600; font-size: 13.5px; cursor: pointer; }
     .cs__btn:hover { background: #227d8d; }
-    .cs__wrap { overflow-x: auto; border: 1px solid #e4e7ec; border-radius: 10px; }
+    .cs__wrap { overflow-x: auto; border: 1px solid var(--ui-line); border-radius: 10px; }
     .cs__table { width: 100%; border-collapse: collapse; font-size: 13.5px; table-layout: auto; }
     .cs__table td { overflow-wrap: anywhere; }
-    .cs__table th { text-align: start; background: #f8f9fc; color: #64748b; font-size: 12px; text-transform: uppercase; padding: 10px 14px; white-space: nowrap; }
-    .cs__table td { padding: 11px 14px; border-top: 1px solid #f1f5f9; }
+    .cs__table th { text-align: start; background: var(--ui-x-f8f9fc); color: var(--ui-muted); font-size: 12px; text-transform: uppercase; padding: 10px 14px; white-space: nowrap; }
+    .cs__table td { padding: 11px 14px; border-top: 1px solid var(--ui-surface-2); }
     .cs__table tbody tr { cursor: pointer; }
-    .cs__table tbody tr:hover td { background: #f0fafb; }
-    .cs__empty { text-align: center; color: #94a3b8; padding: 28px !important; cursor: default; }
+    .cs__table tbody tr:hover td { background: var(--ui-x-f0fafb); }
+    .cs__empty { text-align: center; color: var(--ui-faint); padding: 28px !important; cursor: default; }
   `],
 })
 export class CustomerAdvancedSearchModalComponent implements OnInit {

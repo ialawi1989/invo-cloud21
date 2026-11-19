@@ -84,18 +84,18 @@ export interface RenameTemplateModalData {
       margin: 0 0 8px;
       font-size: 12px;
       font-weight: 600;
-      color: #475569;
+      color: var(--ui-text-4);
     }
 
     .input {
       width: 100%;
       padding: 9px 12px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--ui-line);
       border-radius: 8px;
-      background: #fff;
+      background: var(--ui-surface);
       font: inherit;
       font-size: 14px;
-      color: #0f172a;
+      color: var(--ui-text);
       transition: border-color 120ms ease, box-shadow 120ms ease;
 
       &:focus {
@@ -106,12 +106,12 @@ export interface RenameTemplateModalData {
       &--invalid { border-color: #ef4444; }
     }
 
-    .err { margin: 8px 0 0; font-size: 12px; color: #b91c1c; }
+    .err { margin: 8px 0 0; font-size: 12px; color: var(--ui-red-text); }
 
     .btn-cancel {
-      padding: 9px 20px; background: #f3f4f6; border: 1px solid #e5e7eb;
+      padding: 9px 20px; background: var(--ui-surface-2); border: 1px solid var(--ui-line);
       border-radius: 8px; font-size: 13px; cursor: pointer;
-      &:hover:not(:disabled) { background: #e5e7eb; }
+      &:hover:not(:disabled) { background: var(--ui-line); }
       &:disabled { opacity: 0.5; cursor: not-allowed; }
     }
 
@@ -128,7 +128,7 @@ export interface RenameTemplateModalData {
       width: 14px; height: 14px;
       border-radius: 50%;
       border: 2px solid rgba(255,255,255,0.4);
-      border-top-color: #fff;
+      border-top-color: var(--ui-surface);
       animation: rt-spin .8s linear infinite;
     }
     @keyframes rt-spin { to { transform: rotate(360deg); } }

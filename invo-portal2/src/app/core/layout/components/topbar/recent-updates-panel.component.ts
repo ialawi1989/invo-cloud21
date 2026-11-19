@@ -77,28 +77,28 @@ export interface RecentUpdate {
 
     .rup {
       width: 380px; height: 100%;
-      background: #fff; display: flex; flex-direction: column;
+      background: var(--ui-surface); display: flex; flex-direction: column;
     }
 
     /* Header */
     .rup-header {
       display: flex; align-items: flex-start; justify-content: space-between;
-      padding: 18px 20px 14px; border-bottom: 1px solid #f0f2f5; flex-shrink: 0;
+      padding: 18px 20px 14px; border-bottom: 1px solid var(--ui-x-f0f2f5); flex-shrink: 0;
     }
-    .rup-title { font-size: 16px; font-weight: 700; color: #111827; margin: 0 0 2px; }
-    .rup-sub   { font-size: 12px; color: #9ca3af; margin: 0; }
+    .rup-title { font-size: 16px; font-weight: 700; color: var(--ui-text); margin: 0 0 2px; }
+    .rup-sub   { font-size: 12px; color: var(--ui-faint); margin: 0; }
     .rup-close {
       width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
       background: transparent; border: none; border-radius: 6px;
-      color: #9ca3af; cursor: pointer; flex-shrink: 0; transition: all .12s;
-      &:hover { background: #f4f5f7; color: #374151; }
+      color: var(--ui-faint); cursor: pointer; flex-shrink: 0; transition: all .12s;
+      &:hover { background: var(--ui-x-f4f5f7); color: var(--ui-text-3); }
     }
 
     /* Body */
     .rup-body { flex: 1; overflow-y: auto; padding: 8px 0 24px; }
     .rup-empty {
       display: flex; align-items: center; justify-content: center; gap: 10px;
-      padding: 48px 20px; color: #9ca3af; font-size: 13px;
+      padding: 48px 20px; color: var(--ui-faint); font-size: 13px;
     }
 
     /* Timeline */
@@ -111,35 +111,35 @@ export interface RecentUpdate {
     }
     .rup-dot {
       width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
-      background: #e5e7eb; border: 2px solid #e5e7eb;
+      background: var(--ui-line); border: 2px solid var(--ui-line);
     }
     .rup-dot--first {
-      background: #fff; border-color: #32acc1;
+      background: var(--ui-surface); border-color: #32acc1;
       box-shadow: 0 0 0 3px rgba(50,172,193,.15);
       width: 12px; height: 12px;
     }
-    .rup-line { flex: 1; width: 1.5px; background: #e5e7eb; margin-top: 4px; min-height: 16px; }
+    .rup-line { flex: 1; width: 1.5px; background: var(--ui-line); margin-top: 4px; min-height: 16px; }
 
     .rup-content { flex: 1; min-width: 0; padding-bottom: 20px; }
-    .rup-date { display: block; font-size: 11.5px; color: #9ca3af; margin: 16px 0 6px; }
+    .rup-date { display: block; font-size: 11.5px; color: var(--ui-faint); margin: 16px 0 6px; }
 
     .rup-card {
-      background: #f9fafb; border: 1px solid #f0f2f5; border-radius: 10px; padding: 12px 14px;
+      background: var(--ui-surface-1); border: 1px solid var(--ui-x-f0f2f5); border-radius: 10px; padding: 12px 14px;
     }
-    .rup-card--first { background: #f0fdfb; border-color: #b2e4e4; }
+    .rup-card--first { background: var(--ui-x-f0fdfb); border-color: var(--ui-x-b2e4e4); }
 
     .rup-card-top {
       display: flex; align-items: center; gap: 6px; margin-bottom: 5px; flex-wrap: wrap;
     }
     .rup-card-title {
-      flex: 1; font-size: 13.5px; font-weight: 600; color: #111827;
+      flex: 1; font-size: 13.5px; font-weight: 600; color: var(--ui-text);
     }
     .rup-badge {
       font-size: 10px; font-weight: 700; letter-spacing: .04em;
       padding: 2px 7px; border-radius: 20px;
-      background: #32acc1; color: #fff; flex-shrink: 0;
+      background: var(--ui-b-32acc1); color: #fff; flex-shrink: 0;
     }
-    .rup-desc { font-size: 12.5px; color: #6b7280; line-height: 1.55; margin: 0; }
+    .rup-desc { font-size: 12.5px; color: var(--ui-muted); line-height: 1.55; margin: 0; }
 
     /* Spinner */
     .rup-spin {

@@ -179,7 +179,7 @@ import { EmployeeAiOverrideComponent } from '../../../ai/employee-ai-override/em
     .identity {
       display: flex; align-items: center; gap: 12px;
       padding: 18px 18px 14px;
-      border-bottom: 1px solid #f1f5f9;
+      border-bottom: 1px solid var(--ui-surface-2);
     }
     .id-avatar {
       width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
@@ -188,30 +188,30 @@ import { EmployeeAiOverrideComponent } from '../../../ai/employee-ai-override/em
       display: flex; align-items: center; justify-content: center; overflow: hidden;
     }
     .id-avatar__img { width: 100%; height: 100%; object-fit: cover; }
-    .id-name    { font-size: 14px; font-weight: 600; color: #1e293b; margin: 0 0 2px; }
-    .id-email   { font-size: 12px; color: #64748b; margin: 0 0 3px; overflow-wrap: anywhere; text-align: start; }
+    .id-name    { font-size: 14px; font-weight: 600; color: var(--ui-text-2); margin: 0 0 2px; }
+    .id-email   { font-size: 12px; color: var(--ui-muted); margin: 0 0 3px; overflow-wrap: anywhere; text-align: start; }
     .id-company {
       display: flex; align-items: center; gap: 4px;
-      font-size: 12px; color: #64748b; margin: 0;
+      font-size: 12px; color: var(--ui-muted); margin: 0;
     }
 
     /* Actions */
     .actions {
       display: flex; flex-direction: column; gap: 1px;
-      padding: 6px 8px; border-bottom: 1px solid #f1f5f9;
+      padding: 6px 8px; border-bottom: 1px solid var(--ui-surface-2);
     }
     .btn-act {
       display: flex; align-items: center; gap: 9px;
       padding: 9px 10px; border-radius: 8px;
-      font-size: 13px; font-weight: 500; color: #374151;
+      font-size: 13px; font-weight: 500; color: var(--ui-text-3);
       background: none; border: none; cursor: pointer;
       text-decoration: none; font-family: inherit;
       transition: background .15s;
-      &:hover { background: #f8fafc; color: #1e293b; }
+      &:hover { background: var(--ui-surface-1); color: var(--ui-text-2); }
     }
     .btn-act--danger {
-      color: #ef4444;
-      &:hover { background: #fef2f2; color: #dc2626; }
+      color: var(--ui-red-text);
+      &:hover { background: var(--ui-red-soft); color: var(--ui-red-text); }
       &:disabled { opacity: .6; cursor: not-allowed; }
     }
 
@@ -222,21 +222,21 @@ import { EmployeeAiOverrideComponent } from '../../../ai/employee-ai-override/em
     }
     .list-label {
       padding: 12px 18px 6px;
-      font-size: 11px; font-weight: 600; color: #94a3b8;
+      font-size: 11px; font-weight: 600; color: var(--ui-faint);
       text-transform: uppercase; letter-spacing: .6px;
     }
     .loading-row {
       display: flex; align-items: center; gap: 8px;
-      padding: 10px 18px; font-size: 13px; color: #94a3b8;
+      padding: 10px 18px; font-size: 13px; color: var(--ui-faint);
     }
     .empty {
-      padding: 8px 18px 12px; font-size: 13px; color: #94a3b8; margin: 0;
+      padding: 8px 18px 12px; font-size: 13px; color: var(--ui-faint); margin: 0;
     }
 
     .company-list {
       padding: 4px 8px 10px;
       flex: 1 1 auto; min-height: 0; overflow-y: auto;
-      scrollbar-width: thin; scrollbar-color: #e2e8f0 transparent;
+      scrollbar-width: thin; scrollbar-color: var(--ui-line) transparent;
     }
     .company-row {
       display: flex; align-items: center; gap: 10px;
@@ -244,11 +244,11 @@ import { EmployeeAiOverrideComponent } from '../../../ai/employee-ai-override/em
       background: none; border: none; border-radius: 10px;
       cursor: pointer; font-family: inherit;
       transition: background .15s;
-      &:hover:not(:disabled) { background: #f8fafc; }
+      &:hover:not(:disabled) { background: var(--ui-surface-1); }
       &:disabled { cursor: default; opacity: .7; }
     }
-    .company-row--active { background: #f0fdfd; }
-    .company-row--pending { background: #f8fafc; }
+    .company-row--active { background: var(--ui-x-f0fdfd); }
+    .company-row--pending { background: var(--ui-surface-1); }
 
     /* The other companies are blurred (their names are not for onlookers); the one being switched to and the current one stay clear. */
     .company-item { transition: filter .2s, opacity .2s; }
@@ -257,38 +257,38 @@ import { EmployeeAiOverrideComponent } from '../../../ai/employee-ai-override/em
 
     /* Password step */
     .pw { padding: 4px 10px 12px; display: flex; flex-direction: column; gap: 8px; }
-    .pw-msg { margin: 0; font-size: 12.5px; color: #475569; text-align: center; }
+    .pw-msg { margin: 0; font-size: 12.5px; color: var(--ui-text-4); text-align: center; }
     .pw-input {
       height: 40px; padding: 0 12px; box-sizing: border-box; width: 100%;
-      border: 1.5px solid #e5e7eb; border-radius: 8px; font: inherit; font-size: 14px; color: #111827; outline: none; text-align: center;
+      border: 1.5px solid var(--ui-line); border-radius: 8px; font: inherit; font-size: 14px; color: var(--ui-text); outline: none; text-align: center;
       &:focus { border-color: #32acc1; }
     }
     .pw-input--err { border-color: #ef4444; }
-    .pw-err { margin: 0; font-size: 12px; color: #ef4444; text-align: center; }
+    .pw-err { margin: 0; font-size: 12px; color: var(--ui-red-text); text-align: center; }
     .pw-actions { display: flex; gap: 8px; }
     .pw-btn {
       flex: 1; height: 38px; border-radius: 8px; font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; border: none;
       display: flex; align-items: center; justify-content: center; transition: background .15s;
       &:disabled { opacity: .6; cursor: not-allowed; }
     }
-    .pw-btn--cancel { background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; &:hover:not(:disabled) { background: #fee2e2; } }
+    .pw-btn--cancel { background: var(--ui-red-soft); color: var(--ui-red-text); border: 1px solid var(--ui-red-soft-2); &:hover:not(:disabled) { background: var(--ui-red-soft); } }
     .pw-btn--confirm { background: #32acc1; color: #fff; &:hover:not(:disabled) { background: #2b95a8; } }
-    .pw-spin { width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; animation: spin .6s linear infinite; }
+    .pw-spin { width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(255,255,255,.3); border-top-color: var(--ui-surface); animation: spin .6s linear infinite; }
 
     .co-logo {
       width: 36px; height: 36px; border-radius: 8px; flex-shrink: 0;
-      border: 1px solid #e2e8f0; overflow: hidden;
+      border: 1px solid var(--ui-line); overflow: hidden;
       display: flex; align-items: center; justify-content: center;
-      background: #f8fafc;
+      background: var(--ui-surface-1);
     }
     .co-img { width: 100%; height: 100%; object-fit: cover; }
-    .co-placeholder { font-size: 15px; font-weight: 700; color: #94a3b8; }
+    .co-placeholder { font-size: 15px; font-weight: 700; color: var(--ui-faint); }
 
     .co-name {
       flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; text-align: start;
     }
-    .co-title { font-size: 13px; font-weight: 500; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .co-slug { font-size: 11.5px; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .co-title { font-size: 13px; font-weight: 500; color: var(--ui-text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .co-slug { font-size: 11.5px; color: var(--ui-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .co-right { width: 18px; flex-shrink: 0; display: flex; justify-content: center; }
 
     /* LTR company row (explicit reset) */
@@ -309,8 +309,8 @@ import { EmployeeAiOverrideComponent } from '../../../ai/employee-ai-override/em
       animation: spin .6s linear infinite;
     }
     .spinner     { border: 2px solid rgba(239,68,68,.2); border-top-color: #ef4444; }
-    .loading-spin { border: 2px solid #e2e8f0; border-top-color: #32acc1; }
-    .row-spin    { border: 2px solid #e2e8f0; border-top-color: #32acc1; }
+    .loading-spin { border: 2px solid var(--ui-line); border-top-color: #32acc1; }
+    .row-spin    { border: 2px solid var(--ui-line); border-top-color: #32acc1; }
 
     @keyframes spin { to { transform: rotate(360deg); } }
   `]

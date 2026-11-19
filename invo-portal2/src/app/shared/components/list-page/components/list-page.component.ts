@@ -138,19 +138,19 @@ import {
        when the user scrolls horizontally, and match the row hover colour
        so the sticky cells don't look out of place on hover. */
     .list-sticky-cell {
-      background-color: #ffffff;
+      background-color: var(--ui-surface);
       transition: background-color 150ms ease;
     }
-    tr.list-row:hover .list-sticky-cell { background-color: #f4fbfb; }
-    tr.list-row-expanded .list-sticky-cell { background-color: #ecfafd; }
+    tr.list-row:hover .list-sticky-cell { background-color: var(--ui-x-f4fbfb); }
+    tr.list-row-expanded .list-sticky-cell { background-color: var(--ui-x-ecfafd); }
 
     /* Expanded child rows: keep their frozen (start + actions) cells opaque
        and tinted to match the child row so scrolling content tucks cleanly
        under them instead of bleeding over the sticky columns. */
     tr.list-child-row .list-sticky-cell,
-    tr.list-child-row .list-floating-actions { background-color: #f5fdfd; }
+    tr.list-child-row .list-floating-actions { background-color: var(--ui-x-f5fdfd); }
     tr.list-child-row:hover .list-sticky-cell,
-    tr.list-child-row:hover .list-floating-actions { background-color: #ecfafd; }
+    tr.list-child-row:hover .list-floating-actions { background-color: var(--ui-x-ecfafd); }
 
     /* Drop shadow CAST BY the frozen start (primary) column ONTO the scrolling
        content to its right — sits just outside the cell's end edge
@@ -186,9 +186,9 @@ import {
        white pill/shadow for legibility. */
     .list-floating-actions { background: transparent; }
     /* While columns still scroll under the pinned Actions, fill it so their text can't collide with the buttons. */
-    .list-has-scroll-end tr.list-row .list-floating-actions { background-color: #ffffff; }
-    .list-has-scroll-end tr.list-row:hover .list-floating-actions { background-color: #f4fbfb; }
-    .list-has-scroll-end tr.list-row-expanded .list-floating-actions { background-color: #ecfafd; }
+    .list-has-scroll-end tr.list-row .list-floating-actions { background-color: var(--ui-surface); }
+    .list-has-scroll-end tr.list-row:hover .list-floating-actions { background-color: var(--ui-x-f4fbfb); }
+    .list-has-scroll-end tr.list-row-expanded .list-floating-actions { background-color: var(--ui-x-ecfafd); }
 
     /* ── End-edge shadow ────────────────────────────────────────────────
        Placed at the table's right EDGE (inside the pinned Actions cell, no
@@ -226,13 +226,13 @@ import {
     .list-page-container .overflow-x-auto {
       overflow-y: auto;
       scrollbar-width: thin;
-      scrollbar-color: #cbd5e1 transparent;
+      scrollbar-color: var(--ui-line-strong) transparent;
     }
     /* WebKit/Blink: slim vertical bar, no horizontal bar (phantom drives it). */
     .list-page-container .overflow-x-auto::-webkit-scrollbar { width: 10px; height: 0; }
     .list-page-container .overflow-x-auto::-webkit-scrollbar:horizontal { display: none; }
     .list-page-container .overflow-x-auto::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
+      background: var(--ui-line-strong);
       border-radius: 5px;
       border: 2px solid transparent;
       background-clip: padding-box;
@@ -300,7 +300,7 @@ import {
     .list-card { border-radius: 12px; box-shadow: none; }
     /* !important so no utility class (or the full-bleed reset below) can win:
        every list card, full-width or not, carries the form-card border. */
-    .list-page-container .list-card { border: 1px solid #e4e7ec !important; }
+    .list-page-container .list-card { border: 1px solid var(--ui-line) !important; }
     /* Card fills the rest, stripped of its rounded/border/shadow chrome. */
     .lp-fullbleed .list-card {
       flex: 1 1 auto;
@@ -381,7 +381,7 @@ import {
     .lp-fullbleed thead th.list-actions-th,
     .lp-fullbleed thead th.start-0 {
       z-index: 30;
-      background: #f8fafc;
+      background: var(--ui-surface-1);
     }
 
     /* ── Fit-to-content height (opt-in via [fitContent]) ─────────────────
@@ -440,20 +440,20 @@ import {
       overflow-x: auto;
       overflow-y: hidden;
       height: 14px;
-      background: rgba(255, 255, 255, 0.92);
-      border-top: 1px solid #e6e8ee;
+      background: var(--ui-surface);
+      border-top: 1px solid var(--ui-x-e6e8ee);
       scrollbar-width: thin;
-      scrollbar-color: #9fbfc2 #eef2f6;
+      scrollbar-color: #9fbfc2 var(--ui-surface-2);
     }
     .lp-hscroll::-webkit-scrollbar { height: 10px; }
     .lp-hscroll::-webkit-scrollbar-track {
-      background: #eef2f6;
+      background: var(--ui-surface-2);
       border-radius: 5px;
     }
     .lp-hscroll::-webkit-scrollbar-thumb {
       background: #9fbfc2;
       border-radius: 5px;
-      border: 2px solid #eef2f6;
+      border: 2px solid var(--ui-surface-2);
     }
     .lp-hscroll::-webkit-scrollbar-thumb:hover { background: #7fa9ad; }
     /* Inner spacer just needs width (mirrors the table's scrollWidth);
@@ -475,14 +475,14 @@ import {
        Must stay opaque: the header is position: sticky, so rows would
        ghost through a transparent fill as they scroll under it. */
     .list-page-container thead th {
-      background: #f8fafc !important;
-      color: #4a5163 !important;
+      background: var(--ui-surface-1) !important;
+      color: var(--ui-t-4a5163);
       font-size: 14px;
       font-weight: 600;
       padding: 13px 18px !important;
       white-space: nowrap;
       border-top: 0 !important;
-      border-bottom: 1px solid #e2e8f0 !important;
+      border-bottom: 1px solid var(--ui-line) !important;
     }
     /* Disclosure (row-detail chevron) column — opts out of the themed 18px
        side padding above, which would otherwise push the first data column
@@ -500,7 +500,7 @@ import {
     .list-page-container tbody td {
       padding: var(--row-pad-y, 12px) 18px !important;
       font-size: 14px;
-      color: #4a5163;
+      color: var(--ui-t-4a5163);
       white-space: nowrap;
     }
     /* When a column is narrower than its content (resized, or a narrow window),
@@ -518,9 +518,9 @@ import {
       text-overflow: ellipsis;
     }
     /* Subtle row dividers (recolour the Tailwind divide-y borders) */
-    .list-page-container tbody tr { border-top-color: #e6e8ee !important; }
+    .list-page-container tbody tr { border-top-color: var(--ui-x-e6e8ee) !important; }
     /* Row hover (override Tailwind hover:bg-slate-50) */
-    .list-page-container tbody tr.list-row:hover { background-color: #f4fbfb !important; }
+    .list-page-container tbody tr.list-row:hover { background-color: var(--ui-x-f4fbfb) !important; }
     /* Teal accent — checkboxes + link-styled values */
     .list-page-container input[type="checkbox"] { accent-color: #00aab3; }
     .list-page-container .list-interactive-cell { color: #00aab3; }
@@ -574,21 +574,21 @@ import {
     .lp-mcard {
       display: flex; align-items: center; gap: 12px;
       padding: 10px 14px; min-height: 60px;
-      border-bottom: 1px solid #eef2f6; cursor: pointer;
+      border-bottom: 1px solid var(--ui-surface-2); cursor: pointer;
       transition: background-color 120ms ease;
     }
     .lp-mcard:last-child { border-bottom: 0; }
-    .lp-mcard:hover { background-color: #f4fbfb; }
+    .lp-mcard:hover { background-color: var(--ui-x-f4fbfb); }
     .lp-mcard__thumb {
       flex: 0 0 auto; width: 38px; height: 31px; border-radius: 7px;
-      overflow: hidden; background: #f1f5f9; border: 1px solid #e2e8f0;
+      overflow: hidden; background: var(--ui-surface-2); border: 1px solid var(--ui-line);
       display: flex; align-items: center; justify-content: center;
     }
     .lp-mcard__thumb :is(img) { width: 100%; height: 100%; object-fit: cover; display: block; }
     .lp-mcard__body { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
     .lp-mcard__line1 {
       display: flex; align-items: center; gap: 6px; min-width: 0;
-      font-size: 14px; font-weight: 600; color: #0f172a;
+      font-size: 14px; font-weight: 600; color: var(--ui-text);
     }
     /* Title text truncates; the badge/star stay visible. */
     .lp-mcard__line1 .lp-mcard__title,
@@ -600,24 +600,24 @@ import {
     }
     .lp-mcard__metrics {
       display: flex; align-items: center; gap: 12px; min-width: 0;
-      overflow: hidden; font-size: 12.5px; color: #64748b;
+      overflow: hidden; font-size: 12.5px; color: var(--ui-muted);
     }
-    .lp-mcard__secondary { flex: 0 0 auto; font-size: 12px; color: #94a3b8; white-space: nowrap; }
+    .lp-mcard__secondary { flex: 0 0 auto; font-size: 12px; color: var(--ui-faint); white-space: nowrap; }
     .lp-mcard__actions { flex: 0 0 auto; margin-inline-start: 2px; }
     .lp-mcard__chevron {
       flex: 0 0 auto; width: 26px; height: 26px; border-radius: 8px;
       display: inline-flex; align-items: center; justify-content: center;
-      color: #94a3b8; transition: color 120ms ease, background-color 120ms ease;
+      color: var(--ui-faint); transition: color 120ms ease, background-color 120ms ease;
     }
-    .lp-mcard__chevron:hover { color: #0e7490; background: #ecfeff; }
+    .lp-mcard__chevron:hover { color: var(--ui-brand-text); background: var(--ui-brand-soft); }
     /* Floating selection bar — lifted clear of any page-level sticky footer
        via --lp-selbar-offset (set by the host page). */
     .lp-selbar { bottom: calc(1rem + var(--lp-selbar-offset, 0px)) !important; }
     @media (min-width: 640px) {
       .lp-selbar { bottom: calc(1.5rem + var(--lp-selbar-offset, 0px)) !important; }
     }
-    .lp-mcard-detail { border-bottom: 1px solid #eef2f6; background: #f8fafc; }
-    .lp-skel { background: #f1f5f9; animation: lp-skel-pulse 1.2s ease-in-out infinite; }
+    .lp-mcard-detail { border-bottom: 1px solid var(--ui-surface-2); background: var(--ui-surface-1); }
+    .lp-skel { background: var(--ui-surface-2); animation: lp-skel-pulse 1.2s ease-in-out infinite; }
     .lp-mcard--skel { cursor: default; }
     .lp-mcard--skel:hover { background: transparent; }
     @keyframes lp-skel-pulse { 50% { opacity: .55; } }

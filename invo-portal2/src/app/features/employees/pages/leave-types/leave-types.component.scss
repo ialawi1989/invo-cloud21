@@ -11,16 +11,16 @@
   margin-bottom: 16px;
 }
 .lt-title { margin: 8px 0 4px; font-size: 20px; font-weight: 700; }
-.lt-intro { margin: 0; font-size: 13px; color: #64748b; max-width: 640px; }
+.lt-intro { margin: 0; font-size: 13px; color: var(--ui-muted); max-width: 640px; }
 .lt-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-.lt-loading { padding: 24px; color: #64748b; }
+.lt-loading { padding: 24px; color: var(--ui-muted); }
 
 .lt-list { display: flex; flex-direction: column; gap: 10px; }
 
 .lt-row {
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--ui-line);
   border-radius: 10px;
-  background: #fff;
+  background: var(--ui-surface);
   padding: 10px 14px;
 
   &--off { opacity: .6; }
@@ -41,11 +41,11 @@
     text-align: start;
   }
 
-  &__chev { flex: none; color: #64748b; transform: rotate(-90deg); transition: transform 120ms ease;
+  &__chev { flex: none; color: var(--ui-muted); transform: rotate(-90deg); transition: transform 120ms ease;
     &--open { transform: rotate(0); } }
 
   &__name { font-weight: 600; font-size: 14px; }
-  &__summary { font-size: 12px; color: #64748b; margin-inline-start: auto; white-space: nowrap;
+  &__summary { font-size: 12px; color: var(--ui-muted); margin-inline-start: auto; white-space: nowrap;
     overflow: hidden; text-overflow: ellipsis; }
 }
 
@@ -54,11 +54,11 @@
   font-weight: 600;
   padding: 2px 8px;
   border-radius: 999px;
-  background: #e0f2fe;
-  color: #075985;
+  background: var(--ui-sky-soft);
+  color: var(--ui-t-075985);
   flex: none;
 
-  &--warn { background: #fffbeb; color: #b45309; }
+  &--warn { background: var(--ui-amber-soft); color: var(--ui-amber-text); }
 }
 
 .lt-grid {
@@ -66,7 +66,7 @@
   grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
   gap: 12px;
   padding: 14px 0 6px;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid var(--ui-surface-2);
   margin-top: 8px;
 }
 
@@ -76,14 +76,14 @@
   gap: 4px;
   min-width: 0;
 
-  > span { font-size: 12px; font-weight: 600; color: #475569; }
+  > span { font-size: 12px; font-weight: 600; color: var(--ui-text-4); }
   &--wide { grid-column: 1 / -1; }
 }
 
 .lt-rates {
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--ui-line);
   border-radius: 10px;
-  background: #fff;
+  background: var(--ui-surface);
   padding: 14px 16px;
   margin-bottom: 18px;
 
@@ -98,24 +98,24 @@
   gap: 8px;
 
   &__input { display: flex; align-items: center; gap: 6px; }
-  &__x { color: #64748b; font-weight: 600; }
-  &__hint { font-size: 11px; color: #64748b; line-height: 1.4; }
+  &__x { color: var(--ui-muted); font-weight: 600; }
+  &__hint { font-size: 11px; color: var(--ui-muted); line-height: 1.4; }
 }
 
 /* Page-local input style (the app has no global .input): same look as the GOSI settings page. */
 .input {
   width: 100%;
   padding: 8px 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--ui-line);
   border-radius: 8px;
-  background: #fff;
+  background: var(--ui-surface);
   font: inherit;
   font-size: 13px;
-  color: #0f172a;
+  color: var(--ui-text);
   transition: border-color 120ms ease, box-shadow 120ms ease;
 
-  &::placeholder { color: #94a3b8; }
-  &:hover { border-color: #cbd5e1; }
+  &::placeholder { color: var(--ui-faint); }
+  &:hover { border-color: var(--ui-line-strong); }
   &:focus {
     outline: none;
     border-color: var(--color-brand-500);

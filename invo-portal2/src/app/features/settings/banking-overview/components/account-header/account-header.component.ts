@@ -34,19 +34,19 @@ import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
       gap: 12px;
       flex-wrap: wrap;
       font-size: 13px;
-      color: #475569;
+      color: var(--ui-text-4);
       margin-bottom: 8px;
     }
-    .bah__name { font-size: 16px; font-weight: 700; color: #0f172a; }
+    .bah__name { font-size: 16px; font-weight: 700; color: var(--ui-text); }
     .bah__type {
       padding: 2px 8px;
       border-radius: 999px;
-      background: #f1f5f9;
-      color: #475569;
+      background: var(--ui-surface-2);
+      color: var(--ui-text-4);
       font-weight: 600;
       font-size: 12px;
     }
-    .bah__balance strong { color: #0f172a; }
+    .bah__balance strong { color: var(--ui-text); }
   `],
 })
 export class AccountHeaderComponent {

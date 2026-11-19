@@ -12,7 +12,7 @@
   gap: 16px;
   align-items: start;
   padding: 16px 0;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--ui-surface-2);
 
   &:last-child { border-bottom: none; }
 
@@ -45,8 +45,8 @@
   width: 22px;
   height: 22px;
   border-radius: 6px;
-  border: 2px solid #cbd5e1;
-  background: #fff;
+  border: 2px solid var(--ui-line-strong);
+  background: var(--ui-surface);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -83,7 +83,7 @@
 .day-row__name {
   font-size: 14px;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--ui-text);
 }
 
 .day-row__status {
@@ -121,7 +121,7 @@
   }
 
   &__sep {
-    color: #475569;
+    color: var(--ui-text-4);
     font-size: 13px;
     font-weight: 500;
     flex-shrink: 0;
@@ -157,23 +157,23 @@
     transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
 
     &--add {
-      color: #475569;
-      border-color: #cbd5e1;
-      background: #fff;
+      color: var(--ui-text-4);
+      border-color: var(--ui-line-strong);
+      background: var(--ui-surface);
 
       &:hover {
         background: var(--color-brand-50);
         border-color: var(--color-brand-500);
-        color: var(--color-brand-700);
+        color: var(--ui-brand-t700);
       }
     }
 
     &--danger {
-      color: #dc2626;
+      color: var(--ui-red-text);
 
       &:hover {
-        background: #fef2f2;
-        color: #b91c1c;
+        background: var(--ui-red-soft);
+        color: var(--ui-red-text);
       }
     }
   }
@@ -182,7 +182,7 @@
 .period-error {
   margin: 0;
   font-size: 12px;
-  color: #dc2626;
+  color: var(--ui-red-text);
   font-weight: 500;
   display: flex;
   align-items: center;
@@ -203,10 +203,10 @@
   padding: 0;
   font-size: 12px;
   font-weight: 500;
-  color: #64748b;
+  color: var(--ui-muted);
   cursor: pointer;
   margin-top: 2px;
-  &:hover { color: var(--color-brand-700); text-decoration: underline; }
+  &:hover { color: var(--ui-brand-t700); text-decoration: underline; }
 }
 
 // Soft brand-tinted banner suggesting the user copy this day's hours
@@ -221,7 +221,7 @@
   margin-top: 10px;
   padding: 12px 14px;
   background: var(--color-brand-50);
-  border: 1px solid var(--color-brand-100, #e0f2fe);
+  border: 1px solid var(--color-brand-100, var(--ui-sky-soft));
   border-radius: 10px;
 
   &__header {
@@ -233,14 +233,14 @@
   &__icon {
     width: 18px;
     height: 18px;
-    color: var(--color-brand-600);
+    color: var(--ui-brand-t600);
     flex-shrink: 0;
   }
 
   &__text {
     font-size: 13px;
     font-weight: 600;
-    color: #0f172a;
+    color: var(--ui-text);
     line-height: 1.35;
   }
 
@@ -260,22 +260,22 @@
     transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
 
     &--primary {
-      background: #fff;
-      color: #0f172a;
-      border: 1px solid #e2e8f0;
+      background: var(--ui-surface);
+      color: var(--ui-text);
+      border: 1px solid var(--ui-line);
       &:hover {
         background: var(--color-brand-50);
-        border-color: var(--color-brand-300, #bae6fd);
-        color: var(--color-brand-700);
+        border-color: var(--color-brand-300, var(--ui-sky-soft-2));
+        color: var(--ui-brand-t700);
       }
     }
 
     &--ghost {
       background: transparent;
-      color: #64748b;
+      color: var(--ui-muted);
       border: 1px solid transparent;
       &:hover {
-        color: #0f172a;
+        color: var(--ui-text);
       }
     }
   }

@@ -51,15 +51,15 @@ import { Bill } from '../../../models/bill.model';
     .bf-totals { display: grid; gap: 24px; grid-template-columns: 1fr; margin-top: 8px; }
     @media (min-width: 900px) { .bf-totals { grid-template-columns: 1fr 1fr; } }
     .bf-notes { display: flex; flex-direction: column; gap: 6px; }
-    .bf-notes label { font-size: 13.5px; color: #0f172a; }
-    .bf-notes textarea { background: #fff; border: 1px solid #d0d5dd; border-radius: 6px; padding: 9px 12px; font: inherit; resize: vertical; }
-    .bf-sum { background: #fff; border: 1px solid #e4e7ec; border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; }
-    .bf-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 14px; color: #334155; }
+    .bf-notes label { font-size: 13.5px; color: var(--ui-text); }
+    .bf-notes textarea { background: var(--ui-field); border: 1px solid var(--ui-line-strong); border-radius: 6px; padding: 9px 12px; font: inherit; resize: vertical; }
+    .bf-sum { background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; }
+    .bf-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 14px; color: var(--ui-text-3); }
     .bf-row--field { display: grid; grid-template-columns: 110px 240px minmax(90px, 1fr); }
     .bf-row--field > :last-child { text-align: end; white-space: nowrap; }
     .bf-row--opts { flex-wrap: wrap; justify-content: flex-start; }
     .bf-check { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; }
-    .bf-row--total { border-top: 1px solid #e2e8f0; padding-top: 12px; font-size: 18px; color: #0f172a; }
+    .bf-row--total { border-top: 1px solid var(--ui-line); padding-top: 12px; font-size: 18px; color: var(--ui-text); }
   `],
 })
 export class BillTotalsComponent {

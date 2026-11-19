@@ -61,8 +61,8 @@
   .mr-auto, .me-auto { margin-right: unset !important; margin-left: auto !important; }
   .text-left,  .text-start { text-align: right !important; }
   .text-right, .text-end   { text-align: left !important; }
-  .border-left,  .border-start { border-left: none !important; border-right: 1px solid #e9ecef !important; }
-  .border-right, .border-end   { border-right: none !important; border-left: 1px solid #e9ecef !important; }
+  .border-left,  .border-start { border-left: none !important; border-right: 1px solid var(--ui-x-e9ecef) !important; }
+  .border-right, .border-end   { border-right: none !important; border-left: 1px solid var(--ui-x-e9ecef) !important; }
 }
 
 @keyframes slideLeft {

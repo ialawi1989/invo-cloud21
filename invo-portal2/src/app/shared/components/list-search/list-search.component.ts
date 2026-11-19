@@ -82,10 +82,10 @@ import { CommonModule } from '@angular/common';
       flex: 1;
       max-width: 360px;
       padding: 7px 10px;
-      background: #fff;
-      border: 1px solid #e2e8f0;
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-line);
       border-radius: 8px;
-      color: #94a3b8;
+      color: var(--ui-faint);
       transition: border-color 120ms ease, box-shadow 120ms ease;
     }
     .ls-search--full { max-width: none; width: 100%; }
@@ -100,24 +100,24 @@ import { CommonModule } from '@angular/common';
       outline: none;
       font: inherit;
       font-size: 13px;
-      color: #0f172a;
+      color: var(--ui-text);
       background: transparent;
     }
-    .ls-search input::placeholder { color: #94a3b8; }
+    .ls-search input::placeholder { color: var(--ui-faint); }
     .ls-search__btn,
     .ls-search__clear {
       background: transparent;
       border: none;
       border-radius: 4px;
       padding: 2px;
-      color: #94a3b8;
+      color: var(--ui-faint);
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       justify-content: center;
     }
-    .ls-search__btn:hover { color: var(--color-brand-600, #0891b2); }
-    .ls-search__clear:hover { background: #f1f5f9; color: #475569; }
+    .ls-search__btn:hover { color: var(--ui-brand-t600); }
+    .ls-search__clear:hover { background: var(--ui-surface-2); color: var(--ui-text-4); }
   `],
 })
 export class ListSearchComponent implements OnChanges {

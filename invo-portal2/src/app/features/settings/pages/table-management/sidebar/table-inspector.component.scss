@@ -7,24 +7,24 @@
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #94a3b8;
+  color: var(--ui-faint);
 }
 .ti__field { display: flex; flex-direction: column; gap: 5px; }
-.ti__field-label { font-size: 12px; font-weight: 600; color: #475569; }
-.ti__readout { font-variant-numeric: tabular-nums; color: #0f172a; }
-.ti__hint { margin: 0; font-size: 11px; color: #94a3b8; line-height: 1.4; }
-.ti__error { margin: 0; font-size: 12px; color: #dc2626; }
-.ti__warn { margin: 0; font-size: 12px; color: #b45309; }
+.ti__field-label { font-size: 12px; font-weight: 600; color: var(--ui-text-4); }
+.ti__readout { font-variant-numeric: tabular-nums; color: var(--ui-text); }
+.ti__hint { margin: 0; font-size: 11px; color: var(--ui-faint); line-height: 1.4; }
+.ti__error { margin: 0; font-size: 12px; color: var(--ui-red-text); }
+.ti__warn { margin: 0; font-size: 12px; color: var(--ui-amber-text); }
 
 .ti__input {
   width: 100%;
   padding: 8px 10px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--ui-line);
   border-radius: 8px;
-  background: #fff;
+  background: var(--ui-surface);
   font: inherit;
   font-size: 13px;
-  color: #0f172a;
+  color: var(--ui-text);
   transition: border-color 120ms ease, box-shadow 120ms ease;
   &:focus { outline: none; border-color: var(--color-brand-500, #32acc1); box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.14); }
   &--invalid { border-color: #ef4444; }
@@ -34,41 +34,41 @@
 .ti__stepper { display: flex; align-items: stretch; gap: 6px; }
 .ti__input--seats { text-align: center; flex: 1; }
 .ti__step {
-  flex: none; width: 36px; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; color: #334155;
+  flex: none; width: 36px; border: 1px solid var(--ui-line); border-radius: 8px; background: var(--ui-surface-1); color: var(--ui-text-3);
   font-size: 18px; line-height: 1; cursor: pointer;
-  &:hover:not(:disabled) { background: #fff; border-color: var(--color-brand-500, #32acc1); }
+  &:hover:not(:disabled) { background: var(--ui-surface); border-color: var(--color-brand-500, #32acc1); }
   &:disabled { opacity: 0.45; cursor: not-allowed; }
 }
 
 // Segmented controls (active segment filled teal)
-.ti__segmented { display: flex; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; background: #f8fafc; }
+.ti__segmented { display: flex; border: 1px solid var(--ui-line); border-radius: 8px; overflow: hidden; background: var(--ui-surface-1); }
 .ti__seg {
-  flex: 1; padding: 7px 8px; border: 0; background: transparent; font: inherit; font-size: 12px; font-weight: 600; color: #64748b; cursor: pointer;
+  flex: 1; padding: 7px 8px; border: 0; background: transparent; font: inherit; font-size: 12px; font-weight: 600; color: var(--ui-muted); cursor: pointer;
   transition: background 120ms ease, color 120ms ease;
-  &:hover:not(.ti__seg--on) { background: #fff; color: #0f172a; }
+  &:hover:not(.ti__seg--on) { background: var(--ui-surface); color: var(--ui-text); }
   &--on { background: var(--color-brand-600, #2691a4); color: #fff; }
-  & + & { border-inline-start: 1px solid #e2e8f0; }
+  & + & { border-inline-start: 1px solid var(--ui-line); }
 }
 
 // Rotation
 .ti__rotate { display: flex; align-items: center; gap: 8px; }
 .ti__slider { flex: 1; accent-color: var(--color-brand-600, #2691a4); }
 .ti__btn {
-  flex: none; padding: 6px 10px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; font: inherit; font-size: 12px; font-weight: 600; color: #334155; cursor: pointer;
-  &:hover { background: #f8fafc; border-color: var(--color-brand-500, #32acc1); }
+  flex: none; padding: 6px 10px; border: 1px solid var(--ui-line); border-radius: 8px; background: var(--ui-surface); font: inherit; font-size: 12px; font-weight: 600; color: var(--ui-text-3); cursor: pointer;
+  &:hover { background: var(--ui-surface-1); border-color: var(--color-brand-500, #32acc1); }
 }
 
 // Toggles
 .ti__toggle { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; position: relative; }
 .ti__toggle input { position: absolute; opacity: 0; pointer-events: none; }
-.ti__track { position: relative; width: 34px; height: 20px; border-radius: 999px; background: #cbd5e1; flex: none; transition: background 120ms ease; }
+.ti__track { position: relative; width: 34px; height: 20px; border-radius: 999px; background: var(--ui-line-strong); flex: none; transition: background 120ms ease; }
 .ti__thumb {
-  position: absolute; top: 3px; inset-inline-start: 3px; width: 14px; height: 14px; border-radius: 999px; background: #fff;
+  position: absolute; top: 3px; inset-inline-start: 3px; width: 14px; height: 14px; border-radius: 999px; background: var(--ui-surface);
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.2); transition: inset-inline-start 120ms ease;
 }
 .ti__toggle input:checked + .ti__track { background: var(--color-brand-600, #2691a4); }
 .ti__toggle input:checked + .ti__track .ti__thumb { inset-inline-start: 17px; }
 .ti__toggle input:focus-visible + .ti__track { outline: 2px solid var(--color-brand-600, #2691a4); outline-offset: 2px; }
-.ti__toggle-label { font-size: 13px; color: #475569; }
+.ti__toggle-label { font-size: 13px; color: var(--ui-text-4); }
 
 .ti__input:focus-visible, .ti__seg:focus-visible, .ti__btn:focus-visible, .ti__step:focus-visible { outline: 2px solid var(--color-brand-600, #2691a4); outline-offset: 1px; }

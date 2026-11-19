@@ -1,0 +1,97 @@
+<div class="fd">
+
+  <!-- Clicked programmatically by this toolbar's own import button, or by
+       the host's if `showToolbar` is off — kept outside the *ngIf below so
+       importing still works with the toolbar hidden. -->
+  <input #jsonInput type="file" accept="application/json,.json" hidden (change)="onImportJsonFile($event)" />
+
+  <!-- Toolbar -->
+  <header class="fd__toolbar" *ngIf="showToolbar">
+    <span class="fd__name" [appTooltip]="templateName()">{{ templateName() }}</span>
+
+    <div class="fd__spacer"></div>
+
+    <div class="fd__cluster">
+      <button type="button" class="fd__btn" [appTooltip]="'DOCUMENT_BUILDER.UNDO_CTRL_Z' | translate"
+              [disabled]="!history.canUndo()" (click)="history.undo()">
+        <i class="mdi mdi-undo"></i>
+      </button>
+      <button type="button" class="fd__btn" [appTooltip]="'DOCUMENT_BUILDER.REDO_CTRL_Y' | translate"
+              [disabled]="!history.canRedo()" (click)="history.redo()">
+        <i class="mdi mdi-redo"></i>
+      </button>
+    </div>
+
+    <div class="fd__divider"></div>
+
+    <div class="fd__cluster">
+      <button type="button" class="fd__btn" [appTooltip]="'DOCUMENT_BUILDER.ZOOM_OUT' | translate" (click)="zoomOut()">
+        <i class="mdi mdi-minus"></i>
+      </button>
+      <button type="button" class="fd__zoom" [appTooltip]="'DOCUMENT_BUILDER.RESET_ZOOM' | translate" (click)="resetZoom()">{{ zoomPct() }}%</button>
+      <button type="button" class="fd__btn" [appTooltip]="'DOCUMENT_BUILDER.ZOOM_IN' | translate" (click)="zoomIn()">
+        <i class="mdi mdi-plus"></i>
+      </button>
+    </div>
+
+    <div class="fd__divider"></div>
+
+    <div class="fd__cluster">
+      <button type="button" class="fd__btn" [appTooltip]="'DOCUMENT_BUILDER.EXPORT_JSON' | translate" (click)="exportJson()">
+        <i class="mdi mdi-code-json"></i>
+      </button>
+      <button type="button" class="fd__btn" [appTooltip]="'DOCUMENT_BUILDER.IMPORT_JSON' | translate" (click)="jsonInput.click()">
+        <i class="mdi mdi-file-upload-outline"></i>
+      </button>
+      <button *ngIf="defaultTemplate" type="button" class="fd__btn"
+              [appTooltip]="'DOCUMENT_BUILDER.RESET_TO_DEFAULT_LAYOUT' | translate" (click)="onResetToDefault()">
+        <i class="mdi mdi-backup-restore"></i>
+      </button>
+    </div>
+
+    <div class="fd__divider"></div>
+
+    <button type="button" class="fd__btn fd__btn--label" (click)="onPreview()">
+      <i class="mdi mdi-printer-outline"></i> {{ 'DOCUMENT_BUILDER.PREVIEW' | translate }}
+    </button>
+    <button type="button" class="fd__btn fd__btn--label" (click)="onExportPdf()">
+      <i class="mdi mdi-file-pdf-box"></i> {{ 'DOCUMENT_BUILDER.PDF' | translate }}
+    </button>
+    <button type="button" class="fd__btn fd__btn--primary" [disabled]="saving" (click)="onSave()">
+      <i class="mdi" [ngClass]="saving ? 'mdi-loading mdi-spin' : 'mdi-content-save-outline'"></i>
+      {{ (saving ? 'DOCUMENT_BUILDER.SAVING' : 'GENERAL.SAVE') | translate }}
+    </button>
+  </header>
+
+  <!-- Page tabs — Master plus any extra standalone pages (e.g. a company's
+       own Terms & Conditions layout) appended after the master's flow. -->
+  <nav class="fd__pages">
+    <button type="button" class="fd__page-tab" *ngFor="let p of pages()"
+            [class.fd__page-tab--active]="activePageId() === p.id"
+            (click)="selectPage(p.id)">
+      <ng-container *ngIf="renamingPageId() === p.id; else pageLabel">
+        <input class="fd__page-rename" type="text" [(ngModel)]="renameDraft" autofocus
+               (click)="$event.stopPropagation()"
+               (keydown.enter)="commitRenamePage(p.id)"
+               (keydown.escape)="cancelRenamePage()"
+               (blur)="commitRenamePage(p.id)" />
+      </ng-container>
+      <ng-template #pageLabel>
+        <span class="fd__page-name" (dblclick)="p.id !== MASTER_PAGE_ID && startRenamePage(p.id, p.name, $event)">{{ p.name }}</span>
+        <i *ngIf="p.id !== MASTER_PAGE_ID" class="mdi mdi-close fd__page-remove"
+           [appTooltip]="'GENERAL.DELETE' | translate" (click)="removePage(p.id, p.name, $event)"></i>
+      </ng-template>
+    </button>
+    <button type="button" class="fd__page-add" [appTooltip]="'DOCUMENT_BUILDER.ADD_PAGE' | translate" (click)="addPage()">
+      <i class="mdi mdi-plus"></i>
+    </button>
+  </nav>
+
+  <!-- Three-column body. cdkDropListGroup connects the toolbox palette
+       lists to the canvas drop list so tiles can be dragged across. -->
+  <main class="fd__body" cdkDropListGroup>
+    <app-designer-toolbox class="fd__rail"></app-designer-toolbox>
+    <app-designer-canvas class="fd__canvas"></app-designer-canvas>
+    <app-designer-property-panel class="fd__rail"></app-designer-property-panel>
+  </main>
+</div>

@@ -3,19 +3,19 @@
 .stale { opacity: .6; pointer-events: none; transition: opacity .15s; }
 
 .at-legend { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 14px; }
-.at-key { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: #374151; b { color: #111827; font-variant-numeric: tabular-nums; } }
-.at-dot { width: 18px; height: 18px; border-radius: 5px; display: inline-grid; place-items: center; color: #fff; font-size: 10.5px; font-weight: 700; &.st-off { color: #64748b; } }
+.at-key { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ui-text-3); b { color: var(--ui-text); font-variant-numeric: tabular-nums; } }
+.at-dot { width: 18px; height: 18px; border-radius: 5px; display: inline-grid; place-items: center; color: #fff; font-size: 10.5px; font-weight: 700; &.st-off { color: var(--ui-muted); } }
 
-.at-scroll { overflow: auto; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; max-height: 70vh; }
+.at-scroll { overflow: auto; background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: 12px; max-height: 70vh; }
 .at-table { border-collapse: separate; border-spacing: 0; font-size: 12px; }
 .at-table th, .at-table td { padding: 0; }
-.at-name { position: sticky; inset-inline-start: 0; z-index: 2; min-width: 170px; max-width: 220px; padding: 8px 14px !important; background: #fff; text-align: start; font-weight: 600; color: #111827; border-inline-end: 1px solid #e5e7eb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-thead .at-name, thead .at-day { position: sticky; top: 0; z-index: 3; background: #f8fafc; }
+.at-name { position: sticky; inset-inline-start: 0; z-index: 2; min-width: 170px; max-width: 220px; padding: 8px 14px !important; background: var(--ui-surface); text-align: start; font-weight: 600; color: var(--ui-text); border-inline-end: 1px solid var(--ui-line); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+thead .at-name, thead .at-day { position: sticky; top: 0; z-index: 3; background: var(--ui-surface-1); }
 thead .at-name { z-index: 4; }
-.at-day { width: 26px; min-width: 26px; height: 58px; padding: 6px 0 !important; text-align: center; color: #64748b; font-weight: 500; font-size: 11px; border-bottom: 1px solid #e5e7eb; vertical-align: bottom;
+.at-day { width: 26px; min-width: 26px; height: 58px; padding: 6px 0 !important; text-align: center; color: var(--ui-muted); font-weight: 500; font-size: 11px; border-bottom: 1px solid var(--ui-line); vertical-align: bottom;
   span { display: inline-block; writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; } }
 .at-cell { width: 26px; height: 28px; padding: 1px !important; text-align: center; }
-.at-chip { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 5px; color: #fff; font-size: 11.5px; font-weight: 700; cursor: default; &.st-off { color: #64748b; } }
+.at-chip { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 5px; color: #fff; font-size: 11.5px; font-weight: 700; cursor: default; &.st-off { color: var(--ui-muted); } }
 
 /* one colour per status, shared by the legend dots and the cells */
 .st-present { background: #16a34a; }
@@ -23,8 +23,8 @@ thead .at-name { z-index: 4; }
 .st-adjusted { background: #7c3aed; }
 .st-absent { background: #dc2626; }
 .st-leave { background: #3b82f6; }
-.st-off { background: #e5e7eb; }
-.st-not_employed { background: repeating-linear-gradient(45deg, #f3f4f6, #f3f4f6 4px, #e5e7eb 4px, #e5e7eb 8px); }
+.st-off { background: var(--ui-line); }
+.st-not_employed { background: repeating-linear-gradient(45deg, var(--ui-surface-2), var(--ui-surface-2) 4px, var(--ui-line) 4px, var(--ui-line) 8px); }
 
 
-.at-link { color: #1e8c9f; font-weight: 500; text-decoration: none; &:hover { text-decoration: underline; } &:focus-visible { outline: 2px solid #1e8c9f; outline-offset: 2px; border-radius: 3px; } }
+.at-link { color: var(--ui-brand-text); font-weight: 500; text-decoration: none; &:hover { text-decoration: underline; } &:focus-visible { outline: 2px solid #1e8c9f; outline-offset: 2px; border-radius: 3px; } }

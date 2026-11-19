@@ -21,7 +21,7 @@
 @keyframes ls-shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
 .ls-loading { display: flex; flex-direction: column; gap: 16px; }
 .ls-skel {
-  height: 360px; border-radius: 12px; background: linear-gradient(90deg, #eef2f6 0%, #f6f8fa 50%, #eef2f6 100%);
+  height: 360px; border-radius: 12px; background: linear-gradient(90deg, var(--ui-surface-2) 0%, var(--ui-x-f6f8fa) 50%, var(--ui-surface-2) 100%);
   background-size: 200% 100%; animation: ls-shimmer 1.4s ease-in-out infinite;
 }
 .ls-error {
@@ -34,4 +34,4 @@
 app-pagination { display: block; margin-top: 16px; }
 .pm-code { display: inline-block; margin-inline-start: 8px; padding: 1px 8px; border-radius: 999px; background: var(--rp-income-soft); color: var(--rp-income); font-size: 11px; font-weight: 600; }
 .pm-chip { display: inline-block; margin-bottom: 12px; padding: 5px 12px; border-radius: 999px; background: var(--rp-surface); font-size: 13px; }
-.pm-unit { display: block; width: fit-content; margin: 3px 0 0 auto; padding: 1px 9px; border-radius: 999px; background: #dbeafe; color: #1d4ed8; font-size: 11px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.pm-unit { display: block; width: fit-content; margin: 3px 0 0 auto; padding: 1px 9px; border-radius: 999px; background: var(--ui-x-dbeafe); color: var(--ui-t-1d4ed8); font-size: 11px; font-weight: 600; font-variant-numeric: tabular-nums; }

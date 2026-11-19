@@ -38,9 +38,9 @@ export type AlertVariant = 'warning' | 'info' | 'danger';
   `,
   styles: [`
     :host {
-      --alert-bg: #fffbeb;
-      --alert-border: #fde68a;
-      --alert-fg: #92400e;
+      --alert-bg: var(--ui-amber-soft);
+      --alert-border: var(--ui-amber-soft-2);
+      --alert-fg: var(--ui-amber-text);
       display: flex;
       align-items: center;
       gap: 12px;
@@ -55,12 +55,12 @@ export type AlertVariant = 'warning' | 'info' | 'danger';
     :host(.alert--info) {
       --alert-bg: var(--color-brand-50);
       --alert-border: var(--color-brand-200);
-      --alert-fg: var(--color-brand-800);
+      --alert-fg: var(--ui-brand-t800);
     }
     :host(.alert--danger) {
-      --alert-bg: #fef2f2;
-      --alert-border: #fecaca;
-      --alert-fg: #991b1b;
+      --alert-bg: var(--ui-red-soft);
+      --alert-border: var(--ui-red-soft-2);
+      --alert-fg: var(--ui-red-text);
     }
     .alert__icon { flex-shrink: 0; }
     .alert__body { flex: 1; min-width: 0; }

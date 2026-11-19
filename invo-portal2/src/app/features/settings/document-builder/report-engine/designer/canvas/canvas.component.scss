@@ -1,4 +1,4 @@
-@use '../_designer-theme.scss' as *;
+@import '../designer-theme';
 
 :host {
   display: block;
@@ -13,6 +13,14 @@
   overflow: auto;
   background: $d-canvas-bg;
   outline: none;
+
+  // Middle-click drag-to-pan (see CanvasComponent.onCanvasMouseDown). User-select
+  // is suppressed too — without it, dragging the pointer over text blocks while
+  // panning selects their text instead of just scrolling the view.
+  &--panning {
+    cursor: grabbing;
+    user-select: none;
+  }
 
   // ── Rulers ───────────────────────────────────────────────────
   &__ruler-x {
@@ -88,6 +96,14 @@
   }
 
   // ── Paper ────────────────────────────────────────────────────
+  // Reserves the scaled paper's footprint. A transform paints outside the
+  // layout box, so without this the scroll area would size itself to the
+  // 100% paper and clip (or leave a gap) at every other zoom level.
+  &__page-box {
+    position: relative;
+    flex: none;
+  }
+
   &__page {
     position: relative;
     background: $d-white;
@@ -96,7 +112,11 @@
     // Clip at the paper edge — the renderers do the same via
     // `.page { overflow: hidden }`, so the preview matches the print.
     overflow: hidden;
-    transition: width 120ms ease, height 120ms ease;
+    // Zoom is applied here, to the paper as a whole, so type and spacing
+    // scale with the boxes instead of staying at their 100% size. Origin is
+    // top-left so the paper grows away from the rulers' zero.
+    transform-origin: top left;
+    transition: width 120ms ease, height 120ms ease, transform 120ms ease;
   }
 
   &__margin-guide {
@@ -200,7 +220,7 @@
   &__marquee {
     position: absolute;
     pointer-events: none;
-    background: $d-primary-soft;
+    background: rgba($d-primary, 0.1);
     border: 1px solid $d-primary;
   }
 }

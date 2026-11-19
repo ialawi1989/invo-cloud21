@@ -6,7 +6,7 @@
 }
 
 .page-header { display: flex; flex-direction: column; gap: 4px; }
-.page-title  { margin: 0; font-size: 22px; font-weight: 700; color: #0f172a; }
+.page-title  { margin: 0; font-size: 22px; font-weight: 700; color: var(--ui-text); }
 
 // Two-column body — main (2fr) + side (1fr). Side becomes a
 // horizontal strip above the main on narrow screens so the small
@@ -48,14 +48,14 @@
 }
 
 .card {
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
   border-radius: 12px;
   overflow: hidden;
 
   &__head {
     padding: 14px 16px;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--ui-surface-2);
     display: flex;
     flex-direction: column;
     gap: 2px;
@@ -64,12 +64,12 @@
     margin: 0;
     font-size: 14px;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--ui-text);
   }
   &__sub {
     margin: 0;
     font-size: 12px;
-    color: #64748b;
+    color: var(--ui-muted);
     line-height: 1.5;
   }
   &__body {
@@ -96,17 +96,17 @@
   &__label {
     font-size: 12px;
     font-weight: 600;
-    color: #475569;
+    color: var(--ui-text-4);
     display: inline-flex;
     align-items: center;
     gap: 6px;
   }
-  &__hint  { font-size: 11px; color: #94a3b8; }
-  &__err   { font-size: 11px; color: #b91c1c; font-weight: 600; }
+  &__hint  { font-size: 11px; color: var(--ui-faint); }
+  &__err   { font-size: 11px; color: var(--ui-red-text); font-weight: 600; }
   &__validating {
     width: 10px;
     height: 10px;
-    border: 2px solid #e2e8f0;
+    border: 2px solid var(--ui-line);
     border-top-color: var(--color-brand-500, #0891b2);
     border-radius: 50%;
     animation: df-spin 0.7s linear infinite;
@@ -115,24 +115,24 @@
   &__input {
     appearance: none;
     width: 100%;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--ui-line);
     border-radius: 8px;
     padding: 9px 12px;
     font-size: 13px;
-    color: #0f172a;
-    background: #fff;
+    color: var(--ui-text);
+    background: var(--ui-surface);
     transition: border-color 100ms ease, box-shadow 100ms ease;
 
     &:focus {
       outline: 0;
       border-color: var(--color-brand-400, #7dd3fc);
-      box-shadow: 0 0 0 2px var(--color-brand-100, #e0f2fe);
+      box-shadow: 0 0 0 2px var(--color-brand-100, var(--ui-sky-soft));
     }
-    &::placeholder { color: #94a3b8; }
+    &::placeholder { color: var(--ui-faint); }
 
     &--err {
-      border-color: #fecaca;
-      &:focus { box-shadow: 0 0 0 2px #fee2e2; }
+      border-color: var(--ui-red-soft-2);
+      &:focus { box-shadow: 0 0 0 2px var(--ui-red-soft); }
     }
   }
 }
@@ -157,7 +157,7 @@
   &__label {
     font-size: 12px;
     font-weight: 600;
-    color: #475569;
+    color: var(--ui-text-4);
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -170,8 +170,8 @@
     height: 18px;
     padding: 0 6px;
     border-radius: 999px;
-    background: var(--color-brand-100, #e0f2fe);
-    color: var(--color-brand-700, #0e7490);
+    background: var(--color-brand-100, var(--ui-sky-soft));
+    color: var(--ui-brand-t700);
     font-size: 11px;
     font-weight: 700;
   }
@@ -179,10 +179,10 @@
     margin: 0;
     padding: 14px;
     text-align: center;
-    color: #94a3b8;
+    color: var(--ui-faint);
     font-size: 12px;
-    background: #f8fafc;
-    border: 1px dashed #e2e8f0;
+    background: var(--ui-surface-1);
+    border: 1px dashed var(--ui-line);
     border-radius: 8px;
   }
 }
@@ -194,7 +194,7 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--ui-line);
   border-radius: 8px;
   overflow: hidden;
 
@@ -203,8 +203,8 @@
     align-items: center;
     gap: 10px;
     padding: 8px 10px;
-    border-bottom: 1px solid #f1f5f9;
-    background: #fff;
+    border-bottom: 1px solid var(--ui-surface-2);
+    background: var(--ui-surface);
 
     &:last-child { border-bottom: 0; }
   }
@@ -213,7 +213,7 @@
     height: 36px;
     border-radius: 6px;
     object-fit: cover;
-    background: #f1f5f9;
+    background: var(--ui-surface-2);
     flex-shrink: 0;
 
     &--placeholder {
@@ -233,7 +233,7 @@
   &__name {
     font-size: 13px;
     font-weight: 600;
-    color: #0f172a;
+    color: var(--ui-text);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -250,14 +250,14 @@
     width: 28px;
     height: 28px;
     border-radius: 6px;
-    color: #64748b;
+    color: var(--ui-muted);
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
 
-    &:hover { background: #fef2f2; color: #b91c1c; }
+    &:hover { background: var(--ui-red-soft); color: var(--ui-red-text); }
   }
 }
 
@@ -280,9 +280,9 @@
   align-items: center;
   gap: 6px;
   padding: 4px 4px 4px 10px;
-  background: var(--color-brand-50, #ecfeff);
-  color: var(--color-brand-700, #0e7490);
-  border: 1px solid var(--color-brand-200, #a5f3fc);
+  background: var(--color-brand-50, var(--ui-brand-soft));
+  color: var(--color-brand-700, var(--ui-brand-text));
+  border: 1px solid var(--color-brand-200, var(--ui-brand-soft-2));
   border-radius: 999px;
   font-size: 12px;
   max-width: 100%;
@@ -297,7 +297,7 @@
     appearance: none;
     background: transparent;
     border: 0;
-    color: var(--color-brand-700, #0e7490);
+    color: var(--color-brand-700, var(--ui-brand-text));
     width: 18px;
     height: 18px;
     border-radius: 50%;
@@ -316,9 +316,9 @@
   align-items: flex-start;
   gap: 10px;
   padding: 10px 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--ui-line);
   border-radius: 8px;
-  background: #f8fafc;
+  background: var(--ui-surface-1);
   cursor: pointer;
 
   input[type="checkbox"] {
@@ -327,8 +327,8 @@
     accent-color: var(--color-brand-600, #0891b2);
   }
   &__text  { display: flex; flex-direction: column; gap: 2px; }
-  &__label { font-size: 13px; font-weight: 600; color: #0f172a; }
-  &__hint  { font-size: 11px; color: #64748b; line-height: 1.5; }
+  &__label { font-size: 13px; font-weight: 600; color: var(--ui-text); }
+  &__hint  { font-size: 11px; color: var(--ui-muted); line-height: 1.5; }
 }
 
 // Segmented toggles in this form use the shared
@@ -373,16 +373,15 @@
   align-items: center;
   gap: 8px;
   padding: 10px 20px;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(8px);
-  border-top: 1px solid #e2e8f0;
+  background: var(--ui-footer-bg);
+  border-top: 1px solid var(--ui-line);
 }
 
 .spinner {
   width: 14px;
   height: 14px;
   border: 2px solid rgba(255, 255, 255, 0.4);
-  border-top-color: #fff;
+  border-top-color: var(--ui-surface);
   border-radius: 50%;
   animation: df-spin 0.7s linear infinite;
 }

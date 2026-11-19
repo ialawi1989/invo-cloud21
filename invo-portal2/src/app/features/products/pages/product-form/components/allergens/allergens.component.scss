@@ -2,15 +2,15 @@
 @include pfCard;
 
 .pf-card__icon--allergen {
-  background: linear-gradient(135deg, #fed7aa, #fdba74);
-  color: #c2410c;
+  background: linear-gradient(135deg, var(--ui-x-fed7aa), #fdba74);
+  color: var(--ui-orange-text);
 }
 
 .pf-allergen-section {
   margin: 14px 0 8px;
   font-size: 14px;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--ui-text);
   &:first-of-type { margin-top: 4px; }
 }
 
@@ -26,20 +26,20 @@
   align-items: center;
   gap: 8px;
   padding: 10px 12px;
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
   border-radius: 10px;
   font: inherit;
   font-size: 13px;
   font-weight: 500;
-  color: #0f172a;
+  color: var(--ui-text);
   text-align: start;
   cursor: pointer;
   transition: background 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
 
   &:hover {
-    background: #f8fafc;
-    border-color: #cbd5e1;
+    background: var(--ui-surface-1);
+    border-color: var(--ui-line-strong);
   }
 
   &__check {
@@ -48,7 +48,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: 1.5px solid #cbd5e1;
+    border: 1.5px solid var(--ui-line-strong);
     border-radius: 4px;
     color: transparent;
     flex-shrink: 0;
@@ -66,7 +66,7 @@
 
 // ── "Contains" — red/coral when checked ────────────────────────────────
 .pf-allergen-tile--contains-on {
-  background: #fee2e2;
+  background: var(--ui-red-soft);
   border-color: #fca5a5;
   box-shadow: 0 0 0 2px rgba(252, 165, 165, 0.35);
 
@@ -79,12 +79,12 @@
 
 // ── "May Contain" — amber/yellow when checked ──────────────────────────
 .pf-allergen-tile--may-on {
-  background: #fef9c3;
-  border-color: #fde047;
+  background: var(--ui-x-fef9c3);
+  border-color: var(--ui-x-fde047);
   box-shadow: 0 0 0 2px rgba(253, 224, 71, 0.45);
 
   .pf-allergen-tile__check {
-    background: #ca8a04;
+    background: var(--ui-b-ca8a04);
     border-color: #ca8a04;
     color: #fff;
   }
@@ -94,7 +94,7 @@
 .pf-allergen-statement {
   margin-top: 16px;
   padding-top: 16px;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid var(--ui-surface-2);
 
   textarea.pf-input {
     width: 100%;

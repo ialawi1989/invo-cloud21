@@ -89,21 +89,21 @@ export interface BulkAvailabilityResult {
   `,
   styles: [`
     .bam__body { padding: 18px; display: flex; flex-direction: column; gap: 16px; }
-    .bam__scope { margin: 0; font-size: 13px; color: #64748b; }
+    .bam__scope { margin: 0; font-size: 13px; color: var(--ui-muted); }
     .bam__field { display: flex; flex-direction: column; gap: 6px; }
     .bam__label {
       display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
-      font-size: 13px; font-weight: 500; color: #0f172a;
+      font-size: 13px; font-weight: 500; color: var(--ui-text);
     }
     .bam__link {
       padding: 0; border: 0; background: transparent; cursor: pointer;
       font: inherit; font-size: 12px; font-weight: 600;
-      color: var(--color-brand-700, #0e7490);
+      color: var(--color-brand-700, var(--ui-brand-text));
       &:hover { text-decoration: underline; }
     }
     .bam__check {
       display: flex; align-items: center; gap: 10px;
-      font-size: 13px; color: #0f172a; cursor: pointer;
+      font-size: 13px; color: var(--ui-text); cursor: pointer;
       input { width: 16px; height: 16px; accent-color: #32acc1; cursor: pointer; }
     }
   `],

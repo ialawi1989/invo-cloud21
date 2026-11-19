@@ -15,6 +15,8 @@ const mapLine = (l: BillLine): Record<string, unknown> => ({
   note: l.selectedItem?.name && l.note ? l.note : '',
   sic: l.SIC,
   options: [],
+  customFields: (l as any).selectedItem?.customFields ?? {},
+  translation: (l as any).selectedItem?.translation ?? null,
   voidedItems: [],
 });
 
@@ -31,13 +33,16 @@ export function billToRenderData(b: Bill): DocumentRenderData {
       number: b.billingNumber,
       date: fmtDate(b.billingDate),
       dueDate: fmtDate(b.dueDate),
-      reference: b.reference,
+      reference: b.refrenceNumber || b.reference,
+      createdDate: fmtDate(b.createdAt),
+      allowBillOfEntry: b.allowBillOfEntry,
       isInclusiveTax: b.isInclusiveTax,
       status: b.status,
       customerNote: b.note,
       purchaseOrder: b.purchaseNumber,
     },
     invoicePayments: [],
+    billingPayments: (b.billingPayments ?? []).map((p: any) => ({ paymentMethodName: p.paymentMethodName, amount: p.amount, status: p.status ?? 'SUCCESS', referenceNumber: p.referenceNumber ?? '' })),
     totals: {
       subtotal: b.itemTotalWithoutTax,
       discount: b.billDiscount,

@@ -16,7 +16,7 @@ import { TranslateModule } from '@ngx-translate/core';
     </span>
   `,
   styles: [`
-    .csb { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 600; color: #fff; white-space: nowrap; background: #74788d; }
+    .csb { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 600; color: #fff; white-space: nowrap; background: var(--ui-b-74788d); }
     .csb--active { background: #32acc1; }
     .csb--inactive { background: #74788d; }
     .csb--consumed, .csb--canceled { background: #f46a6a; }

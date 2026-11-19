@@ -14,7 +14,7 @@
 
 .oa-loading { display: flex; align-items: center; justify-content: center; padding: 60px 0; }
 .oa-spinner {
-  width: 32px; height: 32px; border: 3px solid #e2e8f0;
+  width: 32px; height: 32px; border: 3px solid var(--ui-line);
   border-top-color: var(--color-brand-600, #0e7490);
   border-radius: 50%; animation: oa-spin 800ms linear infinite;
 }
@@ -26,8 +26,8 @@
 .chip {
   display: inline-block;
   padding: 1px 7px; border-radius: 999px; font-size: 11px; font-weight: 600;
-  &--mod { background: #fef3c7; color: #b45309; }
+  &--mod { background: var(--ui-amber-soft); color: var(--ui-amber-text); }
 }
 
 // The sticky footer needs clearance so the last table row isn't hidden behind it.
-.oa-hint { margin-inline-end: auto; font-size: 13px; color: #b45309; }
+.oa-hint { margin-inline-end: auto; font-size: 13px; color: var(--ui-amber-text); }

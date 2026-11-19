@@ -2,10 +2,10 @@
 @include pfCard;
 
 .bs {
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--ui-line);
   border-radius: 12px;
   padding: 16px;
-  background: #fff;
+  background: var(--ui-surface);
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -28,7 +28,7 @@
     margin: 0;
     font-size: 14px;
     font-weight: 600;
-    color: #0f172a;
+    color: var(--ui-text);
     display: flex;
     align-items: center;
     gap: 6px;
@@ -42,14 +42,14 @@
     padding: 0 6px;
     font-size: 11px;
     font-weight: 600;
-    background: #e0f7fa;
-    color: #0e7c8a;
+    background: var(--ui-x-e0f7fa);
+    color: var(--ui-t-0e7c8a);
     border-radius: 10px;
   }
   &__subtitle {
     margin: 0;
     font-size: 12px;
-    color: #64748b;
+    color: var(--ui-muted);
   }
 
   // ─── Quick-add input + button ────────────────────────────────────
@@ -121,7 +121,7 @@
     top: 50%;
     inset-inline-start: 10px;
     transform: translateY(-50%);
-    color: #94a3b8;
+    color: var(--ui-faint);
     pointer-events: none;
   }
   &__search {
@@ -137,24 +137,24 @@
     align-items: center;
     gap: 6px;
     padding: 8px 14px;
-    background: #fef2f2;
-    color: #b91c1c;
-    border: 1px solid #fecaca;
+    background: var(--ui-red-soft);
+    color: var(--ui-red-text);
+    border: 1px solid var(--ui-red-soft-2);
     border-radius: 8px;
     font-size: 12px;
     font-weight: 600;
     cursor: pointer;
     white-space: nowrap;
     transition: background 120ms ease;
-    &:hover { background: #fee2e2; }
+    &:hover { background: var(--ui-red-soft); }
   }
 
   // ─── Table ───────────────────────────────────────────────────────
   &__table-wrap {
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--ui-line);
     border-radius: 10px;
     overflow: hidden;
-    background: #fff;
+    background: var(--ui-surface);
   }
   &__table {
     width: 100%;
@@ -166,9 +166,9 @@
     padding: 10px 12px;
     font-size: 11px;
     font-weight: 600;
-    color: #64748b;
-    background: #f8fafc;
-    border-bottom: 1px solid #e5e7eb;
+    color: var(--ui-muted);
+    background: var(--ui-surface-1);
+    border-bottom: 1px solid var(--ui-line);
     text-transform: uppercase;
     letter-spacing: 0.4px;
     white-space: nowrap;
@@ -178,7 +178,7 @@
 
   &__td {
     padding: 10px 12px;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--ui-surface-2);
     vertical-align: middle;
   }
   tbody tr:last-child &__td { border-bottom: none; }
@@ -187,15 +187,15 @@
   &__td--cost { width: 160px; }
 
   &__row { transition: background 100ms ease; }
-  &__row:hover { background: #f9fafb; }
-  &__row--selected { background: #f0fbfc; }
-  &__row--selected:hover { background: #e6f7f9; }
+  &__row:hover { background: var(--ui-surface-1); }
+  &__row--selected { background: var(--ui-x-f0fbfc); }
+  &__row--selected:hover { background: var(--ui-x-e6f7f9); }
 
   &__serial-text {
     font-family: 'SFMono-Regular', ui-monospace, Consolas, monospace;
     font-size: 12.5px;
     font-weight: 500;
-    color: #0f172a;
+    color: var(--ui-text);
   }
 
   // ─── Status chips ────────────────────────────────────────────────
@@ -209,12 +209,12 @@
     letter-spacing: 0.2px;
   }
   &__chip--avail {
-    background: #dcfce7;
-    color: #15803d;
+    background: var(--ui-green-soft);
+    color: var(--ui-green-text);
   }
   &__chip--sold {
-    background: #f1f5f9;
-    color: #475569;
+    background: var(--ui-surface-2);
+    color: var(--ui-text-4);
   }
 
   // ─── Cost cell warning (zero cost = free item) ────────────────────
@@ -222,7 +222,7 @@
     display: block;
     margin-top: 3px;
     font-size: 10.5px;
-    color: #b45309;
+    color: var(--ui-amber-text);
   }
 
   // ─── Row actions ─────────────────────────────────────────────────
@@ -238,32 +238,32 @@
     padding: 6px 8px;
     min-width: 30px;
     height: 30px;
-    background: #fff;
-    border: 1px solid #e5e7eb;
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-line);
     border-radius: 6px;
-    color: #64748b;
+    color: var(--ui-muted);
     cursor: pointer;
     font-size: 11px;
     font-weight: 600;
     transition: all 120ms ease;
 
     &--primary {
-      background: #eef6fb;
-      border-color: #bee0ee;
+      background: var(--ui-x-eef6fb);
+      border-color: var(--ui-x-bee0ee);
       color: #1e7fa3;
-      &:hover { background: #dcedf6; }
+      &:hover { background: var(--ui-x-dcedf6); }
     }
     &--danger:hover {
-      background: #fef2f2;
-      border-color: #fecaca;
-      color: #dc2626;
+      background: var(--ui-red-soft);
+      border-color: var(--ui-red-soft-2);
+      color: var(--ui-red-text);
     }
     &--info {
-      background: #eff6ff;
-      border-color: #bfdbfe;
+      background: var(--ui-x-eff6ff);
+      border-color: var(--ui-x-bfdbfe);
       color: #1d4ed8;
       padding: 6px 12px;
-      &:hover { background: #dbeafe; }
+      &:hover { background: var(--ui-x-dbeafe); }
     }
   }
 
@@ -272,19 +272,19 @@
     padding: 28px 16px;
     text-align: center;
     font-size: 12.5px;
-    color: #94a3b8;
+    color: var(--ui-faint);
     font-style: italic;
   }
 
   // ─── Footer (totals) ─────────────────────────────────────────────
   &__footer {
     padding: 10px 14px;
-    background: #f8fafc;
-    border-top: 1px solid #e5e7eb;
+    background: var(--ui-surface-1);
+    border-top: 1px solid var(--ui-line);
     font-size: 12px;
-    color: #334155;
+    color: var(--ui-text-3);
 
-    strong { color: #0f172a; font-weight: 600; }
+    strong { color: var(--ui-text); font-weight: 600; }
   }
   &__footer-inner {
     display: flex;
@@ -297,8 +297,8 @@
     align-items: center;
     gap: 4px;
     white-space: nowrap;
-    &--avail { color: #15803d; }
-    &--sold { color: #475569; }
+    &--avail { color: var(--ui-green-text); }
+    &--sold { color: var(--ui-text-4); }
   }
 
   // ─── Custom checkbox (shared with header/row cells) ──────────────
@@ -315,8 +315,8 @@
   &__check-box {
     width: 16px;
     height: 16px;
-    background: #fff;
-    border: 1.5px solid #cbd5e1;
+    background: var(--ui-surface);
+    border: 1.5px solid var(--ui-line-strong);
     border-radius: 4px;
     display: inline-flex;
     align-items: center;
@@ -327,8 +327,8 @@
       content: '';
       width: 8px;
       height: 5px;
-      border-inline-start: 2px solid #fff;
-      border-bottom: 2px solid #fff;
+      border-inline-start: 2px solid var(--ui-surface);
+      border-bottom: 2px solid var(--ui-surface);
       transform: rotate(-45deg) translate(1px, -1px);
       opacity: 0;
     }
@@ -339,8 +339,8 @@
     &::after { opacity: 1; }
   }
   &__check input:disabled + &__check-box {
-    background: #f1f5f9;
-    border-color: #e2e8f0;
+    background: var(--ui-surface-2);
+    border-color: var(--ui-line);
   }
 }
 
@@ -352,5 +352,5 @@
 }
 .pf-input--warn {
   border-color: #f59e0b !important;
-  background: #fffbeb;
+  background: var(--ui-amber-soft);
 }

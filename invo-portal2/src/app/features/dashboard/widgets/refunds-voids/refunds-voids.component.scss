@@ -7,13 +7,13 @@
 .rv__tile {
   padding: 14px;
   border-radius: 12px;
-  border: 1px solid #eef2f6;
-  background: #f8fafc;
+  border: 1px solid var(--ui-surface-2);
+  background: var(--ui-surface-1);
   container-type: inline-size;
 
-  &--refund { background: #fff7ed; border-color: #fed7aa; .rv__value { color: #c2410c; } }
-  &--void   { background: #fef2f2; border-color: #fecaca; .rv__value { color: #b91c1c; } }
+  &--refund { background: var(--ui-x-fff7ed); border-color: var(--ui-x-fed7aa); .rv__value { color: var(--ui-orange-text); } }
+  &--void   { background: var(--ui-red-soft); border-color: var(--ui-red-soft-2); .rv__value { color: var(--ui-red-text); } }
 }
-.rv__value { font-size: clamp(15px, 10cqi, 22px); font-weight: 700; color: #0f172a; line-height: 1.15; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
-.rv__label { margin-top: 4px; font-size: 12.5px; font-weight: 600; color: #475569; }
-.rv__count { margin-top: 2px; font-size: 12px; color: #94a3b8; font-variant-numeric: tabular-nums; }
+.rv__value { font-size: clamp(15px, 10cqi, 22px); font-weight: 700; color: var(--ui-text); line-height: 1.15; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.rv__label { margin-top: 4px; font-size: 12.5px; font-weight: 600; color: var(--ui-text-4); }
+.rv__count { margin-top: 2px; font-size: 12px; color: var(--ui-faint); font-variant-numeric: tabular-nums; }

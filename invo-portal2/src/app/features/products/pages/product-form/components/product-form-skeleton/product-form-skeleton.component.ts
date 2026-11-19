@@ -80,8 +80,8 @@ import { SkeletonComponent } from '@shared/components/skeleton/skeleton.componen
     }
 
     .sk-card {
-      background: #fff;
-      border: 1px solid #e5e7eb;
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-line);
       border-radius: 12px;
       box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
       overflow: hidden;
@@ -92,8 +92,8 @@ import { SkeletonComponent } from '@shared/components/skeleton/skeleton.componen
       align-items: center;
       gap: 10px;
       padding: 14px 18px;
-      border-bottom: 1px solid #f1f5f9;
-      background: #fff;
+      border-bottom: 1px solid var(--ui-surface-2);
+      background: var(--ui-surface);
     }
 
     .sk-card__body {

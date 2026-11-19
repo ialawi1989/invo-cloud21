@@ -20,14 +20,14 @@ import { Component } from '@angular/core';
       position: sticky;
       bottom: 0;
       margin-top: auto;
-      background: #fff;
+      background: var(--ui-surface);
       z-index: 5;
     }
-    .mf-divider { height: 1px; background: #f1f5f9; }
+    .mf-divider { height: 1px; background: var(--ui-surface-2); }
     .mf {
       display: flex; align-items: center; justify-content: flex-end; gap: 10px;
       padding: 16px 24px;
-      background: #fff;
+      background: var(--ui-surface);
     }
   `]
 })

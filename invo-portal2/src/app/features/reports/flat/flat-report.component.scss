@@ -22,7 +22,7 @@
 @keyframes ls-shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
 .ls-loading { display: flex; flex-direction: column; gap: 16px; }
 .ls-skel {
-  height: 360px; border-radius: 12px; background: linear-gradient(90deg, #eef2f6 0%, #f6f8fa 50%, #eef2f6 100%);
+  height: 360px; border-radius: 12px; background: linear-gradient(90deg, var(--ui-surface-2) 0%, var(--ui-x-f6f8fa) 50%, var(--ui-surface-2) 100%);
   background-size: 200% 100%; animation: ls-shimmer 1.4s ease-in-out infinite;
 }
 .ls-error {
@@ -39,12 +39,12 @@ app-pagination { display: block; margin-top: 16px; }
 .fl-code { display: inline-block; margin-inline-start: 8px; padding: 1px 8px; border-radius: 999px; background: var(--rp-surface-3); color: var(--rp-text-2); font-size: 11px; font-weight: 600; }
 .fl-badge { display: inline-block; padding: 1px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 600; background: var(--rp-surface-3); color: var(--rp-text-2); font-variant-numeric: tabular-nums; }
 .fl-ok { background: var(--rp-income-soft); color: var(--rp-income); }
-.fl-warn { background: #fef3c7; color: #b45309; }
+.fl-warn { background: var(--ui-amber-soft); color: var(--ui-amber-text); }
 .fl-bad { background: var(--rp-expense-soft); color: var(--rp-expense); }
 .fl-muted { background: var(--rp-surface-3); color: var(--rp-muted); }
-.fl-info { background: #e0f2fe; color: #0369a1; }
+.fl-info { background: var(--ui-sky-soft); color: var(--ui-t-0369a1); }
 .fl-text-bad { color: var(--rp-expense); font-weight: 600; }
-.fl-text-warn { color: #b45309; font-weight: 600; }
+.fl-text-warn { color: var(--ui-amber-text); font-weight: 600; }
 .fl-bold { font-weight: 800; }
 
 /* A group's name is one merged cell over all its rows, tinted and top-aligned (as in the legacy). */
@@ -58,36 +58,36 @@ app-pagination { display: block; margin-top: 16px; }
 :host ::ng-deep table.bo-table tr.subtotal-row > td { border-top: 1px solid var(--rp-border-strong) !important; }
 
 /* Coloured columns: a solid header with white text, softly tinted cells (and a stronger tint on the Total row). */
-$tones: ('amber': (#d97706, #fffbeb), 'orange': (#c2410c, #fff7ed), 'blue': (#0369a1, #eff6ff), 'green': (#047857, #ecfdf5), 'red': (#b91c1c, #fee2e2), 'purple': (#6d28d9, #ede9fe), 'teal': (#0d9488, #f0fdfa));
+$tones: ('amber': (#d97706, var(--ui-amber-soft)), 'orange': (#c2410c, #fff7ed), 'blue': (#0369a1, #eff6ff), 'green': (#047857, var(--ui-green-soft)), 'red': (#b91c1c, var(--ui-red-soft)), 'purple': (#6d28d9, #ede9fe), 'teal': (#0d9488, #f0fdfa));
 @each $name, $c in $tones {
   :host ::ng-deep table.bo-table th.tn-#{$name} { background: list.nth($c, 1) !important; color: #fff !important; }
   :host ::ng-deep table.bo-table td.tn[data-tone='#{$name}'] { background: list.nth($c, 2) !important; }
 }
 
 /* On a report with coloured columns the plain ones get a dark header, so the row reads as one band. */
-:host ::ng-deep table.bo-table.tn-table th:not([class*='tn-']) { background: #0f172a !important; color: #fff !important; }
+:host ::ng-deep table.bo-table.tn-table th:not([class*='tn-']) { background: var(--ui-ink) !important; color: #fff !important; }
 
 /* A second merged cell inside a group (the cashier within a date): top-aligned and bold, no tint. */
 :host ::ng-deep table.bo-table td.fl-sub-cell { vertical-align: top; font-weight: 600; border-inline-end: 1px solid var(--rp-border); }
-.fl-tick { width: 16px; height: 16px; color: #d97706; }
+.fl-tick { width: 16px; height: 16px; color: var(--ui-orange-text); }
 
 .fl-age { display: inline-flex; align-items: center; gap: 5px; svg { width: 12px; height: 12px; } }
 
 /* Rank pills (Branch Comparison): the leader soft green, the next two teal, everyone else grey. */
 .fl-rank { display: inline-block; min-width: 38px; padding: 2px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; text-align: center; font-variant-numeric: tabular-nums; }
-.fl-rank-first { background: #dcfce7; color: #15803d; }
-.fl-rank-top { background: #1e9fb4; color: #fff; }
+.fl-rank-first { background: var(--ui-green-soft); color: var(--ui-green-text); }
+.fl-rank-top { background: var(--ui-b-1e9fb4); color: #fff; }
 .fl-rank-rest { background: #6b7280; color: #fff; }
 
 .fl-th { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
 .fl-hint { flex: none; width: 13px; height: 13px; opacity: .8; cursor: help; }
 
 /* photo icons per shift + the floating preview */
-.fl-shot { display: flex; justify-content: center; align-items: center; gap: 6px; padding: 2px 0; &.divided { margin-top: 6px; padding-top: 6px; border-top: 1px dashed #cbd5e1; } }
-.fl-shot-btn { display: inline-grid; place-items: center; border-radius: 4px; &:focus-visible { outline: 2px solid #1e8c9f; outline-offset: 2px; } &:hover .fl-shot-ico { color: #0f5f6e; } }
-.fl-shot-ico { width: 16px; height: 16px; color: #cbd5e1; &.on { color: #0e7490; } }
-.fl-pop { position: fixed; z-index: 1000; transform: translate(-50%, -100%); padding: 6px; background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; box-shadow: 0 10px 30px rgba(15, 23, 42, .22); pointer-events: none; text-align: center;
-  img { display: block; max-width: 220px; max-height: 170px; border-radius: 6px; } small { display: block; margin-top: 4px; font-size: 11.5px; color: #475569; }
+.fl-shot { display: flex; justify-content: center; align-items: center; gap: 6px; padding: 2px 0; &.divided { margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--ui-line-strong); } }
+.fl-shot-btn { display: inline-grid; place-items: center; border-radius: 4px; &:focus-visible { outline: 2px solid #1e8c9f; outline-offset: 2px; } &:hover .fl-shot-ico { color: var(--ui-t-0f5f6e); } }
+.fl-shot-ico { width: 16px; height: 16px; color: #cbd5e1; &.on { color: var(--ui-brand-text); } }
+.fl-pop { position: fixed; z-index: 1000; transform: translate(-50%, -100%); padding: 6px; background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: 10px; box-shadow: 0 10px 30px rgba(15, 23, 42, .22); pointer-events: none; text-align: center;
+  img { display: block; max-width: 220px; max-height: 170px; border-radius: 6px; } small { display: block; margin-top: 4px; font-size: 11.5px; color: var(--ui-text-4); }
   &.below { transform: translate(-50%, 0); } }
 
 .fl-dayname { display: block; }

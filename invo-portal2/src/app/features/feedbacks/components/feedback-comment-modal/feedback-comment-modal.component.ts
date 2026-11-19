@@ -29,10 +29,10 @@ import { Feedback, ratingColor } from '../../models/feedback.model';
     .stars { color: #f59e0b; letter-spacing: 1px; }
     .badge { padding: 1px 8px; border-radius: 99px; font-size: 11px; font-weight: 600; color: #fff; }
     .badge--success { background: #22c55e; } .badge--warning { background: #f59e0b; } .badge--danger { background: #ef4444; }
-    .text { margin: 0; font-size: 14px; line-height: 1.7; color: #1e293b; white-space: pre-wrap; word-break: break-word; }
+    .text { margin: 0; font-size: 14px; line-height: 1.7; color: var(--ui-text-2); white-space: pre-wrap; word-break: break-word; }
     .foot { display: flex; justify-content: flex-end; padding: 12px 24px 16px; }
-    .btn { padding: 9px 20px; background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 13px; cursor: pointer; }
-    .btn:hover { background: #e5e7eb; }
+    .btn { padding: 9px 20px; background: var(--ui-surface-2); border: 1px solid var(--ui-line); border-radius: 8px; font-size: 13px; cursor: pointer; }
+    .btn:hover { background: var(--ui-line); }
   `],
 })
 export class FeedbackCommentModalComponent {

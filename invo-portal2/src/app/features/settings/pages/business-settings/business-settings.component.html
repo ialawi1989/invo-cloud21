@@ -120,7 +120,7 @@
             />
             <p class="field-hint">{{ 'SETTINGS.BUSINESS.SMALLEST_CURRENCY_HINT' | translate }}</p>
             @if (form.controls['smallestCurrency'].invalid && form.controls['smallestCurrency'].dirty) {
-              <p class="field-hint" style="color:#dc2626">{{ 'SETTINGS.BUSINESS.SMALLEST_CURRENCY_RANGE' | translate }}</p>
+              <p class="field-hint" style="color:var(--ui-red-text)">{{ 'SETTINGS.BUSINESS.SMALLEST_CURRENCY_RANGE' | translate }}</p>
             }
           </div>
           <div class="field">

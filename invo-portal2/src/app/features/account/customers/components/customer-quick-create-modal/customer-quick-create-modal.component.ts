@@ -42,12 +42,12 @@ import { CustomerFormDetailsComponent } from '../customer-form-details/customer-
   styles: [`
     .cqc__body { padding: 16px 20px; max-height: 68vh; overflow-y: auto; min-width: 640px; max-width: 100%; }
     .cqc-btn {
-      padding: 9px 18px; border-radius: 8px; border: 1px solid #d0d5dd; background: #fff;
-      color: #334155; font-size: 13.5px; font-weight: 600; cursor: pointer;
+      padding: 9px 18px; border-radius: 8px; border: 1px solid var(--ui-line-strong); background: var(--ui-surface);
+      color: var(--ui-text-3); font-size: 13.5px; font-weight: 600; cursor: pointer;
     }
-    .cqc-btn:hover { background: #f8fafc; }
+    .cqc-btn:hover { background: var(--ui-surface-1); }
     .cqc-btn:disabled { opacity: .5; cursor: not-allowed; }
-    .cqc-btn--primary { border-color: #2691a4; background: #2691a4; color: #fff; }
+    .cqc-btn--primary { border-color: #2691a4; background: var(--ui-b-2691a4); color: #fff; }
     .cqc-btn--primary:hover:not(:disabled) { background: #227d8d; }
   `],
 })

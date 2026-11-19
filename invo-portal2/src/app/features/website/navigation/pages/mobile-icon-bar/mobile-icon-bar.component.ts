@@ -110,42 +110,42 @@ const DEFAULT_ITEMS: Array<{ name: string; en: string; ar: string; slug: string;
   `,
   styles: [`
     :host { display:block; }
-    .loading { display:flex; align-items:center; gap:10px; justify-content:center; padding:80px 0; color:#94a3b8; font-size:14px; }
+    .loading { display:flex; align-items:center; gap:10px; justify-content:center; padding:80px 0; color:var(--ui-faint); font-size:14px; }
     .head { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:22px; flex-wrap:wrap; }
-    .title { font-size:22px; font-weight:700; color:#0f172a; margin:0 0 4px; }
-    .sub { font-size:14px; color:#64748b; margin:0; }
+    .title { font-size:22px; font-weight:700; color:var(--ui-text); margin:0 0 4px; }
+    .sub { font-size:14px; color:var(--ui-muted); margin:0; }
     .actions { display:flex; align-items:center; gap:10px; }
-    .count { font-size:13px; font-weight:600; color:#64748b; padding:4px 10px; border-radius:999px; background:#f1f5f9; }
-    .count.full { background:#fef3c7; color:#92400e; }
+    .count { font-size:13px; font-weight:600; color:var(--ui-muted); padding:4px 10px; border-radius:999px; background:var(--ui-surface-2); }
+    .count.full { background:var(--ui-amber-soft); color:var(--ui-amber-text); }
     .btn { display:inline-flex; align-items:center; gap:7px; height:38px; padding:0 18px; border-radius:8px; font-size:14px; font-weight:500; cursor:pointer; border:none; }
     .btn-primary { background:var(--color-brand-600); color:#fff; }
     .btn-primary:hover { background:var(--color-brand-700); }
     .btn-primary:disabled { opacity:.5; cursor:not-allowed; }
-    .btn-outline { background:#fff; border:1px solid #e2e8f0; color:#334155; }
+    .btn-outline { background:var(--ui-surface); border:1px solid var(--ui-line); color:var(--ui-text-3); }
     .list { display:flex; flex-direction:column; gap:8px; max-width:680px; }
-    .row { display:flex; align-items:center; gap:12px; padding:10px 14px; border:1px solid #e2e8f0; border-radius:10px; background:#fff; transition:.12s; }
-    .row.off { background:#f8fafc; opacity:.75; }
+    .row { display:flex; align-items:center; gap:12px; padding:10px 14px; border:1px solid var(--ui-line); border-radius:10px; background:var(--ui-surface); transition:.12s; }
+    .row.off { background:var(--ui-surface-1); opacity:.75; }
     .drag { cursor:grab; color:#cbd5e1; display:inline-flex; }
     /* Icon picker: a trigger showing the current icon that opens a menu of choices. */
     .icon-picker { position:relative; flex:0 0 auto; }
-    .icon-trigger { display:inline-flex; align-items:center; gap:5px; height:36px; padding:0 8px; border:1px solid #e2e8f0; border-radius:8px; background:#fff; color:#475569; cursor:pointer; transition:border-color .12s, background .12s; }
-    .icon-trigger:hover { border-color:#cbd5e1; background:#f8fafc; }
-    .icon-trigger.open { border-color:var(--color-brand-500); color:var(--color-brand-700); background:#fff; }
+    .icon-trigger { display:inline-flex; align-items:center; gap:5px; height:36px; padding:0 8px; border:1px solid var(--ui-line); border-radius:8px; background:var(--ui-surface); color:var(--ui-text-4); cursor:pointer; transition:border-color .12s, background .12s; }
+    .icon-trigger:hover { border-color:var(--ui-line-strong); background:var(--ui-surface-1); }
+    .icon-trigger.open { border-color:var(--color-brand-500); color:var(--ui-brand-t700); background:var(--ui-surface); }
     .icon-current { display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; flex:0 0 auto; }
     .icon-current ::ng-deep svg { width:18px; height:18px; display:block; }
-    .icon-trigger .chev { color:#94a3b8; flex:0 0 auto; transition:transform .15s ease; }
-    .icon-trigger.open .chev { transform:rotate(180deg); color:var(--color-brand-600); }
-    .icon-menu { position:absolute; top:calc(100% + 6px); inset-inline-start:0; z-index:30; display:flex; gap:6px; padding:8px; background:#fff; border:1px solid #e2e8f0; border-radius:12px; box-shadow:0 10px 30px rgba(15,23,42,.16); }
-    .icon-swatch { width:38px; height:38px; border:1px solid #e2e8f0; border-radius:8px; background:#fff; color:#475569; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0; transition:border-color .12s, background .12s; }
-    .icon-swatch:hover { border-color:#cbd5e1; background:#f8fafc; }
-    .icon-swatch.selected { border-color:var(--color-brand-500); background:color-mix(in srgb, var(--color-brand-100), transparent 40%); color:var(--color-brand-700); }
+    .icon-trigger .chev { color:var(--ui-faint); flex:0 0 auto; transition:transform .15s ease; }
+    .icon-trigger.open .chev { transform:rotate(180deg); color:var(--ui-brand-t600); }
+    .icon-menu { position:absolute; top:calc(100% + 6px); inset-inline-start:0; z-index:30; display:flex; gap:6px; padding:8px; background:var(--ui-surface); border:1px solid var(--ui-line); border-radius:12px; box-shadow:0 10px 30px rgba(15,23,42,.16); }
+    .icon-swatch { width:38px; height:38px; border:1px solid var(--ui-line); border-radius:8px; background:var(--ui-surface); color:var(--ui-text-4); cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0; transition:border-color .12s, background .12s; }
+    .icon-swatch:hover { border-color:var(--ui-line-strong); background:var(--ui-surface-1); }
+    .icon-swatch.selected { border-color:var(--color-brand-500); background:color-mix(in srgb, var(--color-brand-100), transparent 40%); color:var(--ui-brand-t700); }
     .icon-swatch ::ng-deep svg { width:20px; height:20px; display:block; }
-    .row-name { flex:1; font-size:14px; font-weight:500; color:#0f172a; }
+    .row-name { flex:1; font-size:14px; font-weight:500; color:var(--ui-text); }
     .row-tools { display:flex; align-items:center; gap:4px; }
-    .tool { width:30px; height:30px; border:none; background:transparent; border-radius:6px; cursor:pointer; color:#64748b; font-size:14px; display:inline-flex; align-items:center; justify-content:center; }
-    .tool:hover { background:#f1f5f9; color:#0f172a; }
-    .toggle { width:34px; height:30px; border:none; background:transparent; border-radius:6px; cursor:pointer; color:#94a3b8; display:inline-flex; align-items:center; justify-content:center; }
-    .toggle.on { color:var(--color-brand-600); }
+    .tool { width:30px; height:30px; border:none; background:transparent; border-radius:6px; cursor:pointer; color:var(--ui-muted); font-size:14px; display:inline-flex; align-items:center; justify-content:center; }
+    .tool:hover { background:var(--ui-surface-2); color:var(--ui-text); }
+    .toggle { width:34px; height:30px; border:none; background:transparent; border-radius:6px; cursor:pointer; color:var(--ui-faint); display:inline-flex; align-items:center; justify-content:center; }
+    .toggle.on { color:var(--ui-brand-t600); }
     .toggle:disabled { opacity:.35; cursor:not-allowed; }
     .cdk-drag-preview { box-shadow:0 8px 24px rgba(0,0,0,.15); border-radius:10px; }
     .cdk-drag-placeholder { opacity:.4; }

@@ -40,14 +40,14 @@ export const DOC_VIEWER_ZOOM_STEPS = [25, 50, 75, 90, 100, 110, 125, 150, 175, 2
     :host { display: block; }
     .anchor { position: sticky; bottom: 22px; height: 0; z-index: 5; display: flex; justify-content: center; align-items: flex-end; pointer-events: none; }
     .anchor > * { pointer-events: auto; }
-    .bar { transform: translateY(-100%); display: inline-flex; flex: 0 0 auto; align-items: center; gap: 2px; padding: 4px; background: #fff; border: 1px solid #e4e7ec; border-radius: 10px; box-shadow: 0 4px 14px rgba(15, 23, 42, .12); }
-    .btn { width: 32px; height: 32px; display: inline-grid; place-items: center; border: 0; border-radius: 8px; background: transparent; color: #334155; cursor: pointer; }
-    .btn:hover:not(:disabled) { background: #f1f5f9; }
+    .bar { transform: translateY(-100%); display: inline-flex; flex: 0 0 auto; align-items: center; gap: 2px; padding: 4px; background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: 10px; box-shadow: 0 4px 14px rgba(15, 23, 42, .12); }
+    .btn { width: 32px; height: 32px; display: inline-grid; place-items: center; border: 0; border-radius: 8px; background: transparent; color: var(--ui-text-3); cursor: pointer; }
+    .btn:hover:not(:disabled) { background: var(--ui-surface-2); }
     .btn:disabled { opacity: .35; cursor: not-allowed; }
-    .pages { display: inline-flex; align-items: center; gap: 6px; min-width: 56px; justify-content: center; font-size: 13px; color: #0f172a; }
-    .sep { color: #94a3b8; }
-    .div { width: 1px; height: 20px; margin: 0 6px; background: #e4e7ec; }
-    .zoom { min-width: 46px; text-align: center; font-size: 13px; font-weight: 600; color: #0f172a; }
+    .pages { display: inline-flex; align-items: center; gap: 6px; min-width: 56px; justify-content: center; font-size: 13px; color: var(--ui-text); }
+    .sep { color: var(--ui-faint); }
+    .div { width: 1px; height: 20px; margin: 0 6px; background: var(--ui-line); }
+    .zoom { min-width: 46px; text-align: center; font-size: 13px; font-weight: 600; color: var(--ui-text); }
   `],
 })
 export class DocViewerBarComponent {

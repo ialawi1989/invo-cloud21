@@ -52,23 +52,23 @@ import { BranchConnectionService, BranchConnection } from '../../services/branch
   styles: [`
     .cm { padding: 24px; min-width: 320px; }
     .cm-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-    .cm-title { font-size: 16px; font-weight: 600; color: #111827; margin: 0; }
+    .cm-title { font-size: 16px; font-weight: 600; color: var(--ui-text); margin: 0; }
     .cm-close {
       width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
-      background: transparent; border: none; border-radius: 6px; color: #9ca3af; cursor: pointer;
-      &:hover { background: #f4f5f7; color: #374151; }
+      background: transparent; border: none; border-radius: 6px; color: var(--ui-faint); cursor: pointer;
+      &:hover { background: var(--ui-x-f4f5f7); color: var(--ui-text-3); }
     }
-    .cm-branch-name { font-size: 13px; color: #6b7280; margin: 0 0 14px; }
-    .cm-label { display: block; font-size: 13px; font-weight: 500; color: #374151; margin-bottom: 8px; }
+    .cm-branch-name { font-size: 13px; color: var(--ui-muted); margin: 0 0 14px; }
+    .cm-label { display: block; font-size: 13px; font-weight: 500; color: var(--ui-text-3); margin-bottom: 8px; }
     .cm-input {
       width: 100%; height: 42px; padding: 0 12px; box-sizing: border-box;
-      border: 1.5px solid #e5e7eb; border-radius: 8px;
-      font-size: 16px; font-family: inherit; color: #111827; outline: none;
+      border: 1.5px solid var(--ui-line); border-radius: 8px;
+      font-size: 16px; font-family: inherit; color: var(--ui-text); outline: none;
       &:focus { border-color: #32acc1; }
-      &::placeholder { color: #9ca3af; }
+      &::placeholder { color: var(--ui-faint); }
     }
     .cm-input--err { border-color: #ef4444 !important; }
-    .cm-err { font-size: 12px; color: #ef4444; margin: 6px 0 0; }
+    .cm-err { font-size: 12px; color: var(--ui-red-text); margin: 6px 0 0; }
     .cm-footer { display: flex; gap: 10px; margin-top: 20px; }
     .cm-btn {
       flex: 1; height: 40px; border-radius: 8px; font-size: 14px; font-weight: 500;
@@ -77,11 +77,11 @@ import { BranchConnectionService, BranchConnection } from '../../services/branch
       transition: all .15s;
       &:disabled { opacity: .6; cursor: not-allowed; }
     }
-    .cm-btn--cancel { background: #f4f5f7; color: #374151; &:hover:not(:disabled) { background: #e9ecef; } }
+    .cm-btn--cancel { background: var(--ui-x-f4f5f7); color: var(--ui-text-3); &:hover:not(:disabled) { background: var(--ui-x-e9ecef); } }
     .cm-btn--confirm { background: #32acc1; color: #fff; &:hover:not(:disabled) { background: #2b95a8; } }
     .cm-spin {
       width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0;
-      border: 2px solid rgba(255,255,255,.3); border-top-color: #fff;
+      border: 2px solid rgba(255,255,255,.3); border-top-color: var(--ui-surface);
       animation: spin .6s linear infinite; display: inline-block;
     }
     @keyframes spin { to { transform: rotate(360deg); } }

@@ -33,20 +33,20 @@
 
     <div class="dbf-topbar__spacer"></div>
 
-    <!-- Render-mode badge — locked. The user picked Classic vs
-         Designer when the template was created; switching it on a
-         saved template would mix incompatible JSON shapes, so the
-         badge is read-only. To change the mode, create a new
-         template. -->
-    <span class="dbf-topbar__render-locked"
-          [class.dbf-topbar__render-locked--designer]="template().renderMode === 'designer'"
-          [appTooltip]="'DOCUMENT_BUILDER.RENDER_LOCKED_HINT' | translate">
-      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="3" y="11" width="18" height="11" rx="2"/>
-        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-      </svg>
-      {{ ('DOCUMENT_BUILDER.RENDER.' + template().renderMode.toUpperCase()) | translate }}
-    </span>
+    <!-- Classic / Free Design switch — both designs live in one template and the mode only picks which one renders, so
+         switching never discards the other layout (legacy `setBuilderMode`). -->
+    <div class="dbf-topbar__mode" role="tablist">
+      <button type="button" role="tab" class="dbf-topbar__mode-btn"
+              [class.dbf-topbar__mode-btn--on]="template().renderMode !== 'designer'"
+              [attr.aria-selected]="template().renderMode !== 'designer'"
+              [appTooltip]="'DOCUMENT_BUILDER.CLASSIC_TOOLTIP' | translate"
+              (click)="setRenderMode('classic')">{{ 'DOCUMENT_BUILDER.RENDER.CLASSIC' | translate }}</button>
+      <button type="button" role="tab" class="dbf-topbar__mode-btn"
+              [class.dbf-topbar__mode-btn--on]="template().renderMode === 'designer'"
+              [attr.aria-selected]="template().renderMode === 'designer'"
+              [appTooltip]="'DOCUMENT_BUILDER.FREE_DESIGN_TOOLTIP' | translate"
+              (click)="setRenderMode('designer')">{{ 'DOCUMENT_BUILDER.FREE_DESIGN' | translate }}</button>
+    </div>
 
     <!-- Undo / Redo — keyboard shortcuts wired in the component
          (Ctrl+Z, Ctrl+Y, Ctrl+Shift+Z). Buttons are disabled when
@@ -123,133 +123,17 @@
                  shows; both share the same template signal so
                  toggles + edits round-trip cleanly. -->
   @if (template().renderMode === 'designer') {
-    <div class="dbf-layout dbf-layout--designer">
-      <!-- ── Page tabs — Master plus any extra standalone pages (e.g. a company's own
-           Terms & Conditions layout) appended after the master's flow. ────────────── -->
-      <nav class="dbf-pages">
-        @for (p of pages(); track p.id) {
-          <button type="button" class="dbf-page-tab" [class.dbf-page-tab--on]="activePageId() === p.id" (click)="selectPage(p.id)">
-            @if (renamingPageId() === p.id) {
-              <input type="text" class="dbf-page-tab__rename" [(ngModel)]="renameDraft" autofocus
-                     (click)="$event.stopPropagation()"
-                     (keydown.enter)="commitRenamePage(p.id)"
-                     (keydown.escape)="cancelRenamePage()"
-                     (blur)="commitRenamePage(p.id)"/>
-            } @else {
-              <span (dblclick)="p.id !== MASTER_PAGE_ID && startRenamePage(p.id, p.name, $event)">{{ p.name }}</span>
-              @if (p.id !== MASTER_PAGE_ID) {
-                <span class="dbf-page-tab__remove" (click)="onRemovePage(p.id, p.name, $event)">×</span>
-              }
-            }
-          </button>
-        }
-        <button type="button" class="dbf-page-tab dbf-page-tab--add" [appTooltip]="'DOCUMENT_BUILDER.ADD_PAGE' | translate" (click)="addPage()">+</button>
-      </nav>
-
-      <div class="dbf-designer-body">
-      <!-- ── Left rail: palette + layers ─────────────────────── -->
-      <aside class="dbf-designer-left">
-        <header class="dbf-designer-left__header">
-          <h3>{{ 'DOCUMENT_BUILDER.DESIGNER.PALETTE' | translate }}</h3>
-        </header>
-        <div class="dbf-designer-palette">
-          @for (type of designerPalette; track type) {
-            <div
-              class="dbf-designer-palette__tile"
-              draggable="true"
-              (dragstart)="onPaletteDragStart($event, type)"
-              [appTooltip]="'DOCUMENT_BUILDER.DESIGNER.DRAG_TO_CANVAS' | translate"
-            >{{ type }}</div>
-          }
-        </div>
-
-        <header class="dbf-designer-left__header">
-          <h3>{{ 'DOCUMENT_BUILDER.DESIGNER.LAYERS' | translate }}
-            <span class="dbf-count">{{ pageElements().length }}</span>
-          </h3>
-        </header>
-        <ul class="dbf-designer-layers">
-          @for (el of pageElements(); track trackDesigner($index, el); let i = $index) {
-            <li
-              class="dbf-designer-layers__item"
-              [class.dbf-designer-layers__item--on]="selectedDesignerId() === el.id"
-              [class.dbf-designer-layers__item--hidden]="el.hidden"
-              [class.dbf-designer-layers__item--locked]="el.locked"
-              (click)="selectDesignerElement(el)"
-            >
-              <span class="dbf-designer-layers__type">{{ el.type }}</span>
-              <span class="dbf-designer-layers__name">{{ $any(el.content) || ('—') }}</span>
-              <button class="dbf-designer-layers__btn"
-                      (click)="$event.stopPropagation(); patchDesignerElement(el.id, { hidden: !el.hidden })"
-                      [appTooltip]="(el.hidden ? 'DOCUMENT_BUILDER.DESIGNER.SHOW' : 'DOCUMENT_BUILDER.DESIGNER.HIDE') | translate">
-                {{ el.hidden ? '◯' : '◉' }}
-              </button>
-              <button class="dbf-designer-layers__btn"
-                      (click)="$event.stopPropagation(); patchDesignerElement(el.id, { locked: !el.locked })"
-                      [appTooltip]="(el.locked ? 'DOCUMENT_BUILDER.DESIGNER.UNLOCK' : 'DOCUMENT_BUILDER.DESIGNER.LOCK') | translate">
-                <span class="ui-icon" [class.ui-icon-lock]="el.locked" [class.ui-icon-unlock]="!el.locked"></span>
-              </button>
-            </li>
-          }
-          @if (pageElements().length === 0) {
-            <li class="dbf-designer-layers__empty">
-              {{ 'DOCUMENT_BUILDER.DESIGNER.LAYERS_EMPTY' | translate }}
-            </li>
-          }
-        </ul>
-
-        <button class="btn btn-default dbf-designer-left__sync"
-                (click)="syncFromClassic()"
-                [appTooltip]="'DOCUMENT_BUILDER.DESIGNER.SYNC_HINT' | translate">
-          {{ 'DOCUMENT_BUILDER.DESIGNER.SYNC' | translate }}
-        </button>
-      </aside>
-
-      <!-- ── Canvas ────────────────────────────────────────────── -->
-      <div class="dbf-canvas">
-        <div class="dbf-canvas__toolbar">
-          <button type="button" class="dbf-canvas__zoom-btn" (click)="zoomOut()" [appTooltip]="'DOCUMENT_BUILDER.ZOOM_OUT' | translate">−</button>
-          <span class="dbf-canvas__zoom-value">{{ (zoom() * 100) | number:'1.0-0' }}%</span>
-          <button type="button" class="dbf-canvas__zoom-btn" (click)="zoomIn()" [appTooltip]="'DOCUMENT_BUILDER.ZOOM_IN' | translate">+</button>
-          <button type="button" class="dbf-canvas__zoom-text" (click)="zoomFit()">{{ 'DOCUMENT_BUILDER.FIT' | translate }}</button>
-          <button type="button" class="dbf-canvas__zoom-text" (click)="zoom100()">100%</button>
-          <div class="dbf-canvas__spacer"></div>
-          <button type="button" class="dbf-canvas__zoom-text" [disabled]="exportingPdf()" (click)="onExportPdf()">
-            {{ (exportingPdf() ? 'DOCUMENT_BUILDER.DESIGNER.EXPORTING_PDF' : 'DOCUMENT_BUILDER.DESIGNER.EXPORT_PDF') | translate }}
-          </button>
-          <span class="dbf-canvas__meta">
-            {{ template().selectedPaperSize }} ·
-            {{ ('DOCUMENT_BUILDER.GENERAL.ORIENT_' + template().selectedPaperOrientation.toUpperCase()) | translate }} ·
-            {{ 'DOCUMENT_BUILDER.RENDER.DESIGNER' | translate }}
-          </span>
-        </div>
-        <div class="dbf-canvas__paper" [style.transform]="'scale(' + zoom() + ')'">
-          <app-designer-canvas
-            [template]="template()"
-            [elements]="pageElements()"
-            [selectedId]="selectedDesignerId()"
-            [zoom]="zoom()"
-            (elementsChange)="setDesignerElements($event)"
-            (selectChange)="selectDesignerElement($event)"
-          />
-        </div>
-      </div>
-
-      <!-- ── Right rail: inspector ─────────────────────────────── -->
-      <aside class="dbf-designer-right">
-        <app-designer-inspector
-          [selected]="selectedDesigner()"
-          [zIndex]="selectedDesignerZ()"
-          [total]="template().designerElements.length"
-          (elementChange)="replaceDesignerElement($event)"
-          (arrange)="arrangeSelected($event)"
-          (duplicate)="duplicateSelectedDesigner()"
-          (delete)="deleteSelectedDesigner()"
-          (toggleHidden)="toggleDesignerHidden()"
-          (toggleLocked)="toggleDesignerLocked()"
-        />
-      </aside>
-      </div>
+    <!-- Free Design: the legacy report-engine designer (toolbox + canvas + property panel). The design lives in the template's
+         `reportDesign` (saved as `designerTemplate`, the shape the legacy builder, the document pages and the server PDF read). -->
+    <div class="dbf-layout dbf-layout--free">
+      <app-free-designer
+        [template]="freeDesign()"
+        [data]="freeDesignData()"
+        [defaultTemplate]="starterDesign()"
+        [saving]="saving()"
+        [showToolbar]="true"
+        (templateChange)="onFreeDesignChange($event)"
+        (save)="save()"/>
     </div>
   } @else {
   <!-- ════ CLASSIC layout (existing — left-nav | sidebar | canvas) ═══ -->
@@ -512,13 +396,13 @@
                               <label class="dbf-field__sublabel">{{ 'DOCUMENT_BUILDER.HEADER_FOOTER.WIDTH_PX' | translate }}</label>
                               <input type="number" class="dbf-input"
                                      [ngModel]="template().headerCustomization.logo.width"
-                                     (ngModelChange)="patchHeaderLogo({ width: +$event })"/>
+                                     (ngModelChange)="patchHeaderLogoSize('width', +$event)"/>
                             </div>
                             <div>
                               <label class="dbf-field__sublabel">{{ 'DOCUMENT_BUILDER.HEADER_FOOTER.HEIGHT_PX' | translate }}</label>
                               <input type="number" class="dbf-input"
                                      [ngModel]="template().headerCustomization.logo.height"
-                                     (ngModelChange)="patchHeaderLogo({ height: +$event })"/>
+                                     (ngModelChange)="patchHeaderLogoSize('height', +$event)"/>
                             </div>
                           </div>
                         </div>
@@ -595,7 +479,6 @@
                         [italic]="bulkHeaderRepresentative().italic"
                         [underline]="bulkHeaderRepresentative().underline"
                         [alignment]="$any(bulkHeaderRepresentative().alignment)"
-                        [showLabelColor]="false"
                         [showBackground]="false"
                         (patch)="patchAllHeaderFields($event)"
                       />
@@ -620,6 +503,26 @@
                     <span>{{ 'DOCUMENT_BUILDER.HEADER_FOOTER.SHOW_FOOTER' | translate }}</span>
                   </label>
 
+                  @if (!template().footerCustomization.visibility.visible) {
+                    <!-- Hidden footer: legacy still lets you reserve its space, and keeps Terms-as-separate-page available. -->
+                    <div class="dbf-field">
+                      <label class="dbf-field__label">{{ 'DOCUMENT_BUILDER.HEADER_FOOTER.RESERVED_HEIGHT' | translate }}</label>
+                      <input type="number" min="0" class="dbf-input"
+                             [ngModel]="template().footerCustomization.visibility.height"
+                             (ngModelChange)="patchFooterVisibility({ height: +$event })"/>
+                    </div>
+                    @if (hasTerms()) {
+                      <div class="dbf-pagenum">
+                        <label class="dbf-toggle">
+                          <input type="checkbox"
+                                 [checked]="template().footerCustomization.termAsSeparatePage"
+                                 (change)="setTermAsSeparatePage($any($event.target).checked)"/>
+                          <span>{{ 'DOCUMENT_BUILDER.HEADER_FOOTER.TERMS_AS_SEPARATE_PAGE' | translate }}</span>
+                        </label>
+                      </div>
+                    }
+                  }
+
                   @if (template().footerCustomization.visibility.visible) {
                     <div class="dbf-tabs" role="tablist">
                       <button type="button"
@@ -641,16 +544,21 @@
                     </div>
 
                     @if (footerActiveTab() === 'fields') {
+                      @if (hasCompanyNote()) {
                       <app-text-style-editor
                         [label]="'DOCUMENT_BUILDER.HEADER_FOOTER.SHOW_NOTE' | translate"
                         [value]="template().footerCustomization.note"
                         [showLabel]="true"
+                        [required]="true"
                         (valueChange)="patchFooterField('note', $event)"
                       />
+                      }
+                      @if (hasTerms()) {
                       <app-text-style-editor
                         [label]="'DOCUMENT_BUILDER.HEADER_FOOTER.SHOW_TERMS' | translate"
                         [value]="template().footerCustomization.term"
                         [showLabel]="true"
+                        [required]="true"
                         (valueChange)="patchFooterField('term', $event)"
                       />
                       <!-- Terms & Conditions as its own printed page — like an attachment — instead
@@ -663,12 +571,16 @@
                           <span>{{ 'DOCUMENT_BUILDER.HEADER_FOOTER.TERMS_AS_SEPARATE_PAGE' | translate }}</span>
                         </label>
                       </div>
+                      }
+                      @if (hasCustomerNote()) {
                       <app-text-style-editor
                         [label]="'DOCUMENT_BUILDER.HEADER_FOOTER.SHOW_CUSTOMER_NOTE' | translate"
                         [value]="template().footerCustomization.customerNote"
                         [showLabel]="true"
+                        [required]="true"
                         (valueChange)="patchFooterField('customerNote', $event)"
                       />
+                      }
 
                       <!-- Page number — independent from the document
                            footer (notes / terms). When enabled, prints
@@ -713,7 +625,6 @@
                         [italic]="bulkFooterRepresentative().italic"
                         [underline]="bulkFooterRepresentative().underline"
                         [alignment]="$any(bulkFooterRepresentative().alignment)"
-                        [showLabelColor]="false"
                         [showBackground]="false"
                         (patch)="patchAllFooterFields($event)"
                       />
@@ -891,15 +802,19 @@
                 </div>
 
                 @if (tableActiveTab() === 'columns') {
+                  <div cdkDropList (cdkDropListDropped)="dropTableColumn($event)">
                   @for (cfg of tableColumnConfigs(); track trackColumnConfig($index, cfg)) {
-                    <div class="dbf-col">
+                    <div class="dbf-col" cdkDrag>
+                      <div class="dbf-col__head">
+                      <svg class="dbf-col__grip" cdkDragHandle width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="4.5" cy="3" r="1.2"/><circle cx="9.5" cy="3" r="1.2"/><circle cx="4.5" cy="7" r="1.2"/><circle cx="9.5" cy="7" r="1.2"/><circle cx="4.5" cy="11" r="1.2"/><circle cx="9.5" cy="11" r="1.2"/></svg>
                       <label class="dbf-toggle">
                         <input type="checkbox"
-                               [checked]="tableColumn(cfg.id).show"
+                               [checked]="columnOn(cfg)"
                                (change)="patchTableColumn(cfg.id, { show: $any($event.target).checked })"/>
                         <span>{{ cfg.defaultLabel }}</span>
                       </label>
-                      @if (tableColumn(cfg.id).show) {
+                      </div>
+                      @if (columnOn(cfg)) {
                         <div class="dbf-grid-2 dbf-col__row">
                           <div>
                             <label class="dbf-field__sublabel">{{ 'DOCUMENT_BUILDER.TABLE.LABEL' | translate }}</label>
@@ -923,6 +838,7 @@
                       }
                     </div>
                   }
+                  </div>
                 }
 
                 @if (tableActiveTab() === 'style') {
@@ -991,6 +907,75 @@
                            (change)="patchTableVoided({ show: $any($event.target).checked })"/>
                     <span>{{ 'DOCUMENT_BUILDER.TABLE.VOIDED_LINES' | translate }}</span>
                   </label>
+                  @if (tableVoidedField().show) {
+                    <div class="dbf-field">
+                      <label class="dbf-field__label">{{ 'DOCUMENT_BUILDER.TABLE.FONT_SIZE' | translate }}</label>
+                      <input type="number" min="6" max="24" class="dbf-input"
+                             [ngModel]="$any(tableVoidedField().size)"
+                             (ngModelChange)="patchTableVoided({ size: +$event })"/>
+                    </div>
+                    <div class="dbf-field">
+                      <label class="dbf-field__label">{{ 'DOCUMENT_BUILDER.TABLE.FONT_COLOR' | translate }}</label>
+                      <app-color-picker
+                        [ngModel]="tableVoidedField().color"
+                        [wcagAgainst]="tableVoidedField().backgroundColor || '#ffffff'"
+                        [showSpectrum]="true"
+                        [showRainbowPresets]="true"
+                        (ngModelChange)="patchTableVoided({ color: $event })"/>
+                    </div>
+                    <div class="dbf-field">
+                      <label class="dbf-field__label">{{ 'DOCUMENT_BUILDER.TABLE.BACKGROUND' | translate }}</label>
+                      <app-color-picker
+                        [ngModel]="tableVoidedField().backgroundColor"
+                        [showSpectrum]="true"
+                        [showRainbowPresets]="true"
+                        (ngModelChange)="patchTableVoided({ backgroundColor: $event })"/>
+                    </div>
+                  }
+
+                  @if (hasProductBadge()) {
+                    <!-- Product custom fields shown as a badge under the item name (one shared style) - legacy "Additional Details". -->
+                    <h4 class="dbf-style-section">{{ 'DOCUMENT_BUILDER.TABLE.PRODUCT_BADGE' | translate }}</h4>
+                    <label class="dbf-toggle">
+                      <input type="checkbox"
+                             [checked]="productBadge().show"
+                             (change)="patchProductBadge({ show: $any($event.target).checked })"/>
+                      <span>{{ 'DOCUMENT_BUILDER.TABLE.PRODUCT_BADGE_SHOW' | translate }}</span>
+                    </label>
+                    @if (productBadge().show) {
+                      <div class="dbf-field">
+                        <label class="dbf-field__label">{{ 'DOCUMENT_BUILDER.TABLE.FONT_SIZE' | translate }}</label>
+                        <input type="number" min="6" max="24" class="dbf-input"
+                               [ngModel]="$any(productBadge().size)"
+                               (ngModelChange)="patchProductBadge({ size: +$event })"/>
+                      </div>
+                      <div class="dbf-field">
+                        <label class="dbf-field__label">{{ 'DOCUMENT_BUILDER.TABLE.FONT_COLOR' | translate }}</label>
+                        <app-color-picker
+                          [ngModel]="productBadge().color"
+                          [wcagAgainst]="productBadge().backgroundColor || '#ffffff'"
+                          [showSpectrum]="true"
+                          [showRainbowPresets]="true"
+                          (ngModelChange)="patchProductBadge({ color: $event })"/>
+                      </div>
+                      <div class="dbf-field">
+                        <label class="dbf-field__label">{{ 'DOCUMENT_BUILDER.TABLE.BACKGROUND' | translate }}</label>
+                        <app-color-picker
+                          [ngModel]="productBadge().backgroundColor"
+                          [showSpectrum]="true"
+                          [showRainbowPresets]="true"
+                          (ngModelChange)="patchProductBadge({ backgroundColor: $event })"/>
+                      </div>
+                      @for (cf of productCustomFields(); track cf.id) {
+                        <label class="dbf-toggle">
+                          <input type="checkbox"
+                                 [checked]="lineCfOn(cf.id)"
+                                 (change)="toggleLineCf(cf.id, $any($event.target).checked)"/>
+                          <span>{{ cf.name }}</span>
+                        </label>
+                      }
+                    }
+                  }
                 }
               </div>
             </section>
@@ -1035,10 +1020,11 @@
                     </div>
 
                     @if (totalActiveTab() === 'fields') {
-                      @for (f of ['itemTotal', 'taxTotal', 'discount', 'charge', 'delevary', 'roundingTotal', 'subTotal', 'Total']; track f) {
+                      @for (f of totalFieldIds(); track f) {
                         <app-text-style-editor
                           [label]="('DOCUMENT_BUILDER.TOTAL.' + f.toUpperCase()) | translate"
                           [value]="$any(template().totalSectionCustomization.totalTable)[f]"
+                          [required]="f === 'Total'"
                           [showAlignment]="false"
                           (valueChange)="patchTotalField($any(f), $event)"
                         />
@@ -1056,7 +1042,6 @@
                         [italic]="bulkTotalRepresentative().italic"
                         [underline]="bulkTotalRepresentative().underline"
                         [alignment]="$any(bulkTotalRepresentative().alignment)"
-                        [showLabelColor]="false"
                         [showAlignment]="false"
                         (patch)="patchAllTotalFields($event)"
                       />
@@ -1104,7 +1089,7 @@
                       </div>
 
                       @if (paymentActiveTab() === 'fields') {
-                        @for (f of ['payments', 'paymentMethods', 'credit', 'balance']; track f) {
+                        @for (f of paymentFieldIds(); track f) {
                           <app-text-style-editor
                             [label]="('DOCUMENT_BUILDER.TOTAL.' + f.toUpperCase()) | translate"
                             [value]="$any(template().totalSectionCustomization.paymentTable)[f]"
@@ -1125,7 +1110,6 @@
                           [italic]="bulkPaymentRepresentative().italic"
                           [underline]="bulkPaymentRepresentative().underline"
                           [alignment]="$any(bulkPaymentRepresentative().alignment)"
-                          [showLabelColor]="false"
                           [showAlignment]="false"
                           (patch)="patchAllPaymentFields($event)"
                         />
@@ -1156,6 +1140,14 @@
                       [showAlignment]="false"
                       (valueChange)="patchCustomerBalance({ balance: $event })"
                     />
+                    <div class="dbf-field">
+                      <label class="dbf-field__label">{{ 'DOCUMENT_BUILDER.TABLE.BACKGROUND' | translate }}</label>
+                      <app-color-picker
+                        [ngModel]="template().totalSectionCustomization.customerBalance.backgroundColor"
+                        [showSpectrum]="true"
+                        [showRainbowPresets]="true"
+                        (ngModelChange)="patchCustomerBalance({ backgroundColor: $event })"/>
+                    </div>
                   </div>
                 }
               </section>
@@ -1541,6 +1533,7 @@
           [template]="template()"
           [data]="previewData()"
           [printPreview]="printPreviewMode()"
+          [builderMode]="true"
           [forceMode]="template().renderMode === 'designer' ? 'designer' : 'classic'"
         />
       </div>

@@ -7,28 +7,28 @@ $border: #e8e8e8;
 :host { display: block; width: 100%; min-width: 0; }
 
 .psi { padding: 16px 24px; display: flex; flex-direction: column; gap: 20px; max-height: 70vh; overflow-y: auto; }
-.psi__state { text-align: center; color: #64748b; padding: 24px 0; }
-.psi__state--err { color: #b42318; }
+.psi__state { text-align: center; color: var(--ui-muted); padding: 24px 0; }
+.psi__state--err { color: var(--ui-t-b42318); }
 
 // ── level header ──
 .psi__level { display: flex; flex-direction: column; gap: 10px; }
 .psi__level-head {
   display: flex; justify-content: space-between; align-items: center; gap: 12px;
-  padding: 10px 14px; background: #fafafa; border: 1.5px solid $border; border-radius: 12px;
+  padding: 10px 14px; background: var(--ui-x-fafafa); border: 1.5px solid $border; border-radius: 12px;
   > div { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
 }
-.psi__level-title { font-size: 14px; font-weight: 700; color: #333; text-transform: uppercase; letter-spacing: .5px; }
+.psi__level-title { font-size: 14px; font-weight: 700; color: var(--ui-text-2); text-transform: uppercase; letter-spacing: .5px; }
 .psi__hint { font-size: 12px; color: #888; }
 .psi__count {
   display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 20px;
-  color: #c62828; background: #fff5f5; border: 1px solid #ffc9c9;
+  color: var(--ui-t-c62828); background: var(--ui-x-fff5f5); border: 1px solid var(--ui-x-ffc9c9);
   &--done { color: $brand; background: $brand-bg; border-color: $brand-line; }
 }
 
 // ── item box (the card and its options): one per row ──
 .psi__grid { display: grid; grid-template-columns: 1fr; gap: 10px; align-items: start; }
 .psi__box {
-  border: 1.5px solid $border; border-radius: 12px; background: #fff; overflow: hidden; transition: border-color .15s, background .15s;
+  border: 1.5px solid $border; border-radius: 12px; background: var(--ui-surface); overflow: hidden; transition: border-color .15s, background .15s;
   &:hover:not(.psi__box--on):not(.psi__box--off) { border-color: #bbb; }
   &--on { border-color: $brand; background: $brand-bg; }
   &--off { opacity: .45; .psi__card { cursor: not-allowed; } }
@@ -45,55 +45,55 @@ $border: #e8e8e8;
   &--on { background: $brand; border-color: $brand; color: #fff; }
 }
 .psi__img {
-  flex: none; width: 56px; height: 56px; border-radius: 8px; object-fit: cover; border: 1px solid #f0f0f0;
+  flex: none; width: 56px; height: 56px; border-radius: 8px; object-fit: cover; border: 1px solid var(--ui-x-f0f0f0);
   &--sm { width: 44px; height: 44px; border-radius: 7px; }
-  &--ph { background: #f5f5f5; }
+  &--ph { background: var(--ui-x-f5f5f5); }
 }
-.psi__name { flex: 1; min-width: 0; font-size: 14px; font-weight: 500; color: #222; }
+.psi__name { flex: 1; min-width: 0; font-size: 14px; font-weight: 500; color: var(--ui-t-222222); }
 .psi__tag {
-  font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 20px; color: #555; background: #f5f5f5; border: 1px solid #e0e0e0;
-  &--soft { font-size: 11px; color: $brand; background: #fff; border-color: $brand-line; }
+  font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 20px; color: #555; background: var(--ui-x-f5f5f5); border: 1px solid var(--ui-x-e0e0e0);
+  &--soft { font-size: 11px; color: $brand; background: var(--ui-surface); border-color: $brand-line; }
 }
-.psi__warn { color: #c62828; font-weight: 700; }
+.psi__warn { color: var(--ui-t-c62828); font-weight: 700; }
 .psi__fold {
-  flex: none; width: 28px; height: 28px; display: grid; place-items: center; border: 1.5px solid #e0e0e0; border-radius: 8px; background: #fff;
+  flex: none; width: 28px; height: 28px; display: grid; place-items: center; border: 1.5px solid var(--ui-x-e0e0e0); border-radius: 8px; background: var(--ui-surface);
   color: #555; font-size: 14px; cursor: pointer;
-  &:hover { background: #f5f5f5; }
+  &:hover { background: var(--ui-x-f5f5f5); }
 }
 
 // ── options panel ──
 .psi__panel {
-  padding: 12px; border-top: 1px solid $brand-line; background: #fff; display: flex; flex-direction: column; gap: 10px;
+  padding: 12px; border-top: 1px solid $brand-line; background: var(--ui-surface); display: flex; flex-direction: column; gap: 10px;
   &--bare { border-top: 0; background: transparent; }
 }
 .psi__sec {
-  border: 1.5px solid $border; border-radius: 12px; overflow: hidden; background: #fff;
-  &--err { border-color: #ffc9c9; }
-  &--defaults { background: #fafafa; }
+  border: 1.5px solid $border; border-radius: 12px; overflow: hidden; background: var(--ui-surface);
+  &--err { border-color: var(--ui-x-ffc9c9); }
+  &--defaults { background: var(--ui-x-fafafa); }
 }
 .psi__sec-label {
   margin: 0; padding: 10px 14px 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: #888;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--ui-x-f0f0f0);
 }
 
 .psi__def {
-  display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #fff; border-bottom: 1px solid #f0f0f0;
+  display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: var(--ui-surface); border-bottom: 1px solid var(--ui-x-f0f0f0);
   &:last-child { border-bottom: 0; }
 }
-.psi__def-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; font-size: 14px; font-weight: 500; color: #222; }
+.psi__def-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; font-size: 14px; font-weight: 500; color: var(--ui-t-222222); }
 .psi__price-add { color: $brand; font-weight: 600; font-size: 13px; white-space: nowrap; }
 .psi__def-qty { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end; flex: none; max-width: 150px; }
 .psi__max { width: 100%; text-align: end; color: #aaa; font-size: 11px; }
 .psi__stepper {
-  display: inline-flex; align-items: center; height: 34px; border: 1.5px solid #e0e0e0; border-radius: 8px; overflow: hidden; background: #fff;
-  button { width: 32px; height: 100%; border: 0; background: #f5f5f5; color: #444; cursor: pointer; font-size: 15px; transition: background .13s;
-    &:hover:not(:disabled) { background: #e8e8e8; } &:disabled { opacity: .4; cursor: not-allowed; } }
-  span { min-width: 28px; height: 100%; display: grid; place-items: center; font-size: 14px; font-weight: 600; color: #111; border-inline: 1px solid $border; }
+  display: inline-flex; align-items: center; height: 34px; border: 1.5px solid var(--ui-x-e0e0e0); border-radius: 8px; overflow: hidden; background: var(--ui-surface);
+  button { width: 32px; height: 100%; border: 0; background: var(--ui-x-f5f5f5); color: var(--ui-t-444444); cursor: pointer; font-size: 15px; transition: background .13s;
+    &:hover:not(:disabled) { background: var(--ui-x-e8e8e8); } &:disabled { opacity: .4; cursor: not-allowed; } }
+  span { min-width: 28px; height: 100%; display: grid; place-items: center; font-size: 14px; font-weight: 600; color: var(--ui-t-111111); border-inline: 1px solid $border; }
 }
 .psi__rm {
-  width: 34px; height: 34px; display: grid; place-items: center; border: 1.5px solid #ffc9c9; border-radius: 8px; background: #fff5f5; color: #e53935;
+  width: 34px; height: 34px; display: grid; place-items: center; border: 1.5px solid var(--ui-x-ffc9c9); border-radius: 8px; background: var(--ui-x-fff5f5); color: #e53935;
   font-size: 14px; cursor: pointer;
-  &:hover { background: #ffe3e3; }
+  &:hover { background: var(--ui-x-ffe3e3); }
 }
 .psi__add {
   height: 34px; padding: 5px 12px; font-size: 13px; font-weight: 600; color: $brand; background: $brand-bg; border: 1.5px solid $brand-line; border-radius: 8px; cursor: pointer;
@@ -103,24 +103,24 @@ $border: #e8e8e8;
 
 // ── option groups ──
 .psi__group-head {
-  display: flex; align-items: center; flex-wrap: wrap; gap: 6px; padding: 10px 14px; background: #fafafa; border-bottom: 1px solid #f0f0f0; cursor: pointer;
+  display: flex; align-items: center; flex-wrap: wrap; gap: 6px; padding: 10px 14px; background: var(--ui-x-fafafa); border-bottom: 1px solid var(--ui-x-f0f0f0); cursor: pointer;
   &--static { cursor: default; }
 }
-.psi__group-title { font-size: 14px; font-weight: 700; color: #333; }
+.psi__group-title { font-size: 14px; font-weight: 700; color: var(--ui-text-2); }
 .psi__summary { flex: 1; min-width: 0; font-size: 12px; font-weight: 600; color: $brand; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.psi__rules { margin-inline-start: auto; display: inline-flex; align-items: center; gap: 6px; color: #555; font-size: 12px; }
+.psi__rules { margin-inline-start: auto; display: inline-flex; align-items: center; gap: 6px; color: var(--ui-t-555555); font-size: 12px; }
 .psi__rule {
-  font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 20px; color: #555; background: #f5f5f5; border: 1px solid #e0e0e0;
-  &--err { color: #c62828; background: #fff5f5; border-color: #ffc9c9; }
+  font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 20px; color: #555; background: var(--ui-x-f5f5f5); border: 1px solid var(--ui-x-e0e0e0);
+  &--err { color: var(--ui-t-c62828); background: var(--ui-x-fff5f5); border-color: var(--ui-x-ffc9c9); }
 }
 
 .psi__opts { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; padding: 12px; @media (max-width: 480px) { grid-template-columns: 1fr; } }
 .psi__opt {
-  display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1.5px solid $border; border-radius: 10px; background: #fff; cursor: pointer;
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1.5px solid $border; border-radius: 10px; background: var(--ui-surface); cursor: pointer;
   transition: border-color .15s, background .15s;
-  &:hover:not(.psi__opt--off) { border-color: #bbb; background: #fafafa; }
+  &:hover:not(.psi__opt--off) { border-color: #bbb; background: var(--ui-x-fafafa); }
   &--on { border-color: $brand !important; background: $brand-bg !important; .psi__def-info { color: $brand; font-weight: 600; } .psi__tick { background: $brand; border-color: $brand; color: #fff; } }
-  &--off { opacity: .45; cursor: not-allowed; background: #fafafa; }
+  &--off { opacity: .45; cursor: not-allowed; background: var(--ui-x-fafafa); }
 }
 .psi__tick {
   flex: none; width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid #ccc; display: grid; place-items: center; font-size: 12px; color: transparent;
@@ -134,15 +134,15 @@ $border: #e8e8e8;
 
 // ── price bar + footer ──
 .psi__price-bar {
-  display: flex; align-items: center; gap: 12px; padding: 10px 16px; background: #fafafa; border-top: 1px solid #e9ecef;
-  label { margin: 0; font-size: 14px; font-weight: 700; color: #333; }
-  input { width: 160px; height: 36px; padding: 0 10px; font-weight: 600; border: 1px solid #d0d5dd; border-radius: 8px; font-family: inherit; outline: none;
-    &:focus { border-color: #32acc1; box-shadow: 0 0 0 3px rgba(50, 172, 193, .12); } &:disabled { background: #f1f5f9; } }
+  display: flex; align-items: center; gap: 12px; padding: 10px 16px; background: var(--ui-x-fafafa); border-top: 1px solid var(--ui-x-e9ecef);
+  label { margin: 0; font-size: 14px; font-weight: 700; color: var(--ui-text-2); }
+  input { width: 160px; height: 36px; padding: 0 10px; font-weight: 600; border: 1px solid var(--ui-line-strong); border-radius: 8px; font-family: inherit; outline: none;
+    &:focus { border-color: #32acc1; box-shadow: 0 0 0 3px rgba(50, 172, 193, .12); } &:disabled { background: var(--ui-surface-2); } }
 }
-.psi__note { font-size: 12px; color: #64748b; }
+.psi__note { font-size: 12px; color: var(--ui-muted); }
 .psi__total { margin-inline-end: auto; display: flex; align-items: baseline; gap: 8px; font-size: 14px; color: #555; strong { font-size: 17px; color: $brand; } }
 .psi__btn {
-  padding: 9px 16px; border-radius: 8px; border: 1px solid #d0d5dd; background: #fff; color: #334155; font-weight: 600; font-size: 13.5px; cursor: pointer;
+  padding: 9px 16px; border-radius: 8px; border: 1px solid var(--ui-line-strong); background: var(--ui-surface); color: var(--ui-text-3); font-weight: 600; font-size: 13.5px; cursor: pointer;
   &--primary { border-color: $brand; background: $brand; color: #fff; &:disabled { opacity: .5; cursor: not-allowed; } }
 }
 

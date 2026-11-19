@@ -14,20 +14,20 @@
   justify-content: space-between;
   gap: 16px;
   padding: 20px 24px 14px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--ui-surface-2);
 }
 
 .tm__title {
   margin: 0 0 2px;
   font-size: 16px;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--ui-text);
 }
 
 .tm__sub {
   margin: 0;
   font-size: 12px;
-  color: #64748b;
+  color: var(--ui-muted);
 }
 
 .tm__close {
@@ -36,7 +36,7 @@
   border: none;
   border-radius: 8px;
   background: transparent;
-  color: #94a3b8;
+  color: var(--ui-faint);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -44,7 +44,7 @@
   flex-shrink: 0;
   transition: background 120ms ease, color 120ms ease;
 
-  &:hover { background: #f1f5f9; color: #475569; }
+  &:hover { background: var(--ui-surface-2); color: var(--ui-text-4); }
 }
 
 // ── Body ───────────────────────────────────────────────────────────────
@@ -66,7 +66,7 @@
   gap: 8px;
   font-size: 12px;
   font-weight: 600;
-  color: #334155;
+  color: var(--ui-text-3);
 }
 
 // ── Language tabs (segmented toggle, 2+ languages) ───────────────────────
@@ -77,7 +77,7 @@
   gap: 2px;
   margin-bottom: 14px;
   padding: 3px;
-  background: #f1f5f9;
+  background: var(--ui-surface-2);
   border-radius: 10px;
 }
 
@@ -92,15 +92,15 @@
   font: inherit;
   font-size: 13px;
   font-weight: 600;
-  color: #64748b;
+  color: var(--ui-muted);
   cursor: pointer;
   transition: background 120ms ease, color 120ms ease, box-shadow 120ms ease;
 
-  &:hover:not(&--active) { color: #334155; }
+  &:hover:not(&--active) { color: var(--ui-text-3); }
 
   &--active {
-    background: #fff;
-    color: #0f172a;
+    background: var(--ui-surface);
+    color: var(--ui-text);
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
   }
 }
@@ -110,7 +110,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: .02em;
-  color: var(--color-brand-700, #0e7490);
+  color: var(--ui-brand-t700);
   background: rgba(50, 172, 193, 0.14);
   padding: 1px 6px;
   border-radius: 999px;
@@ -121,7 +121,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: .02em;
-  color: var(--color-brand-700, #0e7490);
+  color: var(--ui-brand-t700);
   background: rgba(50, 172, 193, 0.12);
   padding: 2px 7px;
   border-radius: 999px;
@@ -133,7 +133,7 @@
 .tm__spinner {
   width: 22px;
   height: 22px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--ui-line);
   border-top-color: var(--color-brand-500, #32acc1);
   border-radius: 50%;
   animation: tm-spin .7s linear infinite;
@@ -144,12 +144,12 @@
 .tm__input {
   width: 100%;
   padding: 9px 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--ui-line);
   border-radius: 8px;
-  background: #fff;
+  background: var(--ui-surface);
   font: inherit;
   font-size: 13px;
-  color: #0f172a;
+  color: var(--ui-text);
   transition: border-color 120ms ease, box-shadow 120ms ease;
 
   &:focus {
@@ -177,9 +177,9 @@ textarea.tm__input {
   gap: 6px;
   padding: 6px 12px;
   border-radius: 8px;
-  border: 1px solid var(--color-brand-200, #b6e6ee);
-  background: var(--color-brand-50, #ecfeff);
-  color: var(--color-brand-700, #0e7490);
+  border: 1px solid var(--color-brand-200, var(--ui-x-b6e6ee));
+  background: var(--color-brand-50, var(--ui-brand-soft));
+  color: var(--color-brand-700, var(--ui-brand-text));
   font: inherit;
   font-size: 12px;
   font-weight: 600;
@@ -187,7 +187,7 @@ textarea.tm__input {
   transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
 
   svg { flex-shrink: 0; }
-  &:hover:not(:disabled) { background: var(--color-brand-100, #d5f4fa); color: var(--color-brand-800, #075985); }
+  &:hover:not(:disabled) { background: var(--color-brand-100, var(--ui-x-d5f4fa)); color: var(--ui-brand-t800); }
   &:disabled { opacity: 0.6; cursor: not-allowed; }
 }
 .tm__btn-spinner {
@@ -204,7 +204,7 @@ textarea.tm__input {
   align-items: center;
   gap: 8px;
   padding: 14px 24px;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid var(--ui-surface-2);
 }
 
 .btn {
@@ -227,7 +227,7 @@ textarea.tm__input {
     &:hover:not(:disabled) { background: var(--color-brand-700); border-color: var(--color-brand-700); }
   }
   &-ghost {
-    background: #fff; color: #475569; border-color: #e2e8f0;
-    &:hover:not(:disabled) { background: #f8fafc; color: #0f172a; }
+    background: var(--ui-surface); color: var(--ui-text-4); border-color: var(--ui-line);
+    &:hover:not(:disabled) { background: var(--ui-surface-1); color: var(--ui-text); }
   }
 }

@@ -7,12 +7,12 @@
   gap: 10px;
   padding: 10px 14px;
   margin: 0 0 14px;
-  background: #fffbeb;
-  border: 1px solid #fcd34d;
+  background: var(--ui-amber-soft);
+  border: 1px solid var(--ui-x-fcd34d);
   border-radius: 10px;
-  color: #92400e;
+  color: var(--ui-amber-text);
 
-  &__icon { color: #d97706; flex-shrink: 0; }
+  &__icon { color: var(--ui-orange-text); flex-shrink: 0; }
   &__text { margin: 0; font-size: 12px; line-height: 1.5; flex: 1; }
   &__link {
     display: inline-flex;
@@ -20,8 +20,8 @@
     gap: 6px;
     padding: 5px 10px;
     border-radius: 6px;
-    background: #fcd34d;
-    color: #78350f;
+    background: var(--ui-x-fcd34d);
+    color: var(--ui-t-78350f);
     font-size: 12px;
     font-weight: 600;
     text-decoration: none;
@@ -37,11 +37,11 @@
   }
 }
 
-.muted   { color: #94a3b8; font-size: 13px; margin: 0; }
+.muted   { color: var(--ui-faint); font-size: 13px; margin: 0; }
 .loading { display: flex; justify-content: center; padding: 28px 0; }
 .spinner {
   width: 22px; height: 22px; border-radius: 50%;
-  border: 3px solid #e2e8f0; border-top-color: #32acc1;
+  border: 3px solid var(--ui-line); border-top-color: #32acc1;
   display: inline-block; animation: spin .8s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }

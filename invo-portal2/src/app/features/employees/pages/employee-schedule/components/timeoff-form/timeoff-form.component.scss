@@ -21,13 +21,13 @@
   display: block;
   font-size: 12px;
   font-weight: 600;
-  color: #6b7280;
+  color: var(--ui-muted);
   text-transform: uppercase;
   letter-spacing: 0.4px;
   margin-bottom: 8px;
 }
 
-.char-count { font-size: 11px; color: #9ca3af; }
+.char-count { font-size: 11px; color: var(--ui-faint); }
 
 .type-grid {
   display: grid;
@@ -42,17 +42,17 @@
   justify-content: center;
   gap: 6px;
   padding: 14px 8px;
-  background: #f9fafb;
-  border: 1.5px solid #f1f5f9;
+  background: var(--ui-surface-1);
+  border: 1.5px solid var(--ui-surface-2);
   border-radius: 10px;
   cursor: pointer;
-  color: #374151;
+  color: var(--ui-text-3);
   transition: all 0.15s ease;
 
-  svg { color: #6b7280; }
+  svg { color: var(--ui-muted); }
   span { font-size: 13px; font-weight: 500; }
 
-  &:hover { border-color: #d1d5db; }
+  &:hover { border-color: var(--ui-line-strong); }
 
   &.active {
     background: rgba(50, 172, 193, 0.08);
@@ -66,11 +66,11 @@
 .desc {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--ui-line);
   border-radius: 10px;
   font-size: 14px;
-  color: #374151;
-  background: #fff;
+  color: var(--ui-text-3);
+  background: var(--ui-surface);
   font-family: inherit;
 
   &:focus { outline: none; border-color: #32acc1; }
@@ -88,21 +88,21 @@
   background: rgba(50, 172, 193, 0.06);
   border-radius: 10px;
   font-size: 13px;
-  color: #374151;
+  color: var(--ui-text-3);
 
   svg { color: #32acc1; }
-  strong { color: #111827; margin-inline-start: 2px; }
+  strong { color: var(--ui-text); margin-inline-start: 2px; }
 }
 
 .btn-cancel {
   padding: 9px 20px;
-  background: #f3f4f6;
-  border: 1px solid #e5e7eb;
+  background: var(--ui-surface-2);
+  border: 1px solid var(--ui-line);
   border-radius: 8px;
   font-size: 13px;
   cursor: pointer;
 
-  &:hover { background: #e5e7eb; }
+  &:hover { background: var(--ui-line); }
 }
 
 .btn-save {

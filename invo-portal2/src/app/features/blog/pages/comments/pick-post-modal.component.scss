@@ -4,46 +4,46 @@
 
 .ppm-search {
   position: relative; display: flex; align-items: center;
-  svg { position: absolute; inset-inline-start: 10px; color: #94a3b8; pointer-events: none; }
+  svg { position: absolute; inset-inline-start: 10px; color: var(--ui-faint); pointer-events: none; }
   input {
     width: 100%; padding: 9px 12px 9px 34px; padding-inline-start: 34px;
-    font-size: 14px; color: #0f172a; background: #fff;
-    border: 1px solid #e2e8f0; border-radius: 8px;
+    font-size: 14px; color: var(--ui-text); background: var(--ui-surface);
+    border: 1px solid var(--ui-line); border-radius: 8px;
     &:focus { outline: none; border-color: #32acc1; box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.12); }
-    &::placeholder { color: #94a3b8; }
+    &::placeholder { color: var(--ui-faint); }
   }
 }
 
-.ppm-list { flex: 1; overflow-y: auto; border: 1px solid #f1f5f9; border-radius: 10px; background: #fff; }
-.ppm-empty { padding: 36px 16px; text-align: center; color: #94a3b8; font-size: 13px; }
+.ppm-list { flex: 1; overflow-y: auto; border: 1px solid var(--ui-surface-2); border-radius: 10px; background: var(--ui-surface); }
+.ppm-empty { padding: 36px 16px; text-align: center; color: var(--ui-faint); font-size: 13px; }
 
 .ppm-row {
   display: flex; align-items: center; gap: 12px; width: 100%;
   padding: 11px 14px; cursor: pointer; text-align: start;
-  border: 0; background: transparent; border-bottom: 1px solid #f1f5f9;
+  border: 0; background: transparent; border-bottom: 1px solid var(--ui-surface-2);
   transition: background 120ms ease;
   &:last-child { border-bottom: none; }
-  &:hover { background: #f8fafc; }
-  &--selected { background: #ecfeff; }
+  &:hover { background: var(--ui-surface-1); }
+  &--selected { background: var(--ui-brand-soft); }
   &--all { font-weight: 600; }
 
   &__icon {
     width: 34px; height: 34px; border-radius: 8px; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
-    background: #f1f5f9; color: #94a3b8;
+    background: var(--ui-surface-2); color: var(--ui-faint);
   }
-  &--selected &__icon, &--all &__icon { color: var(--color-brand-700, #2691a4); background: #e8f3f5; }
-  &__title { font-size: 14px; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  &--selected &__icon, &--all &__icon { color: var(--ui-brand-t700); background: var(--ui-x-e8f3f5); }
+  &__title { font-size: 14px; color: var(--ui-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 }
 
-.ppm-sentinel { min-height: 36px; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 8px 0 12px; color: #64748b; font-size: 12px; font-weight: 600; }
-.ppm-spinner { width: 16px; height: 16px; border: 2px solid #e2e8f0; border-top-color: var(--color-brand-600, #0e7490); border-radius: 50%; animation: ppm-post-spin 700ms linear infinite; }
+.ppm-sentinel { min-height: 36px; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 8px 0 12px; color: var(--ui-muted); font-size: 12px; font-weight: 600; }
+.ppm-spinner { width: 16px; height: 16px; border: 2px solid var(--ui-line); border-top-color: var(--color-brand-600, #0e7490); border-radius: 50%; animation: ppm-post-spin 700ms linear infinite; }
 @keyframes ppm-post-spin { to { transform: rotate(360deg); } }
-.ppm-loadtxt { color: #64748b; }
+.ppm-loadtxt { color: var(--ui-muted); }
 
-.ppm-footer { display: flex; align-items: center; justify-content: flex-end; padding: 12px 18px; border-top: 1px solid #f1f5f9; gap: 12px; }
+.ppm-footer { display: flex; align-items: center; justify-content: flex-end; padding: 12px 18px; border-top: 1px solid var(--ui-surface-2); gap: 12px; }
 .ppm-btn {
   padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 500;
   cursor: pointer; border: 1px solid transparent;
-  &--ghost { background: #fff; color: #475569; border-color: #e5e7eb; &:hover { background: #f8fafc; color: #0f172a; } }
+  &--ghost { background: var(--ui-surface); color: var(--ui-text-4); border-color: var(--ui-line); &:hover { background: var(--ui-surface-1); color: var(--ui-text); } }
 }

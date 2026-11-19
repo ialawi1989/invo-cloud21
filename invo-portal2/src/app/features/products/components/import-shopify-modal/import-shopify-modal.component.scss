@@ -22,10 +22,10 @@
   gap: 8px;
   font-size: 13px;
   font-weight: 600;
-  color: #94a3b8;
+  color: var(--ui-faint);
 
-  &--active { color: #0f172a; }
-  &--done { color: #2691a4; }
+  &--active { color: var(--ui-text); }
+  &--done { color: var(--ui-brand-text); }
 }
 .sim-step__dot {
   display: inline-flex;
@@ -34,17 +34,17 @@
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: #e2e8f0;
-  color: #64748b;
+  background: var(--ui-line);
+  color: var(--ui-muted);
   font-size: 12px;
 
-  .sim-step--active & { background: #2691a4; color: #fff; }
-  .sim-step--done & { background: #d6f0f4; color: #2691a4; }
+  .sim-step--active & { background: var(--ui-b-2691a4); color: #fff; }
+  .sim-step--done & { background: var(--ui-x-d6f0f4); color: var(--ui-brand-text); }
 }
 .sim-step__line {
   width: 32px;
   height: 1px;
-  background: #e2e8f0;
+  background: var(--ui-line);
 }
 
 // ─── Fields ──────────────────────────────────────────────────
@@ -54,7 +54,7 @@
   gap: 6px;
   font-size: 13px;
   font-weight: 600;
-  color: #334155;
+  color: var(--ui-text-3);
 
   &--inline {
     flex-direction: row;
@@ -64,11 +64,11 @@
 }
 .sim-input {
   padding: 9px 12px;
-  border: 1px solid #d0d5dd;
+  border: 1px solid var(--ui-line-strong);
   border-radius: 8px;
   font-size: 13.5px;
   font-weight: 400;
-  color: #0f172a;
+  color: var(--ui-text);
 
   &:focus { outline: none; border-color: #2691a4; box-shadow: 0 0 0 3px rgba(38, 145, 164, 0.12); }
   &--sm { width: 120px; }
@@ -83,7 +83,7 @@
   gap: 8px;
   font-size: 13.5px;
   font-weight: 500;
-  color: #334155;
+  color: var(--ui-text-3);
   cursor: pointer;
 
   input { width: 16px; height: 16px; accent-color: #2691a4; }
@@ -91,11 +91,11 @@
 .sim-hint {
   margin: 0;
   font-size: 12.5px;
-  color: #64748b;
+  color: var(--ui-muted);
   line-height: 1.5;
 
-  &--warn { color: #b45309; }
-  &--error { color: #dc2626; }
+  &--warn { color: var(--ui-amber-text); }
+  &--error { color: var(--ui-red-text); }
   &--ok { color: #16a34a; }
 }
 .sim-advanced-toggle {
@@ -105,7 +105,7 @@
   padding: 0;
   font-size: 13px;
   font-weight: 600;
-  color: #2691a4;
+  color: var(--ui-brand-text);
   cursor: pointer;
 
   &:hover { text-decoration: underline; }
@@ -115,15 +115,15 @@
 .sim-btn {
   padding: 9px 18px;
   border-radius: 8px;
-  border: 1px solid #d0d5dd;
-  background: #fff;
-  color: #334155;
+  border: 1px solid var(--ui-line-strong);
+  background: var(--ui-surface);
+  color: var(--ui-text-3);
   font-size: 13.5px;
   font-weight: 600;
   cursor: pointer;
   transition: background 120ms ease;
 
-  &:hover { background: #f8fafc; }
+  &:hover { background: var(--ui-surface-1); }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 
   &--primary {
@@ -147,20 +147,20 @@
 .sim-spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid #e2e8f0;
+  border: 3px solid var(--ui-line);
   border-top-color: #2691a4;
   border-radius: 50%;
   animation: sim-spin 0.8s linear infinite;
 }
 @keyframes sim-spin { to { transform: rotate(360deg); } }
-.sim-progress-msg { margin: 0; font-size: 14px; font-weight: 600; color: #0f172a; }
-.sim-progress-page { margin: 0; font-size: 12.5px; color: #64748b; }
+.sim-progress-msg { margin: 0; font-size: 14px; font-weight: 600; color: var(--ui-text); }
+.sim-progress-page { margin: 0; font-size: 12.5px; color: var(--ui-muted); }
 .sim-progress-bar {
   width: 100%;
   max-width: 320px;
   height: 6px;
   border-radius: 999px;
-  background: #e2e8f0;
+  background: var(--ui-line);
   overflow: hidden;
 
   &__fill {
@@ -175,10 +175,10 @@
   margin: 0;
   font-size: 16px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--ui-text);
 
-  &--warn { color: #b45309; }
-  &--error { color: #dc2626; }
+  &--warn { color: var(--ui-amber-text); }
+  &--error { color: var(--ui-red-text); }
   &--ok { color: #16a34a; }
 }
 
@@ -194,25 +194,25 @@
   gap: 2px;
   padding: 12px 16px;
   border-radius: 10px;
-  background: #f8fafc;
-  border: 1px solid #eef2f6;
+  background: var(--ui-surface-1);
+  border: 1px solid var(--ui-surface-2);
   min-width: 100px;
 
-  span:last-child { font-size: 11.5px; color: #64748b; font-weight: 500; }
+  span:last-child { font-size: 11.5px; color: var(--ui-muted); font-weight: 500; }
 
-  &--warn { background: #fffbeb; border-color: #fde68a; }
-  &--error { background: #fef2f2; border-color: #fecaca; }
+  &--warn { background: var(--ui-amber-soft); border-color: var(--ui-amber-soft-2); }
+  &--error { background: var(--ui-red-soft); border-color: var(--ui-red-soft-2); }
 }
-.sim-summary__num { font-size: 20px; font-weight: 700; color: #0f172a; }
-.sim-summary__tile--warn .sim-summary__num { color: #b45309; }
-.sim-summary__tile--error .sim-summary__num { color: #dc2626; }
+.sim-summary__num { font-size: 20px; font-weight: 700; color: var(--ui-text); }
+.sim-summary__tile--warn .sim-summary__num { color: var(--ui-amber-text); }
+.sim-summary__tile--error .sim-summary__num { color: var(--ui-red-text); }
 
 // ─── Tabs ────────────────────────────────────────────────────
 .sim-tabs {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  border-bottom: 1px solid #eef2f6;
+  border-bottom: 1px solid var(--ui-surface-2);
   padding-bottom: 10px;
 }
 .sim-tab {
@@ -222,11 +222,11 @@
   background: none;
   font-size: 12.5px;
   font-weight: 600;
-  color: #64748b;
+  color: var(--ui-muted);
   cursor: pointer;
 
-  &:hover { background: #f1f5f9; }
-  &.is-on { background: #e0f2f6; color: #1e6f80; }
+  &:hover { background: var(--ui-surface-2); }
+  &.is-on { background: var(--ui-x-e0f2f6); color: var(--ui-t-1e6f80); }
 }
 
 // ─── Item list ───────────────────────────────────────────────
@@ -238,29 +238,29 @@
 .sim-item {
   padding: 10px 12px;
   border-radius: 8px;
-  background: #f8fafc;
-  border: 1px solid #eef2f6;
+  background: var(--ui-surface-1);
+  border: 1px solid var(--ui-surface-2);
 }
 .sim-item__row {
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 13px;
-  color: #0f172a;
+  color: var(--ui-text);
 }
 .sim-item__meta {
   font-size: 11.5px;
-  color: #94a3b8;
+  color: var(--ui-faint);
   font-weight: 500;
 }
 .sim-item__error {
   margin: 4px 0 0;
   font-size: 12px;
-  color: #dc2626;
+  color: var(--ui-red-text);
 }
 .sim-item__warnings {
   margin: 4px 0 0;
   padding-left: 18px;
   font-size: 12px;
-  color: #b45309;
+  color: var(--ui-amber-text);
 }

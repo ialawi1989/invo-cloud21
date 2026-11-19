@@ -116,8 +116,8 @@ import { ToastService } from './toast.service';
       align-items: center;
       gap: 14px;
       padding: 14px 18px;
-      background: #fff;
-      border: 1px solid #e2e8f0;
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-line);
       border-radius: 12px;
       box-shadow: 0 12px 24px -10px rgba(15, 23, 42, 0.25),
                   0 4px 8px -2px rgba(15, 23, 42, 0.08);
@@ -134,8 +134,8 @@ import { ToastService } from './toast.service';
         min-width: 280px;
       }
       &--success { .toast__icon { color: #16a34a; } }
-      &--error   { .toast__icon { color: #dc2626; } }
-      &--warning { border-inline-start: 4px solid #d97706; .toast__icon { color: #d97706; } }
+      &--error   { .toast__icon { color: var(--ui-red-text); } }
+      &--warning { border-inline-start: 4px solid #d97706; .toast__icon { color: var(--ui-orange-text); } }
       &--info    { border-inline-start: 4px solid #0891b2; .toast__icon { color: #0891b2; } }
     }
 
@@ -175,10 +175,10 @@ import { ToastService } from './toast.service';
     }
 
     .swal-icon--error {
-      .swal-icon__ring                          { stroke: #dc2626; }
+      .swal-icon__ring                          { stroke: var(--ui-red-text); }
       .swal-icon__cross-a,
       .swal-icon__cross-b {
-        stroke: #dc2626;
+        stroke: var(--ui-red-text);
         stroke-width: 3.5;
         stroke-linecap: round;
         stroke-dasharray: 30;
@@ -201,13 +201,13 @@ import { ToastService } from './toast.service';
     .toast__msg   {
       font-size: 13px;
       font-weight: 600;
-      color: #0f172a;
+      color: var(--ui-text);
       line-height: 1.35;
     }
     .toast__detail {
       margin-top: 2px;
       font-size: 12px;
-      color: #64748b;
+      color: var(--ui-muted);
       line-height: 1.5;
       word-break: break-word;
     }
@@ -221,24 +221,24 @@ import { ToastService } from './toast.service';
       font: inherit;
       font-size: 13px;
       font-weight: 700;
-      color: var(--color-brand-700, #207484);
+      color: var(--color-brand-700, var(--ui-brand-text));
       cursor: pointer;
       flex-shrink: 0;
 
-      &:hover { background: #ecfeff; }
+      &:hover { background: var(--ui-brand-soft); }
     }
 
     .toast__close {
       appearance: none;
       background: transparent;
       border: 0;
-      color: #94a3b8;
+      color: var(--ui-faint);
       cursor: pointer;
       padding: 2px;
       border-radius: 4px;
       flex-shrink: 0;
 
-      &:hover { background: #f1f5f9; color: #0f172a; }
+      &:hover { background: var(--ui-surface-2); color: var(--ui-text); }
     }
 
     @keyframes toast-in {

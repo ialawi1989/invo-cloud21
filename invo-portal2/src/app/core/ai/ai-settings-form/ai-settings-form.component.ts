@@ -47,23 +47,23 @@ interface ProviderCard {
   styleUrls: ['../../../features/settings/plugins/pages/forms/plugin-fields.scss'],
   templateUrl: './ai-settings-form.component.html',
   styles: [`
-    .ai-limits { margin: 4px 0 12px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; background: #f8fafc; }
-    .ai-limits summary { cursor: pointer; font-size: 13px; font-weight: 600; color: #334155; }
+    .ai-limits { margin: 4px 0 12px; border: 1px solid var(--ui-line); border-radius: 8px; padding: 8px 12px; background: var(--ui-surface-1); }
+    .ai-limits summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--ui-text-3); }
     .ai-limits__scroll { overflow-x: auto; margin: 10px 0 6px; }
     .ai-limits table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-    .ai-limits th, .ai-limits td { padding: 6px 10px; text-align: start; border-bottom: 1px solid #e2e8f0; white-space: nowrap; }
-    .ai-limits th { color: #64748b; font-weight: 600; }
-    .ai-sub { margin: 14px 0 4px; font-size: 13px; font-weight: 700; color: #334155; }
+    .ai-limits th, .ai-limits td { padding: 6px 10px; text-align: start; border-bottom: 1px solid var(--ui-line); white-space: nowrap; }
+    .ai-limits th { color: var(--ui-muted); font-weight: 600; }
+    .ai-sub { margin: 14px 0 4px; font-size: 13px; font-weight: 700; color: var(--ui-text-3); }
     .ai-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; }
     .ai-card { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; padding: 10px 12px; text-align: start;
-      background: #fff; border: 1px solid #d0d5dd; border-radius: 10px; cursor: pointer; font: inherit; }
+      background: var(--ui-surface); border: 1px solid var(--ui-line-strong); border-radius: 10px; cursor: pointer; font: inherit; }
     .ai-card:hover { border-color: #2691a4; }
-    .ai-card.is-selected { border-color: #2691a4; background: #ecf7f9; box-shadow: 0 0 0 1px #2691a4 inset; }
-    .ai-card__name { font-weight: 600; font-size: 13.5px; color: #0f172a; }
-    .ai-card__tag { font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; background: #fef3c7; color: #92400e; }
-    .ai-card__tag.is-free { background: #dcfce7; color: #166534; }
-    .ai-card__note { font-size: 11.5px; color: #64748b; }
-    .ai-limits code { font-size: 12px; background: #eef2f6; padding: 1px 5px; border-radius: 4px; }
+    .ai-card.is-selected { border-color: #2691a4; background: var(--ui-x-ecf7f9); box-shadow: 0 0 0 1px #2691a4 inset; }
+    .ai-card__name { font-weight: 600; font-size: 13.5px; color: var(--ui-text); }
+    .ai-card__tag { font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; background: var(--ui-amber-soft); color: var(--ui-amber-text); }
+    .ai-card__tag.is-free { background: var(--ui-green-soft); color: var(--ui-green-text); }
+    .ai-card__note { font-size: 11.5px; color: var(--ui-muted); }
+    .ai-limits code { font-size: 12px; background: var(--ui-surface-2); padding: 1px 5px; border-radius: 4px; }
   `],
 })
 export class AiSettingsFormComponent implements OnInit {

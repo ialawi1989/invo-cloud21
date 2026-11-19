@@ -114,7 +114,7 @@ export interface LinkedEntity {
 
       .modal-content {
         position: relative;
-        background: white;
+        background: var(--ui-surface);
         border-radius: 12px;
         width: 90%;
         max-width: 600px;
@@ -129,7 +129,7 @@ export interface LinkedEntity {
         justify-content: space-between;
         align-items: center;
         padding: 1.5rem;
-        border-bottom: 1px solid #E5E7EB;
+        border-bottom: 1px solid var(--ui-line);
 
         h2 {
           margin: 0;
@@ -138,10 +138,10 @@ export interface LinkedEntity {
           display: flex;
           align-items: center;
           gap: 10px;
-          color: #111827;
+          color: var(--ui-text);
         }
         h2 svg {
-          color: #6b7280;
+          color: var(--ui-muted);
         }
 
         .close-btn {
@@ -158,7 +158,7 @@ export interface LinkedEntity {
           border-radius: 4px;
 
           &:hover {
-            background: #F3F4F6;
+            background: var(--ui-surface-2);
           }
         }
       }
@@ -176,7 +176,7 @@ export interface LinkedEntity {
           align-items: center;
           gap: 12px;
 
-          svg { color: #9ca3af; }
+          svg { color: var(--ui-faint); }
 
           p {
             font-size: 1.125rem;
@@ -189,12 +189,12 @@ export interface LinkedEntity {
           margin-bottom: 1.5rem;
 
           strong {
-            color: #111827;
+            color: var(--ui-text);
           }
         }
 
         .entities-list {
-          border: 1px solid #E5E7EB;
+          border: 1px solid var(--ui-line);
           border-radius: 8px;
           overflow: hidden;
 
@@ -202,7 +202,7 @@ export interface LinkedEntity {
             display: flex;
             align-items: center;
             padding: 1rem;
-            border-bottom: 1px solid #E5E7EB;
+            border-bottom: 1px solid var(--ui-line);
             transition: background 0.2s;
 
             &:last-child {
@@ -210,11 +210,11 @@ export interface LinkedEntity {
             }
 
             &:hover {
-              background: #F9FAFB;
+              background: var(--ui-surface-1);
             }
 
             &.selected {
-              background: var(--color-brand-50, #ecfeff);
+              background: var(--color-brand-50, var(--ui-brand-soft));
             }
 
             input[type="checkbox"] {
@@ -242,7 +242,7 @@ export interface LinkedEntity {
               }
 
               .name {
-                color: #374151;
+                color: var(--ui-text-3);
                 font-weight: 500;
               }
             }
@@ -252,10 +252,10 @@ export interface LinkedEntity {
         .selection-summary {
           margin-top: 1rem;
           padding: 0.75rem;
-          background: var(--color-brand-50, #ecfeff);
+          background: var(--color-brand-50, var(--ui-brand-soft));
           border-radius: 8px;
           text-align: center;
-          color: var(--color-brand-700, #207484);
+          color: var(--ui-brand-t700);
         }
       }
 
@@ -263,7 +263,7 @@ export interface LinkedEntity {
         display: flex;
         gap: 1rem;
         padding: 1.5rem;
-        border-top: 1px solid #E5E7EB;
+        border-top: 1px solid var(--ui-line);
 
         button {
           flex: 1;
@@ -277,11 +277,11 @@ export interface LinkedEntity {
 
         .cancel-btn {
           background: white;
-          border: 1px solid #D1D5DB;
-          color: #374151;
+          border: 1px solid var(--ui-line-strong);
+          color: var(--ui-text-3);
 
           &:hover {
-            background: #F3F4F6;
+            background: var(--ui-surface-2);
           }
         }
 
@@ -297,7 +297,7 @@ export interface LinkedEntity {
           }
 
           &:disabled {
-            background: #D1D5DB;
+            background: var(--ui-line-strong);
             cursor: not-allowed;
           }
         }

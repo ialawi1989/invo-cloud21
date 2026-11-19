@@ -36,19 +36,19 @@ import { TranslateModule } from '@ngx-translate/core';
   `,
   styles: [`
     :host { display: block; }
-    .tfp { height: 100vh; height: 100dvh; display: flex; flex-direction: column; background: #fff; }
+    .tfp { height: 100vh; height: 100dvh; display: flex; flex-direction: column; background: var(--ui-surface); }
     .tfp-bar {
       flex: 0 0 auto; display: flex; align-items: center; gap: 12px;
-      height: 56px; padding: 0 18px; border-bottom: 1px solid #e2e8f0; background: #fff;
+      height: 56px; padding: 0 18px; border-bottom: 1px solid var(--ui-line); background: var(--ui-surface);
     }
     .tfp-exit {
       display: inline-flex; align-items: center; justify-content: center;
-      width: 34px; height: 34px; border-radius: 8px; border: 1px solid #e2e8f0;
-      background: #fff; color: #475569; text-decoration: none;
+      width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--ui-line);
+      background: var(--ui-surface); color: var(--ui-text-4); text-decoration: none;
       transition: background .12s ease, color .12s ease;
     }
-    .tfp-exit:hover { background: #f8fafc; color: #0f172a; }
-    .tfp-title { font-size: 15px; font-weight: 700; color: #0f172a; }
+    .tfp-exit:hover { background: var(--ui-surface-1); color: var(--ui-text); }
+    .tfp-title { font-size: 15px; font-weight: 700; color: var(--ui-text); }
     /* Definite-height content region; the routed host fills it with height:100%. */
     .tfp-body { flex: 1 1 auto; min-height: 0; overflow: hidden; }
   `],

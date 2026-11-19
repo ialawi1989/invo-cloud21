@@ -25,10 +25,10 @@ import { TranslateModule } from '@ngx-translate/core';
     .et {
       display: inline-flex; align-items: center; justify-content: center;
       width: 20px; height: 20px; padding: 0; border-radius: 50%;
-      border: 1px solid #d0d5dd; background: #fff; color: #64748b; cursor: pointer;
+      border: 1px solid var(--ui-line-strong); background: var(--ui-surface); color: var(--ui-muted); cursor: pointer;
     }
-    .et:hover { background: #f1f5f9; }
-    .et.is-on { background: #e0f2f6; border-color: #2691a4; color: #1e6f80; }
+    .et:hover { background: var(--ui-surface-2); }
+    .et.is-on { background: var(--ui-x-e0f2f6); border-color: #2691a4; color: var(--ui-t-1e6f80); }
   `],
 })
 export class ExactToggleComponent {

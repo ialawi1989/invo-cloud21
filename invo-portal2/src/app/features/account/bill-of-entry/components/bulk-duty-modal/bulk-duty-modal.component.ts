@@ -27,11 +27,11 @@ import { ModalFooterComponent } from '@shared/modal/modal-footer.component';
   `,
   styles: [`
     .bd { padding: 16px 20px; display: flex; flex-direction: column; gap: 8px; }
-    .bd__hint { margin: 0 0 4px; color: #475569; font-size: 13.5px; }
-    .bd__label { font-size: 13px; font-weight: 600; color: #334155; }
-    .bd__num { max-width: 240px; box-sizing: border-box; background: #fff; border: 1px solid #d0d5dd; border-radius: 8px; padding: 9px 12px; font: inherit; text-align: end; }
-    .bd__btn { padding: 9px 16px; border-radius: 8px; border: 1px solid #d0d5dd; background: #fff; color: #334155; font-weight: 600; font-size: 13.5px; cursor: pointer; }
-    .bd__btn--primary { border-color: #2691a4; background: #2691a4; color: #fff; }
+    .bd__hint { margin: 0 0 4px; color: var(--ui-text-4); font-size: 13.5px; }
+    .bd__label { font-size: 13px; font-weight: 600; color: var(--ui-text-3); }
+    .bd__num { max-width: 240px; box-sizing: border-box; background: var(--ui-surface); border: 1px solid var(--ui-line-strong); border-radius: 8px; padding: 9px 12px; font: inherit; text-align: end; }
+    .bd__btn { padding: 9px 16px; border-radius: 8px; border: 1px solid var(--ui-line-strong); background: var(--ui-surface); color: var(--ui-text-3); font-weight: 600; font-size: 13.5px; cursor: pointer; }
+    .bd__btn--primary { border-color: #2691a4; background: var(--ui-b-2691a4); color: #fff; }
     .bd__btn:disabled { opacity: .5; cursor: not-allowed; }
   `],
 })

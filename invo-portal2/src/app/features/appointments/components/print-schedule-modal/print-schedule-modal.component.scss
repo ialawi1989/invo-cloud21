@@ -18,26 +18,26 @@
   gap: 6px;
   min-width: 180px;
 
-  label { font-size: 12px; font-weight: 600; color: #6b7280; }
+  label { font-size: 12px; font-weight: 600; color: var(--ui-muted); }
 }
 
 .psm__preview-btn {
   padding: 9px 18px;
   border-radius: 8px;
   border: 1px solid #32acc1;
-  background: #fff;
+  background: var(--ui-surface);
   color: #32acc1;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   height: 38px;
 
-  &:hover { background: #f0fdfa; }
+  &:hover { background: var(--ui-x-f0fdfa); }
   &:disabled { opacity: 0.6; cursor: not-allowed; }
 }
 
 .psm__preview {
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--ui-line);
   border-radius: 10px;
   overflow: auto;
   max-height: 380px;
@@ -46,7 +46,7 @@
 .psm__state {
   padding: 40px;
   text-align: center;
-  color: #9ca3af;
+  color: var(--ui-faint);
   font-size: 13px;
 }
 
@@ -55,14 +55,14 @@
   border-collapse: collapse;
   font-size: 12px;
 
-  th, td { padding: 8px 10px; border-bottom: 1px solid #f3f4f6; text-align: left; }
-  th { background: #f9fafb; font-size: 11px; text-transform: uppercase; letter-spacing: 0.02em; color: #9ca3af; }
+  th, td { padding: 8px 10px; border-bottom: 1px solid var(--ui-surface-2); text-align: left; }
+  th { background: var(--ui-surface-1); font-size: 11px; text-transform: uppercase; letter-spacing: 0.02em; color: var(--ui-faint); }
 }
 
 .psm__btn-cancel {
-  padding: 9px 20px; background: #f3f4f6; border: 1px solid #e5e7eb;
+  padding: 9px 20px; background: var(--ui-surface-2); border: 1px solid var(--ui-line);
   border-radius: 8px; font-size: 13px; cursor: pointer;
-  &:hover { background: #e5e7eb; }
+  &:hover { background: var(--ui-line); }
 }
 
 .psm__btn-print {

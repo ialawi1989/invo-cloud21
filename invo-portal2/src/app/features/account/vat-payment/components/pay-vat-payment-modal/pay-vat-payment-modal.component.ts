@@ -75,17 +75,17 @@ const ymd = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart
   `,
   styles: [`
     .pv { padding: 16px 20px; min-width: min(460px, 90vw); display: flex; flex-direction: column; gap: 14px; }
-    .pv__due { margin: 0; color: #334155; }
+    .pv__due { margin: 0; color: var(--ui-text-3); }
     .pv__field { display: flex; flex-direction: column; gap: 6px; }
-    .pv__field > label { font-size: 13px; font-weight: 600; color: #334155; }
-    .req { color: #dc2626; }
-    .pv__input { padding: 9px 12px; border: 1px solid #d0d5dd; border-radius: 8px; font-size: 13.5px; color: #0f172a; font-family: inherit; width: 100%; }
+    .pv__field > label { font-size: 13px; font-weight: 600; color: var(--ui-text-3); }
+    .req { color: var(--ui-red-text); }
+    .pv__input { padding: 9px 12px; border: 1px solid var(--ui-line-strong); border-radius: 8px; font-size: 13.5px; color: var(--ui-text); font-family: inherit; width: 100%; }
     .pv__input:focus { outline: none; border-color: #2691a4; box-shadow: 0 0 0 3px rgba(38, 145, 164, .12); }
     .pv__input.is-invalid { border-color: #dc2626; }
-    .pv__error { margin: 0; font-size: 12px; color: #dc2626; }
-    .pv__btn { padding: 9px 16px; border-radius: 8px; border: 1px solid #d0d5dd; background: #fff; color: #334155; font-weight: 600; font-size: 13.5px; cursor: pointer; }
+    .pv__error { margin: 0; font-size: 12px; color: var(--ui-red-text); }
+    .pv__btn { padding: 9px 16px; border-radius: 8px; border: 1px solid var(--ui-line-strong); background: var(--ui-surface); color: var(--ui-text-3); font-weight: 600; font-size: 13.5px; cursor: pointer; }
     .pv__btn:disabled { opacity: .5; cursor: not-allowed; }
-    .pv__btn--primary { border-color: #2691a4; background: #2691a4; color: #fff; }
+    .pv__btn--primary { border-color: #2691a4; background: var(--ui-b-2691a4); color: #fff; }
   `],
 })
 export class PayVatPaymentModalComponent implements OnInit {

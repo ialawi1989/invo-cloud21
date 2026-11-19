@@ -97,17 +97,17 @@ import { FieldOption, ListingSource, SettingField, SettingGroup } from './page-t
   `,
   styles: [`
     .sf-group + .sf-group { margin-top: 22px; }
-    .sf-group__title { margin: 0 0 10px; font-size: 13px; font-weight: 700; color: #0f172a; }
+    .sf-group__title { margin: 0 0 10px; font-size: 13px; font-weight: 700; color: var(--ui-text); }
     .sf-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
     .sf-field--inline { flex-direction: row; align-items: center; justify-content: space-between; }
-    .sf-field__label { font-size: 12px; color: #64748b; display: flex; flex-direction: column; gap: 2px; }
-    .sf-field__hint { font-size: 11px; color: #94a3b8; }
+    .sf-field__label { font-size: 12px; color: var(--ui-muted); display: flex; flex-direction: column; gap: 2px; }
+    .sf-field__hint { font-size: 11px; color: var(--ui-faint); }
     .sf-checks { display: flex; flex-wrap: wrap; gap: 10px 16px; }
-    .sf-check { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #334155; cursor: pointer; }
-    .sf-empty { font-size: 13px; color: #94a3b8; margin: 0; }
+    .sf-check { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ui-text-3); cursor: pointer; }
+    .sf-empty { font-size: 13px; color: var(--ui-faint); margin: 0; }
     .sf-input {
-      padding: 7px 10px; font-size: 13px; border: 1px solid #dbe2ea;
-      border-radius: 8px; background: #fff; color: #1e293b; width: 100%;
+      padding: 7px 10px; font-size: 13px; border: 1px solid var(--ui-x-dbe2ea);
+      border-radius: 8px; background: var(--ui-field); color: var(--ui-text-2); width: 100%;
     }
   `],
 })

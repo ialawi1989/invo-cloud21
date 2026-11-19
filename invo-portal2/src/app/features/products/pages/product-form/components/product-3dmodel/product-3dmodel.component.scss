@@ -4,8 +4,8 @@
 .pf-3d-box {
   position: relative;
   aspect-ratio: 1 / 1;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--ui-surface-1);
+  border: 1px solid var(--ui-line);
   border-radius: 10px;
   overflow: hidden;
   display: flex;
@@ -14,7 +14,7 @@
 
   &--empty {
     border-style: dashed;
-    background: #fafbfc;
+    background: var(--ui-surface-1);
   }
 }
 
@@ -24,14 +24,14 @@
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  color: #94a3b8;
+  color: var(--ui-faint);
 
   p, .pf-3d-name { font-size: 13px; margin: 0; }
 }
 
 .pf-3d-filled {
-  color: #143742;
-  .pf-3d-name { color: #0f172a; font-weight: 500; text-align: center; padding: 0 12px; word-break: break-word; }
+  color: var(--ui-t-143742);
+  .pf-3d-name { color: var(--ui-text); font-weight: 500; text-align: center; padding: 0 12px; word-break: break-word; }
 }
 
 .pf-3d-actions {
@@ -48,15 +48,15 @@
     cursor: pointer;
 
     &--primary {
-      background: #d9f2f6;
-      color: #143742;
-      &:hover { background: #c1e9ef; }
+      background: var(--ui-x-d9f2f6);
+      color: var(--ui-t-143742);
+      &:hover { background: var(--ui-x-c1e9ef); }
     }
     &--ghost {
-      background: #fff;
-      color: #64748b;
-      border-color: #e2e8f0;
-      &:hover { background: #f8fafc; color: #dc2626; border-color: #fecaca; }
+      background: var(--ui-surface);
+      color: var(--ui-muted);
+      border-color: var(--ui-line);
+      &:hover { background: var(--ui-surface-1); color: var(--ui-red-text); border-color: var(--ui-red-soft-2); }
     }
   }
 }

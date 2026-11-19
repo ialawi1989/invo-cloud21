@@ -13,8 +13,8 @@
 }
 
 .ecf-card {
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
   border-radius: 12px;
 
   &__head {
@@ -22,7 +22,7 @@
     align-items: center;
     gap: 10px;
     padding: 14px 18px;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--ui-surface-2);
   }
 
   &__icon {
@@ -30,7 +30,7 @@
     height: 32px;
     border-radius: 8px;
     background: var(--color-brand-50);
-    color: var(--color-brand-700);
+    color: var(--ui-brand-t700);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -41,7 +41,7 @@
     margin: 0;
     font-size: 15px;
     font-weight: 600;
-    color: #0f172a;
+    color: var(--ui-text);
   }
 
   &__body { padding: 18px; }
@@ -68,11 +68,11 @@
   gap: 10px;
   padding: 12px 14px;
   background: var(--color-brand-50);
-  border: 1px solid var(--color-brand-100, #e0f2fe);
+  border: 1px solid var(--color-brand-100, var(--ui-sky-soft));
   border-radius: 10px;
 
   &__icon {
-    color: var(--color-brand-600);
+    color: var(--ui-brand-t600);
     flex-shrink: 0;
   }
 
@@ -80,7 +80,7 @@
     margin: 0;
     flex: 1;
     font-size: 13px;
-    color: #0f172a;
+    color: var(--ui-text);
     line-height: 1.4;
   }
 
@@ -90,9 +90,9 @@
     gap: 6px;
     padding: 6px 12px;
     border-radius: 8px;
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    color: #0f172a;
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-line);
+    color: var(--ui-text);
     font-size: 12px;
     font-weight: 600;
     text-decoration: none;
@@ -101,8 +101,8 @@
 
     &:hover {
       background: var(--color-brand-50);
-      border-color: var(--color-brand-300, #bae6fd);
-      color: var(--color-brand-700);
+      border-color: var(--color-brand-300, var(--ui-sky-soft-2));
+      color: var(--ui-brand-t700);
     }
   }
 

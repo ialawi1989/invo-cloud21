@@ -27,8 +27,8 @@
 .pf-media-tabs {
   display: flex;
   align-items: stretch;
-  border-bottom: 1px solid #f1f5f9;
-  background: #fff;
+  border-bottom: 1px solid var(--ui-surface-2);
+  background: var(--ui-surface);
 
   &__btn {
     position: relative;
@@ -38,17 +38,17 @@
     padding: 14px 18px;
     border: 0;
     background: transparent;
-    color: #64748b;
+    color: var(--ui-muted);
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
     transition: color 120ms ease;
 
-    &:hover { color: #334155; }
+    &:hover { color: var(--ui-text-3); }
 
     // Active-underline indicator.
     &--active {
-      color: #0f172a;
+      color: var(--ui-text);
       font-weight: 600;
     }
     &--active::after {
@@ -72,7 +72,7 @@
     height: 34px;
     border-radius: 9px;
 
-    &--images { background: #d9f2f6; color: #0e7490; }
-    &--model  { background: #dcfce7; color: #15803d; }
+    &--images { background: var(--ui-x-d9f2f6); color: var(--ui-brand-text); }
+    &--model  { background: var(--ui-green-soft); color: var(--ui-green-text); }
   }
 }

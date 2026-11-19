@@ -28,23 +28,23 @@ import { CompanyService } from '@core/auth/company.service';
     <main class="co-main"><router-outlet /></main>
   `,
   styles: [`
-    :host { display: flex; flex-direction: column; height: 100dvh; background: #f8f8fb; }
+    :host { display: flex; flex-direction: column; height: 100dvh; background: var(--ui-x-f8f8fb); }
     .co-bar {
       flex: 0 0 56px; display: flex; align-items: center; gap: 12px; padding: 0 20px;
-      background: #fff; border-bottom: 1px solid #e5e7eb;
+      background: var(--ui-surface); border-bottom: 1px solid var(--ui-line);
     }
     .back {
       display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 8px;
-      font-size: 13px; font-weight: 500; color: #111827; text-decoration: none;
-      &:hover { background: #f3f4f6; }
+      font-size: 13px; font-weight: 500; color: var(--ui-text); text-decoration: none;
+      &:hover { background: var(--ui-surface-2); }
     }
     :host-context([dir='rtl']) .flip { transform: scaleX(-1); }
-    .sep { width: 1px; height: 22px; background: #e5e7eb; }
-    .brand { font-size: 15px; font-weight: 700; color: #0f172a; }
+    .sep { width: 1px; height: 22px; background: var(--ui-line); }
+    .brand { font-size: 15px; font-weight: 700; color: var(--ui-text); }
     .nav { display: flex; gap: 4px; margin-inline-start: 16px;
-      a { padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; color: #475569; text-decoration: none;
-        &:hover { background: #f3f4f6; } &.on { background: #ecfeff; color: #0e7490; font-weight: 600; } } }
-    .chip { margin-inline-start: auto; padding: 4px 12px; border-radius: 999px; background: #ecfeff; color: #0e7490; font-size: 12px; font-weight: 600; }
+      a { padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; color: var(--ui-text-4); text-decoration: none;
+        &:hover { background: var(--ui-surface-2); } &.on { background: var(--ui-brand-soft); color: var(--ui-brand-text); font-weight: 600; } } }
+    .chip { margin-inline-start: auto; padding: 4px 12px; border-radius: 999px; background: var(--ui-brand-soft); color: var(--ui-brand-text); font-size: 12px; font-weight: 600; }
     .co-main { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
   `],
 })

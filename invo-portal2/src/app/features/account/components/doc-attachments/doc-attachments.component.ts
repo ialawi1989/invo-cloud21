@@ -90,22 +90,22 @@ const toAttachment = (m: any): DocAttachment => ({
   `,
   styles: [`
     .da { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
-    .da__label { font-size: 13px; color: #334155; }
-    :host ::ng-deep .da__btn { border: 1px dashed #cbd5e1; background: #fff; border-radius: 8px; padding: 8px 14px; cursor: pointer; font-weight: 500; }
-    .da__hint { color: #64748b; font-size: 12px; }
+    .da__label { font-size: 13px; color: var(--ui-text-3); }
+    :host ::ng-deep .da__btn { border: 1px dashed var(--ui-line-strong); background: var(--ui-surface); border-radius: 8px; padding: 8px 14px; cursor: pointer; font-weight: 500; }
+    .da__hint { color: var(--ui-muted); font-size: 12px; }
     .da__list { list-style: none; margin: 0; padding: 0; width: 100%; display: flex; flex-direction: column; gap: 4px; }
-    .da__list li { display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: #f8fafc; border-radius: 6px; }
+    .da__list li { display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: var(--ui-surface-1); border-radius: 6px; }
     .da__icon { flex: 0 0 auto; width: 30px; height: 30px; border-radius: 6px; display: inline-grid; place-items: center; font-size: 10px; font-weight: 700; color: #fff; text-transform: uppercase;
       &--image { background: #16a34a; } &--pdf { background: #dc2626; } &--word { background: #2563eb; }
       &--excel { background: #15803d; } &--ppt { background: #ea580c; } &--file { background: #64748b; } }
     .da__meta { flex: 1; min-width: 0; }
-    .da__name { color: #0f172a; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .da__sub { color: #64748b; font-size: 12px; }
-    .da__actions a { color: #227d8d; &:hover { text-decoration: underline; } }
+    .da__name { color: var(--ui-text); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .da__sub { color: var(--ui-muted); font-size: 12px; }
+    .da__actions a { color: var(--ui-brand-text); &:hover { text-decoration: underline; } }
     .da__link--disabled { color: #cbd5e1 !important; pointer-events: none; text-decoration: none !important; }
-    .da__remove { flex: 0 0 auto; border: 0; background: none; color: #dc2626; cursor: pointer;
+    .da__remove { flex: 0 0 auto; border: 0; background: none; color: var(--ui-red-text); cursor: pointer;
       &:disabled { color: #cbd5e1; cursor: not-allowed; } }
-    .da__uploading { display: flex; align-items: center; gap: 8px; color: #227d8d; font-size: 12.5px; font-weight: 500; }
+    .da__uploading { display: flex; align-items: center; gap: 8px; color: var(--ui-brand-text); font-size: 12.5px; font-weight: 500; }
   `],
 })
 export class DocAttachmentsComponent {

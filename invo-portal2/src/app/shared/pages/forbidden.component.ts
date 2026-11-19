@@ -71,36 +71,36 @@ import { ToastService } from '@shared/components/toast/toast.service';
   styles: [`
     .forbidden {
       display: flex; align-items: center; justify-content: center;
-      min-height: 100vh; padding: 24px; background: #f8fafc;
+      min-height: 100vh; padding: 24px; background: var(--ui-surface-1);
     }
     .forbidden__card {
-      width: 100%; max-width: 440px; background: #fff;
-      border: 1px solid #e5e7eb; border-radius: 16px; padding: 32px 28px;
+      width: 100%; max-width: 440px; background: var(--ui-surface);
+      border: 1px solid var(--ui-line); border-radius: 16px; padding: 32px 28px;
       text-align: center; box-shadow: 0 8px 30px rgba(15,23,42,.06);
     }
     .forbidden__icon {
       width: 60px; height: 60px; border-radius: 50%;
-      background: var(--color-brand-50, #effbfd); color: var(--color-brand-500, #32acc1);
+      background: var(--color-brand-50, var(--ui-brand-soft)); color: var(--color-brand-500, #32acc1);
       display: inline-flex; align-items: center; justify-content: center;
       margin-bottom: 16px;
     }
-    .forbidden__title { font-size: 20px; font-weight: 700; color: #0f172a; margin: 0 0 6px; }
-    .forbidden__desc  { font-size: 14px; color: #64748b; margin: 0 0 20px; line-height: 1.5; }
+    .forbidden__title { font-size: 20px; font-weight: 700; color: var(--ui-text); margin: 0 0 6px; }
+    .forbidden__desc  { font-size: 14px; color: var(--ui-muted); margin: 0 0 20px; line-height: 1.5; }
 
     .forbidden__facts {
-      text-align: start; background: #f8fafc; border: 1px solid #eef2f6;
+      text-align: start; background: var(--ui-surface-1); border: 1px solid var(--ui-surface-2);
       border-radius: 10px; padding: 6px 14px; margin: 0 0 20px;
     }
     .forbidden__facts > div {
       display: flex; align-items: center; justify-content: space-between;
-      gap: 12px; padding: 9px 0; border-bottom: 1px solid #eef2f6;
+      gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--ui-surface-2);
     }
     .forbidden__facts > div:last-child { border-bottom: none; }
-    .forbidden__facts dt { font-size: 13px; color: #64748b; margin: 0; }
-    .forbidden__facts dd { font-size: 13px; font-weight: 600; color: #0f172a; margin: 0; text-align: end; }
+    .forbidden__facts dt { font-size: 13px; color: var(--ui-muted); margin: 0; }
+    .forbidden__facts dd { font-size: 13px; font-weight: 600; color: var(--ui-text); margin: 0; text-align: end; }
     .forbidden__role {
       display: inline-block; padding: 2px 10px; border-radius: 999px;
-      background: var(--color-brand-50, #effbfd); color: var(--color-brand-700, #207484); font-size: 12px; font-weight: 600;
+      background: var(--color-brand-50, var(--ui-brand-soft)); color: var(--ui-brand-t700); font-size: 12px; font-weight: 600;
     }
 
     .forbidden__actions { display: flex; gap: 10px; }
@@ -110,13 +110,13 @@ import { ToastService } from '@shared/components/toast/toast.service';
       cursor: pointer; text-decoration: none; border: 1px solid transparent;
       transition: background 120ms ease, border-color 120ms ease;
     }
-    .btn--ghost   { background: #fff; color: #475569; border-color: #e2e8f0; }
-    .btn--ghost:hover { background: #f8fafc; color: #0f172a; }
+    .btn--ghost   { background: var(--ui-surface); color: var(--ui-text-4); border-color: var(--ui-line); }
+    .btn--ghost:hover { background: var(--ui-surface-1); color: var(--ui-text); }
     .btn--primary { background: var(--color-brand-500, #32acc1); color: #fff; }
     .btn--primary:hover:not(:disabled) { background: var(--color-brand-600, #2691a4); }
     .btn:disabled { opacity: .6; cursor: not-allowed; }
 
-    .forbidden__hint { font-size: 12px; color: #94a3b8; margin: 16px 0 0; }
+    .forbidden__hint { font-size: 12px; color: var(--ui-faint); margin: 16px 0 0; }
   `],
 })
 export class ForbiddenComponent implements OnInit {

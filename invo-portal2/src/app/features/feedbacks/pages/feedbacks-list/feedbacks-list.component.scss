@@ -5,13 +5,13 @@
   gap: 24px;
   margin: 0 0 12px;
   padding: 16px 20px;
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
   border-radius: 12px;
 
   &__avg { flex: 0 0 220px; text-align: center; }
-  &__num { font-size: 32px; font-weight: 700; color: #0f172a; line-height: 1.1; }
-  &__txt { margin: 6px 0 0; font-size: 12px; color: #64748b; }
+  &__num { font-size: 32px; font-weight: 700; color: var(--ui-text); line-height: 1.1; }
+  &__txt { margin: 6px 0 0; font-size: 12px; color: var(--ui-muted); }
   &__bars { flex: 1 1 260px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 }
 
@@ -22,11 +22,11 @@
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  color: #475569;
+  color: var(--ui-text-4);
 
   &__label { width: 32px; }
-  &__pct { width: 40px; text-align: end; color: #94a3b8; }
-  &__track { flex: 1; height: 8px; border-radius: 99px; background: #f1f5f9; overflow: hidden; }
+  &__pct { width: 40px; text-align: end; color: var(--ui-faint); }
+  &__track { flex: 1; height: 8px; border-radius: 99px; background: var(--ui-surface-2); overflow: hidden; }
   &__fill {
     height: 100%;
     border-radius: 99px;
@@ -54,7 +54,7 @@
   padding: 0;
   border: 0;
   background: none;
-  color: #0f172a;
+  color: var(--ui-text);
   text-align: start;
   cursor: pointer;
   display: -webkit-box;

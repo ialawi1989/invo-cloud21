@@ -8,17 +8,17 @@
   // Brand — references the Tailwind @theme palette so a single change updates
   // both the CMS design system and Tailwind utility classes.
   --cl-brand:       var(--color-brand-500);
-  --cl-brand-dark:  var(--color-brand-700);
+  --cl-brand-dark:  var(--ui-brand-t700);
   --cl-brand-light: var(--color-brand-50);
   --cl-brand-mid:   var(--color-brand-300);
 
   // Surfaces
-  --cl-surface: #ffffff;
-  --cl-bg:      #f8fafc;
+  --cl-surface: var(--ui-surface);
+  --cl-bg:      var(--ui-surface-1);
 
   // Borders
-  --cl-border:     #e5e7eb;
-  --cl-border-sub: #f1f5f9;
+  --cl-border:     var(--ui-line);
+  --cl-border-sub: var(--ui-surface-2);
 
   // Text
   --cl-t1: #111827;   // primary
@@ -146,7 +146,7 @@
   color: var(--cl-t1);
   font-size: var(--cl-fs-base);
 
-  &:hover { border-color: #cbd5e1; background: #f9fafb; }
+  &:hover { border-color: var(--ui-line-strong); background: var(--ui-surface-1); }
 }
 
 // Outline pill
@@ -168,7 +168,7 @@
   color: var(--cl-t2);
   font-size: var(--cl-fs-md);
 
-  &:hover  { background: #f3f4f6; border-color: #cbd5e1; color: var(--cl-t1); }
+  &:hover  { background: var(--ui-surface-2); border-color: var(--ui-line-strong); color: var(--cl-t1); }
   &.active { background: var(--cl-brand-light); border-color: var(--cl-brand-mid); color: var(--cl-brand); }
 }
 
@@ -182,7 +182,7 @@
   color: var(--cl-t3);
   font-size: var(--cl-fs-md);
 
-  &:hover    { color: var(--cl-t1); background: #f3f4f6; }
+  &:hover    { color: var(--cl-t1); background: var(--ui-surface-2); }
   &:disabled { opacity: .4; }
 }
 
@@ -192,13 +192,13 @@
   height: var(--cl-row-sm);
   padding: 0 var(--cl-sp-5);
   border-radius: var(--cl-r-md);
-  border: 1.5px solid #fecaca;
-  background: #fef2f2;
-  color: #ef4444;
+  border: 1.5px solid var(--ui-red-soft-2);
+  background: var(--ui-red-soft);
+  color: var(--ui-red-text);
   font-size: var(--cl-fs-base);
   font-weight: 500;
 
-  &:hover { background: #fee2e2; }
+  &:hover { background: var(--ui-red-soft); }
 }
 
 // Link button (brand-colored text)
@@ -242,7 +242,7 @@
   &::placeholder { color: var(--cl-t4); }
 
   &.readonly, &[readonly] {
-    background: #f8fafc;
+    background: var(--ui-surface-1);
     color: var(--cl-t3);
     cursor: default;
   }
@@ -276,7 +276,7 @@
 
 .cms-label-required::after {
   content: ' *';
-  color: #ef4444;
+  color: var(--ui-red-text);
 }
 
 
@@ -303,8 +303,8 @@
     width: 18px;
     height: 18px;
     border-radius: 5px;
-    border: 1.5px solid #cbd5e1;
-    background: #fff;
+    border: 1.5px solid var(--ui-line-strong);
+    background: var(--ui-surface);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -321,14 +321,14 @@
   }
 
   input:disabled + .cms-checkbox-box {
-    background: #f1f5f9;
-    border-color: #e2e8f0;
+    background: var(--ui-surface-2);
+    border-color: var(--ui-line);
     cursor: not-allowed;
   }
 
   input:disabled:checked + .cms-checkbox-box {
-    background: #a8d8e0;
-    border-color: #a8d8e0;
+    background: var(--ui-x-a8d8e0);
+    border-color: var(--ui-x-a8d8e0);
   }
 }
 
@@ -355,7 +355,7 @@
     position: absolute;
     inset: 0;
     border-radius: 11px;
-    background: #e5e7eb;
+    background: var(--ui-line);
     transition: background .2s;
   }
 
@@ -370,7 +370,7 @@
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    background: #fff;
+    background: var(--ui-surface);
     box-shadow: 0 1px 3px rgba(0,0,0,.2);
     transition: transform .2s;
   }
@@ -398,13 +398,13 @@
 
 .cms-badge-success {
   @extend .cms-badge;
-  background: #dcfce7;
-  color: #15803d;
+  background: var(--ui-green-soft);
+  color: var(--ui-green-text);
 }
 
 .cms-badge-muted {
   @extend .cms-badge;
-  background: #f1f5f9;
+  background: var(--ui-surface-2);
   color: var(--cl-t3);
 }
 
@@ -417,8 +417,8 @@
 
 .cms-badge-danger {
   @extend .cms-badge;
-  background: #fef2f2;
-  color: #ef4444;
+  background: var(--ui-red-soft);
+  color: var(--ui-red-text);
 }
 
 .cms-badge-count {
@@ -473,11 +473,11 @@
   text-align: left;
   font-family: inherit;
 
-  &:hover { background: #f3f4f6; }
+  &:hover { background: var(--ui-surface-2); }
 
   &.danger {
-    color: #ef4444;
-    &:hover { background: #fef2f2; }
+    color: var(--ui-red-text);
+    &:hover { background: var(--ui-red-soft); }
   }
 
   &.disabled {
@@ -582,7 +582,7 @@
   flex-shrink: 0;
   transition: all .12s;
 
-  &:hover { background: #f3f4f6; color: var(--cl-t2); }
+  &:hover { background: var(--ui-surface-2); color: var(--cl-t2); }
 }
 
 
@@ -641,7 +641,7 @@
     cursor: pointer;
     transition: background .07s;
 
-    &:hover td { background: #f7f9fc; }
+    &:hover td { background: var(--ui-x-f7f9fc); }
     &.selected td { background: var(--cl-brand-light) !important; }
   }
 }
@@ -666,7 +666,7 @@
   width: 56px;
   height: 56px;
   border-radius: var(--cl-r-xl);
-  background: #f3f4f6;
+  background: var(--ui-surface-2);
   border: 1px solid var(--cl-border);
   display: flex;
   align-items: center;
@@ -697,7 +697,7 @@
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  border: 2.5px solid #e5e7eb;
+  border: 2.5px solid var(--ui-line);
   border-top-color: var(--cl-brand);
   animation: cms-spin .65s linear infinite;
   display: inline-block;
@@ -706,7 +706,7 @@
 .cms-spin-white {
   @extend .cms-spin;
   border-color: rgba(255,255,255,.3);
-  border-top-color: #fff;
+  border-top-color: var(--ui-surface);
 }
 
 @keyframes cms-spin {

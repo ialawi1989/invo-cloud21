@@ -110,28 +110,28 @@ const asDate = (v: any) => (v instanceof Date ? v : new Date(v ?? Date.now()));
   `,
   styles: [`
     .bs { padding: 16px 20px; min-width: 640px; max-width: 100%; display: flex; flex-direction: column; gap: 12px; }
-    .bs__item { margin: 0; font-weight: 600; color: #0f172a; }
+    .bs__item { margin: 0; font-weight: 600; color: var(--ui-text); }
     .bs__add { display: flex; gap: 8px; }
     .bs__add .bs__input { flex: 1; }
-    .bs__scroll { max-height: 320px; overflow: auto; border: 1px solid #e5e7eb; border-radius: 10px; }
+    .bs__scroll { max-height: 320px; overflow: auto; border: 1px solid var(--ui-line); border-radius: 10px; }
     .bs__table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-    .bs__table th { text-align: start; background: #f8fafc; color: #64748b; font-size: 12px; padding: 8px 10px; position: sticky; top: 0; }
-    .bs__table td { padding: 6px 10px; border-top: 1px solid #f1f5f9; vertical-align: middle; }
+    .bs__table th { text-align: start; background: var(--ui-surface-1); color: var(--ui-muted); font-size: 12px; padding: 8px 10px; position: sticky; top: 0; }
+    .bs__table td { padding: 6px 10px; border-top: 1px solid var(--ui-surface-2); vertical-align: middle; }
     .bs__deleted td { opacity: .5; text-decoration: line-through; }
-    .bs__empty { text-align: center; color: #94a3b8; padding: 18px; }
-    .bs__input { border: 1px solid #d0d5dd; border-radius: 8px; padding: 8px 10px; font: inherit; min-width: 0; box-sizing: border-box; }
+    .bs__empty { text-align: center; color: var(--ui-faint); padding: 18px; }
+    .bs__input { border: 1px solid var(--ui-line-strong); border-radius: 8px; padding: 8px 10px; font: inherit; min-width: 0; box-sizing: border-box; }
     .bs__num { width: 110px; }
     .bs__bad { border-color: #dc2626; }
-    .bs__err { color: #dc2626; font-size: 12px; margin: 0; }
+    .bs__err { color: var(--ui-red-text); font-size: 12px; margin: 0; }
     .bs__date { min-width: 150px; }
     .bs__end { text-align: end; white-space: nowrap; }
-    .bs__x { width: 26px; height: 26px; border-radius: 50%; border: 1px solid #fecaca; background: #fff; color: #dc2626; cursor: pointer; }
+    .bs__x { width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--ui-red-soft-2); background: var(--ui-surface); color: var(--ui-red-text); cursor: pointer; }
     .bs__x:disabled { opacity: .35; cursor: not-allowed; }
-    .bs__link { border: 0; background: none; color: #227d8d; cursor: pointer; }
-    .bs__sum { display: flex; justify-content: flex-end; gap: 24px; color: #334155; }
-    .bs__btn { padding: 9px 18px; border-radius: 8px; border: 1px solid #d0d5dd; background: #fff; color: #334155; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+    .bs__link { border: 0; background: none; color: var(--ui-brand-text); cursor: pointer; }
+    .bs__sum { display: flex; justify-content: flex-end; gap: 24px; color: var(--ui-text-3); }
+    .bs__btn { padding: 9px 18px; border-radius: 8px; border: 1px solid var(--ui-line-strong); background: var(--ui-surface); color: var(--ui-text-3); font-size: 13.5px; font-weight: 600; cursor: pointer; }
     .bs__btn:disabled { opacity: .5; cursor: not-allowed; }
-    .bs__btn--primary { border-color: #2691a4; background: #2691a4; color: #fff; }
+    .bs__btn--primary { border-color: #2691a4; background: var(--ui-b-2691a4); color: #fff; }
   `],
 })
 export class BillSplitModalComponent {

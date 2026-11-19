@@ -59,19 +59,19 @@ export interface ReorderModalData {
   `,
   styles: [`
     .ro { padding: 16px 20px; min-width: min(560px, 92vw); display: flex; flex-direction: column; gap: 10px; }
-    .ro__hint { margin: 0; font-size: 12.5px; color: #64748b; }
+    .ro__hint { margin: 0; font-size: 12.5px; color: var(--ui-muted); }
     .ro__list { list-style: none; margin: 0; padding: 0; max-height: 420px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
-    .ro__row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; }
+    .ro__row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: 8px; }
     .ro__row.cdk-drag-preview { box-shadow: 0 8px 24px rgba(15,23,42,.18); }
-    .ro__grip { cursor: grab; color: #94a3b8; font-size: 18px; line-height: 1; user-select: none; }
-    .ro__pos { width: 56px; height: 32px; text-align: center; border: 1px solid #d0d5dd; border-radius: 6px; font: inherit; }
+    .ro__grip { cursor: grab; color: var(--ui-faint); font-size: 18px; line-height: 1; user-select: none; }
+    .ro__pos { width: 56px; height: 32px; text-align: center; border: 1px solid var(--ui-line-strong); border-radius: 6px; font: inherit; }
     .ro__img { width: 32px; height: 32px; object-fit: cover; border-radius: 6px; }
     .ro__name { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-    .ro__name small { color: #64748b; }
-    .ro__btn { width: 28px; height: 28px; border: 1px solid #e2e8f0; border-radius: 6px; background: #fff; color: #475569; cursor: pointer; font-size: 11px; }
+    .ro__name small { color: var(--ui-muted); }
+    .ro__btn { width: 28px; height: 28px; border: 1px solid var(--ui-line); border-radius: 6px; background: var(--ui-surface); color: var(--ui-text-4); cursor: pointer; font-size: 11px; }
     .ro__btn:disabled { opacity: .35; cursor: not-allowed; }
-    .ro__act { padding: 9px 16px; border-radius: 8px; border: 1px solid #d0d5dd; background: #fff; color: #334155; font-weight: 600; font-size: 13.5px; cursor: pointer; }
-    .ro__act--primary { border-color: #2691a4; background: #2691a4; color: #fff; }
+    .ro__act { padding: 9px 16px; border-radius: 8px; border: 1px solid var(--ui-line-strong); background: var(--ui-surface); color: var(--ui-text-3); font-weight: 600; font-size: 13.5px; cursor: pointer; }
+    .ro__act--primary { border-color: #2691a4; background: var(--ui-b-2691a4); color: #fff; }
     .ro__act:disabled { opacity: .5; cursor: not-allowed; }
   `],
 })

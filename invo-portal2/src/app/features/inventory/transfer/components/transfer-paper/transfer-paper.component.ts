@@ -107,26 +107,26 @@ import { InventoryTransfer, lineTotal, lineUnitCost } from '../../models/invento
   `,
   styles: [`
     :host { display: block; }
-    .tp { background: #fff; padding: 28px; border: 1px solid #e5e7eb; border-radius: 12px; display: flex; flex-direction: column; gap: 18px; }
-    .tp__head { display: flex; align-items: center; gap: 14px; border-bottom: 1px solid #e5e7eb; padding-bottom: 14px; }
+    .tp { background: var(--ui-surface); padding: 28px; border: 1px solid var(--ui-line); border-radius: 12px; display: flex; flex-direction: column; gap: 18px; }
+    .tp__head { display: flex; align-items: center; gap: 14px; border-bottom: 1px solid var(--ui-line); padding-bottom: 14px; }
     .tp__head h2 { margin: 0; font-size: 18px; }
     .tp__logo { height: 40px; }
-    .tp__title { margin-inline-start: auto; font-size: 22px; font-weight: 700; color: #0f172a; }
+    .tp__title { margin-inline-start: auto; font-size: 22px; font-weight: 700; color: var(--ui-text); }
     .tp__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
     dl { margin: 0; display: flex; flex-direction: column; gap: 6px; }
     dl > div { display: flex; gap: 8px; font-size: 14px; }
-    dt { color: #64748b; min-width: 130px; } dd { margin: 0; color: #0f172a; }
+    dt { color: var(--ui-muted); min-width: 130px; } dd { margin: 0; color: var(--ui-text); }
     .tp__wrap { overflow-x: auto; }
     .tp__table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-    .tp__table th { background: #0f172a; color: #fff; text-align: start; padding: 10px 12px; }
-    .tp__table td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+    .tp__table th { background: var(--ui-ink); color: #fff; text-align: start; padding: 10px 12px; }
+    .tp__table td { padding: 10px 12px; border-bottom: 1px solid var(--ui-surface-2); vertical-align: top; }
     .end { text-align: end !important; }
-    .tp__chip { margin-inline-start: 8px; padding: 1px 8px; border-radius: 999px; background: #e2e8f0; font-size: 12px; }
-    .tp__muted { color: #64748b; font-size: 12px; }
-    .tp__sub td { background: #f8fafc; }
-    .tp__tag { display: inline-block; margin: 2px 6px 2px 0; padding: 2px 10px; border-radius: 6px; background: #e0f2fe; color: #075985; font-size: 12px; }
-    .tp__total { align-self: flex-end; display: flex; gap: 24px; padding: 12px 16px; border: 1px solid #e5e7eb; border-radius: 10px; min-width: 260px; justify-content: space-between; }
-    .tp__note { margin: 0; color: #475569; }
+    .tp__chip { margin-inline-start: 8px; padding: 1px 8px; border-radius: 999px; background: var(--ui-line); font-size: 12px; }
+    .tp__muted { color: var(--ui-muted); font-size: 12px; }
+    .tp__sub td { background: var(--ui-surface-1); }
+    .tp__tag { display: inline-block; margin: 2px 6px 2px 0; padding: 2px 10px; border-radius: 6px; background: var(--ui-sky-soft); color: var(--ui-t-075985); font-size: 12px; }
+    .tp__total { align-self: flex-end; display: flex; gap: 24px; padding: 12px 16px; border: 1px solid var(--ui-line); border-radius: 10px; min-width: 260px; justify-content: space-between; }
+    .tp__note { margin: 0; color: var(--ui-text-4); }
   `],
 })
 export class TransferPaperComponent {

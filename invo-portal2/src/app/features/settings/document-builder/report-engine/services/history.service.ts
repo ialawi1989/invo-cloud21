@@ -18,6 +18,10 @@ export class HistoryService {
   private undoStack: ReportTemplate[] = [];
   private redoStack: ReportTemplate[] = [];
   private silent = false;
+  /** Set for the duration of a continuous gesture (block drag / resize).
+   *  Those write the template once per animation frame, so recording each
+   *  one would bury a single drag under ~60 undo steps. */
+  private batching = false;
   readonly canUndo = signal(false);
   readonly canRedo = signal(false);
 
@@ -27,10 +31,36 @@ export class HistoryService {
       if (!t) return;
       if (this.silent) return;
       untracked(() => this.record(t));
-    });
+      // record() flips canUndo/canRedo. `untracked` suppresses dependency
+      // tracking but not the write guard, so Angular 17 still needs this —
+      // without it every snapshot throws NG0600 and Undo/Redo stay disabled.
+    }, { allowSignalWrites: true });
+  }
+
+  /**
+   * Open a batch: intermediate template writes stop being recorded until
+   * `endBatch()`, which lands the final state as ONE undo step. Call it at
+   * the start of a drag/resize gesture.
+   *
+   * Safe to nest-call redundantly — a second `beginBatch()` is a no-op.
+   */
+  beginBatch(): void {
+    this.batching = true;
+  }
+
+  /** Close the batch and record where the gesture ended. Recording here
+   *  rather than waiting for the effect keeps the timing deterministic: the
+   *  effect fires later with the SAME template object, and record()'s
+   *  identity guard drops it. */
+  endBatch(): void {
+    if (!this.batching) return;
+    this.batching = false;
+    const t = this.state.template();
+    if (t) this.record(t);
   }
 
   private record(snapshot: ReportTemplate): void {
+    if (this.batching) return;
     // Skip if identical to top of stack.
     const top = this.undoStack[this.undoStack.length - 1];
     if (top && top === snapshot) return;
@@ -65,6 +95,7 @@ export class HistoryService {
   }
 
   clear(): void {
+    this.batching = false;
     this.undoStack = [];
     this.redoStack = [];
     this.canUndo.set(false);

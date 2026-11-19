@@ -1,4 +1,4 @@
-@use '../_designer-theme.scss' as *;
+@import '../designer-theme';
 
 :host {
   position: absolute;
@@ -16,6 +16,14 @@
     width: 100%;
     height: 100%;
     overflow: hidden;
+
+    // The host omits its height style for autoHeight blocks (see
+    // heightPx) so it sizes to content, same as the export — but relying
+    // on height:100% resolving to auto through an auto-height ancestor is
+    // easy to break by accident, so make it explicit here.
+    :host.is-auto-height & {
+      height: auto;
+    }
     // Fallback type size for blocks without an explicit style.font.size —
     // notably the data tables. blockStyleToCss emits inline styles on this
     // same element, so a user-set size always wins over this.
@@ -32,6 +40,21 @@
   }
 
   // ── Media ────────────────────────────────────────────────────
+  // object-fit comes from the block's `fit`, bound inline.
+  &__image {
+    width: 100%;
+    height: 100%;
+    // Images are natively draggable, so a mousedown-drag on one starts an
+    // HTML5 drag instead of delivering the pointermove events the block move
+    // handler needs — leaving keyboard nudging as the only way to move an
+    // image block. `pointer-events: none` hands the gesture to the host;
+    // the attribute and -webkit rule stop the native drag in browsers that
+    // still initiate one.
+    pointer-events: none;
+    -webkit-user-drag: none;
+    user-select: none;
+  }
+
   &__image-ph {
     display: flex;
     flex-direction: column;
@@ -134,6 +157,13 @@
       background: $d-bg-alt;
     }
 
+    // Matches the HTML renderer's `.r-table tfoot td` so the aggregate
+    // footer row (per-column sum/avg/etc.) reads the same in the canvas.
+    tfoot td {
+      font-weight: 600;
+      background: $d-bg-alt;
+    }
+
     &.is-bordered {
       border: 1px solid $d-border-input;
 
@@ -149,6 +179,21 @@
     color: $d-border-input;
   }
 
+  // Mirrors the HTML/PDF renderers' inline group-header/footer row styling
+  // (renderGroupedRows) so the canvas preview matches the exported row
+  // count and height exactly — including these rows keeps blocks below the
+  // table from overlapping content the export will actually produce.
+  &__group-header td {
+    background: $d-bg-alt;
+    font-weight: 600;
+    padding: 1mm 1.5mm;
+  }
+
+  &__group-footer td {
+    font-style: italic;
+    padding: 1mm 1.5mm;
+  }
+
   &__cell-image {
     text-align: center;
 
@@ -157,6 +202,11 @@
       max-width: 100%;
       margin: 0 auto;
       object-fit: contain;
+      // Same native-drag guard as `&__image`: without it, grabbing a table
+      // by one of its image cells starts an HTML5 drag and the block never
+      // moves.
+      pointer-events: none;
+      -webkit-user-drag: none;
     }
   }
 
@@ -205,6 +255,12 @@
   background: $d-white;
   border: 1px solid $d-primary;
   border-radius: 2px;
+  // The page carries the zoom as a transform, which would shrink these with
+  // everything else — at 25% they'd be two pixels of target. Counter-scaling
+  // by the same factor keeps them a constant size on screen, the way chrome
+  // should behave, while the paper itself zooms. `--canvas-zoom` is set on
+  // the page element; the fallback keeps them sane outside that context.
+  transform: scale(calc(1 / var(--canvas-zoom, 1)));
   // The content wrapper may set pointer-events: none via block styles;
   // handles must always stay grabbable.
   pointer-events: auto;

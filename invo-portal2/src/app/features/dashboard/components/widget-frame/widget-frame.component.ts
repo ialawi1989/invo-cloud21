@@ -121,7 +121,7 @@ import { SkeletonComponent } from '@shared/components/skeleton/skeleton.componen
     .wf {
       height: 100%;
       display: flex; flex-direction: column;
-      background: #fff;
+      background: var(--ui-surface);
       /* Borderless: a soft shadow lifts the card off the page instead. */
       box-shadow: 0 1px 2px rgba(15, 23, 42, .04), 0 1px 3px rgba(15, 23, 42, .06);
       border-radius: 12px;
@@ -134,8 +134,8 @@ import { SkeletonComponent } from '@shared/components/skeleton/skeleton.componen
       padding: 14px 16px 10px;
     }
     .wf__titles { min-width: 0; }
-    .wf__title { margin: 0; font-size: 14px; font-weight: 700; color: #0f172a; }
-    .wf__sub   { margin: 2px 0 0; font-size: 12px; color: #64748b; }
+    .wf__title { margin: 0; font-size: 14px; font-weight: 700; color: var(--ui-text); }
+    .wf__sub   { margin: 2px 0 0; font-size: 12px; color: var(--ui-muted); }
     .wf__actions { flex-shrink: 0; display: flex; align-items: center; gap: 6px; }
 
     .wf__body { flex: 1; min-height: 0; padding: 0 16px 14px; }
@@ -143,16 +143,16 @@ import { SkeletonComponent } from '@shared/components/skeleton/skeleton.componen
     .wf__state {
       height: 100%; min-height: 120px;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 8px; text-align: center; color: #94a3b8;
+      gap: 8px; text-align: center; color: var(--ui-faint);
       p { margin: 0; font-size: 13px; }
       svg { color: #cbd5e1; }
-      &--error { color: #b45309; svg { color: #f59e0b; } }
+      &--error { color: var(--ui-amber-text); svg { color: #f59e0b; } }
     }
 
     // ── Shaped loading placeholders ──────────────────────────────────
     .wf__sk { display: flex; width: 100%; }
     .wf__sk > *, .wf__skCell, .wf__skLine, .wf__skChip, .wf__skRing {
-      background: linear-gradient(90deg, #eef2f7 25%, #f6f8fb 37%, #eef2f7 63%);
+      background: linear-gradient(90deg, var(--ui-x-eef2f7) 25%, var(--ui-x-f6f8fb) 37%, var(--ui-x-eef2f7) 63%);
       background-size: 400% 100%;
       animation: wfShimmer 1.4s ease infinite;
       border-radius: 6px;
@@ -190,7 +190,7 @@ import { SkeletonComponent } from '@shared/components/skeleton/skeleton.componen
     .wf__sk--kpi { gap: 12px; align-items: stretch; }
     .wf__skTile {
       flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 10px;
-      padding: 14px; border-radius: 10px; background: #f8fafc; animation: none;
+      padding: 14px; border-radius: 10px; background: var(--ui-surface-1); animation: none;
     }
     .wf__skLine--label { width: 54%; height: 9px; }
     .wf__skLine--value { width: 76%; height: 18px; }
@@ -202,9 +202,9 @@ import { SkeletonComponent } from '@shared/components/skeleton/skeleton.componen
 
     .wf__retry {
       margin-top: 2px; padding: 5px 12px;
-      border: 1px solid #e2e8f0; border-radius: 8px; background: #fff;
-      font: inherit; font-size: 12px; font-weight: 600; color: #475569; cursor: pointer;
-      &:hover { background: #f8fafc; color: #0f172a; }
+      border: 1px solid var(--ui-line); border-radius: 8px; background: var(--ui-surface);
+      font: inherit; font-size: 12px; font-weight: 600; color: var(--ui-text-4); cursor: pointer;
+      &:hover { background: var(--ui-surface-1); color: var(--ui-text); }
     }
   `],
 })

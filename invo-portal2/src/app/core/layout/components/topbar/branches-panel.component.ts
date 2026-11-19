@@ -82,53 +82,53 @@ import { DisconnectBranchModalComponent } from './disconnect-branch-modal.compon
   `,
   styles: [`
     :host { display: block; height: 100%; }
-    .bp { width: 340px; min-height: 100%; height: 100%; background: #fff; display: flex; flex-direction: column; }
+    .bp { width: 340px; min-height: 100%; height: 100%; background: var(--ui-surface); display: flex; flex-direction: column; }
 
     /* The drawer's close button sits in the top corner, so the header keeps clear of it. */
     .bp-header {
       display: flex; align-items: center; gap: 10px;
-      padding: 18px 60px 14px 20px; border-bottom: 1px solid #f0f2f5; flex-shrink: 0;
+      padding: 18px 60px 14px 20px; border-bottom: 1px solid var(--ui-x-f0f2f5); flex-shrink: 0;
     }
-    .bp-title { font-size: 17px; font-weight: 800; color: #0f172a; margin: 0; }
+    .bp-title { font-size: 17px; font-weight: 800; color: var(--ui-text); margin: 0; }
     .bp-badge {
       font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
-      background: #e6f7f7; color: #1e8c9f;
+      background: var(--ui-x-e6f7f7); color: var(--ui-brand-text);
     }
 
     .bp-list {
-      flex: 1; overflow-y: auto; padding: 12px 14px 24px; background: #fafbfc;
+      flex: 1; overflow-y: auto; padding: 12px 14px 24px; background: var(--ui-surface-1);
       display: flex; flex-direction: column; gap: 12px;
     }
     .bp-state {
       display: flex; align-items: center; justify-content: center; gap: 10px;
-      padding: 32px 20px; color: #94a3b8; font-size: 13px;
+      padding: 32px 20px; color: var(--ui-faint); font-size: 13px;
     }
 
     .bp-card {
       display: flex; flex-direction: column; gap: 10px; padding: 14px;
-      background: #fff; border: 1px solid #e8ecf1; border-radius: 14px;
+      background: var(--ui-surface); border: 1px solid var(--ui-x-e8ecf1); border-radius: 14px;
       box-shadow: 0 1px 2px rgba(15, 23, 42, .04);
     }
     .bp-card-top { display: flex; align-items: center; gap: 10px; }
     .bp-card-icon {
       flex: none; width: 34px; height: 34px; border-radius: 10px;
-      background: #f1f5f9; color: #94a3b8; display: flex; align-items: center; justify-content: center;
+      background: var(--ui-surface-2); color: var(--ui-faint); display: flex; align-items: center; justify-content: center;
     }
-    .bp-card--connected .bp-card-icon { background: #eef7f8; color: #2691a4; }
-    .bp-row-name { flex: 1; min-width: 0; font-size: 14.5px; font-weight: 700; color: #0f172a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .bp-card--connected .bp-card-icon { background: var(--ui-x-eef7f8); color: var(--ui-brand-text); }
+    .bp-row-name { flex: 1; min-width: 0; font-size: 14.5px; font-weight: 700; color: var(--ui-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .bp-status {
       flex: none; font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
-      background: #f1f5f9; color: #64748b;
+      background: var(--ui-surface-2); color: var(--ui-muted);
     }
-    .bp-status--on { background: #dcfce7; color: #15803d; }
+    .bp-status--on { background: var(--ui-green-soft); color: var(--ui-green-text); }
 
     .bp-terminal {
       display: flex; align-items: flex-start; gap: 7px; padding: 10px 12px;
-      background: #f8fafc; border-radius: 10px; font-size: 12.5px; color: #64748b; line-height: 1.4;
-      svg { flex: none; margin-top: 2px; color: #94a3b8; }
+      background: var(--ui-surface-1); border-radius: 10px; font-size: 12.5px; color: var(--ui-muted); line-height: 1.4;
+      svg { flex: none; margin-top: 2px; color: var(--ui-faint); }
     }
-    .bp-terminal-label { flex: none; color: #94a3b8; }
-    .bp-terminal-name { min-width: 0; color: #1e293b; font-weight: 600; overflow-wrap: anywhere; }
+    .bp-terminal-label { flex: none; color: var(--ui-faint); }
+    .bp-terminal-name { min-width: 0; color: var(--ui-text-2); font-weight: 600; overflow-wrap: anywhere; }
 
     .bp-btn {
       width: 100%; height: 36px; border-radius: 9px; font-size: 13px; font-weight: 700;
@@ -139,11 +139,11 @@ import { DisconnectBranchModalComponent } from './disconnect-branch-modal.compon
     .bp-btn--connect {
       background: #1e8c9f; color: #fff;
       &:hover:not(:disabled) { background: #187789; }
-      .spin { border-color: rgba(255,255,255,.3); border-top-color: #fff; }
+      .spin { border-color: rgba(255,255,255,.3); border-top-color: var(--ui-surface); }
     }
     .bp-btn--disconnect {
-      background: #fff; color: #dc2626; border-color: #fecaca;
-      &:hover:not(:disabled) { background: #fef2f2; }
+      background: var(--ui-surface); color: var(--ui-red-text); border-color: var(--ui-red-soft-2);
+      &:hover:not(:disabled) { background: var(--ui-red-soft); }
     }
 
     .spin {

@@ -4,9 +4,9 @@
 .mbf-page { display: flex; flex-direction: column; gap: 16px; padding-bottom: 96px; max-width: 1120px; margin: 0 auto; }
 .mbf-header { display: flex; flex-direction: column; gap: 6px; }
 .mbf-titlebar { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 14px; }
-.mbf-title { margin: 0; font-size: 22px; font-weight: 700; color: #0f172a; overflow-wrap: anywhere; }
-.mbf-general-error { margin: 0; padding: 10px 12px; border-radius: 8px; background: #fef2f2; color: #b91c1c; font-size: 13px; }
-.mbf-pick { margin: 0; padding: 28px; text-align: center; font-size: 14px; color: #94a3b8; background: #fff; border: 1px dashed #cbd5e1; border-radius: 12px; }
+.mbf-title { margin: 0; font-size: 22px; font-weight: 700; color: var(--ui-text); overflow-wrap: anywhere; }
+.mbf-general-error { margin: 0; padding: 10px 12px; border-radius: 8px; background: var(--ui-red-soft); color: var(--ui-red-text); font-size: 13px; }
+.mbf-pick { margin: 0; padding: 28px; text-align: center; font-size: 14px; color: var(--ui-faint); background: var(--ui-surface); border: 1px dashed var(--ui-line-strong); border-radius: 12px; }
 
 // Left: the sections (200-240px). Right: the editor. They stack on narrow screens.
 .mbf-body { display: grid; grid-template-columns: minmax(200px, 240px) minmax(0, 1fr); gap: 16px; align-items: start; }

@@ -66,7 +66,7 @@ export type EmptyStateIcon =
   styles: [`
     :host {
       --es-main: var(--color-brand-700, #2691a4);
-      --es-soft: var(--color-brand-50, #e8f6f9);
+      --es-soft: var(--color-brand-50, var(--ui-x-e8f6f9));
       --es-mid: var(--color-brand-200, #b7e0e8);
       display: flex;
       flex-direction: column;
@@ -75,7 +75,7 @@ export type EmptyStateIcon =
       gap: 6px;
       padding: 28px 16px;
     }
-    .es__art--error { --es-main: #b42318; --es-soft: #fef3f2; --es-mid: #fecdca; }
+    .es__art--error { --es-main: #b42318; --es-soft: var(--ui-x-fef3f2); --es-mid: #fecdca; }
     .es__art svg { display: block; max-width: 100%; height: auto; }
     .es__blob { fill: var(--es-soft); }
     .es__dot { fill: var(--es-mid); }
@@ -83,9 +83,9 @@ export type EmptyStateIcon =
     .es__shadow { fill: var(--es-mid); opacity: .45; }
     .es__glyph { stroke: var(--es-main); stroke-width: 1.4; fill: none; }
     .es__fill { fill: #fff; }
-    .es__title { margin: 6px 0 0; font-size: 15px; font-weight: 700; color: #0f172a; }
-    .es__body { margin: 0; font-size: 13px; line-height: 1.5; color: #64748b; max-width: 420px; }
-    .es__art--error ~ .es__title { color: #b42318; }
+    .es__title { margin: 6px 0 0; font-size: 15px; font-weight: 700; color: var(--ui-text); }
+    .es__body { margin: 0; font-size: 13px; line-height: 1.5; color: var(--ui-muted); max-width: 420px; }
+    .es__art--error ~ .es__title { color: var(--ui-t-b42318); }
     .es__action { margin-top: 10px; display: flex; gap: 8px; }
     .es__action:empty { display: none; }
   `],

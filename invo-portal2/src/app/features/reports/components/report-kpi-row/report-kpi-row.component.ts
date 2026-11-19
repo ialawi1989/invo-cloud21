@@ -71,8 +71,8 @@ import { ReportKpi } from '../../models/report.model';
       flex-direction: column;
       gap: 6px;
       padding: 16px;
-      background: #fff;
-      border: 1px solid #e2e8f0;
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-line);
       border-radius: 12px;
       position: relative;
       box-shadow: 0 1px 3px rgba(15, 23, 42, .06), 0 4px 12px rgba(15, 23, 42, .04);
@@ -80,15 +80,15 @@ import { ReportKpi } from '../../models/report.model';
     }
     .kpi-tile:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(15, 23, 42, .10); }
     @media (prefers-reduced-motion: reduce) { .kpi-tile { transition: none; } .kpi-tile:hover { transform: none; } }
-    .kpi-tile[data-tone="income"]    { --kpi-accent: #059669; --kpi-soft: #ecfdf5; }
-    .kpi-tile[data-tone="expense"]   { --kpi-accent: #dc2626; --kpi-soft: #fef2f2; }
-    .kpi-tile[data-tone="profit"]    { --kpi-accent: #0891b2; --kpi-soft: #ecfeff; }
-    .kpi-tile[data-tone="asset"]     { --kpi-accent: #2563eb; --kpi-soft: #eff6ff; }
-    .kpi-tile[data-tone="liability"] { --kpi-accent: #d97706; --kpi-soft: #fffbeb; }
-    .kpi-tile[data-tone="equity"]    { --kpi-accent: #7c3aed; --kpi-soft: #f5f3ff; }
+    .kpi-tile[data-tone="income"]    { --kpi-accent: #059669; --kpi-soft: var(--ui-green-soft); }
+    .kpi-tile[data-tone="expense"]   { --kpi-accent: var(--ui-red-text); --kpi-soft: var(--ui-red-soft); }
+    .kpi-tile[data-tone="profit"]    { --kpi-accent: #0891b2; --kpi-soft: var(--ui-brand-soft); }
+    .kpi-tile[data-tone="asset"]     { --kpi-accent: #2563eb; --kpi-soft: var(--ui-x-eff6ff); }
+    .kpi-tile[data-tone="liability"] { --kpi-accent: var(--ui-orange-text); --kpi-soft: var(--ui-amber-soft); }
+    .kpi-tile[data-tone="equity"]    { --kpi-accent: #7c3aed; --kpi-soft: var(--ui-x-f5f3ff); }
     .kpi-tile[data-tone] .kpi-value:not(.neg) { color: var(--kpi-accent); }
-    .kpi-value.neg { color: #b91c1c; }
-    .kpi-suffix { margin-inline-start: 4px; font-size: 14px; font-weight: 500; color: #6b7280; }
+    .kpi-value.neg { color: var(--ui-red-text); }
+    .kpi-suffix { margin-inline-start: 4px; font-size: 14px; font-weight: 500; color: var(--ui-muted); }
     .kpi-label::before {
       content: "";
       display: inline-block;
@@ -101,7 +101,7 @@ import { ReportKpi } from '../../models/report.model';
     .kpi-label {
       font-size: 12px;
       font-weight: 600;
-      color: #475569;
+      color: var(--ui-text-4);
       text-transform: uppercase;
       letter-spacing: .04em;
     }
@@ -109,7 +109,7 @@ import { ReportKpi } from '../../models/report.model';
       font-size: 24px;
       font-weight: 700;
       font-variant-numeric: tabular-nums;
-      color: #0f172a;
+      color: var(--ui-text);
       line-height: 1.1;
     }
     /* Label on the left, trend icon on the right — one row, so a long amount below never runs under the icon. */
@@ -119,7 +119,7 @@ import { ReportKpi } from '../../models/report.model';
       display: inline-flex; align-items: center; justify-content: center;
       width: 32px; height: 32px; border-radius: 9px;
       color: var(--kpi-accent, #0891b2);
-      background: color-mix(in srgb, var(--kpi-accent, #0891b2) 14%, #fff);
+      background: color-mix(in srgb, var(--kpi-accent, #0891b2) 14%, var(--ui-surface));
       svg { width: 17px; height: 17px; }
     }
     .kpi-delta {
@@ -133,10 +133,10 @@ import { ReportKpi } from '../../models/report.model';
       padding: 3px 10px 3px 8px;
       border-radius: 20px;
       svg { width: 13px; height: 13px; }
-      .kpi-delta-note { font-weight: 500; color: #64748b; }
+      .kpi-delta-note { font-weight: 500; color: var(--ui-muted); }
       &.up   { color: #059669; background: rgba(5, 150, 105, .12); }
-      &.down { color: #dc2626; background: rgba(220, 38, 38, .12); }
-      &.none { color: #64748b; font-weight: 500; background: rgba(100, 116, 139, .12); }
+      &.down { color: var(--ui-red-text); background: rgba(220, 38, 38, .12); }
+      &.none { color: var(--ui-muted); font-weight: 500; background: rgba(100, 116, 139, .12); }
     }
   `],
 })

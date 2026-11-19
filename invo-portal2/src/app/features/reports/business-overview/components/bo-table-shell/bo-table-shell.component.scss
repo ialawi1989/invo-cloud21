@@ -44,7 +44,7 @@
 /* The one horizontal scrollbar: pinned to the bottom of the page scroller so it is always reachable. */
 .ts-bar {
   position: sticky; bottom: 0; z-index: 7; height: 16px; overflow-x: auto; overflow-y: hidden;
-  background: rgba(255, 255, 255, .94); border: 1px solid var(--rp-border); border-radius: 0 0 var(--rp-radius) var(--rp-radius); margin-top: -1px;
+  background: var(--ui-surface); border: 1px solid var(--rp-border); border-radius: 0 0 var(--rp-radius) var(--rp-radius); margin-top: -1px;
   box-shadow: 0 -6px 10px -6px rgba(15, 23, 42, .18);   /* soft edge so rows slide under it instead of being cut */
   scrollbar-width: thin; scrollbar-color: #94a3b8 transparent;
   &::-webkit-scrollbar { height: 10px; }

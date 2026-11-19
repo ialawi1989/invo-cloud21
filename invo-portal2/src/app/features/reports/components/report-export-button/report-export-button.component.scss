@@ -18,31 +18,31 @@
 
 .re-menu {
   position: absolute; top: calc(100% + 8px); inset-inline-end: 0; z-index: 1001; min-width: 280px;
-  padding: 6px; background: #fff; border-radius: .75rem;
+  padding: 6px; background: var(--ui-surface); border-radius: .75rem;
   box-shadow: 0 10px 40px -5px rgba(0, 0, 0, .15), 0 0 0 1px rgba(0, 0, 0, .05);
   animation: re-pop .12s ease;
 }
 @keyframes re-pop { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
 
-.re-head { padding: 8px 12px 6px; font-size: .6875rem; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: #6b7280; }
-.re-sep { height: 1px; margin: 6px 8px; background: #f1f5f9; }
+.re-head { padding: 8px 12px 6px; font-size: .6875rem; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--ui-muted); }
+.re-sep { height: 1px; margin: 6px 8px; background: var(--ui-surface-2); }
 
 .re-item {
   display: flex; align-items: center; gap: .75rem; width: 100%; padding: 8px 12px;
   background: transparent; border: 0; border-radius: .5rem; text-align: start; font-family: inherit; cursor: pointer;
   transition: background .15s;
-  &:hover { background: #f3f4f6; }
+  &:hover { background: var(--ui-surface-2); }
 }
 .re-ico {
   display: inline-flex; align-items: center; justify-content: center; flex: 0 0 36px; width: 36px; height: 36px; border-radius: .5rem;
-  &.re-ico-pdf { background: #fef2f2; color: #dc2626; }
-  &.re-ico-xlsx { background: #ecfdf5; color: #059669; }
-  &.re-ico-csv { background: #eff6ff; color: #2563eb; }
-  &.re-ico-print { background: #f1f5f9; color: #475569; }
+  &.re-ico-pdf { background: var(--ui-red-soft); color: var(--ui-red-text); }
+  &.re-ico-xlsx { background: var(--ui-green-soft); color: var(--ui-t-059669); }
+  &.re-ico-csv { background: var(--ui-x-eff6ff); color: var(--ui-t-2563eb); }
+  &.re-ico-print { background: var(--ui-surface-2); color: var(--ui-text-4); }
 }
 .re-info { display: flex; flex-direction: column; min-width: 0; }
-.re-title { font-size: .875rem; font-weight: 600; color: #111827; }
-.re-desc { font-size: .75rem; color: #6b7280; }
+.re-title { font-size: .875rem; font-weight: 600; color: var(--ui-text); }
+.re-desc { font-size: .75rem; color: var(--ui-muted); }
 
 @media (max-width: 480px) {
   .re-label, .re-chev { display: none; }

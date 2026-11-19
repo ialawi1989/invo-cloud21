@@ -91,6 +91,8 @@ export interface EmployeePreferences {
   language?: string;
   /** 0 = Sunday ... 6 = Saturday; the first column of every calendar. */
   firstDayOfWeek?: number;
+  /** Dashboard appearance; unset = light. 'system' follows the device. */
+  theme?: 'light' | 'dark' | 'system';
 }
 
 export interface EmployeeOptions {

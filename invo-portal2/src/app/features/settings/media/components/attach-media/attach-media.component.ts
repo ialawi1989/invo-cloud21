@@ -89,48 +89,48 @@ export interface AttachableEntity {
 
       .modal-overlay { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.5); }
       .modal-content {
-        position: relative; background: white; border-radius: 12px; width: 90%; max-width: 600px; max-height: 90vh;
+        position: relative; background: var(--ui-surface); border-radius: 12px; width: 90%; max-width: 600px; max-height: 90vh;
         display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
       }
       .modal-header {
-        display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; border-bottom: 1px solid #E5E7EB;
-        h2 { margin: 0; font-size: 1.5rem; font-weight: 600; display: flex; align-items: center; gap: 10px; color: #111827; }
-        h2 svg { color: var(--color-brand-600, #2691a4); }
+        display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; border-bottom: 1px solid var(--ui-line);
+        h2 { margin: 0; font-size: 1.5rem; font-weight: 600; display: flex; align-items: center; gap: 10px; color: var(--ui-text); }
+        h2 svg { color: var(--ui-brand-t600); }
         .close-btn {
           background: none; border: none; cursor: pointer; color: #666; width: 32px; height: 32px;
           display: flex; align-items: center; justify-content: center; border-radius: 4px;
-          &:hover { background: #F3F4F6; }
+          &:hover { background: var(--ui-surface-2); }
         }
       }
       .modal-body {
         padding: 1.5rem; overflow-y: auto;
         .empty-state { text-align: center; padding: 2rem; color: #666; p { font-size: 1.125rem; margin: 0; } }
-        .description { color: #666; margin-bottom: 1.5rem; strong { color: #111827; } }
+        .description { color: #666; margin-bottom: 1.5rem; strong { color: var(--ui-text); } }
         .entities-list {
-          border: 1px solid #E5E7EB; border-radius: 8px; overflow: hidden;
+          border: 1px solid var(--ui-line); border-radius: 8px; overflow: hidden;
           .entity-item {
-            display: flex; align-items: center; padding: 1rem; border-bottom: 1px solid #E5E7EB; transition: background 0.2s;
+            display: flex; align-items: center; padding: 1rem; border-bottom: 1px solid var(--ui-line); transition: background 0.2s;
             &:last-child { border-bottom: none; }
-            &:hover { background: #F9FAFB; }
-            &.selected { background: var(--color-brand-50, #ecfeff); }
+            &:hover { background: var(--ui-surface-1); }
+            &.selected { background: var(--color-brand-50, var(--ui-brand-soft)); }
             input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; margin-right: 1rem; accent-color: var(--color-brand-600, #2691a4); }
             label {
               flex: 1; display: flex; align-items: center; gap: 0.75rem; cursor: pointer;
               .badge { padding: 0.25rem 0.75rem; background: var(--color-brand-600, #2691a4); color: white; border-radius: 4px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
-              .name { color: #374151; font-weight: 500; }
+              .name { color: var(--ui-text-3); font-weight: 500; }
             }
           }
         }
-        .selection-summary { margin-top: 1rem; padding: 0.75rem; background: var(--color-brand-50, #ecfeff); border-radius: 8px; text-align: center; color: var(--color-brand-700, #207484); }
+        .selection-summary { margin-top: 1rem; padding: 0.75rem; background: var(--color-brand-50, var(--ui-brand-soft)); border-radius: 8px; text-align: center; color: var(--ui-brand-t700); }
       }
       .modal-footer {
-        display: flex; gap: 1rem; padding: 1.5rem; border-top: 1px solid #E5E7EB;
+        display: flex; gap: 1rem; padding: 1.5rem; border-top: 1px solid var(--ui-line);
         button { flex: 1; padding: 0.75rem; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; transition: all 0.2s; }
-        .cancel-btn { background: white; border: 1px solid #D1D5DB; color: #374151; &:hover { background: #F3F4F6; } }
+        .cancel-btn { background: white; border: 1px solid var(--ui-line-strong); color: var(--ui-text-3); &:hover { background: var(--ui-surface-2); } }
         .attach-btn {
           background: var(--color-brand-600, #2691a4); color: white; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
           &:hover:not(:disabled) { background: var(--color-brand-700, #207484); }
-          &:disabled { background: #D1D5DB; cursor: not-allowed; }
+          &:disabled { background: var(--ui-line-strong); cursor: not-allowed; }
         }
       }
     }

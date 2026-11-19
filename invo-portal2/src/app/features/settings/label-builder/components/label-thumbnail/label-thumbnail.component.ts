@@ -126,8 +126,8 @@ import { LabelTemplate } from '../../services/label-template.types';
     .lt-stage {
       position: relative;
       overflow: hidden;
-      background: #fff;
-      border: 1px solid #cbd5e1;
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-line-strong);
       border-radius: 3px;
       box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
       flex-shrink: 0;
@@ -143,8 +143,8 @@ import { LabelTemplate } from '../../services/label-template.types';
       inset-block-start: 0;
       transform-origin: 0 0;
       background-image:
-        linear-gradient(to right,  #f8fafc 1px, transparent 1px),
-        linear-gradient(to bottom, #f8fafc 1px, transparent 1px);
+        linear-gradient(to right,  var(--ui-surface-1) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--ui-surface-1) 1px, transparent 1px);
       background-size: 20px 20px;
     }
 
@@ -160,7 +160,7 @@ import { LabelTemplate } from '../../services/label-template.types';
     .lt-text {
       display: inline-block;
       white-space: pre-wrap;
-      color: #0f172a;
+      color: var(--ui-text);
       line-height: 1.2;
     }
 
@@ -170,22 +170,22 @@ import { LabelTemplate } from '../../services/label-template.types';
       width: 140px;
       background: repeating-linear-gradient(
         to right,
-        #0f172a 0 2px,
+        var(--ui-ink) 0 2px,
         transparent 2px 4px,
-        #0f172a 4px 5px,
+        var(--ui-ink) 4px 5px,
         transparent 5px 9px
       );
     }
 
     /* Checker pattern stands in for a real QR code at this size. */
     .lt-qr {
-      background: repeating-conic-gradient(#0f172a 0 25%, transparent 0 50%) 0 0 / 8px 8px;
+      background: repeating-conic-gradient(var(--ui-ink) 0 25%, transparent 0 50%) 0 0 / 8px 8px;
     }
 
-    .lt-rect   { border: 1px solid #0f172a; background: transparent; }
-    .lt-circle { border: 1px solid #0f172a; background: transparent; border-radius: 50%; }
-    .lt-hline  { background: #0f172a; }
-    .lt-vline  { background: #0f172a; }
+    .lt-rect   { border: 1px solid var(--ui-ink); background: transparent; }
+    .lt-circle { border: 1px solid var(--ui-ink); background: transparent; border-radius: 50%; }
+    .lt-hline  { background: var(--ui-ink); }
+    .lt-vline  { background: var(--ui-ink); }
 
     .lt-img {
       display: block;
@@ -193,11 +193,11 @@ import { LabelTemplate } from '../../services/label-template.types';
     }
 
     .lt-img-placeholder {
-      background: #f1f5f9;
-      border: 1px dashed #cbd5e1;
+      background: var(--ui-surface-2);
+      border: 1px dashed var(--ui-line-strong);
 
       &--logo {
-        background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+        background: linear-gradient(135deg, var(--ui-surface-2) 0%, var(--ui-line) 100%);
       }
     }
   `],

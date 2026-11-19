@@ -10,34 +10,34 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  color: #9ca3af;
+  color: var(--ui-faint);
 }
 
 .qc__service-btn {
   text-align: left;
   padding: 10px 14px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--ui-line);
   border-radius: 8px;
-  background: #f9fafb;
+  background: var(--ui-surface-1);
   cursor: pointer;
   font-size: 15px;
 
-  &:hover { background: #f3f4f6; }
+  &:hover { background: var(--ui-surface-2); }
 
   &--error {
     border-color: #ef4444;
-    background: #fef2f2;
+    background: var(--ui-red-soft);
   }
 }
 
-.qc__service-name { font-weight: 700; color: #111827; }
-.qc__service-placeholder { color: #9ca3af; }
+.qc__service-name { font-weight: 700; color: var(--ui-text); }
+.qc__service-placeholder { color: var(--ui-faint); }
 
 .qc__error-text {
   display: block;
   margin-top: -8px;
   font-size: 11.5px;
-  color: #ef4444;
+  color: var(--ui-red-text);
 }
 
 .qc__error-text--customer { padding-left: 26px; }
@@ -46,9 +46,9 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #4b5563;
+  color: var(--ui-text-4);
 
-  svg { flex-shrink: 0; color: #9ca3af; }
+  svg { flex-shrink: 0; color: var(--ui-faint); }
 }
 
 .qc__range { font-size: 13.5px; }
@@ -67,7 +67,7 @@
 
 .qc__input {
   padding: 9px 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--ui-line);
   border-radius: 8px;
   font-size: 13px;
   font-family: inherit;
@@ -92,14 +92,14 @@ input.qc__field--error {
   gap: 8px;
   padding-left: 26px;
   font-size: 12.5px;
-  color: #6b7280;
+  color: var(--ui-muted);
   cursor: pointer;
 }
 
 .qc__more-btn {
   background: none;
   border: none;
-  color: #2691a4;
+  color: var(--ui-brand-text);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;

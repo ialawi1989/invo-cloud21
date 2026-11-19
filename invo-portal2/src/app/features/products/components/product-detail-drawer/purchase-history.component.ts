@@ -129,63 +129,63 @@ import { SearchDropdownComponent } from '../../../../shared/components/dropdown'
       .supplier-dropdown { display: block; min-width: 0; max-width: none; width: 100%; }
     }
 
-    .title-supplier { font-weight: 500; color: #64748b; margin-inline-start: 4px; }
+    .title-supplier { font-weight: 500; color: var(--ui-muted); margin-inline-start: 4px; }
 
-    .card { background:#fff; border:1px solid #e2e8f0; border-radius:10px; overflow:hidden; }
+    .card { background:var(--ui-surface); border:1px solid var(--ui-line); border-radius:10px; overflow:hidden; }
     .card-head {
       display:flex; align-items:center; justify-content:space-between; gap:16px;
-      padding:10px 14px; background:#f8fafc; border-bottom:1px solid #e2e8f0;
-      font-size:13px; font-weight:600; color:#0f172a;
+      padding:10px 14px; background:var(--ui-surface-1); border-bottom:1px solid var(--ui-line);
+      font-size:13px; font-weight:600; color:var(--ui-text);
     }
     .card-body { padding:0; }
 
     .pager { display:inline-flex; align-items:center; gap:8px; }
     .pager-num {
       padding:2px 10px; border-radius:999px;
-      background:#e0f2f7; color:#0e7490;
+      background:var(--ui-x-e0f2f7); color:var(--ui-brand-text);
       font-size:12px; font-weight:600; font-variant-numeric:tabular-nums;
     }
     .btn {
       padding:5px 10px; border-radius:6px;
-      border:1px solid #e2e8f0; background:#fff;
-      font-size:12px; font-weight:600; color:#475569;
+      border:1px solid var(--ui-line); background:var(--ui-surface);
+      font-size:12px; font-weight:600; color:var(--ui-text-4);
       cursor:pointer; transition: background .12s, border-color .12s;
     }
-    .btn:hover:not(:disabled) { background:#f8fafc; }
+    .btn:hover:not(:disabled) { background:var(--ui-surface-1); }
     .btn:disabled { opacity:.45; cursor:not-allowed; }
 
     .tbl-wrap { width:100%; overflow-x:auto; }
     .tbl { width:100%; border-collapse:separate; border-spacing:0; font-size:13px; }
     .tbl thead th {
-      background:#f8fafc; color:#64748b;
+      background:var(--ui-surface-1); color:var(--ui-muted);
       font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.04em;
-      padding:10px 14px; border-bottom:1px solid #e2e8f0; white-space:nowrap;
+      padding:10px 14px; border-bottom:1px solid var(--ui-line); white-space:nowrap;
     }
-    .tbl tbody td { padding:10px 14px; border-bottom:1px solid #f1f5f9; color:#0f172a; }
+    .tbl tbody td { padding:10px 14px; border-bottom:1px solid var(--ui-surface-2); color:var(--ui-text); }
     .tbl tbody tr:last-child td { border-bottom:none; }
-    .tbl tbody tr:hover { background:#f8fafc; }
+    .tbl tbody tr:hover { background:var(--ui-surface-1); }
     .start { text-align:start; }
     .end   { text-align:end; }
     .mono  { font-variant-numeric:tabular-nums; }
     .nowrap { white-space:nowrap; }
 
-    .link { color:#0e7490; font-weight:500; text-decoration:none; }
+    .link { color:var(--ui-brand-text); font-weight:500; text-decoration:none; }
     .link:hover { text-decoration:underline; }
 
     .empty {
       display:flex; flex-direction:column;
       align-items:center; justify-content:center;
-      gap:8px; padding:48px 20px; color:#94a3b8;
+      gap:8px; padding:48px 20px; color:var(--ui-faint);
     }
     .empty svg { opacity:.5; }
     .empty p { margin:0; font-size:13px; }
 
-    .row-skel { display:grid; grid-template-columns: repeat(7, 1fr); gap:10px; padding:14px; border-bottom:1px solid #f1f5f9; }
+    .row-skel { display:grid; grid-template-columns: repeat(7, 1fr); gap:10px; padding:14px; border-bottom:1px solid var(--ui-surface-2); }
     .row-skel:last-child { border-bottom:none; }
     @keyframes skel-shimmer { 0%{background-position:-200% 0;} 100%{background-position:200% 0;} }
     .skeleton {
       height:12px;
-      background: linear-gradient(90deg,#e2e8f0 0%,#f1f5f9 50%,#e2e8f0 100%);
+      background: linear-gradient(90deg,var(--ui-line) 0%,var(--ui-surface-2) 50%,var(--ui-line) 100%);
       background-size:200% 100%;
       animation: skel-shimmer 1.4s ease-in-out infinite;
       border-radius:6px;

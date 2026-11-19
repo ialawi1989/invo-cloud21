@@ -23,13 +23,13 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
   styles: [`
     :host { display: block; }
     .sc { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-    .sc__label { font-size: 12px; color: #64748b; margin-inline-end: 2px; }
+    .sc__label { font-size: 12px; color: var(--ui-muted); margin-inline-end: 2px; }
     .sc__chip {
       display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px;
-      border: 1px dashed #cbd5e1; background: #fff; color: #475569; font: inherit; font-size: 12.5px; cursor: pointer;
+      border: 1px dashed var(--ui-line-strong); background: var(--ui-surface); color: var(--ui-text-4); font: inherit; font-size: 12.5px; cursor: pointer;
       transition: background .12s, border-color .12s, color .12s;
     }
-    .sc__chip:hover:not(:disabled) { background: #ecfeff; border-color: var(--color-brand-600, #2691a4); color: var(--color-brand-700, #207484); }
+    .sc__chip:hover:not(:disabled) { background: var(--ui-brand-soft); border-color: var(--color-brand-600, #2691a4); color: var(--ui-brand-t700); }
     .sc__chip:focus-visible { outline: 2px solid var(--color-brand-600, #2691a4); outline-offset: 2px; }
     .sc__chip:disabled { opacity: .5; cursor: not-allowed; }
   `],

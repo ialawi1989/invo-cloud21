@@ -48,8 +48,8 @@ import { FormsModule } from '@angular/forms';
       padding: 0 10px;
       height: 28px;
       width: 118px;
-      background: #fff;
-      border: 1px solid #e2e8f0;
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-line);
       border-radius: 6px;
       box-sizing: border-box;
       transition: border-color 120ms, box-shadow 120ms;
@@ -67,14 +67,14 @@ import { FormsModule } from '@angular/forms';
       background: transparent;
       font: inherit;
       font-size: 13px;
-      color: #0f172a;
+      color: var(--ui-text);
       text-align: end;
     }
     .re__figTbInput--num:focus { outline: none; box-shadow: none; border: 0; }
     .re__figTbInput--num::-webkit-outer-spin-button,
     .re__figTbInput--num::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     .re__figTbInput--num[type=number] { -moz-appearance: textfield; }
-    .re__figTbUnit { font-size: 12px; color: #94a3b8; flex-shrink: 0; }
+    .re__figTbUnit { font-size: 12px; color: var(--ui-faint); flex-shrink: 0; }
 
     /* Popover slider — absolutely positioned to the LEFT of the chip
        so it opens into the panel (toward the label) rather than past
@@ -89,8 +89,8 @@ import { FormsModule } from '@angular/forms';
       width: 88px;
       height: 28px;
       padding: 8px 10px;
-      background: #fff;
-      border: 1px solid #e2e8f0;
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-line);
       border-radius: 999px;
       box-shadow: 0 6px 18px rgba(15,23,42,.12);
       box-sizing: border-box;
@@ -117,18 +117,18 @@ import { FormsModule } from '@angular/forms';
     .re__figSlider::-webkit-slider-runnable-track {
       height: 4px;
       border-radius: 999px;
-      background: #e2e8f0;
+      background: var(--ui-line);
     }
     .re__figSlider::-moz-range-track {
       height: 4px;
       border-radius: 999px;
-      background: #e2e8f0;
+      background: var(--ui-line);
     }
     .re__figSlider::-webkit-slider-thumb {
       -webkit-appearance: none; appearance: none;
       width: 16px; height: 16px;
       background: #32acc1;
-      border: 2px solid #fff;
+      border: 2px solid var(--ui-surface);
       border-radius: 50%;
       margin-top: -6px;
       box-shadow: 0 1px 3px rgba(15,23,42,.2);
@@ -136,7 +136,7 @@ import { FormsModule } from '@angular/forms';
     .re__figSlider::-moz-range-thumb {
       width: 16px; height: 16px;
       background: #32acc1;
-      border: 2px solid #fff;
+      border: 2px solid var(--ui-surface);
       border-radius: 50%;
       box-shadow: 0 1px 3px rgba(15,23,42,.2);
     }

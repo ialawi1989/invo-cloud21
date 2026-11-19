@@ -111,20 +111,20 @@ import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton
   styles: [`
     .ws-page { padding-bottom: 80px; }
     .ws-loading { display: flex; justify-content: center; padding: 60px 0; }
-    .card { background: #fff; border-radius: 12px; box-shadow: 0 1px 2px rgba(15,23,42,.04); margin-bottom: 16px; overflow: hidden; }
-    .card__head { padding: 14px 18px; border-bottom: 1px solid #f1f5f9; }
-    .card__title { margin: 0; font-size: 15px; font-weight: 600; color: #0f172a; }
-    .card__sub { margin: 3px 0 0; font-size: 12px; color: #94a3b8; }
+    .card { background: var(--ui-surface); border-radius: 12px; box-shadow: 0 1px 2px rgba(15,23,42,.04); margin-bottom: 16px; overflow: hidden; }
+    .card__head { padding: 14px 18px; border-bottom: 1px solid var(--ui-surface-2); }
+    .card__title { margin: 0; font-size: 15px; font-weight: 600; color: var(--ui-text); }
+    .card__sub { margin: 3px 0 0; font-size: 12px; color: var(--ui-faint); }
     .card__body { padding: 16px 18px; }
     .ws-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
     .ws-link {
       display: flex; flex-direction: column; gap: 3px; text-align: start;
-      padding: 12px 14px; border: 1px solid #e2e8f0; border-radius: 10px;
-      background: #fff; cursor: pointer;
+      padding: 12px 14px; border: 1px solid var(--ui-line); border-radius: 10px;
+      background: var(--ui-surface); cursor: pointer;
     }
     .ws-link:hover { border-color: #32acc1; }
-    .ws-link__title { font-size: 13px; font-weight: 600; color: #0f172a; }
-    .ws-link__reason { font-size: 11.5px; color: #94a3b8; line-height: 1.5; }
+    .ws-link__title { font-size: 13px; font-weight: 600; color: var(--ui-text); }
+    .ws-link__reason { font-size: 11.5px; color: var(--ui-faint); line-height: 1.5; }
   `],
 })
 export class WebsiteSettingsComponent implements OnInit, CanLeaveComponent {

@@ -10,7 +10,7 @@
 .pl-empty {
   margin: 1.5rem 0;
   text-align: center;
-  color: var(--text-muted, #6b7280);
+  color: var(--text-muted, var(--ui-muted));
 }
 
 /* ── Filters ─────────────────────────────────────────────────────────────── */
@@ -29,7 +29,7 @@
 
 .pl-filter__label {
   min-width: 4.5rem;
-  color: var(--text-muted, #6b7280);
+  color: var(--text-muted, var(--ui-muted));
   font-size: 0.8125rem;
 }
 
@@ -45,11 +45,11 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.6rem 0;
-  border-top: 1px solid var(--border, #e5e7eb);
+  border-top: 1px solid var(--border, var(--ui-line));
 }
 
 .pl-count {
-  color: var(--text-muted, #6b7280);
+  color: var(--text-muted, var(--ui-muted));
   font-size: 0.875rem;
 }
 
@@ -60,7 +60,7 @@
   padding: 0.5rem 0.75rem;
   margin-bottom: 0.5rem;
   border-radius: 0.5rem;
-  background: var(--surface-2, #f3f4f6);
+  background: var(--surface-2, var(--ui-surface-2));
 }
 
 .pl-check {
@@ -82,7 +82,7 @@
   align-items: flex-start;
   gap: 0.75rem;
   padding: 0.85rem 0;
-  border-top: 1px solid var(--border, #e5e7eb);
+  border-top: 1px solid var(--border, var(--ui-line));
 }
 
 .pl-row__tick {
@@ -109,7 +109,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  color: var(--text-muted, #6b7280);
+  color: var(--text-muted, var(--ui-muted));
   font-size: 0.8125rem;
 }
 
@@ -123,7 +123,7 @@
    limit or shove the actions off the side. */
 .pl-reason {
   margin: 0.15rem 0 0;
-  color: var(--text-muted, #6b7280);
+  color: var(--text-muted, var(--ui-muted));
   font-size: 0.8125rem;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -148,10 +148,10 @@
   font-weight: 600;
   text-transform: uppercase;
   white-space: nowrap;
-  background: var(--surface-2, #f3f4f6);
-  color: var(--text-muted, #6b7280);
+  background: var(--surface-2, var(--ui-surface-2));
+  color: var(--text-muted, var(--ui-muted));
 }
-.pl-status--pending   { background: #fef3c7; color: #92400e; }
-.pl-status--approved  { background: #d1fae5; color: #065f46; }
-.pl-status--rejected  { background: #fee2e2; color: #991b1b; }
-.pl-status--cancelled { background: #e5e7eb; color: #4b5563; }
+.pl-status--pending   { background: var(--ui-amber-soft); color: var(--ui-amber-text); }
+.pl-status--approved  { background: var(--ui-x-d1fae5); color: var(--ui-t-065f46); }
+.pl-status--rejected  { background: var(--ui-red-soft); color: var(--ui-red-text); }
+.pl-status--cancelled { background: var(--ui-line); color: var(--ui-text-4); }

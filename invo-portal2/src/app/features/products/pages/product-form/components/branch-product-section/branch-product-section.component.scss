@@ -9,14 +9,14 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 // Outline the whole Branches card (master/detail split, so it reads as one block).
-.pf-bp { border: 1px solid #e2e8f0; }
+.pf-bp { border: 1px solid var(--ui-line); }
 
 .pf-card__header { flex-wrap: wrap; gap: 12px; }
 
 .pf-bp-summary {
   margin-inline-start: auto;
   font-size: 12.5px;
-  color: #64748b;
+  color: var(--ui-muted);
 }
 
 .pf-bp-badge {
@@ -28,9 +28,9 @@
   cursor: pointer;
 
   &--error {
-    background: #fee2e2;
-    color: #b91c1c;
-    &:hover { background: #fecaca; }
+    background: var(--ui-red-soft);
+    color: var(--ui-red-text);
+    &:hover { background: var(--ui-red-soft-2); }
   }
 }
 
@@ -38,7 +38,7 @@
   background: none;
   border: 0;
   padding: 2px 6px;
-  color: #94a3b8;
+  color: var(--ui-faint);
   cursor: pointer;
   line-height: 1;
   transition: transform .18s;
@@ -56,7 +56,7 @@
 .pf-bp-empty {
   text-align: center;
   padding: 36px 16px;
-  color: #94a3b8;
+  color: var(--ui-faint);
   font-size: 13px;
 }
 
@@ -79,8 +79,8 @@
 }
 
 .pf-bp-master {
-  border-inline-end: 1px solid #eef2f7;
-  background: #fbfcfe;
+  border-inline-end: 1px solid var(--ui-x-eef2f7);
+  background: var(--ui-x-fbfcfe);
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -96,15 +96,15 @@
   &__count {
     font-size: 11px;
     font-weight: 700;
-    color: #0f7c8c;
-    background: #e2f6f9;
+    color: var(--ui-t-0f7c8c);
+    background: var(--ui-x-e2f6f9);
     padding: 2px 6px;
     border-radius: 999px;
   }
   &__label {
     writing-mode: vertical-rl;
     font-size: 11.5px;
-    color: #94a3b8;
+    color: var(--ui-faint);
     letter-spacing: .05em;
   }
 }
@@ -116,14 +116,14 @@
   align-items: center;
   justify-content: center;
   padding: 0;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--ui-line);
   border-radius: 6px;
-  background: #fff;
-  color: #64748b;
+  background: var(--ui-surface);
+  color: var(--ui-muted);
   cursor: pointer;
   flex: none;
 
-  &:hover { background: #f5f7fa; color: #334155; }
+  &:hover { background: var(--ui-x-f5f7fa); color: var(--ui-text-3); }
 }
 
 // ── Master: search + chips ───────────────────────────────────────────────
@@ -144,25 +144,25 @@
   gap: 5px;
   flex-wrap: wrap;
   padding: 8px 10px 9px;
-  border-bottom: 1px solid #eef2f7;
+  border-bottom: 1px solid var(--ui-x-eef2f7);
 }
 
 .pf-bp-chip {
   font-size: 11px;
   padding: 3px 9px;
   border-radius: 999px;
-  border: 1px solid #e2e8f0;
-  background: #fff;
-  color: #64748b;
+  border: 1px solid var(--ui-line);
+  background: var(--ui-surface);
+  color: var(--ui-muted);
   cursor: pointer;
 
   span { margin-inline-start: 4px; opacity: .8; }
 
-  &:hover { background: #f5f7fa; }
+  &:hover { background: var(--ui-x-f5f7fa); }
   &--on {
-    background: #e2f6f9;
-    border-color: #a5dde6;
-    color: #0f7c8c;
+    background: var(--ui-x-e2f6f9);
+    border-color: var(--ui-x-a5dde6);
+    color: var(--ui-t-0f7c8c);
     font-weight: 600;
   }
 }
@@ -179,13 +179,13 @@
   align-items: center;
   gap: 7px;
   padding: 7px 10px;
-  border-bottom: 1px solid #f4f6fa;
+  border-bottom: 1px solid var(--ui-x-f4f6fa);
   border-inline-start: 3px solid transparent;
   cursor: pointer;
   font-size: 13px;
-  color: #475569;
+  color: var(--ui-text-4);
 
-  &:hover { background: #f4f6fa; }
+  &:hover { background: var(--ui-x-f4f6fa); }
 
   // Active row is filled, not tinted — at this column width a pale
   // background plus a 3px edge didn't read as "this is the one you're
@@ -201,9 +201,9 @@
     &:hover { background: #2ba3b8; }
 
     // Status dot needs a rim to stay legible on the fill.
-    .pf-bp-dot { box-shadow: 0 0 0 1.5px rgba(255, 255, 255, .9); }
+    .pf-bp-dot { box-shadow: 0 0 0 1.5px rgb(var(--ui-surface-rgb) / .9); }
     .pf-bp-pill--override { background: rgba(255, 255, 255, .22); color: #fff; }
-    .pf-bp-pill--error    { background: #fff; color: #b91c1c; }
+    .pf-bp-pill--error    { background: var(--ui-surface); color: var(--ui-red-text); }
   }
 
   &__name {
@@ -223,7 +223,7 @@
 
   &--good { background: #22c55e; }
   &--warn { background: #f59e0b; }
-  &--off  { background: #cbd5e1; }
+  &--off  { background: var(--ui-line-strong); }
 }
 
 .pf-bp-pill {
@@ -232,27 +232,27 @@
   border-radius: 999px;
   font-weight: 500;
   white-space: nowrap;
-  background: #f1f5f9;
-  color: #64748b;
+  background: var(--ui-surface-2);
+  color: var(--ui-muted);
 
-  &--ok       { background: #dcfce7; color: #15803d; }
-  &--on       { background: #e0f2fe; color: #0369a1; }
-  &--off      { background: #f1f5f9; color: #64748b; }
-  &--warn     { background: #fef3c7; color: #92400e; }
-  &--error    { background: #fee2e2; color: #b91c1c; font-weight: 700; }
-  &--override { background: #f3e8ff; color: #7e22ce; }
+  &--ok       { background: var(--ui-green-soft); color: var(--ui-green-text); }
+  &--on       { background: var(--ui-sky-soft); color: var(--ui-t-0369a1); }
+  &--off      { background: var(--ui-surface-2); color: var(--ui-muted); }
+  &--warn     { background: var(--ui-amber-soft); color: var(--ui-amber-text); }
+  &--error    { background: var(--ui-red-soft); color: var(--ui-red-text); font-weight: 700; }
+  &--override { background: var(--ui-x-f3e8ff); color: var(--ui-t-7e22ce); }
 
   // On-hand pill in the detail header — tone follows the same thresholds as
   // the list dot (none / at-or-below reorder point / healthy).
-  &--stock-good { background: #eef7f0; color: #15803d; }
-  &--stock-warn { background: #fef3c7; color: #92400e; }
-  &--stock-bad  { background: #fee2e2; color: #b91c1c; }
+  &--stock-good { background: var(--ui-x-eef7f0); color: var(--ui-green-text); }
+  &--stock-warn { background: var(--ui-amber-soft); color: var(--ui-amber-text); }
+  &--stock-bad  { background: var(--ui-red-soft); color: var(--ui-red-text); }
 }
 
 .pf-bp-list-empty {
   padding: 26px 14px;
   text-align: center;
-  color: #94a3b8;
+  color: var(--ui-faint);
   font-size: 12.5px;
 
   p { margin: 0 0 10px; }
@@ -264,7 +264,7 @@
   justify-content: center;
   gap: 8px;
   padding: 15px 12px;
-  color: #94a3b8;
+  color: var(--ui-faint);
   font-size: 12px;
 }
 
@@ -278,7 +278,7 @@
 .pf-bp-spin {
   width: 13px;
   height: 13px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--ui-line);
   border-top-color: #32acc1;
   border-radius: 50%;
   display: inline-block;
@@ -286,7 +286,7 @@
 }
 @keyframes pfBpSpin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) {
-  .pf-bp-spin { animation: none; border-top-color: #e2e8f0; }
+  .pf-bp-spin { animation: none; border-top-color: var(--ui-line); }
 }
 
 .pf-bp-master__foot {
@@ -295,9 +295,9 @@
   gap: 8px;
   flex-wrap: wrap;
   padding: 8px 10px;
-  border-top: 1px solid #eef2f7;
+  border-top: 1px solid var(--ui-x-eef2f7);
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--ui-faint);
 
   > span { flex: 1; min-width: 0; }
 }
@@ -311,7 +311,7 @@
   text-decoration: underline;
   cursor: pointer;
 
-  &:hover { color: #0b5c68; }
+  &:hover { color: var(--ui-t-0b5c68); }
 }
 
 // ── Detail pane ──────────────────────────────────────────────────────────
@@ -326,7 +326,7 @@
   gap: 8px;
   margin-bottom: 12px;
 
-  &__pos { font-size: 12px; color: #94a3b8; }
+  &__pos { font-size: 12px; color: var(--ui-faint); }
 }
 
 .pf-bp-detail__head {
@@ -341,7 +341,7 @@
   margin: 0;
   font-size: 15px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--ui-text);
 }
 
 .pf-bp-alert {
@@ -353,15 +353,15 @@
 
   ul { margin: 0; padding-inline-start: 18px; }
 
-  &--error { background: #fef2f2; color: #b91c1c; }
-  &--info  { background: #eff6ff; color: #1e40af; }
+  &--error { background: var(--ui-red-soft); color: var(--ui-red-text); }
+  &--info  { background: var(--ui-x-eff6ff); color: var(--ui-t-1e40af); }
 }
 
 // ── Detail tabs ──────────────────────────────────────────────────────────
 .pf-bp-tabs {
   display: flex;
   gap: 2px;
-  border-bottom: 1px solid #eef2f7;
+  border-bottom: 1px solid var(--ui-x-eef2f7);
   margin-bottom: 16px;
   overflow-x: auto;
   scrollbar-width: thin;
@@ -372,19 +372,19 @@
   background: none;
   border: 0;
   border-bottom: 2px solid transparent;
-  color: #64748b;
+  color: var(--ui-muted);
   font-size: 13px;
   white-space: nowrap;
   cursor: pointer;
 
-  &:hover { background: #f7f8fb; color: #334155; }
+  &:hover { background: var(--ui-x-f7f8fb); color: var(--ui-text-3); }
   &--on {
     border-bottom-color: #32acc1;
-    color: #0f172a;
+    color: var(--ui-text);
     font-weight: 600;
   }
 
-  &__count { font-size: 11px; color: #94a3b8; margin-inline-start: 4px; }
+  &__count { font-size: 11px; color: var(--ui-faint); margin-inline-start: 4px; }
 }
 
 // ── Detail bits ──────────────────────────────────────────────────────────
@@ -396,7 +396,7 @@
 }
 
 .pf-bp-stat {
-  background: #f8fafc;
+  background: var(--ui-surface-1);
   border-radius: 8px;
   padding: 11px;
   text-align: center;
@@ -405,11 +405,11 @@
     display: block;
     font-size: 18px;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--ui-text);
   }
-  span { font-size: 11.5px; color: #64748b; }
+  span { font-size: 11.5px; color: var(--ui-muted); }
 
-  &--bad { color: #dc2626; }
+  &--bad { color: var(--ui-red-text); }
 }
 
 .pf-bp-toolbar {
@@ -421,8 +421,8 @@
 }
 
 .pf-bp-inherit {
-  background: #f8fafc;
-  border: 1px solid #eef2f7;
+  background: var(--ui-surface-1);
+  border: 1px solid var(--ui-x-eef2f7);
   border-radius: 8px;
   padding: 10px 12px;
   margin-bottom: 13px;
@@ -432,7 +432,7 @@
     align-items: center;
     gap: 9px;
     font-size: 13px;
-    color: #1e293b;
+    color: var(--ui-text-2);
     cursor: pointer;
 
     input { width: 16px; height: 16px; accent-color: #32acc1; cursor: pointer; }
@@ -441,7 +441,7 @@
   &__hint {
     margin-inline-start: auto;
     font-size: 12px;
-    color: #64748b;
+    color: var(--ui-muted);
   }
 }
 
@@ -456,7 +456,7 @@
   margin: 20px 0 8px;
   font-size: 14px;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--ui-text-2);
 }
 
 .pf-field--inline {
@@ -489,7 +489,7 @@
 
   .pf-bp-master {
     border-inline-end: 0;
-    border-bottom: 1px solid #eef2f7;
+    border-bottom: 1px solid var(--ui-x-eef2f7);
   }
 
   // A nested scroll region on touch fights the page scroll and breaks the

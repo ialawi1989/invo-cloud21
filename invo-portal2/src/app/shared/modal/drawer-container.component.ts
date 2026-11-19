@@ -59,7 +59,7 @@ import { ModalRef } from './modal.service';
 
     .drawer-panel {
       height: 100vh;
-      background: #fff;
+      background: var(--ui-surface);
       display: flex;
       flex-direction: column;
       position: relative;
@@ -81,10 +81,10 @@ import { ModalRef } from './modal.service';
       top: 14px; right: 14px;
       width: 30px; height: 30px;
       display: flex; align-items: center; justify-content: center;
-      background: #f3f4f6; border: none; border-radius: 8px;
-      color: #6b7280; cursor: pointer; z-index: 10;
+      background: var(--ui-surface-2); border: none; border-radius: 8px;
+      color: var(--ui-muted); cursor: pointer; z-index: 10;
       transition: background .15s, color .15s;
-      &:hover { background: #e5e7eb; color: #111827; }
+      &:hover { background: var(--ui-line); color: var(--ui-text); }
     }
 
     .drawer-panel--rtl .drawer-close {
@@ -167,7 +167,7 @@ import { ModalRef } from './modal.service';
         content: '';
         display: block;
         width: 40px; height: 4px;
-        background: #d1d5db;
+        background: var(--ui-line-strong);
         border-radius: 2px;
         margin: 12px auto 4px;
         flex-shrink: 0;

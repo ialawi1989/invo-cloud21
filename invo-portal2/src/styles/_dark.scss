@@ -1,0 +1,1657 @@
+// ─────────────────────────────────────────────────────────────────────
+// Dark theme (My Account > Preferences > Appearance) — "Dark Modern" greys
+// ─────────────────────────────────────────────────────────────────────
+// Neutral greys, our teal as the accent. Components use the --ui-* tokens
+// (every token's light value equals the colour it replaced, so light mode is
+// unchanged); this file is the only place dark values live. Dark is
+// `html.app-dark`, set by UserPreferencesService. (Generated from the token
+// table: edit values here, not in components.)
+//
+// Rules of the theme: surfaces are separated by 1px borders and small
+// lightness steps; overlays and sticky bars are opaque; no backdrop-filter on
+// panels; the modal backdrop is its own layer. Documents (paper, PDFs,
+// receipts, exports, print) always use the light tokens.
+
+// The overlay container must sit above the top bar (z 1100) so a modal
+// backdrop covers the whole viewport.
+.cdk-overlay-container { z-index: 1300; }
+
+:root {
+  --ui-bare-bg: Field; // a borderless input keeps the browser's own fill in light mode
+  --ui-surface-rgb: 255 255 255;
+  --ui-surface: #ffffff;
+  --ui-surface-1: #f8fafc;
+  --ui-surface-2: #f1f5f9;
+  --ui-line: #e2e8f0;
+  --ui-line-strong: #cbd5e1;
+  --ui-ink: #0f172a;
+  --ui-ink-2: #1e293b;
+  --ui-ink-3: #334155;
+  --ui-red-soft: #fef2f2;
+  --ui-red-soft-2: #fecaca;
+  --ui-amber-soft: #fffbeb;
+  --ui-amber-soft-2: #fde68a;
+  --ui-green-soft: #ecfdf5;
+  --ui-sky-soft: #e0f2fe;
+  --ui-sky-soft-2: #bae6fd;
+  --ui-brand-soft: #ecfeff;
+  --ui-brand-soft-2: #a5f3fc;
+  --ui-text: #0f172a;
+  --ui-text-2: #1e293b;
+  --ui-text-3: #334155;
+  --ui-text-4: #475569;
+  --ui-muted: #64748b;
+  --ui-faint: #94a3b8;
+  --ui-red-text: #b91c1c;
+  --ui-amber-text: #b45309;
+  --ui-green-text: #15803d;
+  --ui-brand-text: #2691a4;
+  --ui-orange-text: #c2410c;
+  --ui-brand-t600: #2691a4;
+  --ui-brand-t700: #207484;
+  --ui-brand-t800: #1d5d6b;
+  --ui-brand-t900: #1a4e5a;
+  --ui-page: #f8fafc;
+  --ui-elevated: #ffffff;
+  --ui-elevated-border: #e2e8f0;
+  --ui-footer-bg: #ffffff;
+  --ui-field: #ffffff;
+  --ui-field-border: #cbd5e1;
+  --ui-field-border-hover: #94a3b8;
+  --ui-hover: #f1f5f9;
+  --ui-selected: #ecfeff;
+  --ui-sidebar: #2a3042;
+  --ui-topbar: #ffffff;
+  --ui-placeholder: #94a3b8;
+  --ui-disabled: #94a3b8;
+  --ui-x-ecf7f9: #ecf7f9;
+  --ui-x-f4fafb: #f4fafb;
+  --ui-x-e9ecef: #e9ecef;
+  --ui-x-f1f3f5: #f1f3f5;
+  --ui-x-dee2e6: #dee2e6;
+  --ui-x-f8f9fa: #f8f9fa;
+  --ui-x-f0f4ff: #f0f4ff;
+  --ui-x-f4f5f7: #f4f5f7;
+  --ui-x-c5cfe0: #c5cfe0;
+  --ui-x-f0f2f5: #f0f2f5;
+  --ui-x-d6f4f8: #d6f4f8;
+  --ui-x-e0e4ee: #e0e4ee;
+  --ui-x-e8eaed: #e8eaed;
+  --ui-x-e6f7f7: #e6f7f7;
+  --ui-x-e8ecf1: #e8ecf1;
+  --ui-x-eef7f8: #eef7f8;
+  --ui-x-f0fdfd: #f0fdfd;
+  --ui-x-b2e4e4: #b2e4e4;
+  --ui-x-f0fdfb: #f0fdfb;
+  --ui-x-f0fafc: #f0fafc;
+  --ui-x-fef3e2: #fef3e2;
+  --ui-x-f0faf8: #f0faf8;
+  --ui-x-f4f6ff: #f4f6ff;
+  --ui-x-f8f9fc: #f8f9fc;
+  --ui-x-e6f4f6: #e6f4f6;
+  --ui-x-b6dde3: #b6dde3;
+  --ui-x-eef0f4: #eef0f4;
+  --ui-x-f1f9fb: #f1f9fb;
+  --ui-x-d3ecf0: #d3ecf0;
+  --ui-x-eef1f6: #eef1f6;
+  --ui-x-f0fafb: #f0fafb;
+  --ui-x-cffafe: #cffafe;
+  --ui-x-e8f4f7: #e8f4f7;
+  --ui-x-fbfcfd: #fbfcfd;
+  --ui-x-e4e9ef: #e4e9ef;
+  --ui-x-e6eefc: #e6eefc;
+  --ui-x-f6f8fa: #f6f8fa;
+  --ui-x-e0f2f6: #e0f2f6;
+  --ui-x-fafafa: #fafafa;
+  --ui-x-fff5f5: #fff5f5;
+  --ui-x-ffc9c9: #ffc9c9;
+  --ui-x-f0f0f0: #f0f0f0;
+  --ui-x-f5f5f5: #f5f5f5;
+  --ui-x-e0e0e0: #e0e0e0;
+  --ui-x-e8e8e8: #e8e8e8;
+  --ui-x-ffe3e3: #ffe3e3;
+  --ui-x-eefafa: #eefafa;
+  --ui-x-d3eef0: #d3eef0;
+  --ui-x-eff6ff: #eff6ff;
+  --ui-x-bfdbfe: #bfdbfe;
+  --ui-x-f0fdf4: #f0fdf4;
+  --ui-x-bbf7d0: #bbf7d0;
+  --ui-x-fff7ed: #fff7ed;
+  --ui-x-eef1f5: #eef1f5;
+  --ui-x-f4f4f2: #f4f4f2;
+  --ui-x-fcfcfd: #fcfcfd;
+  --ui-x-eef9fb: #eef9fb;
+  --ui-x-cdeaf0: #cdeaf0;
+  --ui-x-f0fbfc: #f0fbfc;
+  --ui-x-e3f6f9: #e3f6f9;
+  --ui-x-dbe3ec: #dbe3ec;
+  --ui-x-fbfdfe: #fbfdfe;
+  --ui-x-f2fbfc: #f2fbfc;
+  --ui-x-f5f7fa: #f5f7fa;
+  --ui-x-f0fdfa: #f0fdfa;
+  --ui-x-d3ecf3: #d3ecf3;
+  --ui-x-eef1f4: #eef1f4;
+  --ui-x-f6f7f9: #f6f7f9;
+  --ui-x-eef0f3: #eef0f3;
+  --ui-x-f8f8f8: #f8f8f8;
+  --ui-x-f0f4f8: #f0f4f8;
+  --ui-x-dbeafe: #dbeafe;
+  --ui-x-fcd34d: #fcd34d;
+  --ui-x-f6fafb: #f6fafb;
+  --ui-x-eaf2f4: #eaf2f4;
+  --ui-x-e8f0f2: #e8f0f2;
+  --ui-x-eaf6f8: #eaf6f8;
+  --ui-x-f8fdfe: #f8fdfe;
+  --ui-x-cbeef4: #cbeef4;
+  --ui-x-f5f8fa: #f5f8fa;
+  --ui-x-e8f3f5: #e8f3f5;
+  --ui-x-eef5fb: #eef5fb;
+  --ui-x-d6e6ea: #d6e6ea;
+  --ui-x-eef4fb: #eef4fb;
+  --ui-x-c7d2da: #c7d2da;
+  --ui-x-dbe7fb: #dbe7fb;
+  --ui-x-d4eef3: #d4eef3;
+  --ui-x-b9e4ec: #b9e4ec;
+  --ui-x-e6f7fa: #e6f7fa;
+  --ui-x-e7ebf0: #e7ebf0;
+  --ui-x-e8edf2: #e8edf2;
+  --ui-x-b9dde4: #b9dde4;
+  --ui-x-eef5f7: #eef5f7;
+  --ui-x-b7e0e8: #b7e0e8;
+  --ui-x-e8f6f9: #e8f6f9;
+  --ui-x-d3eef3: #d3eef3;
+  --ui-x-f8f8fb: #f8f8fb;
+  --ui-x-f4f7fa: #f4f7fa;
+  --ui-x-eefbfd: #eefbfd;
+  --ui-x-e8eef4: #e8eef4;
+  --ui-x-afe7ef: #afe7ef;
+  --ui-x-f0fbfd: #f0fbfd;
+  --ui-x-b8e8f0: #b8e8f0;
+  --ui-x-f8f5ff: #f8f5ff;
+  --ui-x-ddd0fe: #ddd0fe;
+  --ui-x-fef4f4: #fef4f4;
+  --ui-x-fbcfcf: #fbcfcf;
+  --ui-x-f2fbf6: #f2fbf6;
+  --ui-x-b9ecd0: #b9ecd0;
+  --ui-x-eef2f7: #eef2f7;
+  --ui-x-f6f8fb: #f6f8fb;
+  --ui-x-d7f3f7: #d7f3f7;
+  --ui-x-eef2ff: #eef2ff;
+  --ui-x-a7f3d0: #a7f3d0;
+  --ui-x-e0f7fa: #e0f7fa;
+  --ui-x-fed7aa: #fed7aa;
+  --ui-x-fff5f3: #fff5f3;
+  --ui-x-fcd9d1: #fcd9d1;
+  --ui-x-fde3dc: #fde3dc;
+  --ui-x-e7dcfe: #e7dcfe;
+  --ui-x-cdf2de: #cdf2de;
+  --ui-x-eaeef3: #eaeef3;
+  --ui-x-d3f2f8: #d3f2f8;
+  --ui-x-d1fae5: #d1fae5;
+  --ui-x-ede9fe: #ede9fe;
+  --ui-x-cfe9ee: #cfe9ee;
+  --ui-x-fcfdfe: #fcfdfe;
+  --ui-x-e6e8ec: #e6e8ec;
+  --ui-x-e0e7ff: #e0e7ff;
+  --ui-x-e0f4f7: #e0f4f7;
+  --ui-x-f0f9ff: #f0f9ff;
+  --ui-x-fff8e1: #fff8e1;
+  --ui-x-ffe9a8: #ffe9a8;
+  --ui-x-e6f6f9: #e6f6f9;
+  --ui-x-d5dbe3: #d5dbe3;
+  --ui-x-e8ebef: #e8ebef;
+  --ui-x-eef2f5: #eef2f5;
+  --ui-x-e8f6f8: #e8f6f8;
+  --ui-x-b9e2e8: #b9e2e8;
+  --ui-x-d3eef2: #d3eef2;
+  --ui-x-e5e9ee: #e5e9ee;
+  --ui-x-cfd6de: #cfd6de;
+  --ui-x-f9fbfc: #f9fbfc;
+  --ui-x-bfe6ee: #bfe6ee;
+  --ui-x-f2fbfd: #f2fbfd;
+  --ui-x-a6dde8: #a6dde8;
+  --ui-x-eaf8fb: #eaf8fb;
+  --ui-x-b6e0e8: #b6e0e8;
+  --ui-x-d9f2f6: #d9f2f6;
+  --ui-x-e8f8fb: #e8f8fb;
+  --ui-x-d0eef5: #d0eef5;
+  --ui-x-ffd966: #ffd966;
+  --ui-x-e8f8eb: #e8f8eb;
+  --ui-x-d6f0f4: #d6f0f4;
+  --ui-x-f0fdff: #f0fdff;
+  --ui-x-67e8f9: #67e8f9;
+  --ui-x-e0f2f7: #e0f2f7;
+  --ui-x-fef9c3: #fef9c3;
+  --ui-x-e7edf3: #e7edf3;
+  --ui-x-f7f9fc: #f7f9fc;
+  --ui-x-e6ecf2: #e6ecf2;
+  --ui-x-fbfcfe: #fbfcfe;
+  --ui-x-eaeff4: #eaeff4;
+  --ui-x-f4f6f9: #f4f6f9;
+  --ui-x-cfe8ec: #cfe8ec;
+  --ui-x-f4fbfc: #f4fbfc;
+  --ui-x-a5dde6: #a5dde6;
+  --ui-x-c1e9ef: #c1e9ef;
+  --ui-x-fde047: #fde047;
+  --ui-x-dbe2ea: #dbe2ea;
+  --ui-x-f4f6fa: #f4f6fa;
+  --ui-x-e2f6f9: #e2f6f9;
+  --ui-x-f3e8ff: #f3e8ff;
+  --ui-x-eef7f0: #eef7f0;
+  --ui-x-f7f8fb: #f7f8fb;
+  --ui-x-fffaf9: #fffaf9;
+  --ui-x-eef6fb: #eef6fb;
+  --ui-x-bee0ee: #bee0ee;
+  --ui-x-dcedf6: #dcedf6;
+  --ui-x-e6f7f9: #e6f7f9;
+  --ui-x-fce7f3: #fce7f3;
+  --ui-x-ffedd5: #ffedd5;
+  --ui-x-eff9fb: #eff9fb;
+  --ui-x-a6d8df: #a6d8df;
+  --ui-x-f0f9fb: #f0f9fb;
+  --ui-x-cfe8ee: #cfe8ee;
+  --ui-x-a5e3ee: #a5e3ee;
+  --ui-x-f5f3ff: #f5f3ff;
+  --ui-x-d8cff7: #d8cff7;
+  --ui-x-f5d77a: #f5d77a;
+  --ui-x-fefce8: #fefce8;
+  --ui-x-b6dde4: #b6dde4;
+  --ui-x-fecdca: #fecdca;
+  --ui-x-fef3f2: #fef3f2;
+  --ui-x-fffaf0: #fffaf0;
+  --ui-x-fdecea: #fdecea;
+  --ui-x-f9f9f9: #f9f9f9;
+  --ui-x-ffebee: #ffebee;
+  --ui-x-fff3e0: #fff3e0;
+  --ui-x-e8eaf6: #e8eaf6;
+  --ui-x-dddddd: #dddddd;
+  --ui-x-faeeda: #faeeda;
+  --ui-x-f0fafa: #f0fafa;
+  --ui-x-f1f1f1: #f1f1f1;
+  --ui-x-fff8e6: #fff8e6;
+  --ui-x-f0d9a0: #f0d9a0;
+  --ui-x-fffbf0: #fffbf0;
+  --ui-x-eeeeee: #eeeeee;
+  --ui-x-e8f5f7: #e8f5f7;
+  --ui-x-f8fbff: #f8fbff;
+  --ui-x-f8f8f7: #f8f8f7;
+  --ui-x-ffe082: #ffe082;
+  --ui-x-eeedfe: #eeedfe;
+  --ui-x-e6f1fb: #e6f1fb;
+  --ui-x-e3f6ee: #e3f6ee;
+  --ui-x-fff1e0: #fff1e0;
+  --ui-x-fbfbfb: #fbfbfb;
+  --ui-x-d6d6d2: #d6d6d2;
+  --ui-x-fff7e6: #fff7e6;
+  --ui-x-e6e6e3: #e6e6e3;
+  --ui-x-f0d27a: #f0d27a;
+  --ui-x-f5f5f4: #f5f5f4;
+  --ui-x-ccfbf1: #ccfbf1;
+  --ui-x-e2f1f4: #e2f1f4;
+  --ui-x-fafbfd: #fafbfd;
+  --ui-x-dde4ec: #dde4ec;
+  --ui-x-ddf4f7: #ddf4f7;
+  --ui-x-e6f9fb: #e6f9fb;
+  --ui-x-faf5ff: #faf5ff;
+  --ui-x-e9d5ff: #e9d5ff;
+  --ui-x-e9ecf1: #e9ecf1;
+  --ui-x-bfe3e7: #bfe3e7;
+  --ui-x-fcd9a8: #fcd9a8;
+  --ui-x-f7f8fa: #f7f8fa;
+  --ui-x-f5f8fb: #f5f8fb;
+  --ui-x-f8fbfd: #f8fbfd;
+  --ui-x-eef4f9: #eef4f9;
+  --ui-x-f1fbfd: #f1fbfd;
+  --ui-x-fffbfb: #fffbfb;
+  --ui-x-fff7f7: #fff7f7;
+  --ui-x-ece9e3: #ece9e3;
+  --ui-x-ccf3f8: #ccf3f8;
+  --ui-x-e0f7fb: #e0f7fb;
+  --ui-x-eff8fa: #eff8fa;
+  --ui-x-f0fafd: #f0fafd;
+  --ui-x-fef9f3: #fef9f3;
+  --ui-x-fcd9b5: #fcd9b5;
+  --ui-x-fef08a: #fef08a;
+  --ui-x-f1d9b9: #f1d9b9;
+  --ui-x-c7d2fe: #c7d2fe;
+  --ui-x-d6d3d1: #d6d3d1;
+  --ui-x-fafaf9: #fafaf9;
+  --ui-x-d9f1f5: #d9f1f5;
+  --ui-x-dcf0f2: #dcf0f2;
+  --ui-x-e8f4f9: #e8f4f9;
+  --ui-x-eef4ff: #eef4ff;
+  --ui-x-b2e4ed: #b2e4ed;
+  --ui-x-a8d8e0: #a8d8e0;
+  --ui-x-d0f0f7: #d0f0f7;
+  --ui-x-e0f5f9: #e0f5f9;
+  --ui-x-ccf0f5: #ccf0f5;
+  --ui-x-dfe3eb: #dfe3eb;
+  --ui-x-e5e8ed: #e5e8ed;
+  --ui-x-d0f0f6: #d0f0f6;
+  --ui-x-ddd6fe: #ddd6fe;
+  --ui-x-ffff00: #ffff00;
+  --ui-x-eff6f8: #eff6f8;
+  --ui-x-f4fbfb: #f4fbfb;
+  --ui-x-ecfafd: #ecfafd;
+  --ui-x-f5fdfd: #f5fdfd;
+  --ui-x-e6e8ee: #e6e8ee;
+  --ui-x-ccf2f6: #ccf2f6;
+  --ui-x-ecf8fb: #ecf8fb;
+  --ui-x-d8e0e8: #d8e0e8;
+  --ui-x-f1fafc: #f1fafc;
+  --ui-x-d6eef3: #d6eef3;
+  --ui-x-cfeef3: #cfeef3;
+  --ui-x-d4f0f5: #d4f0f5;
+  --ui-x-c7dcf7: #c7dcf7;
+  --ui-x-d7dde3: #d7dde3;
+  --ui-x-eaf7fb: #eaf7fb;
+  --ui-x-dcdce1: #dcdce1;
+  --ui-x-f5fbfc: #f5fbfc;
+  --ui-x-e3eef0: #e3eef0;
+  --ui-x-b6e6ee: #b6e6ee;
+  --ui-x-d5f4fa: #d5f4fa;
+  --ui-t-212529: #212529;
+  --ui-t-2a3042: #2a3042;
+  --ui-t-1a1f2e: #1a1f2e;
+  --ui-t-1a1f71: #1a1f71;
+  --ui-t-b42318: #b42318;
+  --ui-t-c62828: #c62828;
+  --ui-t-222222: #222222;
+  --ui-t-444444: #444444;
+  --ui-t-111111: #111111;
+  --ui-t-1e40af: #1e40af;
+  --ui-t-344054: #344054;
+  --ui-t-075985: #075985;
+  --ui-t-1a0dab: #1a0dab;
+  --ui-t-5b30bd: #5b30bd;
+  --ui-t-10603c: #10603c;
+  --ui-t-99381a: #99381a;
+  --ui-t-4338ca: #4338ca;
+  --ui-t-6d28d9: #6d28d9;
+  --ui-t-065f46: #065f46;
+  --ui-t-3730a3: #3730a3;
+  --ui-t-e11d48: #e11d48;
+  --ui-t-78350f: #78350f;
+  --ui-t-0c4a6e: #0c4a6e;
+  --ui-t-2c3e50: #2c3e50;
+  --ui-t-7f1d1d: #7f1d1d;
+  --ui-t-143742: #143742;
+  --ui-t-0b5c68: #0b5c68;
+  --ui-t-7e22ce: #7e22ce;
+  --ui-t-be185d: #be185d;
+  --ui-t-451a03: #451a03;
+  --ui-t-a1281b: #a1281b;
+  --ui-t-1f2328: #1f2328;
+  --ui-t-1a1a18: #1a1a18;
+  --ui-t-3c3489: #3c3489;
+  --ui-t-0c447c: #0c447c;
+  --ui-t-4a3700: #4a3700;
+  --ui-t-b3261e: #b3261e;
+  --ui-t-000000: #000000;
+  --ui-t-9a3412: #9a3412;
+  --ui-t-be123c: #be123c;
+  --ui-t-0e4f5d: #0e4f5d;
+  --ui-t-064e3b: #064e3b;
+  --ui-t-1c1917: #1c1917;
+  --ui-t-5b21b6: #5b21b6;
+  --ui-t-1b2533: #1b2533;
+  --ui-t-1e3a8a: #1e3a8a;
+  --ui-t-4a4a55: #4a4a55;
+  --ui-t-1a1a1a: #1a1a1a;
+  --ui-t-495057: #495057;
+  --ui-t-6c757d: #6c757d;
+  --ui-t-556ee6: #556ee6;
+  --ui-t-74788d: #74788d;
+  --ui-t-1d6b7a: #1d6b7a;
+  --ui-t-0369a1: #0369a1;
+  --ui-t-2563eb: #2563eb;
+  --ui-t-555555: #555555;
+  --ui-t-1d4ed8: #1d4ed8;
+  --ui-t-1b6d7c: #1b6d7c;
+  --ui-t-1e6f80: #1e6f80;
+  --ui-t-4d5156: #4d5156;
+  --ui-t-1d7d8d: #1d7d8d;
+  --ui-t-14606e: #14606e;
+  --ui-t-6d3fd4: #6d3fd4;
+  --ui-t-157347: #157347;
+  --ui-t-00838f: #00838f;
+  --ui-t-4f46e5: #4f46e5;
+  --ui-t-b4441f: #b4441f;
+  --ui-t-52627a: #52627a;
+  --ui-t-dc3545: #dc3545;
+  --ui-t-6f42c1: #6f42c1;
+  --ui-t-1f7686: #1f7686;
+  --ui-t-8a6d00: #8a6d00;
+  --ui-t-0e8fa3: #0e8fa3;
+  --ui-t-856404: #856404;
+  --ui-t-1a6630: #1a6630;
+  --ui-t-854d0e: #854d0e;
+  --ui-t-0284c7: #0284c7;
+  --ui-t-155e75: #155e75;
+  --ui-t-0f7c8c: #0f7c8c;
+  --ui-t-0e7c8a: #0e7c8a;
+  --ui-t-a16207: #a16207;
+  --ui-t-0f5f6e: #0f5f6e;
+  --ui-t-059669: #059669;
+  --ui-t-0f6f80: #0f6f80;
+  --ui-t-7a5b00: #7a5b00;
+  --ui-t-0f766e: #0f766e;
+  --ui-t-167d8f: #167d8f;
+  --ui-t-c0392b: #c0392b;
+  --ui-t-e65100: #e65100;
+  --ui-t-5c6bc0: #5c6bc0;
+  --ui-t-666666: #666666;
+  --ui-t-6b7682: #6b7682;
+  --ui-t-854f0b: #854f0b;
+  --ui-t-475260: #475260;
+  --ui-t-8a5a00: #8a5a00;
+  --ui-t-0b6b4f: #0b6b4f;
+  --ui-t-a35f00: #a35f00;
+  --ui-t-8b5cf6: #8b5cf6;
+  --ui-t-7c3aed: #7c3aed;
+  --ui-t-9333ea: #9333ea;
+  --ui-t-db2777: #db2777;
+  --ui-t-0e7d8f: #0e7d8f;
+  --ui-t-0e6573: #0e6573;
+  --ui-t-0e7a8a: #0e7a8a;
+  --ui-t-1a8fa3: #1a8fa3;
+  --ui-t-e53e3e: #e53e3e;
+  --ui-t-0a8da0: #0a8da0;
+  --ui-t-6366f1: #6366f1;
+  --ui-t-4a5163: #4a5163;
+  --ui-t-2792a3: #2792a3;
+  --ui-t-4475c5: #4475c5;
+  --ui-t-6b7b90: #6b7b90;
+  --ui-t-5b6472: #5b6472;
+  --ui-t-1c8595: #1c8595;
+  --ui-b-2691a4: #2691a4;
+  --ui-b-32acc1: #32acc1;
+  --ui-b-16a34a: #16a34a;
+  --ui-b-34c2be: #34c2be;
+  --ui-b-0ea5e9: #0ea5e9;
+  --ui-b-0891b2: #0891b2;
+  --ui-b-65a30d: #65a30d;
+  --ui-b-fbbf24: #fbbf24;
+  --ui-b-f87171: #f87171;
+  --ui-b-ca8a04: #ca8a04;
+  --ui-b-74788d: #74788d;
+  --ui-b-1e8c9f: #1e8c9f;
+  --ui-b-1e9fb4: #1e9fb4;
+  --ui-b-f59e0b: #f59e0b;
+  --ui-b-00a8b8: #00a8b8;
+  --ui-b-0e8fa6: #0e8fa6;
+  --ui-b-6366f1: #6366f1;
+  --ui-b-10b981: #10b981;
+  --ui-b-ef4444: #ef4444;
+  --ui-b-d97706: #d97706;
+}
+
+@mixin light-tokens {
+  color-scheme: light;
+  --ui-surface-rgb: 255 255 255;
+  --ui-surface: #ffffff;
+  --ui-surface-1: #f8fafc;
+  --ui-surface-2: #f1f5f9;
+  --ui-line: #e2e8f0;
+  --ui-line-strong: #cbd5e1;
+  --ui-ink: #0f172a;
+  --ui-ink-2: #1e293b;
+  --ui-ink-3: #334155;
+  --ui-red-soft: #fef2f2;
+  --ui-red-soft-2: #fecaca;
+  --ui-amber-soft: #fffbeb;
+  --ui-amber-soft-2: #fde68a;
+  --ui-green-soft: #ecfdf5;
+  --ui-sky-soft: #e0f2fe;
+  --ui-sky-soft-2: #bae6fd;
+  --ui-brand-soft: #ecfeff;
+  --ui-brand-soft-2: #a5f3fc;
+  --ui-text: #0f172a;
+  --ui-text-2: #1e293b;
+  --ui-text-3: #334155;
+  --ui-text-4: #475569;
+  --ui-muted: #64748b;
+  --ui-faint: #94a3b8;
+  --ui-red-text: #b91c1c;
+  --ui-amber-text: #b45309;
+  --ui-green-text: #15803d;
+  --ui-brand-text: #2691a4;
+  --ui-orange-text: #c2410c;
+  --ui-brand-t600: #2691a4;
+  --ui-brand-t700: #207484;
+  --ui-brand-t800: #1d5d6b;
+  --ui-brand-t900: #1a4e5a;
+  --ui-page: #f8fafc;
+  --ui-elevated: #ffffff;
+  --ui-elevated-border: #e2e8f0;
+  --ui-footer-bg: #ffffff;
+  --ui-field: #ffffff;
+  --ui-field-border: #cbd5e1;
+  --ui-field-border-hover: #94a3b8;
+  --ui-hover: #f1f5f9;
+  --ui-selected: #ecfeff;
+  --ui-sidebar: #2a3042;
+  --ui-topbar: #ffffff;
+  --ui-placeholder: #94a3b8;
+  --ui-disabled: #94a3b8;
+  --ui-x-ecf7f9: #ecf7f9;
+  --ui-x-f4fafb: #f4fafb;
+  --ui-x-e9ecef: #e9ecef;
+  --ui-x-f1f3f5: #f1f3f5;
+  --ui-x-dee2e6: #dee2e6;
+  --ui-x-f8f9fa: #f8f9fa;
+  --ui-x-f0f4ff: #f0f4ff;
+  --ui-x-f4f5f7: #f4f5f7;
+  --ui-x-c5cfe0: #c5cfe0;
+  --ui-x-f0f2f5: #f0f2f5;
+  --ui-x-d6f4f8: #d6f4f8;
+  --ui-x-e0e4ee: #e0e4ee;
+  --ui-x-e8eaed: #e8eaed;
+  --ui-x-e6f7f7: #e6f7f7;
+  --ui-x-e8ecf1: #e8ecf1;
+  --ui-x-eef7f8: #eef7f8;
+  --ui-x-f0fdfd: #f0fdfd;
+  --ui-x-b2e4e4: #b2e4e4;
+  --ui-x-f0fdfb: #f0fdfb;
+  --ui-x-f0fafc: #f0fafc;
+  --ui-x-fef3e2: #fef3e2;
+  --ui-x-f0faf8: #f0faf8;
+  --ui-x-f4f6ff: #f4f6ff;
+  --ui-x-f8f9fc: #f8f9fc;
+  --ui-x-e6f4f6: #e6f4f6;
+  --ui-x-b6dde3: #b6dde3;
+  --ui-x-eef0f4: #eef0f4;
+  --ui-x-f1f9fb: #f1f9fb;
+  --ui-x-d3ecf0: #d3ecf0;
+  --ui-x-eef1f6: #eef1f6;
+  --ui-x-f0fafb: #f0fafb;
+  --ui-x-cffafe: #cffafe;
+  --ui-x-e8f4f7: #e8f4f7;
+  --ui-x-fbfcfd: #fbfcfd;
+  --ui-x-e4e9ef: #e4e9ef;
+  --ui-x-e6eefc: #e6eefc;
+  --ui-x-f6f8fa: #f6f8fa;
+  --ui-x-e0f2f6: #e0f2f6;
+  --ui-x-fafafa: #fafafa;
+  --ui-x-fff5f5: #fff5f5;
+  --ui-x-ffc9c9: #ffc9c9;
+  --ui-x-f0f0f0: #f0f0f0;
+  --ui-x-f5f5f5: #f5f5f5;
+  --ui-x-e0e0e0: #e0e0e0;
+  --ui-x-e8e8e8: #e8e8e8;
+  --ui-x-ffe3e3: #ffe3e3;
+  --ui-x-eefafa: #eefafa;
+  --ui-x-d3eef0: #d3eef0;
+  --ui-x-eff6ff: #eff6ff;
+  --ui-x-bfdbfe: #bfdbfe;
+  --ui-x-f0fdf4: #f0fdf4;
+  --ui-x-bbf7d0: #bbf7d0;
+  --ui-x-fff7ed: #fff7ed;
+  --ui-x-eef1f5: #eef1f5;
+  --ui-x-f4f4f2: #f4f4f2;
+  --ui-x-fcfcfd: #fcfcfd;
+  --ui-x-eef9fb: #eef9fb;
+  --ui-x-cdeaf0: #cdeaf0;
+  --ui-x-f0fbfc: #f0fbfc;
+  --ui-x-e3f6f9: #e3f6f9;
+  --ui-x-dbe3ec: #dbe3ec;
+  --ui-x-fbfdfe: #fbfdfe;
+  --ui-x-f2fbfc: #f2fbfc;
+  --ui-x-f5f7fa: #f5f7fa;
+  --ui-x-f0fdfa: #f0fdfa;
+  --ui-x-d3ecf3: #d3ecf3;
+  --ui-x-eef1f4: #eef1f4;
+  --ui-x-f6f7f9: #f6f7f9;
+  --ui-x-eef0f3: #eef0f3;
+  --ui-x-f8f8f8: #f8f8f8;
+  --ui-x-f0f4f8: #f0f4f8;
+  --ui-x-dbeafe: #dbeafe;
+  --ui-x-fcd34d: #fcd34d;
+  --ui-x-f6fafb: #f6fafb;
+  --ui-x-eaf2f4: #eaf2f4;
+  --ui-x-e8f0f2: #e8f0f2;
+  --ui-x-eaf6f8: #eaf6f8;
+  --ui-x-f8fdfe: #f8fdfe;
+  --ui-x-cbeef4: #cbeef4;
+  --ui-x-f5f8fa: #f5f8fa;
+  --ui-x-e8f3f5: #e8f3f5;
+  --ui-x-eef5fb: #eef5fb;
+  --ui-x-d6e6ea: #d6e6ea;
+  --ui-x-eef4fb: #eef4fb;
+  --ui-x-c7d2da: #c7d2da;
+  --ui-x-dbe7fb: #dbe7fb;
+  --ui-x-d4eef3: #d4eef3;
+  --ui-x-b9e4ec: #b9e4ec;
+  --ui-x-e6f7fa: #e6f7fa;
+  --ui-x-e7ebf0: #e7ebf0;
+  --ui-x-e8edf2: #e8edf2;
+  --ui-x-b9dde4: #b9dde4;
+  --ui-x-eef5f7: #eef5f7;
+  --ui-x-b7e0e8: #b7e0e8;
+  --ui-x-e8f6f9: #e8f6f9;
+  --ui-x-d3eef3: #d3eef3;
+  --ui-x-f8f8fb: #f8f8fb;
+  --ui-x-f4f7fa: #f4f7fa;
+  --ui-x-eefbfd: #eefbfd;
+  --ui-x-e8eef4: #e8eef4;
+  --ui-x-afe7ef: #afe7ef;
+  --ui-x-f0fbfd: #f0fbfd;
+  --ui-x-b8e8f0: #b8e8f0;
+  --ui-x-f8f5ff: #f8f5ff;
+  --ui-x-ddd0fe: #ddd0fe;
+  --ui-x-fef4f4: #fef4f4;
+  --ui-x-fbcfcf: #fbcfcf;
+  --ui-x-f2fbf6: #f2fbf6;
+  --ui-x-b9ecd0: #b9ecd0;
+  --ui-x-eef2f7: #eef2f7;
+  --ui-x-f6f8fb: #f6f8fb;
+  --ui-x-d7f3f7: #d7f3f7;
+  --ui-x-eef2ff: #eef2ff;
+  --ui-x-a7f3d0: #a7f3d0;
+  --ui-x-e0f7fa: #e0f7fa;
+  --ui-x-fed7aa: #fed7aa;
+  --ui-x-fff5f3: #fff5f3;
+  --ui-x-fcd9d1: #fcd9d1;
+  --ui-x-fde3dc: #fde3dc;
+  --ui-x-e7dcfe: #e7dcfe;
+  --ui-x-cdf2de: #cdf2de;
+  --ui-x-eaeef3: #eaeef3;
+  --ui-x-d3f2f8: #d3f2f8;
+  --ui-x-d1fae5: #d1fae5;
+  --ui-x-ede9fe: #ede9fe;
+  --ui-x-cfe9ee: #cfe9ee;
+  --ui-x-fcfdfe: #fcfdfe;
+  --ui-x-e6e8ec: #e6e8ec;
+  --ui-x-e0e7ff: #e0e7ff;
+  --ui-x-e0f4f7: #e0f4f7;
+  --ui-x-f0f9ff: #f0f9ff;
+  --ui-x-fff8e1: #fff8e1;
+  --ui-x-ffe9a8: #ffe9a8;
+  --ui-x-e6f6f9: #e6f6f9;
+  --ui-x-d5dbe3: #d5dbe3;
+  --ui-x-e8ebef: #e8ebef;
+  --ui-x-eef2f5: #eef2f5;
+  --ui-x-e8f6f8: #e8f6f8;
+  --ui-x-b9e2e8: #b9e2e8;
+  --ui-x-d3eef2: #d3eef2;
+  --ui-x-e5e9ee: #e5e9ee;
+  --ui-x-cfd6de: #cfd6de;
+  --ui-x-f9fbfc: #f9fbfc;
+  --ui-x-bfe6ee: #bfe6ee;
+  --ui-x-f2fbfd: #f2fbfd;
+  --ui-x-a6dde8: #a6dde8;
+  --ui-x-eaf8fb: #eaf8fb;
+  --ui-x-b6e0e8: #b6e0e8;
+  --ui-x-d9f2f6: #d9f2f6;
+  --ui-x-e8f8fb: #e8f8fb;
+  --ui-x-d0eef5: #d0eef5;
+  --ui-x-ffd966: #ffd966;
+  --ui-x-e8f8eb: #e8f8eb;
+  --ui-x-d6f0f4: #d6f0f4;
+  --ui-x-f0fdff: #f0fdff;
+  --ui-x-67e8f9: #67e8f9;
+  --ui-x-e0f2f7: #e0f2f7;
+  --ui-x-fef9c3: #fef9c3;
+  --ui-x-e7edf3: #e7edf3;
+  --ui-x-f7f9fc: #f7f9fc;
+  --ui-x-e6ecf2: #e6ecf2;
+  --ui-x-fbfcfe: #fbfcfe;
+  --ui-x-eaeff4: #eaeff4;
+  --ui-x-f4f6f9: #f4f6f9;
+  --ui-x-cfe8ec: #cfe8ec;
+  --ui-x-f4fbfc: #f4fbfc;
+  --ui-x-a5dde6: #a5dde6;
+  --ui-x-c1e9ef: #c1e9ef;
+  --ui-x-fde047: #fde047;
+  --ui-x-dbe2ea: #dbe2ea;
+  --ui-x-f4f6fa: #f4f6fa;
+  --ui-x-e2f6f9: #e2f6f9;
+  --ui-x-f3e8ff: #f3e8ff;
+  --ui-x-eef7f0: #eef7f0;
+  --ui-x-f7f8fb: #f7f8fb;
+  --ui-x-fffaf9: #fffaf9;
+  --ui-x-eef6fb: #eef6fb;
+  --ui-x-bee0ee: #bee0ee;
+  --ui-x-dcedf6: #dcedf6;
+  --ui-x-e6f7f9: #e6f7f9;
+  --ui-x-fce7f3: #fce7f3;
+  --ui-x-ffedd5: #ffedd5;
+  --ui-x-eff9fb: #eff9fb;
+  --ui-x-a6d8df: #a6d8df;
+  --ui-x-f0f9fb: #f0f9fb;
+  --ui-x-cfe8ee: #cfe8ee;
+  --ui-x-a5e3ee: #a5e3ee;
+  --ui-x-f5f3ff: #f5f3ff;
+  --ui-x-d8cff7: #d8cff7;
+  --ui-x-f5d77a: #f5d77a;
+  --ui-x-fefce8: #fefce8;
+  --ui-x-b6dde4: #b6dde4;
+  --ui-x-fecdca: #fecdca;
+  --ui-x-fef3f2: #fef3f2;
+  --ui-x-fffaf0: #fffaf0;
+  --ui-x-fdecea: #fdecea;
+  --ui-x-f9f9f9: #f9f9f9;
+  --ui-x-ffebee: #ffebee;
+  --ui-x-fff3e0: #fff3e0;
+  --ui-x-e8eaf6: #e8eaf6;
+  --ui-x-dddddd: #dddddd;
+  --ui-x-faeeda: #faeeda;
+  --ui-x-f0fafa: #f0fafa;
+  --ui-x-f1f1f1: #f1f1f1;
+  --ui-x-fff8e6: #fff8e6;
+  --ui-x-f0d9a0: #f0d9a0;
+  --ui-x-fffbf0: #fffbf0;
+  --ui-x-eeeeee: #eeeeee;
+  --ui-x-e8f5f7: #e8f5f7;
+  --ui-x-f8fbff: #f8fbff;
+  --ui-x-f8f8f7: #f8f8f7;
+  --ui-x-ffe082: #ffe082;
+  --ui-x-eeedfe: #eeedfe;
+  --ui-x-e6f1fb: #e6f1fb;
+  --ui-x-e3f6ee: #e3f6ee;
+  --ui-x-fff1e0: #fff1e0;
+  --ui-x-fbfbfb: #fbfbfb;
+  --ui-x-d6d6d2: #d6d6d2;
+  --ui-x-fff7e6: #fff7e6;
+  --ui-x-e6e6e3: #e6e6e3;
+  --ui-x-f0d27a: #f0d27a;
+  --ui-x-f5f5f4: #f5f5f4;
+  --ui-x-ccfbf1: #ccfbf1;
+  --ui-x-e2f1f4: #e2f1f4;
+  --ui-x-fafbfd: #fafbfd;
+  --ui-x-dde4ec: #dde4ec;
+  --ui-x-ddf4f7: #ddf4f7;
+  --ui-x-e6f9fb: #e6f9fb;
+  --ui-x-faf5ff: #faf5ff;
+  --ui-x-e9d5ff: #e9d5ff;
+  --ui-x-e9ecf1: #e9ecf1;
+  --ui-x-bfe3e7: #bfe3e7;
+  --ui-x-fcd9a8: #fcd9a8;
+  --ui-x-f7f8fa: #f7f8fa;
+  --ui-x-f5f8fb: #f5f8fb;
+  --ui-x-f8fbfd: #f8fbfd;
+  --ui-x-eef4f9: #eef4f9;
+  --ui-x-f1fbfd: #f1fbfd;
+  --ui-x-fffbfb: #fffbfb;
+  --ui-x-fff7f7: #fff7f7;
+  --ui-x-ece9e3: #ece9e3;
+  --ui-x-ccf3f8: #ccf3f8;
+  --ui-x-e0f7fb: #e0f7fb;
+  --ui-x-eff8fa: #eff8fa;
+  --ui-x-f0fafd: #f0fafd;
+  --ui-x-fef9f3: #fef9f3;
+  --ui-x-fcd9b5: #fcd9b5;
+  --ui-x-fef08a: #fef08a;
+  --ui-x-f1d9b9: #f1d9b9;
+  --ui-x-c7d2fe: #c7d2fe;
+  --ui-x-d6d3d1: #d6d3d1;
+  --ui-x-fafaf9: #fafaf9;
+  --ui-x-d9f1f5: #d9f1f5;
+  --ui-x-dcf0f2: #dcf0f2;
+  --ui-x-e8f4f9: #e8f4f9;
+  --ui-x-eef4ff: #eef4ff;
+  --ui-x-b2e4ed: #b2e4ed;
+  --ui-x-a8d8e0: #a8d8e0;
+  --ui-x-d0f0f7: #d0f0f7;
+  --ui-x-e0f5f9: #e0f5f9;
+  --ui-x-ccf0f5: #ccf0f5;
+  --ui-x-dfe3eb: #dfe3eb;
+  --ui-x-e5e8ed: #e5e8ed;
+  --ui-x-d0f0f6: #d0f0f6;
+  --ui-x-ddd6fe: #ddd6fe;
+  --ui-x-ffff00: #ffff00;
+  --ui-x-eff6f8: #eff6f8;
+  --ui-x-f4fbfb: #f4fbfb;
+  --ui-x-ecfafd: #ecfafd;
+  --ui-x-f5fdfd: #f5fdfd;
+  --ui-x-e6e8ee: #e6e8ee;
+  --ui-x-ccf2f6: #ccf2f6;
+  --ui-x-ecf8fb: #ecf8fb;
+  --ui-x-d8e0e8: #d8e0e8;
+  --ui-x-f1fafc: #f1fafc;
+  --ui-x-d6eef3: #d6eef3;
+  --ui-x-cfeef3: #cfeef3;
+  --ui-x-d4f0f5: #d4f0f5;
+  --ui-x-c7dcf7: #c7dcf7;
+  --ui-x-d7dde3: #d7dde3;
+  --ui-x-eaf7fb: #eaf7fb;
+  --ui-x-dcdce1: #dcdce1;
+  --ui-x-f5fbfc: #f5fbfc;
+  --ui-x-e3eef0: #e3eef0;
+  --ui-x-b6e6ee: #b6e6ee;
+  --ui-x-d5f4fa: #d5f4fa;
+  --ui-t-212529: #212529;
+  --ui-t-2a3042: #2a3042;
+  --ui-t-1a1f2e: #1a1f2e;
+  --ui-t-1a1f71: #1a1f71;
+  --ui-t-b42318: #b42318;
+  --ui-t-c62828: #c62828;
+  --ui-t-222222: #222222;
+  --ui-t-444444: #444444;
+  --ui-t-111111: #111111;
+  --ui-t-1e40af: #1e40af;
+  --ui-t-344054: #344054;
+  --ui-t-075985: #075985;
+  --ui-t-1a0dab: #1a0dab;
+  --ui-t-5b30bd: #5b30bd;
+  --ui-t-10603c: #10603c;
+  --ui-t-99381a: #99381a;
+  --ui-t-4338ca: #4338ca;
+  --ui-t-6d28d9: #6d28d9;
+  --ui-t-065f46: #065f46;
+  --ui-t-3730a3: #3730a3;
+  --ui-t-e11d48: #e11d48;
+  --ui-t-78350f: #78350f;
+  --ui-t-0c4a6e: #0c4a6e;
+  --ui-t-2c3e50: #2c3e50;
+  --ui-t-7f1d1d: #7f1d1d;
+  --ui-t-143742: #143742;
+  --ui-t-0b5c68: #0b5c68;
+  --ui-t-7e22ce: #7e22ce;
+  --ui-t-be185d: #be185d;
+  --ui-t-451a03: #451a03;
+  --ui-t-a1281b: #a1281b;
+  --ui-t-1f2328: #1f2328;
+  --ui-t-1a1a18: #1a1a18;
+  --ui-t-3c3489: #3c3489;
+  --ui-t-0c447c: #0c447c;
+  --ui-t-4a3700: #4a3700;
+  --ui-t-b3261e: #b3261e;
+  --ui-t-000000: #000000;
+  --ui-t-9a3412: #9a3412;
+  --ui-t-be123c: #be123c;
+  --ui-t-0e4f5d: #0e4f5d;
+  --ui-t-064e3b: #064e3b;
+  --ui-t-1c1917: #1c1917;
+  --ui-t-5b21b6: #5b21b6;
+  --ui-t-1b2533: #1b2533;
+  --ui-t-1e3a8a: #1e3a8a;
+  --ui-t-4a4a55: #4a4a55;
+  --ui-t-1a1a1a: #1a1a1a;
+  --ui-t-495057: #495057;
+  --ui-t-6c757d: #6c757d;
+  --ui-t-556ee6: #556ee6;
+  --ui-t-74788d: #74788d;
+  --ui-t-1d6b7a: #1d6b7a;
+  --ui-t-0369a1: #0369a1;
+  --ui-t-2563eb: #2563eb;
+  --ui-t-555555: #555555;
+  --ui-t-1d4ed8: #1d4ed8;
+  --ui-t-1b6d7c: #1b6d7c;
+  --ui-t-1e6f80: #1e6f80;
+  --ui-t-4d5156: #4d5156;
+  --ui-t-1d7d8d: #1d7d8d;
+  --ui-t-14606e: #14606e;
+  --ui-t-6d3fd4: #6d3fd4;
+  --ui-t-157347: #157347;
+  --ui-t-00838f: #00838f;
+  --ui-t-4f46e5: #4f46e5;
+  --ui-t-b4441f: #b4441f;
+  --ui-t-52627a: #52627a;
+  --ui-t-dc3545: #dc3545;
+  --ui-t-6f42c1: #6f42c1;
+  --ui-t-1f7686: #1f7686;
+  --ui-t-8a6d00: #8a6d00;
+  --ui-t-0e8fa3: #0e8fa3;
+  --ui-t-856404: #856404;
+  --ui-t-1a6630: #1a6630;
+  --ui-t-854d0e: #854d0e;
+  --ui-t-0284c7: #0284c7;
+  --ui-t-155e75: #155e75;
+  --ui-t-0f7c8c: #0f7c8c;
+  --ui-t-0e7c8a: #0e7c8a;
+  --ui-t-a16207: #a16207;
+  --ui-t-0f5f6e: #0f5f6e;
+  --ui-t-059669: #059669;
+  --ui-t-0f6f80: #0f6f80;
+  --ui-t-7a5b00: #7a5b00;
+  --ui-t-0f766e: #0f766e;
+  --ui-t-167d8f: #167d8f;
+  --ui-t-c0392b: #c0392b;
+  --ui-t-e65100: #e65100;
+  --ui-t-5c6bc0: #5c6bc0;
+  --ui-t-666666: #666666;
+  --ui-t-6b7682: #6b7682;
+  --ui-t-854f0b: #854f0b;
+  --ui-t-475260: #475260;
+  --ui-t-8a5a00: #8a5a00;
+  --ui-t-0b6b4f: #0b6b4f;
+  --ui-t-a35f00: #a35f00;
+  --ui-t-8b5cf6: #8b5cf6;
+  --ui-t-7c3aed: #7c3aed;
+  --ui-t-9333ea: #9333ea;
+  --ui-t-db2777: #db2777;
+  --ui-t-0e7d8f: #0e7d8f;
+  --ui-t-0e6573: #0e6573;
+  --ui-t-0e7a8a: #0e7a8a;
+  --ui-t-1a8fa3: #1a8fa3;
+  --ui-t-e53e3e: #e53e3e;
+  --ui-t-0a8da0: #0a8da0;
+  --ui-t-6366f1: #6366f1;
+  --ui-t-4a5163: #4a5163;
+  --ui-t-2792a3: #2792a3;
+  --ui-t-4475c5: #4475c5;
+  --ui-t-6b7b90: #6b7b90;
+  --ui-t-5b6472: #5b6472;
+  --ui-t-1c8595: #1c8595;
+  --ui-b-2691a4: #2691a4;
+  --ui-b-32acc1: #32acc1;
+  --ui-b-16a34a: #16a34a;
+  --ui-b-34c2be: #34c2be;
+  --ui-b-0ea5e9: #0ea5e9;
+  --ui-b-0891b2: #0891b2;
+  --ui-b-65a30d: #65a30d;
+  --ui-b-fbbf24: #fbbf24;
+  --ui-b-f87171: #f87171;
+  --ui-b-ca8a04: #ca8a04;
+  --ui-b-74788d: #74788d;
+  --ui-b-1e8c9f: #1e8c9f;
+  --ui-b-1e9fb4: #1e9fb4;
+  --ui-b-f59e0b: #f59e0b;
+  --ui-b-00a8b8: #00a8b8;
+  --ui-b-0e8fa6: #0e8fa6;
+  --ui-b-6366f1: #6366f1;
+  --ui-b-10b981: #10b981;
+  --ui-b-ef4444: #ef4444;
+  --ui-b-d97706: #d97706;
+  --color-slate-50: #f8fafc; --color-gray-50: #f8fafc;
+  --color-slate-100: #f1f5f9; --color-gray-100: #f1f5f9;
+  --color-slate-200: #e2e8f0; --color-gray-200: #e2e8f0;
+  --color-slate-300: #cbd5e1; --color-gray-300: #cbd5e1;
+  --color-slate-400: #94a3b8; --color-gray-400: #94a3b8;
+  --color-slate-500: #64748b; --color-gray-500: #64748b;
+  --color-slate-600: #475569; --color-gray-600: #475569;
+  --color-slate-700: #334155; --color-gray-700: #334155;
+  --color-slate-800: #1e293b; --color-gray-800: #1e293b;
+  --color-slate-900: #0f172a; --color-gray-900: #0f172a;
+  --color-slate-950: #020617; --color-gray-950: #020617;
+  --color-brand-50: #effbfd;
+  --color-brand-100: #d6f4f8;
+  --color-brand-200: #afe7ef;
+  --color-brand-600: #2691a4;
+  --color-brand-700: #207484;
+  --color-brand-800: #1d5d6b;
+  --color-brand-900: #1a4e5a;
+}
+
+// Default field fill. Zero specificity on purpose: any component rule overrides it.
+:where(html.app-dark) :where(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=file]):not([type=button]):not([type=submit]):not([type=hidden]), select, textarea) {
+  background-color: var(--ui-field);
+}
+
+html.app-dark {
+  --ui-bare-bg: transparent; // borderless inputs show the wrapper's colour
+  color-scheme: dark; // native controls, scrollbars, date pickers
+  --ui-surface-rgb: 24 24 24;
+  --ui-surface: #181818;
+  --ui-surface-1: #1f1f1f;
+  --ui-surface-2: #2a2d2e;
+  --ui-line: #2b2b2b;
+  --ui-line-strong: #3c3c3c;
+  --ui-ink: #2d2d2d;
+  --ui-ink-2: #333333;
+  --ui-ink-3: #3c3c3c;
+  --ui-red-soft: #2a1c1c;
+  --ui-red-soft-2: #4a2a2a;
+  --ui-amber-soft: #2a2418;
+  --ui-amber-soft-2: #4a3f22;
+  --ui-green-soft: #1b2a1f;
+  --ui-sky-soft: #1a2630;
+  --ui-sky-soft-2: #2a3d4d;
+  --ui-brand-soft: #12363d;
+  --ui-brand-soft-2: #1d4a54;
+  --ui-text: #cccccc;
+  --ui-text-2: #cccccc;
+  --ui-text-3: #bbbbbb;
+  --ui-text-4: #ababab;
+  --ui-muted: #9d9d9d;
+  --ui-faint: #9a9a9a;
+  --ui-red-text: #f48771;
+  --ui-amber-text: #e2c26b;
+  --ui-green-text: #89d185;
+  --ui-orange-text: #e9a56b;
+  --ui-brand-text: #4fc3d6;
+  --ui-brand-t600: #4fc3d6;
+  --ui-brand-t700: #62cbdc;
+  --ui-brand-t800: #7bd4e2;
+  --ui-brand-t900: #96dde8;
+  --ui-page: #1f1f1f;
+  --ui-elevated: #202020;
+  --ui-elevated-border: #454545;
+  --ui-footer-bg: #181818;
+  --ui-field: #313131;
+  --ui-field-border: #3c3c3c;
+  --ui-field-border-hover: #4a4a4a;
+  --ui-hover: #2a2d2e;
+  --ui-selected: #12363d;
+  --ui-sidebar: #181818;
+  --ui-topbar: #181818;
+  --ui-placeholder: #8b8b8b;
+  --ui-disabled: #6e6e6e;
+  --ui-x-ecf7f9: #12363d;
+  --ui-x-f4fafb: #1f1f1f;
+  --ui-x-e9ecef: #2a2d2e;
+  --ui-x-f1f3f5: #1f1f1f;
+  --ui-x-dee2e6: #2a2d2e;
+  --ui-x-f8f9fa: #1f1f1f;
+  --ui-x-f0f4ff: #1a2630;
+  --ui-x-f4f5f7: #1f1f1f;
+  --ui-x-c5cfe0: #2a3d4d;
+  --ui-x-f0f2f5: #1f1f1f;
+  --ui-x-d6f4f8: #12363d;
+  --ui-x-e0e4ee: #2a3d4d;
+  --ui-x-e8eaed: #2a2d2e;
+  --ui-x-e6f7f7: #12363d;
+  --ui-x-e8ecf1: #2a2d2e;
+  --ui-x-eef7f8: #1f1f1f;
+  --ui-x-f0fdfd: #12363d;
+  --ui-x-b2e4e4: #1d4a54;
+  --ui-x-f0fdfb: #12363d;
+  --ui-x-f0fafc: #12363d;
+  --ui-x-fef3e2: #2a2418;
+  --ui-x-f0faf8: #1f1f1f;
+  --ui-x-f4f6ff: #1a2630;
+  --ui-x-f8f9fc: #1f1f1f;
+  --ui-x-e6f4f6: #12363d;
+  --ui-x-b6dde3: #1d4a54;
+  --ui-x-eef0f4: #1f1f1f;
+  --ui-x-f1f9fb: #1f1f1f;
+  --ui-x-d3ecf0: #12363d;
+  --ui-x-eef1f6: #1f1f1f;
+  --ui-x-f0fafb: #12363d;
+  --ui-x-cffafe: #12363d;
+  --ui-x-e8f4f7: #12363d;
+  --ui-x-fbfcfd: #1f1f1f;
+  --ui-x-e4e9ef: #1a2630;
+  --ui-x-e6eefc: #1a2630;
+  --ui-x-f6f8fa: #1f1f1f;
+  --ui-x-e0f2f6: #12363d;
+  --ui-x-fafafa: #1f1f1f;
+  --ui-x-fff5f5: #1f1f1f;
+  --ui-x-ffc9c9: #4a2a2a;
+  --ui-x-f0f0f0: #1f1f1f;
+  --ui-x-f5f5f5: #1f1f1f;
+  --ui-x-e0e0e0: #2a2d2e;
+  --ui-x-e8e8e8: #2a2d2e;
+  --ui-x-ffe3e3: #2a1c1c;
+  --ui-x-eefafa: #12363d;
+  --ui-x-d3eef0: #12363d;
+  --ui-x-eff6ff: #1a2630;
+  --ui-x-bfdbfe: #2a3d4d;
+  --ui-x-f0fdf4: #1b2a1f;
+  --ui-x-bbf7d0: #1b2a1f;
+  --ui-x-fff7ed: #2a2418;
+  --ui-x-eef1f5: #1f1f1f;
+  --ui-x-f4f4f2: #1f1f1f;
+  --ui-x-fcfcfd: #1f1f1f;
+  --ui-x-eef9fb: #12363d;
+  --ui-x-cdeaf0: #1d4a54;
+  --ui-x-f0fbfc: #12363d;
+  --ui-x-e3f6f9: #12363d;
+  --ui-x-dbe3ec: #2a3d4d;
+  --ui-x-fbfdfe: #1f1f1f;
+  --ui-x-f2fbfc: #1f1f1f;
+  --ui-x-f5f7fa: #1f1f1f;
+  --ui-x-f0fdfa: #12363d;
+  --ui-x-d3ecf3: #12363d;
+  --ui-x-eef1f4: #1f1f1f;
+  --ui-x-f6f7f9: #1f1f1f;
+  --ui-x-eef0f3: #1f1f1f;
+  --ui-x-f8f8f8: #1f1f1f;
+  --ui-x-f0f4f8: #1f1f1f;
+  --ui-x-dbeafe: #1a2630;
+  --ui-x-fcd34d: #4a3f22;
+  --ui-x-f6fafb: #1f1f1f;
+  --ui-x-eaf2f4: #1f1f1f;
+  --ui-x-e8f0f2: #1f1f1f;
+  --ui-x-eaf6f8: #12363d;
+  --ui-x-f8fdfe: #1f1f1f;
+  --ui-x-cbeef4: #12363d;
+  --ui-x-f5f8fa: #1f1f1f;
+  --ui-x-e8f3f5: #12363d;
+  --ui-x-eef5fb: #1a2630;
+  --ui-x-d6e6ea: #1d4a54;
+  --ui-x-eef4fb: #1a2630;
+  --ui-x-c7d2da: #2a3d4d;
+  --ui-x-dbe7fb: #1a2630;
+  --ui-x-d4eef3: #12363d;
+  --ui-x-b9e4ec: #1d4a54;
+  --ui-x-e6f7fa: #12363d;
+  --ui-x-e7ebf0: #2a2d2e;
+  --ui-x-e8edf2: #2a2d2e;
+  --ui-x-b9dde4: #1d4a54;
+  --ui-x-eef5f7: #1f1f1f;
+  --ui-x-b7e0e8: #1d4a54;
+  --ui-x-e8f6f9: #12363d;
+  --ui-x-d3eef3: #12363d;
+  --ui-x-f8f8fb: #1f1f1f;
+  --ui-x-f4f7fa: #1f1f1f;
+  --ui-x-eefbfd: #12363d;
+  --ui-x-e8eef4: #1a2630;
+  --ui-x-afe7ef: #1d4a54;
+  --ui-x-f0fbfd: #12363d;
+  --ui-x-b8e8f0: #1d4a54;
+  --ui-x-f8f5ff: #1f1f1f;
+  --ui-x-ddd0fe: #3a3158;
+  --ui-x-fef4f4: #1f1f1f;
+  --ui-x-fbcfcf: #4a2a2a;
+  --ui-x-f2fbf6: #1f1f1f;
+  --ui-x-b9ecd0: #2a4a30;
+  --ui-x-eef2f7: #1f1f1f;
+  --ui-x-f6f8fb: #1f1f1f;
+  --ui-x-d7f3f7: #12363d;
+  --ui-x-eef2ff: #1a2630;
+  --ui-x-a7f3d0: #2a4a30;
+  --ui-x-e0f7fa: #12363d;
+  --ui-x-fed7aa: #4a3f22;
+  --ui-x-fff5f3: #2a1c1c;
+  --ui-x-fcd9d1: #4a2a2a;
+  --ui-x-fde3dc: #2a1c1c;
+  --ui-x-e7dcfe: #3a3158;
+  --ui-x-cdf2de: #1b2a1f;
+  --ui-x-eaeef3: #1f1f1f;
+  --ui-x-d3f2f8: #12363d;
+  --ui-x-d1fae5: #1b2a1f;
+  --ui-x-ede9fe: #231f33;
+  --ui-x-cfe9ee: #1d4a54;
+  --ui-x-fcfdfe: #1f1f1f;
+  --ui-x-e6e8ec: #2a2d2e;
+  --ui-x-e0e7ff: #1a2630;
+  --ui-x-e0f4f7: #12363d;
+  --ui-x-f0f9ff: #12363d;
+  --ui-x-fff8e1: #2a2418;
+  --ui-x-ffe9a8: #2a2418;
+  --ui-x-e6f6f9: #12363d;
+  --ui-x-d5dbe3: #2a3d4d;
+  --ui-x-e8ebef: #2a2d2e;
+  --ui-x-eef2f5: #1f1f1f;
+  --ui-x-e8f6f8: #12363d;
+  --ui-x-b9e2e8: #1d4a54;
+  --ui-x-d3eef2: #12363d;
+  --ui-x-e5e9ee: #2a2d2e;
+  --ui-x-cfd6de: #2a3d4d;
+  --ui-x-f9fbfc: #1f1f1f;
+  --ui-x-bfe6ee: #1d4a54;
+  --ui-x-f2fbfd: #12363d;
+  --ui-x-a6dde8: #1d4a54;
+  --ui-x-eaf8fb: #12363d;
+  --ui-x-b6e0e8: #1d4a54;
+  --ui-x-d9f2f6: #12363d;
+  --ui-x-e8f8fb: #12363d;
+  --ui-x-d0eef5: #12363d;
+  --ui-x-ffd966: #4a3f22;
+  --ui-x-e8f8eb: #1b2a1f;
+  --ui-x-d6f0f4: #12363d;
+  --ui-x-f0fdff: #12363d;
+  --ui-x-67e8f9: #1d4a54;
+  --ui-x-e0f2f7: #12363d;
+  --ui-x-fef9c3: #2a2418;
+  --ui-x-e7edf3: #1a2630;
+  --ui-x-f7f9fc: #1f1f1f;
+  --ui-x-e6ecf2: #1a2630;
+  --ui-x-fbfcfe: #1f1f1f;
+  --ui-x-eaeff4: #1f1f1f;
+  --ui-x-f4f6f9: #1f1f1f;
+  --ui-x-cfe8ec: #1d4a54;
+  --ui-x-f4fbfc: #1f1f1f;
+  --ui-x-a5dde6: #1d4a54;
+  --ui-x-c1e9ef: #1d4a54;
+  --ui-x-fde047: #4a3f22;
+  --ui-x-dbe2ea: #2a3d4d;
+  --ui-x-f4f6fa: #1f1f1f;
+  --ui-x-e2f6f9: #12363d;
+  --ui-x-f3e8ff: #231f33;
+  --ui-x-eef7f0: #1f1f1f;
+  --ui-x-f7f8fb: #1f1f1f;
+  --ui-x-fffaf9: #1f1f1f;
+  --ui-x-eef6fb: #12363d;
+  --ui-x-bee0ee: #1d4a54;
+  --ui-x-dcedf6: #12363d;
+  --ui-x-e6f7f9: #12363d;
+  --ui-x-fce7f3: #231f33;
+  --ui-x-ffedd5: #2a2418;
+  --ui-x-eff9fb: #12363d;
+  --ui-x-a6d8df: #1d4a54;
+  --ui-x-f0f9fb: #12363d;
+  --ui-x-cfe8ee: #1d4a54;
+  --ui-x-a5e3ee: #1d4a54;
+  --ui-x-f5f3ff: #231f33;
+  --ui-x-d8cff7: #3a3158;
+  --ui-x-f5d77a: #4a3f22;
+  --ui-x-fefce8: #2a2418;
+  --ui-x-b6dde4: #1d4a54;
+  --ui-x-fecdca: #4a2a2a;
+  --ui-x-fef3f2: #2a1c1c;
+  --ui-x-fffaf0: #2a2418;
+  --ui-x-fdecea: #2a1c1c;
+  --ui-x-f9f9f9: #1f1f1f;
+  --ui-x-ffebee: #2a1c1c;
+  --ui-x-fff3e0: #2a2418;
+  --ui-x-e8eaf6: #1a2630;
+  --ui-x-dddddd: #2a2d2e;
+  --ui-x-faeeda: #2a2418;
+  --ui-x-f0fafa: #1f1f1f;
+  --ui-x-f1f1f1: #1f1f1f;
+  --ui-x-fff8e6: #2a2418;
+  --ui-x-f0d9a0: #4a3f22;
+  --ui-x-fffbf0: #2a2418;
+  --ui-x-eeeeee: #1f1f1f;
+  --ui-x-e8f5f7: #12363d;
+  --ui-x-f8fbff: #1f1f1f;
+  --ui-x-f8f8f7: #1f1f1f;
+  --ui-x-ffe082: #4a3f22;
+  --ui-x-eeedfe: #1a2630;
+  --ui-x-e6f1fb: #1a2630;
+  --ui-x-e3f6ee: #1b2a1f;
+  --ui-x-fff1e0: #2a2418;
+  --ui-x-fbfbfb: #1f1f1f;
+  --ui-x-d6d6d2: #333333;
+  --ui-x-fff7e6: #2a2418;
+  --ui-x-e6e6e3: #2a2d2e;
+  --ui-x-f0d27a: #4a3f22;
+  --ui-x-f5f5f4: #1f1f1f;
+  --ui-x-ccfbf1: #12363d;
+  --ui-x-e2f1f4: #12363d;
+  --ui-x-fafbfd: #1f1f1f;
+  --ui-x-dde4ec: #2a3d4d;
+  --ui-x-ddf4f7: #12363d;
+  --ui-x-e6f9fb: #12363d;
+  --ui-x-faf5ff: #1f1f1f;
+  --ui-x-e9d5ff: #3a3158;
+  --ui-x-e9ecf1: #2a2d2e;
+  --ui-x-bfe3e7: #1d4a54;
+  --ui-x-fcd9a8: #4a3f22;
+  --ui-x-f7f8fa: #1f1f1f;
+  --ui-x-f5f8fb: #1f1f1f;
+  --ui-x-f8fbfd: #1f1f1f;
+  --ui-x-eef4f9: #1a2630;
+  --ui-x-f1fbfd: #12363d;
+  --ui-x-fffbfb: #1f1f1f;
+  --ui-x-fff7f7: #1f1f1f;
+  --ui-x-ece9e3: #2a2d2e;
+  --ui-x-ccf3f8: #12363d;
+  --ui-x-e0f7fb: #12363d;
+  --ui-x-eff8fa: #12363d;
+  --ui-x-f0fafd: #12363d;
+  --ui-x-fef9f3: #2a2418;
+  --ui-x-fcd9b5: #4a3f22;
+  --ui-x-fef08a: #2a2418;
+  --ui-x-f1d9b9: #4a3f22;
+  --ui-x-c7d2fe: #2a3d4d;
+  --ui-x-d6d3d1: #333333;
+  --ui-x-fafaf9: #1f1f1f;
+  --ui-x-d9f1f5: #12363d;
+  --ui-x-dcf0f2: #12363d;
+  --ui-x-e8f4f9: #12363d;
+  --ui-x-eef4ff: #1a2630;
+  --ui-x-b2e4ed: #1d4a54;
+  --ui-x-a8d8e0: #1d4a54;
+  --ui-x-d0f0f7: #12363d;
+  --ui-x-e0f5f9: #12363d;
+  --ui-x-ccf0f5: #12363d;
+  --ui-x-dfe3eb: #2a3d4d;
+  --ui-x-e5e8ed: #2a2d2e;
+  --ui-x-d0f0f6: #12363d;
+  --ui-x-ddd6fe: #3a3158;
+  --ui-x-ffff00: #2a2418;
+  --ui-x-eff6f8: #1f1f1f;
+  --ui-x-f4fbfb: #1f1f1f;
+  --ui-x-ecfafd: #12363d;
+  --ui-x-f5fdfd: #1f1f1f;
+  --ui-x-e6e8ee: #2a2d2e;
+  --ui-x-ccf2f6: #12363d;
+  --ui-x-ecf8fb: #12363d;
+  --ui-x-d8e0e8: #2a3d4d;
+  --ui-x-f1fafc: #12363d;
+  --ui-x-d6eef3: #12363d;
+  --ui-x-cfeef3: #12363d;
+  --ui-x-d4f0f5: #12363d;
+  --ui-x-c7dcf7: #2a3d4d;
+  --ui-x-d7dde3: #2a3d4d;
+  --ui-x-eaf7fb: #12363d;
+  --ui-x-dcdce1: #2a2d2e;
+  --ui-x-f5fbfc: #1f1f1f;
+  --ui-x-e3eef0: #12363d;
+  --ui-x-b6e6ee: #1d4a54;
+  --ui-x-d5f4fa: #12363d;
+  --ui-t-212529: #cccccc;
+  --ui-t-2a3042: #a8b0c7;
+  --ui-t-1a1f2e: #a4aecb;
+  --ui-t-1a1f71: #8b90e4;
+  --ui-t-b42318: #e69089;
+  --ui-t-c62828: #e68989;
+  --ui-t-222222: #cccccc;
+  --ui-t-444444: #bbbbbb;
+  --ui-t-111111: #cccccc;
+  --ui-t-1e40af: #899fe6;
+  --ui-t-344054: #a7b3c8;
+  --ui-t-075985: #89c6e6;
+  --ui-t-1a0dab: #9189e6;
+  --ui-t-5b30bd: #a78de2;
+  --ui-t-10603c: #89e6bc;
+  --ui-t-99381a: #e69f89;
+  --ui-t-4338ca: #948ee1;
+  --ui-t-6d28d9: #ad89e6;
+  --ui-t-065f46: #89e6cc;
+  --ui-t-3730a3: #9591df;
+  --ui-t-e11d48: #e6899e;
+  --ui-t-78350f: #e6ab89;
+  --ui-t-0c4a6e: #89c4e6;
+  --ui-t-2c3e50: #a3b8cc;
+  --ui-t-7f1d1d: #e48b8b;
+  --ui-t-143742: #91ccde;
+  --ui-t-0b5c68: #89dae6;
+  --ui-t-7e22ce: #bb89e6;
+  --ui-t-be185d: #e689b0;
+  --ui-t-451a03: #e6aa89;
+  --ui-t-a1281b: #e69289;
+  --ui-t-1f2328: #afb7c1;
+  --ui-t-1a1a18: #cccccc;
+  --ui-t-3c3489: #9e97d8;
+  --ui-t-0c447c: #89b8e6;
+  --ui-t-4a3700: #e6ce89;
+  --ui-t-b3261e: #e68e89;
+  --ui-t-000000: #cccccc;
+  --ui-t-9a3412: #e6a089;
+  --ui-t-be123c: #e689a0;
+  --ui-t-0e4f5d: #89d6e6;
+  --ui-t-064e3b: #89e6ce;
+  --ui-t-1c1917: #cccccc;
+  --ui-t-5b21b6: #ad89e6;
+  --ui-t-1b2533: #a2b4ce;
+  --ui-t-1e3a8a: #8aa2e5;
+  --ui-t-4a4a55: #bbbbbb;
+  --ui-t-1a1a1a: #cccccc;
+  --ui-t-495057: #b2b9bf;
+  --ui-t-6c757d: #b4babe;
+  --ui-t-556ee6: #acb7f0;
+  --ui-t-74788d: #b7b9c4;
+  --ui-t-1d6b7a: #61c6d9;
+  --ui-t-0369a1: #7ec2e8;
+  --ui-t-2563eb: #a1b9ee;
+  --ui-t-555555: #b8b8b8;
+  --ui-t-1d4ed8: #a4b8ef;
+  --ui-t-1b6d7c: #5ac7db;
+  --ui-t-1e6f80: #66c7db;
+  --ui-t-4d5156: #b6babe;
+  --ui-t-1d7d8d: #53c8dc;
+  --ui-t-14606e: #4cc8de;
+  --ui-t-6d3fd4: #c3b0ed;
+  --ui-t-157347: #26d282;
+  --ui-t-00838f: #2bcbda;
+  --ui-t-4f46e5: #b7b4f2;
+  --ui-t-b4441f: #ecaa94;
+  --ui-t-52627a: #b0baca;
+  --ui-t-dc3545: #efa6ad;
+  --ui-t-6f42c1: #c4b1e6;
+  --ui-t-1f7686: #5fc7da;
+  --ui-t-8a6d00: #dab52b;
+  --ui-t-0e8fa3: #43c9de;
+  --ui-t-856404: #ddb540;
+  --ui-t-1a6630: #4dd273;
+  --ui-t-854d0e: #e6ae6f;
+  --ui-t-0284c7: #7ac2e8;
+  --ui-t-155e75: #64c5e3;
+  --ui-t-0f7c8c: #42cade;
+  --ui-t-0e7c8a: #3bcadc;
+  --ui-t-a16207: #e3af63;
+  --ui-t-0f5f6e: #4bc8df;
+  --ui-t-059669: #25d29c;
+  --ui-t-0f6f80: #49c8df;
+  --ui-t-7a5b00: #ddb43c;
+  --ui-t-0f766e: #25d0c3;
+  --ui-t-167d8f: #46c8de;
+  --ui-t-c0392b: #ebaaa4;
+  --ui-t-e65100: #eaac8a;
+  --ui-t-5c6bc0: #b1b8e1;
+  --ui-t-666666: #b8b8b8;
+  --ui-t-6b7682: #b2b9c0;
+  --ui-t-854f0b: #e5b06d;
+  --ui-t-475260: #b2bbc6;
+  --ui-t-8a5a00: #e1b156;
+  --ui-t-0b6b4f: #25d19f;
+  --ui-t-a35f00: #e4b067;
+  --ui-t-8b5cf6: #c2aef1;
+  --ui-t-7c3aed: #c8b0f1;
+  --ui-t-9333ea: #d0acf0;
+  --ui-t-db2777: #efa2c4;
+  --ui-t-0e7d8f: #44c8de;
+  --ui-t-0e6573: #46c9de;
+  --ui-t-0e7a8a: #3fc9dd;
+  --ui-t-1a8fa3: #45c8de;
+  --ui-t-e53e3e: #f0a9a9;
+  --ui-t-0a8da0: #3dc9dd;
+  --ui-t-6366f1: #b4b5f2;
+  --ui-t-4a5163: #b3b8c6;
+  --ui-t-2792a3: #5dc7d8;
+  --ui-t-4475c5: #a1bae2;
+  --ui-t-6b7b90: #b1b9c5;
+  --ui-t-5b6472: #b3b9c2;
+  --ui-t-1c8595: #49c9dd;
+  --ui-b-2691a4: #207b8b;
+  --ui-b-32acc1: #247d8c;
+  --ui-b-16a34a: #12843c;
+  --ui-b-34c2be: #227e7b;
+  --ui-b-0ea5e9: #0a79aa;
+  --ui-b-0891b2: #077d9a;
+  --ui-b-65a30d: #4e7d0a;
+  --ui-b-fbbf24: #936a03;
+  --ui-b-f87171: #e30b0b;
+  --ui-b-ca8a04: #986803;
+  --ui-b-74788d: #6d7185;
+  --ui-b-1e8c9f: #1b7d8e;
+  --ui-b-1e9fb4: #177c8d;
+  --ui-b-f59e0b: #9e6506;
+  --ui-b-00a8b8: #007e8a;
+  --ui-b-0e8fa6: #0c7b8e;
+  --ui-b-6366f1: #5e61f1;
+  --ui-b-10b981: #0b815a;
+  --ui-b-ef4444: #e21313;
+  --ui-b-d97706: #ac5f05;
+  --color-slate-50: #1f1f1f; --color-gray-50: #1f1f1f;
+  --color-slate-100: #2a2d2e; --color-gray-100: #2a2d2e;
+  --color-slate-200: #2b2b2b; --color-gray-200: #2b2b2b;
+  --color-slate-300: #3c3c3c; --color-gray-300: #3c3c3c;
+  --color-slate-400: #8b8b8b; --color-gray-400: #8b8b8b;
+  --color-slate-500: #9d9d9d; --color-gray-500: #9d9d9d;
+  --color-slate-600: #ababab; --color-gray-600: #ababab;
+  --color-slate-700: #bbbbbb; --color-gray-700: #bbbbbb;
+  --color-slate-800: #cccccc; --color-gray-800: #cccccc;
+  --color-slate-900: #cccccc; --color-gray-900: #cccccc;
+  --color-slate-950: #e0e0e0; --color-gray-950: #e0e0e0;
+  --color-brand-50: #12363d;
+  --color-brand-100: #164650;
+  --color-brand-200: #1d5b68;
+  --color-brand-500: #1f7f90;
+  --color-brand-600: #1f7f90;
+  --color-brand-700: #196c7a;
+  --color-brand-800: #145a66;
+  --color-brand-900: #0f4852;
+
+  background: var(--ui-page);
+  body { background: var(--ui-page); color: var(--ui-text); }
+
+  // ── Scrollbars ──────────────────────────────────────────────────────
+  * { scrollbar-color: rgba(121, 121, 121, .4) transparent; }
+  ::-webkit-scrollbar { width: 12px; height: 12px; background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(121, 121, 121, .4); border-radius: 10px; border: 3px solid transparent; background-clip: padding-box; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(100, 100, 100, .7); background-clip: padding-box; }
+  ::-webkit-scrollbar-corner { background: transparent; }
+  ::selection { background: rgba(79, 195, 214, .35); }
+
+  // Rich editor accent: white-on-teal needs the darker teal.
+  --ricos-custom-settings-action-color: #1f7f90;
+  --ricos-custom-action-color: #1f7f90;
+
+  // Rich editor accent: white text on teal needs the darker teal.
+  --ricos-custom-settings-action-color: #1f7f90;
+  --ricos-custom-action-color: #1f7f90;
+
+  // Tailwind utilities that name a literal colour.
+  .bg-white { background-color: var(--ui-surface); }
+  .border-white { border-color: var(--ui-surface); }
+  .text-black { color: var(--ui-text); }
+  .text-brand-500, .text-brand-600, .text-brand-700, .text-brand-800, .text-brand-900 { color: var(--ui-brand-t600); }
+  .hover\:bg-slate-50:hover, .hover\:bg-slate-100:hover, .hover\:bg-gray-50:hover { background-color: var(--ui-hover); }
+
+  // ── Overlays: modals, drawers, menus, dropdowns, popovers, toasts ──
+  // Fully opaque, a 1px border (drawn as a ring so layout never moves) and a
+  // shadow. The dim lives on the separate backdrop layer only.
+  .invo-modal-backdrop { background: rgba(0, 0, 0, .6); backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .modal-panel, .drawer-panel,
+  .dmb__menu, .dmb__submenu, .toast,
+  .cdk-overlay-pane .bg-white {
+    background: var(--ui-elevated);
+    backdrop-filter: none; -webkit-backdrop-filter: none;
+    opacity: 1;
+  }
+  .modal-panel, .drawer-panel {
+    box-shadow: 0 0 0 1px var(--ui-elevated-border), 0 16px 48px rgba(0, 0, 0, .55);
+  }
+  .dmb__menu, .dmb__submenu, .toast,
+  .cdk-overlay-pane .bg-white.shadow-md, .cdk-overlay-pane .bg-white.shadow-lg, .cdk-overlay-pane .bg-white.shadow-xl {
+    box-shadow: 0 0 0 1px var(--ui-elevated-border), 0 8px 24px rgba(0, 0, 0, .5);
+  }
+  .modal-close, .drawer-close {
+    background: var(--ui-line); color: var(--ui-text);
+    box-shadow: inset 0 0 0 1px var(--ui-line-strong);
+    &:hover { background: var(--ui-line-strong); color: #fff; }
+    &:focus-visible { outline: 2px solid var(--ui-brand-t600); outline-offset: 1px; }
+  }
+  .invo-tooltip { background: #2d2d2d; color: #e6e6e6; box-shadow: 0 0 0 1px var(--ui-elevated-border); }
+
+  // ── Forms ───────────────────────────────────────────────────────────
+  // Border / hover / focus colours apply to every field (colour only, so a field
+  // without a border keeps none). The FILL is set through :where() (zero
+  // specificity, see the top of this block), so a component that sets its own
+  // background (a transparent search input inside a bordered wrapper, or a
+  // tokenised --ui-field fill) wins and we never get a box inside a box.
+  input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=file]):not([type=button]):not([type=submit]):not([type=hidden]),
+  select, textarea {
+    border-color: var(--ui-field-border);
+    color: var(--ui-text);
+    &:hover:not(:disabled):not(:focus) { border-color: var(--ui-field-border-hover); }
+    &:focus { border-color: #32acc1; box-shadow: 0 0 0 2px rgba(50, 172, 193, .45); outline: none; }
+    &::placeholder { color: var(--ui-placeholder); opacity: 1; }
+    &:disabled { color: var(--ui-disabled); }
+  }
+  // Tailwind fields that declare themselves borderless / transparent sit inside a bordered wrapper: no fill or ring of their own.
+  input[class*="border-0"], input[class*="border-none"], input[class*="bg-transparent"], input[class*="outline-none"]:not([class*="border"]),
+  select[class*="border-0"], select[class*="bg-transparent"], textarea[class*="border-0"], textarea[class*="bg-transparent"] {
+    background-color: transparent; box-shadow: none;
+    &:focus { box-shadow: none; }
+  }
+  // Tailwind fields that ask for a white fill get the field colour, not the card colour.
+  input.bg-white, select.bg-white, textarea.bg-white { background-color: var(--ui-field); }
+  .re__surface, .re__surfaceWrap { background-color: var(--ui-field); }
+  .re__toolbar { background: var(--ui-surface-1); }
+  .re__btn { color: var(--ui-text-3); }
+  .re__btn:hover { background: var(--ui-hover); border-color: var(--ui-line-strong); color: #fff; }
+  .re__btn:active { background: var(--ui-line); }
+  .re__btn.is-on { background: var(--ui-selected); border-color: var(--color-brand-600); color: #fff; }
+
+  // Checkboxes / radios keep a visible border in both states.
+  input[type="checkbox"]:not(.no-custom) { background: var(--ui-field); border-color: #6e6e6e; }
+  input[type="checkbox"]:not(.no-custom):checked,
+  input[type="checkbox"]:not(.no-custom):indeterminate { background-color: var(--color-brand-600); border-color: var(--color-brand-500); }
+  input[type="radio"] { accent-color: var(--color-brand-500); }
+
+  // Toggles: visible off track + knob, teal when on.
+  .t-switch { background: #3c3c3c; box-shadow: inset 0 0 0 1px #5a5a5a; }
+  .t-thumb { background: #9d9d9d; box-shadow: none; }
+  .t-row[aria-checked='true'] .t-switch { background: var(--color-brand-600); box-shadow: none; }
+  .t-row[aria-checked='true'] .t-thumb { background: #fff; }
+
+  // ── Buttons ─────────────────────────────────────────────────────────
+  // Primary: solid #1f7f90 + white text (4.6:1); flat, no glow or gradient.
+  .btn-primary {
+    background: var(--color-brand-600); color: #fff; border-color: transparent;
+    background-image: none; box-shadow: none; text-shadow: none;
+    &:hover:not(:disabled) { background: var(--color-brand-700); }
+    &:active:not(:disabled) { background: var(--color-brand-800); }
+    &:focus-visible { outline: 2px solid var(--ui-brand-t600); outline-offset: 2px; }
+  }
+  // Gradient / glow call-to-action buttons (e.g. "Add New") go flat.
+  button[class*="from-brand"], a[class*="from-brand"], .dmb__trigger[class*="from-brand"] {
+    background-image: none; background-color: var(--color-brand-600); color: #fff;
+    box-shadow: none; transform: none;
+    &:hover:not(:disabled) { background-color: var(--color-brand-700); box-shadow: none; transform: none; }
+    &:active:not(:disabled) { background-color: var(--color-brand-800); }
+  }
+  // Selected items: tinted background + a 2px teal bar on the leading edge (sidebar and list menus).
+  app-sidebar .menu-row.active, app-sidebar .sub-row.active { position: relative; background: var(--ui-selected); }
+  app-sidebar .menu-row.active::after, app-sidebar .sub-row.active::after,
+  .dmb__item--active::before,
+  .cdk-overlay-pane button[role="option"][aria-selected="true"]::before {
+    content: ''; position: absolute; inset-block: 0; inset-inline-start: 0; width: 2px; background: #32acc1; pointer-events: none;
+  }
+  .dmb__item--active {
+    position: relative; background: var(--ui-selected); color: var(--ui-text);
+    &:hover:not(:disabled) { background: var(--ui-selected); color: #fff; }
+  }
+  .cdk-overlay-pane button[role="option"][aria-selected="true"] { position: relative; background-color: var(--ui-selected); }
+
+  // Teal outline-style actions need the lighter teal to read as text.
+  .re__figFootBtn, .rlp__footBtn, .re-gal-add { color: var(--ui-brand-t600); }
+
+  // Charts (ApexCharts): axes, grid, legend and tooltips follow the tokens, so they switch live with the theme.
+  .apexcharts-xaxis-label, .apexcharts-yaxis-label, .apexcharts-xaxis-title-text, .apexcharts-yaxis-title-text,
+  .apexcharts-legend-text, .apexcharts-title-text, .apexcharts-subtitle-text { fill: var(--ui-muted) !important; color: var(--ui-muted) !important; }
+  .apexcharts-gridline, .apexcharts-xaxis-tick, .apexcharts-grid-borders line, .apexcharts-xaxis line, .apexcharts-yaxis line { stroke: var(--ui-line) !important; }
+  [class*="apexcharts-gridRow"] { fill: var(--ui-surface-1) !important; }
+  .apexcharts-pie-area, .apexcharts-treemap-rect, .apexcharts-heatmap-rect { stroke: var(--ui-surface); }
+  .apexcharts-tooltip, .apexcharts-xaxistooltip, .apexcharts-yaxistooltip, .apexcharts-menu {
+    background: var(--ui-elevated) !important; color: var(--ui-text) !important;
+    border: 1px solid var(--ui-elevated-border) !important; box-shadow: 0 8px 24px rgba(0, 0, 0, .5) !important;
+  }
+  .apexcharts-tooltip-title, .apexcharts-menu-item:hover { background: var(--ui-surface-2) !important; border-bottom-color: var(--ui-line) !important; color: var(--ui-text) !important; }
+  .apexcharts-toolbar svg { fill: var(--ui-muted); }
+
+  // Secondary / outline
+  .btn-default, .btn-ghost, .btn-outline, .btn-secondary, .btn-cancel {
+    background: transparent; border-color: #3a4452; color: #e6e6e6;
+    &:hover:not(:disabled) { background: var(--ui-hover); border-color: #4a4a4a; }
+    &:focus-visible { outline: 2px solid var(--ui-brand-t600); outline-offset: 2px; }
+  }
+  // Really disabled: clearly inactive but legible (no opacity fade).
+  .btn:disabled, .btn-primary:disabled {
+    background: #2a2d2e; border-color: #3c3c3c; color: #8b8b8b; opacity: 1; box-shadow: none;
+  }
+  // Icon buttons need a visible hover.
+  .icon-btn:hover, .btn-icon:hover, [class*="icon-btn"]:hover:not(:disabled) {
+    background-color: var(--ui-hover);
+  }
+
+  // ── Pagination ──────────────────────────────────────────────────────
+  app-pagination button[aria-current="page"] {
+    background: var(--color-brand-600); color: #fff; border-color: var(--color-brand-600);
+  }
+  app-pagination button:not([aria-current]):hover:not(:disabled) { background: var(--ui-hover); }
+
+  // ── Shell ───────────────────────────────────────────────────────────
+  app-sidebar {
+    --bg: var(--ui-sidebar); --border: var(--ui-line); --bg-hover: var(--ui-hover); --bg-active: var(--ui-selected);
+    --text: #cccccc; --text-muted: #9d9d9d; --text-on: #ffffff;
+    .sidebar-footer { background: var(--ui-sidebar); backdrop-filter: none; }
+  }
+  .ffs, .form-footer { background: var(--ui-footer-bg); border-top: 1px solid var(--ui-line); box-shadow: none; backdrop-filter: none; }
+}
+
+// ── Documents stay light ───────────────────────────────────────────────
+// Paper previews re-declare the light tokens, so a dark page never tints an invoice.
+html.app-dark app-document-paper,
+html.app-dark app-designer-paper,
+html.app-dark .keep-light {
+  @include light-tokens;
+  background: #fff; color: #0f172a; filter: none; opacity: 1;
+}
+
+// Printing and PDF capture always use the light page.
+@media print {
+  html.app-dark {
+    @include light-tokens;
+    --ui-page: #fff;
+    background: #fff;
+    body { background: #fff; color: #0f172a; }
+  }
+}

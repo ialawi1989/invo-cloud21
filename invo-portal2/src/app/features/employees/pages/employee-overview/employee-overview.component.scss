@@ -30,7 +30,7 @@
     height: 64px;
     border-radius: 999px;
     background: var(--color-brand-50);
-    color: var(--color-brand-700);
+    color: var(--ui-brand-t700);
     overflow: hidden;
     display: inline-flex;
     align-items: center;
@@ -50,7 +50,7 @@
     margin: 0;
     font-size: 22px;
     font-weight: 700;
-    color: #0f172a;                       // slate-900
+    color: var(--ui-text);                       // slate-900
     display: flex;
     align-items: center;
     gap: 10px;
@@ -61,8 +61,8 @@
   &__badge {
     font-size: 12px;
     font-weight: 600;
-    color: #475569;                       // slate-600
-    background: #f1f5f9;                  // slate-100
+    color: var(--ui-text-4);                       // slate-600
+    background: var(--ui-surface-2);                  // slate-100
     border-radius: 6px;
     padding: 3px 8px;
   }
@@ -70,7 +70,7 @@
   &__role {
     margin: 4px 0 0;
     font-size: 14px;
-    color: var(--color-brand-700);
+    color: var(--ui-brand-t700);
   }
 
   &__actions {
@@ -92,8 +92,8 @@
     margin: 0;
     padding: 6px;
     list-style: none;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;            // slate-200
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-line);            // slate-200
     border-radius: 10px;
     box-shadow: 0 10px 24px rgba(15, 23, 42, .10);
     z-index: 20;
@@ -108,13 +108,13 @@
     background: transparent;
     text-align: start;
     font-size: 14px;
-    color: #0f172a;
+    color: var(--ui-text);
 
-    &:hover:not(:disabled) { background: #f8fafc; }   // slate-50
+    &:hover:not(:disabled) { background: var(--ui-surface-1); }   // slate-50
 
     // Already terminated. Dimmed rather than hidden, so the absence of the
     // action is explained by the state instead of looking like a missing menu.
-    &:disabled { color: #94a3b8; cursor: not-allowed; }
+    &:disabled { color: var(--ui-faint); cursor: not-allowed; }
   }
 }
 
@@ -137,7 +137,7 @@
   border-radius: 7px;
   border: 0;
   background: transparent;
-  color: #64748b;                          // slate-500
+  color: var(--ui-muted);                          // slate-500
   font-size: 14px;
   line-height: 1;
   display: inline-flex;
@@ -147,7 +147,7 @@
 
   &:hover {
     background: var(--color-brand-50);
-    color: var(--color-brand-700);
+    color: var(--ui-brand-t700);
   }
 
   &:focus-visible {
@@ -174,14 +174,14 @@
   &__key {
     margin: 0;
     font-size: 14px;
-    color: #64748b;                        // slate-500
+    color: var(--ui-muted);                        // slate-500
   }
 
   &__val {
     margin: 0;
     font-size: 14px;
     font-weight: 600;
-    color: #0f172a;                        // slate-900
+    color: var(--ui-text);                        // slate-900
     // A long address or email must wrap inside its cell rather than widening
     // the grid and pushing the page into a horizontal scroll.
     overflow-wrap: anywhere;
@@ -194,7 +194,7 @@
 
 .kv__empty {
   margin: 0;
-  color: var(--text-muted, #6b7280);
+  color: var(--text-muted, var(--ui-muted));
   font-size: 0.875rem;
 }
 
@@ -209,12 +209,12 @@
 
   &__avatar { width: 48px; height: 48px; }
   &__meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-  &__role { font-size: 14px; font-weight: 600; color: #334155; }
-  &__loc { font-size: 13px; color: #64748b; }
+  &__role { font-size: 14px; font-weight: 600; color: var(--ui-text-3); }
+  &__loc { font-size: 13px; color: var(--ui-muted); }
   &__pill {
     font-size: 12px; font-weight: 600; border-radius: 999px; padding: 2px 10px;
-    background: #e0f2fe; color: #0369a1;
-    &--off { background: #fee2e2; color: #b91c1c; }
+    background: var(--ui-sky-soft); color: #0369a1;
+    &--off { background: var(--ui-red-soft); color: var(--ui-red-text); }
   }
 }
 
@@ -235,9 +235,9 @@
   }
 
   .card {
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--ui-line);
     border-radius: 12px;
-    background: #fff;
+    background: var(--ui-surface);
     padding: 16px;
     display: flex;
     flex-direction: column;
@@ -247,7 +247,7 @@
   }
 
   .card__head { padding: 0; border: 0; justify-content: space-between; }
-  .card__title { margin: 0; font-size: 14px; font-weight: 700; color: #0f172a; }
+  .card__title { margin: 0; font-size: 14px; font-weight: 700; color: var(--ui-text); }
   .card__body { padding: 0; }
 
   // Label left, value right — one line per fact, like the customer cards.

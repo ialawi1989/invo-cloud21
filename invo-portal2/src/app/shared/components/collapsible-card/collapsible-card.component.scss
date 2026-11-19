@@ -1,7 +1,7 @@
 :host {
   display: block;
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
   border-radius: 12px;
   margin-bottom: 16px;
 }
@@ -12,7 +12,7 @@
   padding: 16px 20px 14px;
 }
 /* Divider only while the body is showing — a collapsed card is a plain bar. */
-.cc__head:has(+ .cc__body) { border-bottom: 1px solid #f1f5f9; }
+.cc__head:has(+ .cc__body) { border-bottom: 1px solid var(--ui-surface-2); }
 
 .cc__toggle {
   /* `space-between` puts the chevron at the END of the header rather than in
@@ -28,19 +28,19 @@
 .cc__chevron {
   display: inline-flex; flex-shrink: 0;
   margin-inline-start: auto;   /* stays at the end even beside a long subtitle */
-  color: #94a3b8;
+  color: var(--ui-faint);
   transition: transform 150ms ease, color 120ms ease;
-  .cc__toggle:hover & { color: var(--color-brand-600, #0e7490); }
+  .cc__toggle:hover & { color: var(--ui-brand-t600); }
   transform: rotate(90deg);          /* closed → points down */
   &--open { transform: rotate(-90deg); } /* open → points up */
 }
 /* Vertical chevrons need no RTL mirroring — down/up read the same either way. */
 
 .cc__titles { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
-.cc__title { font-size: 15px; font-weight: 600; color: #0f172a; }
-.cc__required { color: #ef4444; font-weight: 700; }
-.cc__sub { font-size: 12px; color: #64748b; }
-.cc__count { color: #94a3b8; font-weight: 500; }
+.cc__title { font-size: 15px; font-weight: 600; color: var(--ui-text); }
+.cc__required { color: var(--ui-red-text); font-weight: 700; }
+.cc__sub { font-size: 12px; color: var(--ui-muted); }
+.cc__count { color: var(--ui-faint); font-weight: 500; }
 
 .cc__actions { flex-shrink: 0; display: flex; align-items: center; gap: 8px; }
 

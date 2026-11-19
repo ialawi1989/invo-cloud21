@@ -121,46 +121,46 @@ export interface TermsResult {
     .terms-header {
       display: flex; align-items: center; gap: 12px;
       padding: 20px 52px 16px 24px;
-      border-bottom: 1px solid #e5e7eb; flex-shrink: 0;
+      border-bottom: 1px solid var(--ui-line); flex-shrink: 0;
     }
     .terms-icon {
       width: 42px; height: 42px; border-radius: 10px; flex-shrink: 0;
-      background: linear-gradient(135deg, #e8f8fb, #d0eef5);
+      background: linear-gradient(135deg, var(--ui-x-e8f8fb), var(--ui-x-d0eef5));
       color: #32acc1; display: flex; align-items: center; justify-content: center;
     }
-    .terms-title { font-size: 16px; font-weight: 600; color: #111827; margin: 0 0 2px; }
-    .terms-meta  { font-size: 12px; color: #9ca3af; margin: 0; }
+    .terms-title { font-size: 16px; font-weight: 600; color: var(--ui-text); margin: 0 0 2px; }
+    .terms-meta  { font-size: 12px; color: var(--ui-faint); margin: 0; }
     .dot { margin: 0 6px; }
 
     .scroll-hint {
       display: flex; align-items: center; justify-content: center; gap: 6px;
       padding: 7px 16px; font-size: 12px; font-weight: 500; flex-shrink: 0;
-      background: #fff8e1; color: #856404; border-bottom: 1px solid #ffd966;
+      background: var(--ui-x-fff8e1); color: var(--ui-t-856404); border-bottom: 1px solid var(--ui-x-ffd966);
       transition: background .4s, color .4s;
     }
-    .scroll-hint--done { background: #e8f8eb; color: #1a6630; border-color: #a3d9ae; }
+    .scroll-hint--done { background: var(--ui-x-e8f8eb); color: var(--ui-t-1a6630); border-color: #a3d9ae; }
 
     .terms-body {
       flex: 1 1 auto; overflow-y: auto; padding: 24px 28px;
-      background: #fafbfc; min-height: 0;
+      background: var(--ui-surface-1); min-height: 0;
       scrollbar-width: thin; scrollbar-color: #32acc1 #f0f0f0;
     }
     .terms-body::-webkit-scrollbar       { width: 6px; }
-    .terms-body::-webkit-scrollbar-track { background: #f0f0f0; border-radius: 3px; }
+    .terms-body::-webkit-scrollbar-track { background: var(--ui-x-f0f0f0); border-radius: 3px; }
     .terms-body::-webkit-scrollbar-thumb { background: #32acc1; border-radius: 3px; }
 
-    .terms-content { color: #2c3e50; font-size: 14px; line-height: 1.75; }
-    .terms-content h2, .terms-content h3 { color: #111827; font-weight: 600; margin-top: 1.4em; }
+    .terms-content { color: var(--ui-t-2c3e50); font-size: 14px; line-height: 1.75; }
+    .terms-content h2, .terms-content h3 { color: var(--ui-text); font-weight: 600; margin-top: 1.4em; }
     .terms-plain { white-space: pre-wrap; word-break: break-word; font-family: inherit; }
     .terms-sentinel { height: 1px; }
 
     .terms-error {
       margin: 8px 24px; padding: 10px 14px; flex-shrink: 0;
-      background: rgba(239,68,68,.08); color: #ef4444;
+      background: rgba(239,68,68,.08); color: var(--ui-red-text);
       border: 1px solid rgba(239,68,68,.15); border-radius: 8px; font-size: 13px;
     }
 
-    .terms-footer { padding: 16px 24px 20px; border-top: 1px solid #e5e7eb; flex-shrink: 0; }
+    .terms-footer { padding: 16px 24px 20px; border-top: 1px solid var(--ui-line); flex-shrink: 0; }
     .terms-lock-row {
       display: flex; align-items: center; gap: 10px;
       margin-bottom: 16px; transition: opacity .3s;
@@ -168,17 +168,17 @@ export interface TermsResult {
     .terms-lock-row--disabled { opacity: .55; }
     .lock-icon {
       width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
-      background: #f3f4f6; color: #9ca3af;
+      background: var(--ui-surface-2); color: var(--ui-faint);
       display: flex; align-items: center; justify-content: center;
     }
-    .lock-label { font-size: 13px; color: #6b7280; margin: 0; line-height: 1.4; }
-    .lock-label strong { color: #111827; }
+    .lock-label { font-size: 13px; color: var(--ui-muted); margin: 0; line-height: 1.4; }
+    .lock-label strong { color: var(--ui-text); }
 
     .terms-actions { display: flex; gap: 10px; justify-content: flex-end; }
     .btn-decline {
-      padding: 10px 24px; background: #f3f4f6; border: 1px solid #e5e7eb;
+      padding: 10px 24px; background: var(--ui-surface-2); border: 1px solid var(--ui-line);
       border-radius: 8px; font-size: 14px; cursor: pointer;
-      &:hover { background: #e5e7eb; }
+      &:hover { background: var(--ui-line); }
     }
     .btn-accept {
       display: flex; align-items: center; justify-content: center;
@@ -191,7 +191,7 @@ export interface TermsResult {
     }
     .spinner {
       width: 18px; height: 18px;
-      border: 2px solid rgba(255,255,255,.3); border-top-color: #fff;
+      border: 2px solid rgba(255,255,255,.3); border-top-color: var(--ui-surface);
       border-radius: 50%; animation: spin .6s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }

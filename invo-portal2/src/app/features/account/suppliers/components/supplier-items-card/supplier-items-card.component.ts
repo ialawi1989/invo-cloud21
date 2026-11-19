@@ -82,26 +82,26 @@ interface Row extends SupplierItem { selected?: boolean }
   `,
   styles: [`
     :host { display: block; }
-    .si { background: #fff; border: 1px solid #e4e7ec; border-radius: 12px; padding: 18px 20px; margin-bottom: 14px; display: flex; flex-direction: column; gap: 14px; }
+    .si { background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: 12px; padding: 18px 20px; margin-bottom: 14px; display: flex; flex-direction: column; gap: 14px; }
     .si__head, .si__bar, .si__pager { display: flex; align-items: center; gap: 10px; justify-content: space-between; }
     .si__tools { display: flex; gap: 8px; }
-    .si__title { margin: 0; font-size: 15px; font-weight: 700; color: #0f172a; }
-    .si__btn { padding: 7px 14px; border-radius: 8px; border: 1px solid #d0d5dd; background: #fff; color: #334155; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .si__title { margin: 0; font-size: 15px; font-weight: 700; color: var(--ui-text); }
+    .si__btn { padding: 7px 14px; border-radius: 8px; border: 1px solid var(--ui-line-strong); background: var(--ui-surface); color: var(--ui-text-3); font-size: 13px; font-weight: 600; cursor: pointer; }
     .si__btn:disabled { opacity: .5; cursor: not-allowed; }
-    .si__btn--danger { border-color: #fecaca; color: #dc2626; }
-    .si__search { flex: 1; max-width: 320px; border: 1px solid #d0d5dd; border-radius: 8px; padding: 8px 12px; font: inherit; }
-    .si__wrap { overflow-x: auto; border: 1px solid #e4e7ec; border-radius: 10px; }
+    .si__btn--danger { border-color: var(--ui-red-soft-2); color: var(--ui-red-text); }
+    .si__search { flex: 1; max-width: 320px; border: 1px solid var(--ui-line-strong); border-radius: 8px; padding: 8px 12px; font: inherit; }
+    .si__wrap { overflow-x: auto; border: 1px solid var(--ui-line); border-radius: 10px; }
     .si__table { width: 100%; min-width: 640px; border-collapse: collapse; font-size: 13.5px; }
-    .si__table th { text-align: start; background: #f8f9fc; color: #64748b; font-size: 12px; text-transform: uppercase; padding: 10px 12px; }
-    .si__table td { padding: 8px 12px; border-top: 1px solid #f1f5f9; }
+    .si__table th { text-align: start; background: var(--ui-x-f8f9fc); color: var(--ui-muted); font-size: 12px; text-transform: uppercase; padding: 10px 12px; }
+    .si__table td { padding: 8px 12px; border-top: 1px solid var(--ui-surface-2); }
     .si__table .end { text-align: end; } .si__chk { width: 36px; } .si__sort { cursor: pointer; user-select: none; }
-    .is-selected { background: #e6f4f6; }
-    .si__sub { display: block; color: #94a3b8; font-size: 12px; }
-    .si__input { width: 100%; border: 1px solid #d0d5dd; border-radius: 6px; padding: 7px 10px; font: inherit; }
+    .is-selected { background: var(--ui-x-e6f4f6); }
+    .si__sub { display: block; color: var(--ui-faint); font-size: 12px; }
+    .si__input { width: 100%; border: 1px solid var(--ui-line-strong); border-radius: 6px; padding: 7px 10px; font: inherit; }
     .si__input--num { width: 120px; text-align: end; }
-    .si__empty { text-align: center; color: #94a3b8; padding: 22px; }
-    .si__pager { justify-content: flex-end; color: #475569; font-size: 13px; }
-    .si__limit { border: 1px solid #d0d5dd; border-radius: 8px; padding: 6px 8px; font: inherit; }
+    .si__empty { text-align: center; color: var(--ui-faint); padding: 22px; }
+    .si__pager { justify-content: flex-end; color: var(--ui-text-4); font-size: 13px; }
+    .si__limit { border: 1px solid var(--ui-line-strong); border-radius: 8px; padding: 6px 8px; font: inherit; }
   `],
 })
 export class SupplierItemsCardComponent implements OnInit {

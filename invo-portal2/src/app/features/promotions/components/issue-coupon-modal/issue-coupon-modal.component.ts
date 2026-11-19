@@ -97,14 +97,14 @@ export interface IssueCouponResult {
   `,
   styles: [`
     .icm { padding: 16px 24px; min-width: 440px; max-width: 100%; display: flex; flex-direction: column; gap: 14px; }
-    .icm-field { display: flex; flex-direction: column; gap: 6px; > label { font-size: 13px; font-weight: 600; color: #334155; } small { font-weight: 400; color: #64748b; } }
+    .icm-field { display: flex; flex-direction: column; gap: 6px; > label { font-size: 13px; font-weight: 600; color: var(--ui-text-3); } small { font-weight: 400; color: var(--ui-muted); } }
     .icm-inline { display: flex; gap: 8px; }
-    .icm-input { flex: 1; padding: 9px 12px; border: 1px solid #d0d5dd; border-radius: 8px; font-size: 13.5px; color: #0f172a; font-family: inherit; }
+    .icm-input { flex: 1; padding: 9px 12px; border: 1px solid var(--ui-line-strong); border-radius: 8px; font-size: 13.5px; color: var(--ui-text); font-family: inherit; }
     .icm-input:focus { outline: none; border-color: #2691a4; box-shadow: 0 0 0 3px rgba(38,145,164,.12); }
-    .icm-error { margin: 0; font-size: 12px; color: #dc2626; }
-    .icm-btn { padding: 9px 16px; border-radius: 8px; border: 1px solid #d0d5dd; background: #fff; color: #334155; font-size: 13.5px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+    .icm-error { margin: 0; font-size: 12px; color: var(--ui-red-text); }
+    .icm-btn { padding: 9px 16px; border-radius: 8px; border: 1px solid var(--ui-line-strong); background: var(--ui-surface); color: var(--ui-text-3); font-size: 13.5px; font-weight: 600; cursor: pointer; white-space: nowrap; }
     .icm-btn:disabled { opacity: .5; cursor: not-allowed; }
-    .icm-btn--primary { border-color: #2691a4; background: #2691a4; color: #fff; }
+    .icm-btn--primary { border-color: #2691a4; background: var(--ui-b-2691a4); color: #fff; }
   `],
 })
 export class IssueCouponModalComponent {

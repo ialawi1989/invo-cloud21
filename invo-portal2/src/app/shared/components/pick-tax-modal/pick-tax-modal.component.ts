@@ -133,7 +133,7 @@ import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton
       left: 32px;
       top: 50%;
       transform: translateY(-50%);
-      color: #94a3b8;
+      color: var(--ui-faint);
       pointer-events: none;
     }
 
@@ -141,9 +141,9 @@ import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton
       width: 100%;
       padding: 8px 32px 8px 34px;
       font-size: 13px;
-      color: #0f172a;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
+      color: var(--ui-text);
+      background: var(--ui-surface-1);
+      border: 1px solid var(--ui-line);
       border-radius: 8px;
       font-family: inherit;
       box-sizing: border-box;
@@ -151,11 +151,11 @@ import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton
 
       &:focus {
         outline: none;
-        background: #fff;
+        background: var(--ui-surface);
         border-color: #32acc1;
         box-shadow: 0 0 0 3px rgba(50,172,193,0.12);
       }
-      &::placeholder { color: #94a3b8; }
+      &::placeholder { color: var(--ui-faint); }
     }
 
     .search-clear {
@@ -167,10 +167,10 @@ import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton
       align-items: center;
       background: none;
       border: none;
-      color: #94a3b8;
+      color: var(--ui-faint);
       cursor: pointer;
       padding: 4px;
-      &:hover { color: #475569; }
+      &:hover { color: var(--ui-text-4); }
     }
 
     .list {
@@ -187,19 +187,19 @@ import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton
       cursor: pointer;
       transition: background 100ms;
 
-      &:hover { background: #f8fafc; }
-      &--selected { background: #f0fafb; }
+      &:hover { background: var(--ui-surface-1); }
+      &--selected { background: var(--ui-x-f0fafb); }
     }
 
     .radio {
       width: 18px;
       height: 18px;
       border-radius: 50%;
-      border: 1.5px solid #cbd5e1;
+      border: 1.5px solid var(--ui-line-strong);
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #fff;
+      background: var(--ui-surface);
       flex-shrink: 0;
       transition: border-color 120ms;
 
@@ -218,7 +218,7 @@ import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton
     .item__name {
       font-size: 13px;
       font-weight: 600;
-      color: #0f172a;
+      color: var(--ui-text);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -226,7 +226,7 @@ import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton
 
     .item__pct {
       font-size: 12px;
-      color: #64748b;
+      color: var(--ui-muted);
       flex-shrink: 0;
     }
 
@@ -244,18 +244,18 @@ import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton
       text-transform: uppercase;
       white-space: nowrap;
 
-      &--teal      { background: #ccf2f6; color: #0e7490; }
-      &--secondary { background: #f1f5f9; color: #475569; }
+      &--teal      { background: var(--ui-x-ccf2f6); color: var(--ui-brand-text); }
+      &--secondary { background: var(--ui-surface-2); color: var(--ui-text-4); }
     }
 
     .footer-bar {
       padding: 9px 20px;
-      border-top: 1px solid #f1f5f9;
+      border-top: 1px solid var(--ui-surface-2);
       flex-shrink: 0;
     }
 
     .selected-label { font-size: 12px; color: #00a8b8; font-weight: 600; }
-    .selected-hint  { font-size: 12px; color: #94a3b8; }
+    .selected-hint  { font-size: 12px; color: var(--ui-faint); }
 
     .state-center {
       display: flex;
@@ -263,7 +263,7 @@ import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton
       justify-content: center;
       gap: 8px;
       padding: 40px 20px;
-      color: #94a3b8;
+      color: var(--ui-faint);
       font-size: 13px;
 
       &--sm { padding: 14px; }
@@ -273,7 +273,7 @@ import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton
       width: 22px;
       height: 22px;
       border-radius: 50%;
-      border: 2.5px solid #e2e8f0;
+      border: 2.5px solid var(--ui-line);
       border-top-color: #32acc1;
       display: inline-block;
       animation: spin .7s linear infinite;
@@ -282,16 +282,16 @@ import { ListSkeletonComponent } from '@shared/components/skeleton/list-skeleton
 
     .btn-cancel {
       padding: 9px 20px;
-      background: #fff;
-      color: #374151;
-      border: 1px solid #e2e8f0;
+      background: var(--ui-surface);
+      color: var(--ui-text-3);
+      border: 1px solid var(--ui-line);
       border-radius: 8px;
       font: inherit;
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
       transition: background 120ms;
-      &:hover { background: #f8fafc; }
+      &:hover { background: var(--ui-surface-1); }
     }
 
     .btn-submit {

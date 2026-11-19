@@ -46,14 +46,14 @@ const TEMPLATE = [
   `,
   styles: [`
     .im { padding: 16px 20px; display: flex; flex-direction: column; gap: 12px; min-width: 460px; max-width: 100%; }
-    .im__hint { margin: 0; color: #64748b; font-size: 13px; }
+    .im__hint { margin: 0; color: var(--ui-muted); font-size: 13px; }
     .im__row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
     .im__file { flex: 1; font: inherit; }
-    .im__error { margin: 0; color: #dc2626; font-size: 13px; }
-    .im__ok { margin: 0; color: #15803d; font-size: 13px; }
-    .im__btn { padding: 9px 18px; border-radius: 8px; border: 1px solid #d0d5dd; background: #fff; color: #334155; font-weight: 600; cursor: pointer; }
+    .im__error { margin: 0; color: var(--ui-red-text); font-size: 13px; }
+    .im__ok { margin: 0; color: var(--ui-green-text); font-size: 13px; }
+    .im__btn { padding: 9px 18px; border-radius: 8px; border: 1px solid var(--ui-line-strong); background: var(--ui-surface); color: var(--ui-text-3); font-weight: 600; cursor: pointer; }
     .im__btn:disabled { opacity: .5; cursor: not-allowed; }
-    .im__btn--primary { border-color: #2691a4; background: #2691a4; color: #fff; }
+    .im__btn--primary { border-color: #2691a4; background: var(--ui-b-2691a4); color: #fff; }
   `],
 })
 export class SupplierItemsImportModalComponent {

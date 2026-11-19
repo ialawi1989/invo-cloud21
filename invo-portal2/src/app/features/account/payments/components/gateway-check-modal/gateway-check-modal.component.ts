@@ -52,19 +52,19 @@ export interface GatewayCheckData {
     </div>
   `,
   styles: [`
-    .gc { padding: 16px 20px; min-width: min(640px, 92vw); max-height: 70vh; overflow: auto; display: flex; flex-direction: column; gap: 10px; font-size: 13.5px; color: #0f172a; }
-    .gc__muted { color: #64748b; margin: 0; }
-    .gc__error { padding: 10px 12px; border: 1px solid #fecaca; background: #fef2f2; color: #b91c1c; border-radius: 8px; }
+    .gc { padding: 16px 20px; min-width: min(640px, 92vw); max-height: 70vh; overflow: auto; display: flex; flex-direction: column; gap: 10px; font-size: 13.5px; color: var(--ui-text); }
+    .gc__muted { color: var(--ui-muted); margin: 0; }
+    .gc__error { padding: 10px 12px; border: 1px solid var(--ui-red-soft-2); background: var(--ui-red-soft); color: var(--ui-red-text); border-radius: 8px; }
     .gc__facts { margin: 0; display: grid; gap: 6px; }
     .gc__facts div { display: flex; gap: 8px; }
     .gc__facts dt { font-weight: 600; min-width: 130px; }
     .gc__facts dd { margin: 0; word-break: break-word; }
     .gc__h { margin: 8px 0 0; font-size: 13px; font-weight: 700; }
-    .gc__pre { margin: 0; padding: 10px 12px; background: #f1f5f9; border-radius: 8px; font-size: 12px; max-height: 220px; overflow: auto; white-space: pre-wrap; word-break: break-word; direction: ltr; text-align: left; }
+    .gc__pre { margin: 0; padding: 10px 12px; background: var(--ui-surface-2); border-radius: 8px; font-size: 12px; max-height: 220px; overflow: auto; white-space: pre-wrap; word-break: break-word; direction: ltr; text-align: left; }
     .gc__end { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
-    .gc__btn { border: 1px solid #d0d5dd; background: #fff; color: #344054; border-radius: 8px; padding: 8px 16px; font: inherit; font-weight: 500; cursor: pointer;
+    .gc__btn { border: 1px solid var(--ui-line-strong); background: var(--ui-surface); color: var(--ui-t-344054); border-radius: 8px; padding: 8px 16px; font: inherit; font-weight: 500; cursor: pointer;
       &:disabled { opacity: .5; cursor: not-allowed; } }
-    .gc__btn--primary { background: #2691a4; border-color: #2691a4; color: #fff; }
+    .gc__btn--primary { background: var(--ui-b-2691a4); border-color: #2691a4; color: #fff; }
   `],
 })
 export class GatewayCheckModalComponent implements OnInit {

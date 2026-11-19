@@ -25,7 +25,7 @@ $rad-input:  6px;
 .ai-panel {
   height: 100%;
   display: flex; flex-direction: column;
-  background: #fff; border-inline-start: $border-rule;
+  background: var(--ui-surface); border-inline-start: $border-rule;
   box-shadow: -8px 0 24px rgba(0,0,0,0.08);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   font-size: 13.5px; color: $ink;
@@ -56,7 +56,7 @@ $rad-input:  6px;
 }
 .examples { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
 .example {
-  text-align: start; border: $border-rule; background: #fff; color: $ink-2;
+  text-align: start; border: $border-rule; background: var(--ui-surface); color: $ink-2;
   border-radius: 8px; padding: 8px 10px; cursor: pointer; font: inherit;
   &:hover { border-color: rgba($teal, .5); color: $ink; }
 }
@@ -70,12 +70,12 @@ $rad-input:  6px;
   border-end-end-radius: 3px;
 }
 .msg--ai {
-  align-self: flex-start; background: #fff; border: $border-rule;
+  align-self: flex-start; background: var(--ui-surface); border: $border-rule;
   border-end-start-radius: 3px; width: 92%;
   .explanation { margin: 0; }
 }
-.msg--nospec { background: #fffaf0; }
-.msg--error { align-self: flex-start; background: #fdecea; color: #a1281b; }
+.msg--nospec { background: var(--ui-x-fffaf0); }
+.msg--error { align-self: flex-start; background: var(--ui-x-fdecea); color: var(--ui-t-a1281b); }
 .msg--pending { color: $ink-3; display: flex; align-items: center; gap: 8px; width: auto; }
 
 .dots {
@@ -112,11 +112,11 @@ $rad-input:  6px;
 }
 .usage--full {
   .usage-bar span { background: #c0392b; }
-  .fine { color: #c0392b; }
+  .fine { color: var(--ui-t-c0392b); }
 }
 
 .ai-compose {
-  border-top: $border-rule; padding: 10px 12px 12px; background: #fff;
+  border-top: $border-rule; padding: 10px 12px 12px; background: var(--ui-surface);
 }
 .refine {
   display: flex; align-items: center; gap: 6px; margin: 0 0 8px;

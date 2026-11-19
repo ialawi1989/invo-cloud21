@@ -11,13 +11,13 @@
   &__titles { min-width: 0; }
   &__actions { flex-shrink: 0; display: flex; align-items: center; gap: 8px; }
 }
-.page-title { margin: 8px 0 2px; font-size: 22px; font-weight: 700; color: #0f172a; letter-spacing: -0.01em; }
-.page-sub { margin: 0; font-size: 13px; color: #64748b; }
+.page-title { margin: 8px 0 2px; font-size: 22px; font-weight: 700; color: var(--ui-text); letter-spacing: -0.01em; }
+.page-sub { margin: 0; font-size: 13px; color: var(--ui-muted); }
 
 .loading { display: flex; align-items: center; justify-content: center; padding: 60px 0; }
 .spinner {
   width: 28px; height: 28px; border-radius: 50%;
-  border: 3px solid #e2e8f0; border-top-color: var(--color-brand-600);
+  border: 3px solid var(--ui-line); border-top-color: var(--color-brand-600);
   animation: pr-spin .8s linear infinite; display: inline-block;
   &--lg { width: 32px; height: 32px; }
 }
@@ -28,15 +28,15 @@
 .toolbar__filters { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
 .search {
   position: relative; display: inline-flex; align-items: center; min-width: 260px; flex: 1; max-width: 380px;
-  &__icon { position: absolute; inset-inline-start: 12px; color: #94a3b8; pointer-events: none; }
+  &__icon { position: absolute; inset-inline-start: 12px; color: var(--ui-faint); pointer-events: none; }
   &__input {
-    width: 100%; padding: 9px 34px; border: 1px solid #e2e8f0; border-radius: 9px; background: #fff;
-    font: inherit; font-size: 13px; color: #0f172a;
-    &::placeholder { color: #94a3b8; }
+    width: 100%; padding: 9px 34px; border: 1px solid var(--ui-line); border-radius: 9px; background: var(--ui-surface);
+    font: inherit; font-size: 13px; color: var(--ui-text);
+    &::placeholder { color: var(--ui-faint); }
     &:focus { outline: none; border-color: var(--color-brand-500); box-shadow: 0 0 0 3px rgba(50,172,193,.12); }
   }
-  &__clear { position: absolute; inset-inline-end: 8px; width: 22px; height: 22px; border: none; background: transparent; color: #94a3b8; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; border-radius: 5px;
-    &:hover { background: #f1f5f9; color: #475569; } }
+  &__clear { position: absolute; inset-inline-end: 8px; width: 22px; height: 22px; border: none; background: transparent; color: var(--ui-faint); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; border-radius: 5px;
+    &:hover { background: var(--ui-surface-2); color: var(--ui-text-4); } }
 }
 /* Category filter — a trigger for the picker modal, styled to sit alongside
    the search box rather than read as a primary action. */
@@ -44,17 +44,17 @@
   display: inline-flex; align-items: center; gap: 8px;
   min-width: 200px; max-width: 320px;
   padding: 9px 12px;
-  background: #fff; border: 1px solid #e2e8f0; border-radius: 9px;
-  font: inherit; font-size: 13px; color: #475569; cursor: pointer;
+  background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: 9px;
+  font: inherit; font-size: 13px; color: var(--ui-text-4); cursor: pointer;
   transition: border-color 120ms ease, color 120ms ease, background 120ms ease;
 
-  svg { color: #94a3b8; flex-shrink: 0; }
-  &:hover { border-color: #cbd5e1; background: #f8fafc; }
+  svg { color: var(--ui-faint); flex-shrink: 0; }
+  &:hover { border-color: var(--ui-line-strong); background: var(--ui-surface-1); }
 
   &--active {
     border-color: var(--color-brand-300, #7dd3e0);
-    background: var(--color-brand-50, #ecfeff);
-    color: var(--color-brand-700, #0e7490);
+    background: var(--color-brand-50, var(--ui-brand-soft));
+    color: var(--color-brand-700, var(--ui-brand-text));
     svg { color: currentColor; }
   }
 
@@ -68,12 +68,12 @@
 }
 
 // ── Empty ──────────────────────────────────────────────────────────────────
-.empty-page { text-align: center; padding: 60px 16px; color: #94a3b8; p { margin: 0; font-size: 14px; } }
+.empty-page { text-align: center; padding: 60px 16px; color: var(--ui-faint); p { margin: 0; font-size: 14px; } }
 
 // ── Product cards ──────────────────────────────────────────────────────────
 .cards { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .pcard {
-  background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;
+  background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: 12px; overflow: hidden;
   transition: box-shadow 150ms ease, border-color 150ms ease;
   &:hover { box-shadow: 0 2px 10px rgba(15,23,42,.06); }
   &--open { border-color: var(--color-brand-300, #7dd3e0); }
@@ -81,27 +81,27 @@
   &__head {
     display: flex; align-items: center; gap: 14px; width: 100%; padding: 14px 16px;
     background: transparent; border: none; cursor: pointer; text-align: start; font: inherit;
-    &:hover { background: #fafbfc; }
+    &:hover { background: var(--ui-surface-1); }
   }
-  &__chevron { color: #94a3b8; display: inline-flex; flex-shrink: 0; transition: transform 150ms ease;
-    &.open { transform: rotate(90deg); color: var(--color-brand-600); } }
+  &__chevron { color: var(--ui-faint); display: inline-flex; flex-shrink: 0; transition: transform 150ms ease;
+    &.open { transform: rotate(90deg); color: var(--ui-brand-t600); } }
   &__main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
   &__title-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  &__name { font-size: 15px; font-weight: 600; color: #0f172a; }
+  &__name { font-size: 15px; font-weight: 600; color: var(--ui-text); }
   &__chip { display: inline-flex; align-items: center; padding: 1px 8px; font-size: 11px; font-weight: 600; border-radius: 5px;
-    &--cat { background: #fff7ed; color: #c2410c; }
-    &--code { background: #ecfdf5; color: #047857; font-family: ui-monospace, Menlo, Consolas, monospace; } }
+    &--cat { background: var(--ui-x-fff7ed); color: var(--ui-orange-text); }
+    &--code { background: var(--ui-green-soft); color: var(--ui-green-text); font-family: ui-monospace, Menlo, Consolas, monospace; } }
   // Pull the row left by the chip's own inline padding so the first tag's TEXT
   // lines up under the product name instead of sitting ~8px to its right.
   &__tags { display: flex; flex-wrap: wrap; gap: 4px; margin-inline-start: -8px; }
-  &__tag { display: inline-flex; align-items: center; padding: 1px 8px; font-size: 11px; font-weight: 500; color: var(--color-brand-700, #0e7490); background: var(--color-brand-50, #ecfeff); border-radius: 5px; }
+  &__tag { display: inline-flex; align-items: center; padding: 1px 8px; font-size: 11px; font-weight: 500; color: var(--ui-brand-t700); background: var(--color-brand-50, var(--ui-brand-soft)); border-radius: 5px; }
 
   // Fixed-width, right-anchored stat columns so ITEMS / COST / MIN line up
   // vertically down the list regardless of each row's value widths.
   &__stats { display: flex; align-items: flex-start; gap: 8px; flex-shrink: 0; padding-inline-start: 12px; }
 
   /* The expanded body is <app-prep-recipe-panel>; it brings its own padding. */
-  app-prep-recipe-panel { display: block; border-top: 1px solid #f1f5f9; background: #f8fafc; }
+  app-prep-recipe-panel { display: block; border-top: 1px solid var(--ui-surface-2); background: var(--ui-surface-1); }
 }
 @media (max-width: 720px) { .pcard__stats { display: none; } }
 
@@ -114,12 +114,12 @@
   &--cost  { width: 116px; }
   &--min   { width: 52px; }
 
-  &__val { font-size: 14px; font-weight: 600; color: #475569; white-space: nowrap;
+  &__val { font-size: 14px; font-weight: 600; color: var(--ui-text-4); white-space: nowrap;
     overflow: hidden; text-overflow: ellipsis; max-width: 100%;
-    &--active { color: #c2410c; }
-    &--cost { color: #047857; }
-    &--time { color: var(--color-brand-600); } }
-  &__label { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: .04em; color: #94a3b8; }
+    &--active { color: var(--ui-orange-text); }
+    &--cost { color: var(--ui-green-text); }
+    &--time { color: var(--ui-brand-t600); } }
+  &__label { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: .04em; color: var(--ui-faint); }
 }
 
 .pager { margin-top: 16px; }

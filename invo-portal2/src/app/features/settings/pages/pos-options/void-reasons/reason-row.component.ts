@@ -69,22 +69,22 @@ import { VoidReasonError, VoidReasonItem, reasonValidator } from './void-reason.
   styles: [`
     :host {
       display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 4px 8px 4px 4px;
-      background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; transition: background .12s, border-color .12s;
+      background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: 10px; transition: background .12s, border-color .12s;
     }
-    :host(:hover) { background: #f8fafc; }
-    :host(.rr--editing) { border-color: var(--color-brand-600, #2691a4); background: #fff; box-shadow: 0 0 0 3px rgba(50, 172, 193, .14); }
+    :host(:hover) { background: var(--ui-surface-1); }
+    :host(.rr--editing) { border-color: var(--color-brand-600, #2691a4); background: var(--ui-surface); box-shadow: 0 0 0 3px rgba(50, 172, 193, .14); }
 
     .rr__handle {
       flex: none; display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 32px;
-      border: 0; background: transparent; color: #94a3b8; cursor: grab; border-radius: 6px;
+      border: 0; background: transparent; color: var(--ui-faint); cursor: grab; border-radius: 6px;
     }
-    .rr__handle:hover { color: #475569; background: #f1f5f9; }
+    .rr__handle:hover { color: var(--ui-text-4); background: var(--ui-surface-2); }
     .rr__handle:active { cursor: grabbing; }
     .rr__handle:focus-visible, .rr__text:focus-visible, .rr__icon:focus-visible { outline: 2px solid var(--color-brand-600, #2691a4); outline-offset: 1px; }
 
     .rr__text {
       flex: 1; min-width: 0; text-align: start; border: 0; background: transparent; padding: 6px 4px; font: inherit; font-size: 14px;
-      color: #0f172a; cursor: text; border-radius: 6px; overflow-wrap: anywhere; line-height: 1.4;
+      color: var(--ui-text); cursor: text; border-radius: 6px; overflow-wrap: anywhere; line-height: 1.4;
     }
 
     .rr__actions { display: inline-flex; gap: 2px; opacity: 0; transition: opacity .12s; }
@@ -94,18 +94,18 @@ import { VoidReasonError, VoidReasonItem, reasonValidator } from './void-reason.
 
     .rr__icon {
       display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: 0; border-radius: 8px;
-      background: transparent; color: #64748b; cursor: pointer;
+      background: transparent; color: var(--ui-muted); cursor: pointer;
     }
-    .rr__icon:hover { background: #e2e8f0; color: #0f172a; }
-    .rr__icon--danger:hover { background: #fef2f2; color: #dc2626; }
+    .rr__icon:hover { background: var(--ui-line); color: var(--ui-text); }
+    .rr__icon--danger:hover { background: var(--ui-red-soft); color: var(--ui-red-text); }
 
     .rr__edit { flex: 1; min-width: 0; }
     .rr__input {
-      width: 100%; padding: 7px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font: inherit; font-size: 14px; color: #0f172a; background: #fff;
+      width: 100%; padding: 7px 10px; border: 1px solid var(--ui-line-strong); border-radius: 8px; font: inherit; font-size: 14px; color: var(--ui-text); background: var(--ui-field);
     }
     .rr__input:focus { outline: none; border-color: var(--color-brand-600, #2691a4); }
     .rr__input[aria-invalid='true'] { border-color: #ef4444; }
-    .rr__error { margin: 4px 0 0; font-size: 12px; color: #dc2626; }
+    .rr__error { margin: 4px 0 0; font-size: 12px; color: var(--ui-red-text); }
   `],
 })
 export class ReasonRowComponent {

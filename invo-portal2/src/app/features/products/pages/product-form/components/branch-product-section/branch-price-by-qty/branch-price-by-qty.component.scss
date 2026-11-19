@@ -2,10 +2,10 @@
 @include pfCard;
 
 .pbq {
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--ui-line);
   border-radius: 10px;
   padding: 12px;
-  background: #f8fafc;
+  background: var(--ui-surface-1);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -20,7 +20,7 @@
     margin: 0;
     font-size: 13px;
     font-weight: 600;
-    color: #334155;
+    color: var(--ui-text-3);
   }
 
   &__add {
@@ -30,18 +30,18 @@
     padding: 6px 10px;
     font-size: 12px;
     font-weight: 500;
-    color: #0e7490;
-    background: #fff;
-    border: 1px solid #a5f3fc;
+    color: var(--ui-brand-text);
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-brand-soft-2);
     border-radius: 6px;
     cursor: pointer;
-    &:hover { background: #ecfeff; }
+    &:hover { background: var(--ui-brand-soft); }
   }
 
   &__hint {
     margin: 0;
     font-size: 11.5px;
-    color: #64748b;
+    color: var(--ui-muted);
     line-height: 1.45;
   }
 
@@ -49,7 +49,7 @@
     margin: 4px 0 0;
     padding: 12px;
     font-size: 12px;
-    color: #94a3b8;
+    color: var(--ui-faint);
     text-align: center;
     font-style: italic;
   }
@@ -65,7 +65,7 @@
   &__head {
     font-size: 11px;
     font-weight: 600;
-    color: #64748b;
+    color: var(--ui-muted);
     text-transform: uppercase;
     letter-spacing: 0.3px;
     padding: 0 2px;
@@ -73,14 +73,14 @@
 
   &__remove {
     padding: 6px;
-    background: #fff;
-    border: 1px solid #e5e7eb;
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-line);
     border-radius: 6px;
-    color: #64748b;
+    color: var(--ui-muted);
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    &:hover { background: #fef2f2; border-color: #fecaca; color: #dc2626; }
+    &:hover { background: var(--ui-red-soft); border-color: var(--ui-red-soft-2); color: var(--ui-red-text); }
   }
 }

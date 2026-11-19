@@ -6,12 +6,12 @@
 // (Document Classic Paper) so they don't collide with the parent
 // builder's chrome.
 .dcp {
-  background: #fff;
+  background: var(--ui-surface);
   box-shadow:
     0 1px 3px rgba(15, 23, 42, 0.12),
     0 10px 40px rgba(15, 23, 42, 0.15);
   font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  color: #1f2937;
+  color: var(--ui-text-2);
   position: relative;
 
   &__header {
@@ -33,7 +33,7 @@
   &__header-right {
     text-align: end;
     font-size: 9pt;
-    color: #64748b;
+    color: var(--ui-muted);
     flex-shrink: 0;
 
     > div + div { margin-top: 2px; }
@@ -64,7 +64,7 @@
 
   &__title {
     text-align: center;
-    color: var(--color-brand-700);
+    color: var(--ui-brand-t700);
     font-weight: 700;
     margin: 18px 0;
     letter-spacing: 3px;
@@ -79,7 +79,7 @@
 
     &-block {
       > div + div { margin-top: 2px; }
-      > strong { color: #1f2937; margin-inline-end: 4px; }
+      > strong { color: var(--ui-text-2); margin-inline-end: 4px; }
 
       &--right { text-align: end; }
     }
@@ -87,7 +87,7 @@
     &-label {
       font-size: 10pt;
       font-weight: 700;
-      color: var(--color-brand-700);
+      color: var(--ui-brand-t700);
       margin-bottom: 4px;
     }
   }
@@ -110,9 +110,9 @@
     }
     td {
       padding: 8px 10px;
-      border-bottom: 1px solid #f3f4f6;
+      border-bottom: 1px solid var(--ui-surface-2);
     }
-    tbody tr:nth-child(even) { background: #fafafa; }
+    tbody tr:nth-child(even) { background: var(--ui-x-fafafa); }
   }
 
   &__col-num { text-align: end; }
@@ -128,12 +128,12 @@
     display: flex;
     justify-content: space-between;
     padding: 6px 10px;
-    border-bottom: 1px solid #f3f4f6;
+    border-bottom: 1px solid var(--ui-surface-2);
 
     &--grand {
       background: var(--color-brand-50);
       font-weight: 700;
-      color: var(--color-brand-700);
+      color: var(--ui-brand-t700);
       border: 2px solid var(--color-brand-500);
       border-radius: 4px;
       margin-top: 4px;
@@ -143,16 +143,16 @@
   &__footer {
     margin-top: 24px;
     padding-top: 12px;
-    border-top: 1px solid #e5e7eb;
+    border-top: 1px solid var(--ui-line);
     font-size: 9pt;
-    color: #64748b;
+    color: var(--ui-muted);
 
     > div + div { margin-top: 8px; }
   }
 
   &__footer-title {
     font-weight: 700;
-    color: #1f2937;
+    color: var(--ui-text-2);
     font-size: 10pt;
     margin-bottom: 4px;
   }

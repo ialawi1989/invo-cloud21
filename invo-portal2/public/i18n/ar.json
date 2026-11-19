@@ -191,7 +191,12 @@
     "UPLOAD_FAILED": "فشل الرفع",
     "ERROR": "خطأ",
     "ERRORS": "أخطاء",
-    "FORM_ERRORS": { "TITLE": "أصلح هذه الحقول", "REQUIRED": "مطلوب", "INVALID": "غير صالح", "HIDDEN": "{{count}} أخرى غير ظاهرة (في أقسام مطوية أو مخفية)" },
+    "FORM_ERRORS": {
+      "TITLE": "أصلح هذه الحقول",
+      "REQUIRED": "مطلوب",
+      "INVALID": "غير صالح",
+      "HIDDEN": "{{count}} أخرى غير ظاهرة (في أقسام مطوية أو مخفية)"
+    },
     "UNSAVED_TITLE": "تغييرات غير محفوظة",
     "UNSAVED_HINT": "لديك تغييرات لم يتم حفظها. هل تريد المغادرة دون الحفظ؟",
     "LEAVE": "مغادرة",
@@ -740,5 +745,103 @@
     "WCAG_AA_LARGE": "AA كبير",
     "WCAG_AA": "AA",
     "WCAG_AAA": "AAA"
+  },
+  "DOCUMENT_PAPER": {
+    "FIELD": {
+      "estimate": {
+        "estimateNumber": "رقم التسعيرة",
+        "customerName": "مفوتر لـ",
+        "customerAddress": "عنوان العميل",
+        "customerVatNumber": "الرقم الضريبي للعميل",
+        "salesPerson": "موظف المبيعات",
+        "estimateDate": "تاريخ التسعيرة",
+        "estimateExpDate": "تاريخ انتهاء التسعيرة",
+        "createdDate": "تاريخ الإنشاء",
+        "refrence": "المرجع"
+      },
+      "invoice": {
+        "invNumber": "رقم الفاتورة",
+        "customerName": "مفوتر لـ",
+        "customerPhone": "هاتف العميل",
+        "customerAddress": "عنوان العميل",
+        "customerVatNumber": "الرقم الضريبي للعميل",
+        "salesPerson": "موظف المبيعات",
+        "invoiceDate": "تاريخ الفاتورة",
+        "invoiceDueDate": "تاريخ الاستحقاق للفاتورة",
+        "createdDate": "تاريخ الإنشاء",
+        "refrence": "مرجع"
+      },
+      "purchase-order": {
+        "purchaseNumber": "رقم الشراء",
+        "supplierName": "اسم المورد",
+        "supplierVatNumber": "رقم الضريبة",
+        "purchaseDate": "تاريخ الإصدار",
+        "purchaseOrderExpiryDate": "تاريخ انتهاء الصلاحية",
+        "createdDate": "تاريخ الإنشاء"
+      },
+      "bill": {
+        "billNumber": "رقم الفاتورة",
+        "supplierName": "اسم المورد",
+        "supplierVatNumber": "رقم الضريبة",
+        "billingDate": "تاريخ الإصدار",
+        "dueDate": "تاريخ الاستحقاق",
+        "createdDate": "تاريخ الإنشاء",
+        "refrence": "المرجع"
+      },
+      "expense": {
+        "expenseNumber": "رقم المصروف",
+        "customerName": "العميل",
+        "supplierName": "اسم المورد",
+        "employeeName": "الموظفين",
+        "paymentMethodName": "طريقة الدفع",
+        "expenseDate": "تاريخ المصروف",
+        "createdDate": "تاريخ الإنشاء"
+      }
+    },
+    "TOTAL": {
+      "itemTotal": "إجمالي المنتج",
+      "taxTotal": "إجمالي الضريبة",
+      "subTotal": "المجموع الفرعي",
+      "discount": "الخصم",
+      "charge": "الرسوم",
+      "delevary": "رسوم التوصيل",
+      "roundingTotal": "التقريب",
+      "Total": "المجموع"
+    },
+    "PAYMENT": {
+      "payments": "تم الدفع",
+      "credit": "تم تطبيق الائتمان",
+      "balance": "الرصيد"
+    },
+    "MISC": {
+      "ORDER_SUMMARY": "تفاصيل الطلب",
+      "VAT_NUMBER": "رقم الضريبة",
+      "BRANCH": "الفرع",
+      "ADDRESS": "عنوان الفرع",
+      "PHONE": "الهاتف",
+      "INCLUSIVE_TAX": "الضريبة الشاملة",
+      "EXCLUSIVE_TAX": "الضريبة الاستثنائية"
+    },
+    "STATUS": {
+      "Draft": "مسودة",
+      "Paid": "مدفوع",
+      "Calculated": "محسوب",
+      "Confirmed": "مؤكد",
+      "Partially Paid": "مدفوع جزئيًا",
+      "Open": "مفتوح",
+      "Void": "ملغي",
+      "Placed": "تم وضعه",
+      "Closed": "مغلق",
+      "Rejected": "مرفوض",
+      "Overdue": "متأخر",
+      "writeOff": "شطب",
+      "Pending": "قيد الانتظار",
+      "Accepted": "مقبول",
+      "Ready": "جاهز",
+      "Departure": "المغادرة",
+      "Arrived": "وصل",
+      "Completed": "مكتمل",
+      "merged": "مُدمج"
+    }
   }
 }

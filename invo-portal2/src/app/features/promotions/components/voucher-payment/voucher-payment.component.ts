@@ -79,22 +79,22 @@ import { translate } from '../../models/common.model';
   `,
   styles: [`
     .vp { display: flex; flex-direction: column; gap: 10px; }
-    .vp__balance { font-weight: 600; color: #334155; }
-    .vp__label { font-size: 13px; font-weight: 600; color: #475569; }
+    .vp__balance { font-weight: 600; color: var(--ui-text-3); }
+    .vp__label { font-size: 13px; font-weight: 600; color: var(--ui-text-4); }
     .vp__code { display: flex; gap: 8px; }
-    .vp__input { flex: 1; border: 1px solid #d0d5dd; border-radius: 8px; padding: 9px 12px; font: inherit; }
-    .vp__input:disabled { background: #f8fafc; }
-    .vp__btn { padding: 8px 16px; border-radius: 8px; border: 1px solid #d0d5dd; background: #fff; font-weight: 600; cursor: pointer; }
-    .vp__btn--primary { border-color: #2691a4; background: #2691a4; color: #fff; }
+    .vp__input { flex: 1; border: 1px solid var(--ui-line-strong); border-radius: 8px; padding: 9px 12px; font: inherit; }
+    .vp__input:disabled { background: var(--ui-surface-1); }
+    .vp__btn { padding: 8px 16px; border-radius: 8px; border: 1px solid var(--ui-line-strong); background: var(--ui-surface); font-weight: 600; cursor: pointer; }
+    .vp__btn--primary { border-color: #2691a4; background: var(--ui-b-2691a4); color: #fff; }
     .vp__btn:disabled { opacity: .5; cursor: not-allowed; }
-    .vp__or { text-align: center; color: #94a3b8; font-size: 13px; }
-    .vp__error { color: #dc2626; font-size: 13px; }
-    .vp__muted { color: #64748b; }
-    .vp__card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 10px; background: #fff; }
+    .vp__or { text-align: center; color: var(--ui-faint); font-size: 13px; }
+    .vp__error { color: var(--ui-red-text); font-size: 13px; }
+    .vp__muted { color: var(--ui-muted); }
+    .vp__card { border: 1px solid var(--ui-line); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 10px; background: var(--ui-surface); }
     .vp__card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
     .vp__card-head h5 { margin: 0 0 2px; font-size: 16px; }
     .vp__facts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .vp__facts small { display: block; color: #64748b; }
+    .vp__facts small { display: block; color: var(--ui-muted); }
   `],
 })
 export class VoucherPaymentComponent implements OnInit {

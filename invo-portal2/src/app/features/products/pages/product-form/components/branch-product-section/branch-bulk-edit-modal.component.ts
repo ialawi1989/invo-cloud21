@@ -192,7 +192,7 @@ export interface BulkEditResult {
   `,
   styles: [`
     .be { padding: 16px 18px; display: flex; flex-direction: column; gap: 14px; }
-    .be__hint { margin: 0; font-size: 12.5px; color: #64748b; }
+    .be__hint { margin: 0; font-size: 12.5px; color: var(--ui-muted); }
 
     /* ── Two-column body ── */
     .be__cols {
@@ -207,54 +207,54 @@ export interface BulkEditResult {
     .be__col--fields .be__rows,
     .be__col--pick   .be__list { max-height: 320px; overflow-y: auto; }
     .be__col-head { display: flex; align-items: center; gap: 8px; min-height: 20px; }
-    .be__section { flex: 1; font-size: 12px; font-weight: 600; color: #64748b; }
+    .be__section { flex: 1; font-size: 12px; font-weight: 600; color: var(--ui-muted); }
     .be__link {
       background: none; border: 0; padding: 0; font: inherit; font-size: 12px;
-      color: #0f7c8c; text-decoration: underline; cursor: pointer;
+      color: var(--ui-t-0f7c8c); text-decoration: underline; cursor: pointer;
     }
-    .be__link:hover { color: #0b5c68; }
+    .be__link:hover { color: var(--ui-t-0b5c68); }
     .be__search {
       width: 100%; padding: 6px 9px; font-size: 13px;
-      border: 1px solid #dbe2ea; border-radius: 7px; background: #fff; color: #1e293b;
+      border: 1px solid var(--ui-x-dbe2ea); border-radius: 7px; background: var(--ui-surface); color: var(--ui-text-2);
     }
     .be__search:focus { outline: 2px solid #32acc1; outline-offset: 1px; }
-    .be__list { border: 1px solid #eef2f7; border-radius: 8px; background: #fff; }
+    .be__list { border: 1px solid var(--ui-x-eef2f7); border-radius: 8px; background: var(--ui-surface); }
     .be__branch {
       display: flex; align-items: center; gap: 9px;
-      padding: 7px 10px; font-size: 13px; color: #334155; cursor: pointer;
-      border-bottom: 1px solid #f4f6fa;
+      padding: 7px 10px; font-size: 13px; color: var(--ui-text-3); cursor: pointer;
+      border-bottom: 1px solid var(--ui-x-f4f6fa);
     }
     .be__branch:last-child { border-bottom: 0; }
-    .be__branch:hover { background: #f8fafc; }
-    .be__branch--on { background: #f4fbfc; }
+    .be__branch:hover { background: var(--ui-surface-1); }
+    .be__branch--on { background: var(--ui-x-f4fbfc); }
     .be__branch-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .be__tag {
       flex: none; padding: 1px 7px; border-radius: 999px;
-      background: #e2f6f9; color: #0f7c8c; font-size: 11px; font-weight: 600;
+      background: var(--ui-x-e2f6f9); color: var(--ui-t-0f7c8c); font-size: 11px; font-weight: 600;
     }
-    .be__empty { margin: 0; padding: 14px 10px; text-align: center; font-size: 12.5px; color: #94a3b8; }
+    .be__empty { margin: 0; padding: 14px 10px; text-align: center; font-size: 12.5px; color: var(--ui-faint); }
     .be__note {
       margin: 0; padding: 10px 12px; border-radius: 8px;
-      background: #eff6ff; color: #1e40af; font-size: 12.5px; line-height: 1.6;
+      background: var(--ui-x-eff6ff); color: var(--ui-t-1e40af); font-size: 12.5px; line-height: 1.6;
     }
 
     /* ── Field rows ── */
     .be__rows { display: flex; flex-direction: column; gap: 2px; padding-inline-end: 2px; }
     .be__row {
       display: flex; align-items: center; gap: 10px;
-      padding: 9px 10px; border: 1px solid #eef2f7; border-radius: 8px;
-      cursor: pointer; background: #fff;
+      padding: 9px 10px; border: 1px solid var(--ui-x-eef2f7); border-radius: 8px;
+      cursor: pointer; background: var(--ui-surface);
     }
-    .be__row--on { border-color: #a5dde6; background: #f4fbfc; }
+    .be__row--on { border-color: var(--ui-x-a5dde6); background: var(--ui-x-f4fbfc); }
     .be__check { width: 16px; height: 16px; accent-color: #32acc1; cursor: pointer; flex: none; }
-    .be__label { flex: 1; min-width: 0; font-size: 13px; color: #1e293b; }
+    .be__label { flex: 1; min-width: 0; font-size: 13px; color: var(--ui-text-2); }
     .be__control { display: inline-flex; align-items: center; }
     .be__num {
       width: 110px; padding: 6px 8px; font-size: 13px;
-      border: 1px solid #dbe2ea; border-radius: 6px; background: #fff; color: #1e293b;
+      border: 1px solid var(--ui-x-dbe2ea); border-radius: 6px; background: var(--ui-surface); color: var(--ui-text-2);
     }
     .be__num:focus { outline: 2px solid #32acc1; outline-offset: 1px; }
-    .be__num:disabled { background: #f8fafc; color: #94a3b8; }
+    .be__num:disabled { background: var(--ui-surface-1); color: var(--ui-faint); }
 
     /* Side by side stops paying off once each column is too narrow to hold
        a label and its control on one line. */

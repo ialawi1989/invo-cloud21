@@ -68,17 +68,17 @@ import { MediaService } from '../../services/media.service';
   `,
   styles: [`
     :host { display: block; width: 100%; }
-    .mv { position: relative; width: 100%; min-height: 220px; border-radius: 12px; overflow: hidden; background: #f1f5f9; }
+    .mv { position: relative; width: 100%; min-height: 220px; border-radius: 12px; overflow: hidden; background: var(--ui-surface-2); }
     model-viewer { width: 100%; height: 100%; --poster-color: transparent; background: transparent; }
     .mv__overlay {
       position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 10px; color: #475569; font-size: 13px; text-align: center; padding: 16px; pointer-events: none;
+      gap: 10px; color: var(--ui-text-4); font-size: 13px; text-align: center; padding: 16px; pointer-events: none;
     }
-    .mv__overlay--error { color: #64748b; }
-    .mv__overlay--info { color: #475569; pointer-events: auto; }
+    .mv__overlay--error { color: var(--ui-muted); }
+    .mv__overlay--info { color: var(--ui-text-4); pointer-events: auto; }
     .mv__ar { display: inline-block; padding: 8px 18px; border-radius: 8px; background: var(--color-brand-600, #2691a4); color: #fff; font-weight: 600; text-decoration: none; }
     .mv__overlay p { margin: 0; max-width: 280px; line-height: 1.5; }
-    .mv__spin { width: 26px; height: 26px; border-radius: 50%; border: 3px solid #cbd5e1; border-top-color: var(--color-brand-600, #2691a4); animation: mvspin .8s linear infinite; }
+    .mv__spin { width: 26px; height: 26px; border-radius: 50%; border: 3px solid var(--ui-line-strong); border-top-color: var(--color-brand-600, #2691a4); animation: mvspin .8s linear infinite; }
     @keyframes mvspin { to { transform: rotate(360deg); } }
   `],
 })

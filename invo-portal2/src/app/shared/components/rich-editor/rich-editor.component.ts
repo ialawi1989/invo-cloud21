@@ -3049,19 +3049,19 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
          driven by applyBannerStyles() via the --ricos-internal-layout-*
          aliases declared in the banner section block. */
       --ricos-custom-settings-action-color: #32acc1;     /* primary accent (selection / focus ring) */
-      --ricos-custom-action-color:          var(--color-brand-600, #2691a4);     /* primary accent (add-plugin, AI button) */
-      --ricos-custom-settings-icons-color:  #0f172a;     /* toolbar icon colour */
-      --ricos-custom-p-color:               #0f172a;     /* body text colour */
-      --ricos-custom-bg-color:              #ffffff;     /* canvas background */
-      --ricos-custom-border-color:          #e2e8f0;     /* divider / chip border */
-      --ricos-custom-muted-color:           #64748b;     /* secondary text / placeholder */
+      --ricos-custom-action-color:          var(--color-brand-600, var(--ui-brand-text));     /* primary accent (add-plugin, AI button) */
+      --ricos-custom-settings-icons-color:  var(--ui-text);     /* toolbar icon colour */
+      --ricos-custom-p-color:               var(--ui-text);     /* body text colour */
+      --ricos-custom-bg-color:              var(--ui-surface);     /* canvas background */
+      --ricos-custom-border-color:          var(--ui-line);     /* divider / chip border */
+      --ricos-custom-muted-color:           var(--ui-muted);     /* secondary text / placeholder */
     }
     .re-static-toolbar {
       position: sticky;
       top: 0;
       z-index: 20;
-      background: #f8fafc;
-      border-bottom: 1px solid #e2e8f0;
+      background: var(--ui-surface-1);
+      border-bottom: 1px solid var(--ui-line);
     }
     .re-toolbar-rail {
       display: flex;
@@ -3101,26 +3101,26 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       resize: none;
       background: transparent;
       font: 600 32px/1.2 inherit;
-      color: #0f172a;
+      color: var(--ui-text);
       letter-spacing: -0.01em;
       field-sizing: content;
       padding: 0;
     }
-    .re-editor-title__input::placeholder { color: #94a3b8; font-weight: 600; }
+    .re-editor-title__input::placeholder { color: var(--ui-faint); font-weight: 600; }
     .re-editor-title__counter {
       position: absolute;
       right: 24px;
       bottom: 8px;
       font-size: 11px;
-      color: #94a3b8;
+      color: var(--ui-faint);
       pointer-events: none;
     }
-    .re-editor-title__counter.is-near-limit { color: #dc2626; }
+    .re-editor-title__counter.is-near-limit { color: var(--ui-red-text); }
     /* When the editor sits inside a composer-style bare composer, the
        outer .re class strips its own border so the host shell flows
        into the surrounding page. */
     .re--bare.re-editor-host { background: transparent; }
-    .re--bare .re-static-toolbar { background: #ffffff; }
+    .re--bare .re-static-toolbar { background: var(--ui-surface); }
 
     /* Fullscreen toggle button — the toolbar's trailing end-cap. It
        takes its own space in the flex row (never overlapping a
@@ -3136,16 +3136,16 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       align-items: center;
       justify-content: center;
       padding: 0;
-      background: var(--ricos-custom-bg-color, #ffffff);
-      color: var(--ricos-custom-settings-icons-color, #0f172a);
-      border: 1px solid var(--ricos-custom-border-color, #e2e8f0);
+      background: var(--ricos-custom-bg-color, var(--ui-surface));
+      color: var(--ricos-custom-settings-icons-color, var(--ui-text));
+      border: 1px solid var(--ricos-custom-border-color, var(--ui-line));
       border-radius: 6px;
       cursor: pointer;
       transition: background-color .12s, border-color .12s, color .12s;
     }
     .re-fullscreen-toggle:hover {
-      background: color-mix(in srgb, var(--ricos-custom-settings-action-color, #32acc1) 8%, var(--ricos-custom-bg-color, #ffffff));
-      border-color: color-mix(in srgb, var(--ricos-custom-settings-action-color, #32acc1) 30%, var(--ricos-custom-border-color, #e2e8f0));
+      background: color-mix(in srgb, var(--ricos-custom-settings-action-color, #32acc1) 8%, var(--ricos-custom-bg-color, var(--ui-surface)));
+      border-color: color-mix(in srgb, var(--ricos-custom-settings-action-color, #32acc1) 30%, var(--ricos-custom-border-color, var(--ui-line)));
       color: var(--ricos-custom-settings-action-color, #32acc1);
     }
     .re-fullscreen-toggle:active { transform: scale(.95); }
@@ -3162,7 +3162,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       max-width: none !important;
       max-height: none !important;
       border-radius: 0 !important;
-      background: var(--ricos-custom-bg-color, #ffffff);
+      background: var(--ricos-custom-bg-color, var(--ui-surface));
     }
     /* Body scroll lock — the host fills the viewport so we don't want
        the background page also scrolling. Targets the :host element
@@ -3173,9 +3173,9 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     }
 
     .re {
-      border: 1px solid var(--ricos-custom-border-color, #d1d5db);
+      border: 1px solid var(--ricos-custom-border-color, var(--ui-line-strong));
       border-radius: 8px;
-      background: var(--ricos-custom-bg-color, #fff);
+      background: var(--ricos-custom-bg-color, var(--ui-surface));
       overflow: hidden;
       transition: border-color .12s, box-shadow .12s;
     }
@@ -3190,8 +3190,8 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       align-items: center;
       gap: 4px;
       padding: 4px 6px;
-      background: #f8fafc;
-      border-bottom: 1px solid #e2e8f0;
+      background: var(--ui-surface-1);
+      border-bottom: 1px solid var(--ui-line);
       position: relative;
     }
     /* Wraps onto multiple rows when the toolbar runs out of space.
@@ -3219,7 +3219,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       background: transparent;
       border: 1px solid transparent;
       border-radius: 6px;
-      color: #475569;
+      color: var(--ui-text-4);
       cursor: pointer;
       transition: background .12s, color .12s, border-color .12s;
       font-size: 13px;
@@ -3227,15 +3227,15 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       flex-shrink: 0;
     }
     .re__btn:hover {
-      background: #e6f7fa;
-      color: #0f172a;
-      border-color: #cfeef3;
+      background: var(--ui-x-e6f7fa);
+      color: var(--ui-text);
+      border-color: var(--ui-x-cfeef3);
     }
-    .re__btn:active { background: #d4f0f5; }
+    .re__btn:active { background: var(--ui-x-d4f0f5); }
     .re__btn.is-on {
-      background: #eff9fb;
-      border-color: #a6d8df;
-      color: #0f172a;
+      background: var(--ui-x-eff9fb);
+      border-color: var(--ui-x-a6d8df);
+      color: var(--ui-text);
     }
 
     .re__btn-text { font-size: 12px; font-weight: 500; }
@@ -3260,13 +3260,13 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       width: 14px;
       height: 3px;
       border-radius: 1px;
-      border: 1px solid #cbd5e1;
+      border: 1px solid var(--ui-line-strong);
     }
 
     .re__sep {
       width: 1px;
       align-self: stretch;
-      background: var(--ricos-custom-border-color, #e2e8f0);
+      background: var(--ricos-custom-border-color, var(--ui-line));
       margin: 2px 4px;
       flex-shrink: 0;
     }
@@ -3295,10 +3295,10 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       gap: 2px;
       transition: background-color .12s, border-color .12s;
     }
-    .re__sizeField:hover { background: #eef2f6; }
+    .re__sizeField:hover { background: var(--ui-surface-2); }
     .re__sizeField:focus-within {
-      background: #fff;
-      border-color: #cbd5e1;
+      background: var(--ui-surface);
+      border-color: var(--ui-line-strong);
     }
     .re__sizeInput {
       width: 30px;
@@ -3306,7 +3306,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       outline: none;
       background: transparent;
       font: 13px/1 inherit;
-      color: #0f172a;
+      color: var(--ui-text);
       text-align: center;
       padding: 0;
       -moz-appearance: textfield;
@@ -3323,12 +3323,12 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       width: 18px;
       border: none;
       background: transparent;
-      color: #64748b;
+      color: var(--ui-muted);
       cursor: pointer;
       border-radius: 4px;
       padding: 0;
     }
-    .re__sizeChevron:hover { background: #e2e8f0; color: #0f172a; }
+    .re__sizeChevron:hover { background: var(--ui-line); color: var(--ui-text); }
 
     /* ── Dropdowns ─────────────────────────────────────────────── */
     /* Menu styling — rendered inside the CDK overlay container, so
@@ -3337,8 +3337,8 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     .re__menu {
       min-width: 140px;
       padding: 4px;
-      background: #fff;
-      border: 1px solid #e2e8f0;
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-line);
       border-radius: 8px;
       box-shadow: 0 6px 24px rgba(15,23,42,.12);
     }
@@ -3352,12 +3352,12 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       background: transparent;
       border-radius: 6px;
       font-size: 13px;
-      color: #1e293b;
+      color: var(--ui-text-2);
       cursor: pointer;
       text-align: start;
     }
-    .re__menu-item:hover { background: #f1f5f9; }
-    .re__menu-item--icon svg { color: #64748b; }
+    .re__menu-item:hover { background: var(--ui-surface-2); }
+    .re__menu-item--icon svg { color: var(--ui-muted); }
 
     .re__menu--block .re-block-p   { font-size: 14px; }
     .re__menu--block .re-block-h1  { font-size: 20px; font-weight: 600; }
@@ -3365,8 +3365,8 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     .re__menu--block .re-block-h3  { font-size: 16px; font-weight: 600; }
     .re__menu--block .re-block-h4  { font-size: 14px; font-weight: 600; }
     .re__menu--block .re-block-h5  { font-size: 13px; font-weight: 600; }
-    .re__menu--block .re-block-h6  { font-size: 12px; font-weight: 600; color: #64748b; }
-    .re__menu--block .re-block-q   { font-style: italic; color: #64748b; }
+    .re__menu--block .re-block-h6  { font-size: 12px; font-weight: 600; color: var(--ui-muted); }
+    .re__menu--block .re-block-q   { font-style: italic; color: var(--ui-muted); }
     .re__menu--block .re-block-pre { font-family: ui-monospace, monospace; font-size: 12px; }
 
     .re__menu--size { min-width: 72px; max-height: 240px; overflow-y: auto; }
@@ -3382,7 +3382,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     .re__swatch {
       width: 22px;
       height: 22px;
-      border: 1px solid #cbd5e1;
+      border: 1px solid var(--ui-line-strong);
       border-radius: 4px;
       padding: 0;
       cursor: pointer;
@@ -3395,7 +3395,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     .re__menu--align { min-width: 130px; }
 
     .re__menu--info { min-width: 220px; padding: 10px 12px; }
-    .re__menu--info h4 { margin: 0 0 6px; font-size: 12px; font-weight: 600; color: #1e293b; }
+    .re__menu--info h4 { margin: 0 0 6px; font-size: 12px; font-weight: 600; color: var(--ui-text-2); }
     .re__menu--info dl {
       display: grid;
       grid-template-columns: max-content 1fr;
@@ -3403,20 +3403,20 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       margin: 0;
       font-size: 12px;
     }
-    .re__menu--info dt { color: #64748b; font-family: ui-monospace, monospace; }
-    .re__menu--info dd { margin: 0; color: #1e293b; }
+    .re__menu--info dt { color: var(--ui-muted); font-family: ui-monospace, monospace; }
+    .re__menu--info dd { margin: 0; color: var(--ui-text-2); }
 
     /* ── HTML toggle ──────────────────────────────────────────── */
     .re__btn--toggle {
       padding: 0 8px;
       gap: 6px;
-      color: #475569;
-      border-color: #e2e8f0;
+      color: var(--ui-text-4);
+      border-color: var(--ui-line);
     }
     .re__btn--toggle-on {
-      background: #eff9fb;
-      border-color: #a6d8df;
-      color: #0f172a;
+      background: var(--ui-x-eff9fb);
+      border-color: var(--ui-x-a6d8df);
+      color: var(--ui-text);
     }
     .re__btn-label--text {
       font-size: 11px;
@@ -3435,11 +3435,11 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
       font-size: 12px;
       line-height: 1.55;
-      color: #0f172a;
-      background: #f8fafc;
+      color: var(--ui-text);
+      background: var(--ui-surface-1);
     }
-    .re__source:focus { background: #fff; }
-    .re__source:disabled { opacity: .7; background: #f1f5f9; }
+    .re__source:focus { background: var(--ui-surface); }
+    .re__source:disabled { opacity: .7; background: var(--ui-surface-2); }
 
     .re__slot:empty { display: none; }
     .re__slot { background: inherit; }
@@ -3466,9 +3466,9 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       position: absolute;
       width: 26px; height: 26px;
       display: inline-flex; align-items: center; justify-content: center;
-      background: var(--ricos-custom-bg-color, #fff);
+      background: var(--ricos-custom-bg-color, var(--ui-surface));
       color: var(--ricos-custom-action-color, #116DFF);
-      border: 1px solid var(--ricos-custom-border-color, #e2e8f0);
+      border: 1px solid var(--ricos-custom-border-color, var(--ui-line));
       border-radius: 50%;
       cursor: pointer;
       box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
@@ -3476,8 +3476,8 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       z-index: 5;
     }
     .re__addBtn:hover {
-      background: color-mix(in srgb, var(--ricos-custom-action-color, #116DFF) 6%, var(--ricos-custom-bg-color, #fff));
-      border-color: color-mix(in srgb, var(--ricos-custom-action-color, #116DFF) 25%, var(--ricos-custom-border-color, #e2e8f0));
+      background: color-mix(in srgb, var(--ricos-custom-action-color, #116DFF) 6%, var(--ricos-custom-bg-color, var(--ui-surface)));
+      border-color: color-mix(in srgb, var(--ricos-custom-action-color, #116DFF) 25%, var(--ricos-custom-border-color, var(--ui-line)));
       transform: scale(1.05);
     }
     .re__addBtn:active { transform: scale(0.95); }
@@ -3508,32 +3508,32 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       max-height: 300px;
       overflow-y: auto;
       padding: 6px;
-      background: #fff;
-      border: 1px solid #e2e8f0;
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-line);
       border-radius: 12px;
       box-shadow: 0 12px 28px rgba(15, 23, 42, 0.14);
     }
     .re__slashHead {
       padding: 6px 10px 4px;
       font-size: 11px; font-weight: 700; letter-spacing: .04em;
-      text-transform: uppercase; color: #94a3b8;
+      text-transform: uppercase; color: var(--ui-faint);
     }
     .re__slashItem {
       display: flex; align-items: center; gap: 10px;
       width: 100%; padding: 8px 10px;
       border: 0; border-radius: 8px; background: transparent;
-      font: inherit; font-size: 14px; color: #0f172a; text-align: left; cursor: pointer;
+      font: inherit; font-size: 14px; color: var(--ui-text); text-align: left; cursor: pointer;
     }
-    .re__slashItem.is-active, .re__slashItem:hover { background: #f1f5f9; }
-    .re__slashIcon { display: inline-flex; width: 18px; height: 18px; color: #475569; flex-shrink: 0; }
+    .re__slashItem.is-active, .re__slashItem:hover { background: var(--ui-surface-2); }
+    .re__slashIcon { display: inline-flex; width: 18px; height: 18px; color: var(--ui-text-4); flex-shrink: 0; }
     .re__slashIcon :where(svg) { width: 18px; height: 18px; }
     .re__slashLabel { flex: 1; min-width: 0; }
 
     /* ── Expandable list block ── */
     :host ::ng-deep .re__surface .re-expand-group {
-      border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; margin: 14px 0;
+      border: 1px solid var(--ui-line); border-radius: 10px; overflow: hidden; margin: 14px 0;
     }
-    :host ::ng-deep .re__surface .re-expand + .re-expand { border-top: 1px solid #eef2f6; }
+    :host ::ng-deep .re__surface .re-expand + .re-expand { border-top: 1px solid var(--ui-surface-2); }
     :host ::ng-deep .re__surface .re-expand__head {
       display: flex; align-items: center; gap: 8px; padding: 10px 12px;
     }
@@ -3541,7 +3541,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     :host ::ng-deep .re__surface .re-expand-group[data-dir="right"] .re-expand__title { text-align: right; }
     :host ::ng-deep .re__surface .re-expand__drag { color: #cbd5e1; cursor: grab; display: inline-flex; flex-shrink: 0; }
     :host ::ng-deep .re__surface .re-expand__chev {
-      border: 0; background: transparent; padding: 0; color: #64748b; cursor: pointer;
+      border: 0; background: transparent; padding: 0; color: var(--ui-muted); cursor: pointer;
       display: inline-flex; flex-shrink: 0; transition: transform .15s ease;
     }
     :host ::ng-deep .re__surface .re-expand[data-open="false"] .re-expand__chev { transform: rotate(-90deg); }
@@ -3550,51 +3550,51 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     :host ::ng-deep .re__surface .re-expand[data-open="false"] .re-expand__body { display: none; }
     :host ::ng-deep .re__surface .re-expand__title:empty::before,
     :host ::ng-deep .re__surface .re-expand__body:empty::before {
-      content: attr(data-placeholder); color: #94a3b8; pointer-events: none;
+      content: attr(data-placeholder); color: var(--ui-faint); pointer-events: none;
     }
     :host ::ng-deep .re__surface .re-expand__add {
-      padding: 10px 12px; border-top: 1px solid #eef2f6; cursor: pointer;
-      font-weight: 600; color: var(--color-brand-600, #2691a4); user-select: none;
+      padding: 10px 12px; border-top: 1px solid var(--ui-surface-2); cursor: pointer;
+      font-weight: 600; color: var(--ui-brand-t600); user-select: none;
     }
-    :host ::ng-deep .re__surface .re-expand__add:hover { background: #f8fafc; }
+    :host ::ng-deep .re__surface .re-expand__add:hover { background: var(--ui-surface-1); }
 
     /* Expandable floating toolbar. */
     .re__expandTb {
       position: absolute; z-index: 35; display: inline-flex; align-items: center; gap: 4px;
-      padding: 4px 6px; background: #fff; border: 1px solid #e2e8f0; border-radius: 999px;
+      padding: 4px 6px; background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: 999px;
       box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
     }
     .re__expandTb__btn {
       display: inline-flex; align-items: center; gap: 6px;
       border: 0; background: transparent; padding: 6px 10px; border-radius: 7px;
-      font: inherit; font-size: 13px; color: #334155; cursor: pointer;
+      font: inherit; font-size: 13px; color: var(--ui-text-3); cursor: pointer;
     }
-    .re__expandTb__btn:hover { background: #f1f5f9; }
-    .re__expandTb__btn--danger { color: #dc2626; }
-    .re__expandTb__sep { width: 1px; height: 20px; background: #e2e8f0; }
+    .re__expandTb__btn:hover { background: var(--ui-surface-2); }
+    .re__expandTb__btn--danger { color: var(--ui-red-text); }
+    .re__expandTb__sep { width: 1px; height: 20px; background: var(--ui-line); }
 
     /* Expandable settings popover. */
     .re__expandPanel {
       position: absolute; z-index: 40; width: 260px;
-      background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+      background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: 12px;
       box-shadow: 0 12px 28px rgba(15, 23, 42, 0.16);
     }
     .re__expandPanel__head {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 12px 14px; border-bottom: 1px solid #f1f5f9; font-weight: 700; color: #0f172a;
+      padding: 12px 14px; border-bottom: 1px solid var(--ui-surface-2); font-weight: 700; color: var(--ui-text);
     }
-    .re__expandPanel__close { border: 0; background: transparent; color: #64748b; cursor: pointer; padding: 2px; }
+    .re__expandPanel__close { border: 0; background: transparent; color: var(--ui-muted); cursor: pointer; padding: 2px; }
     .re__expandPanel__body { padding: 12px 14px; }
-    .re__expandPanel__label { font-size: 12px; font-weight: 700; color: #475569; margin: 10px 0 6px; }
+    .re__expandPanel__label { font-size: 12px; font-weight: 700; color: var(--ui-text-4); margin: 10px 0 6px; }
     .re__expandPanel__label:first-child { margin-top: 0; }
-    .re__expandRadio { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #334155; padding: 4px 0; cursor: pointer; }
-    .re__expandRow { display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: #334155; margin: 8px 0; }
+    .re__expandRadio { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ui-text-3); padding: 4px 0; cursor: pointer; }
+    .re__expandRow { display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: var(--ui-text-3); margin: 8px 0; }
     .re__expandDir { display: flex; gap: 8px; }
     .re__expandDir button {
-      flex: 1; padding: 7px 10px; border: 1px solid #e2e8f0; border-radius: 8px;
-      background: #fff; color: #475569; font: inherit; font-size: 13px; cursor: pointer;
+      flex: 1; padding: 7px 10px; border: 1px solid var(--ui-line); border-radius: 8px;
+      background: var(--ui-surface); color: var(--ui-text-4); font: inherit; font-size: 13px; cursor: pointer;
     }
-    .re__expandDir button.is-on { border-color: var(--color-brand-600, #2691a4); color: var(--color-brand-700, #2691a4); font-weight: 600; }
+    .re__expandDir button.is-on { border-color: var(--color-brand-600, #2691a4); color: var(--ui-brand-t700); font-weight: 600; }
 
     /* ── HTML embed block ── */
     :host ::ng-deep .re__surface .re-embed {
@@ -3610,66 +3610,66 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     /* Empty placeholder is a small 100px box — it grows to fit the
        content once HTML/an embed is added (or via the Height handle). */
     :host ::ng-deep .re__surface .re-embed--empty .re-embed__frame {
-      height: 100px; background: #f1f5f9; border-radius: 4px;
+      height: 100px; background: var(--ui-surface-2); border-radius: 4px;
     }
     :host ::ng-deep .re__surface .re-embed.is-selected { outline: 2px solid var(--color-brand-500, #32acc1); outline-offset: 2px; }
 
     /* Embed toolbar + popovers. */
     .re__embedTb {
       position: absolute; z-index: 35; display: inline-flex; align-items: center; gap: 2px;
-      padding: 4px 6px; background: #fff; border: 1px solid #e2e8f0; border-radius: 999px;
+      padding: 4px 6px; background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: 999px;
       box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
     }
     .re__embedTb__btn {
       display: inline-flex; align-items: center; gap: 6px; border: 0; background: transparent;
-      padding: 6px 8px; border-radius: 7px; font: inherit; font-size: 13px; color: #334155; cursor: pointer;
+      padding: 6px 8px; border-radius: 7px; font: inherit; font-size: 13px; color: var(--ui-text-3); cursor: pointer;
     }
-    .re__embedTb__btn:hover { background: #f1f5f9; }
-    .re__embedTb__btn--danger { color: #dc2626; }
-    .re__embedTb__sep { width: 1px; height: 20px; background: #e2e8f0; margin: 0 2px; }
+    .re__embedTb__btn:hover { background: var(--ui-surface-2); }
+    .re__embedTb__btn--danger { color: var(--ui-red-text); }
+    .re__embedTb__sep { width: 1px; height: 20px; background: var(--ui-line); margin: 0 2px; }
     .re__embedAlignMenu, .re__embedSize {
       position: absolute; top: calc(100% + 6px); left: 0; min-width: 180px;
-      background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 6px;
+      background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: 10px; padding: 6px;
       box-shadow: 0 8px 22px rgba(15, 23, 42, 0.14);
     }
     .re__embedAlignMenu button {
       display: block; width: 100%; text-align: left; border: 0; background: transparent;
-      padding: 7px 10px; border-radius: 6px; font: inherit; font-size: 13px; color: #334155; cursor: pointer;
+      padding: 7px 10px; border-radius: 6px; font: inherit; font-size: 13px; color: var(--ui-text-3); cursor: pointer;
     }
-    .re__embedAlignMenu button:hover, .re__embedAlignMenu button.is-on { background: #f1f5f9; }
-    .re__embedWrap { display: flex; align-items: center; justify-content: space-between; padding: 7px 10px; font-size: 13px; color: #334155; border-top: 1px solid #f1f5f9; margin-top: 4px; }
+    .re__embedAlignMenu button:hover, .re__embedAlignMenu button.is-on { background: var(--ui-surface-2); }
+    .re__embedWrap { display: flex; align-items: center; justify-content: space-between; padding: 7px 10px; font-size: 13px; color: var(--ui-text-3); border-top: 1px solid var(--ui-surface-2); margin-top: 4px; }
     .re__embedSize { min-width: 240px; }
-    .re__embedSize__head { font-weight: 700; color: #0f172a; padding: 4px 6px 8px; }
+    .re__embedSize__head { font-weight: 700; color: var(--ui-text); padding: 4px 6px 8px; }
     .re__embedSize__row { display: flex; align-items: center; gap: 10px; padding: 0 6px 4px; }
     .re__embedSize__row input[type="range"] { flex: 1; }
-    .re__embedSize__num { width: 64px; padding: 5px 8px; border: 1px solid #e2e8f0; border-radius: 6px; font: inherit; text-align: center; }
+    .re__embedSize__num { width: 64px; padding: 5px 8px; border: 1px solid var(--ui-line); border-radius: 6px; font: inherit; text-align: center; }
 
     .re__embedPanel {
       position: absolute; z-index: 40; width: 320px;
-      background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+      background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: 12px;
       box-shadow: 0 12px 28px rgba(15, 23, 42, 0.16); padding: 14px;
     }
     .re__panelDragHead { cursor: move; user-select: none; }
-    .re__embedPanel__head { display: flex; align-items: center; justify-content: space-between; font-weight: 700; color: #0f172a; margin-bottom: 10px; }
-    .re__embedPanel__close { border: 0; background: transparent; color: #64748b; cursor: pointer; padding: 2px; }
+    .re__embedPanel__head { display: flex; align-items: center; justify-content: space-between; font-weight: 700; color: var(--ui-text); margin-bottom: 10px; }
+    .re__embedPanel__close { border: 0; background: transparent; color: var(--ui-muted); cursor: pointer; padding: 2px; }
     .re__embedTabs { display: flex; gap: 6px; margin-bottom: 10px; }
     .re__embedTabs button {
-      flex: 1; padding: 7px 10px; border: 1px solid #e2e8f0; border-radius: 8px;
-      background: #fff; color: #475569; font: inherit; font-size: 13px; cursor: pointer;
+      flex: 1; padding: 7px 10px; border: 1px solid var(--ui-line); border-radius: 8px;
+      background: var(--ui-surface); color: var(--ui-text-4); font: inherit; font-size: 13px; cursor: pointer;
     }
-    .re__embedTabs button.is-on { border-color: var(--color-brand-600, #2691a4); color: var(--color-brand-700, #2691a4); font-weight: 600; }
+    .re__embedTabs button.is-on { border-color: var(--color-brand-600, #2691a4); color: var(--ui-brand-t700); font-weight: 600; }
     .re__embedCode, .re__embedUrl {
-      width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid #cbd5e1;
+      width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid var(--ui-line-strong);
       border-radius: 8px; font: inherit; font-size: 13px; resize: vertical;
     }
     .re__embedCode { font-family: ui-monospace, Menlo, Consolas, monospace; }
-    .re__embedErr { color: #dc2626; font-size: 12px; margin-top: 6px; }
+    .re__embedErr { color: var(--ui-red-text); font-size: 12px; margin-top: 6px; }
     .re__embedPanel__foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
 
     /* ── Poll block ── */
     :host ::ng-deep .re__surface .re-poll {
       margin: 14px 0; padding: 28px 24px; border-radius: 0; color: #fff;
-      background-color: #0f172a; background-size: cover; background-position: center;
+      background-color: var(--ui-ink); background-size: cover; background-position: center;
       --poll-ans-radius: 0px;
     }
     :host ::ng-deep .re__surface .re-poll.is-selected { outline: 2px solid var(--color-brand-500, #32acc1); outline-offset: 2px; }
@@ -3712,93 +3712,93 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     /* Poll toolbar + dropdown + panel. */
     .re__pollTb {
       position: absolute; z-index: 35; display: inline-flex; align-items: center; gap: 2px;
-      padding: 4px 6px; background: #fff; border: 1px solid #e2e8f0; border-radius: 999px;
+      padding: 4px 6px; background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: 999px;
       box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
     }
-    .re__pollTb__btn { display: inline-flex; align-items: center; gap: 6px; border: 0; background: transparent; padding: 6px 8px; border-radius: 7px; font: inherit; font-size: 13px; color: #334155; cursor: pointer; }
-    .re__pollTb__btn:hover { background: #f1f5f9; }
-    .re__pollTb__btn--danger { color: #dc2626; }
-    .re__pollTb__sep { width: 1px; height: 20px; background: #e2e8f0; margin: 0 2px; }
+    .re__pollTb__btn { display: inline-flex; align-items: center; gap: 6px; border: 0; background: transparent; padding: 6px 8px; border-radius: 7px; font: inherit; font-size: 13px; color: var(--ui-text-3); cursor: pointer; }
+    .re__pollTb__btn:hover { background: var(--ui-surface-2); }
+    .re__pollTb__btn--danger { color: var(--ui-red-text); }
+    .re__pollTb__sep { width: 1px; height: 20px; background: var(--ui-line); margin: 0 2px; }
     .re__pollLayoutMenu {
       position: absolute; top: calc(100% + 6px); left: 0; min-width: 160px; padding: 6px;
-      background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; box-shadow: 0 8px 22px rgba(15,23,42,.14);
+      background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: 10px; box-shadow: 0 8px 22px rgba(15,23,42,.14);
     }
-    .re__pollLayoutMenu button { display: block; width: 100%; text-align: left; border: 0; background: transparent; padding: 7px 10px; border-radius: 6px; font: inherit; font-size: 13px; color: #334155; cursor: pointer; }
-    .re__pollLayoutMenu button:hover, .re__pollLayoutMenu button.is-on { background: #f1f5f9; }
-    .re__pollLayoutMenu__sep { display: block; height: 1px; background: #f1f5f9; margin: 4px 0; }
+    .re__pollLayoutMenu button { display: block; width: 100%; text-align: left; border: 0; background: transparent; padding: 7px 10px; border-radius: 6px; font: inherit; font-size: 13px; color: var(--ui-text-3); cursor: pointer; }
+    .re__pollLayoutMenu button:hover, .re__pollLayoutMenu button.is-on { background: var(--ui-surface-2); }
+    .re__pollLayoutMenu__sep { display: block; height: 1px; background: var(--ui-surface-2); margin: 4px 0; }
 
     .re__pollPanel {
       position: absolute; z-index: 40; width: 300px;
-      background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 12px 28px rgba(15,23,42,.16);
+      background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: 12px; box-shadow: 0 12px 28px rgba(15,23,42,.16);
     }
-    .re__pollPanel__head { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid #f1f5f9; font-weight: 700; color: #0f172a; }
-    .re__pollPanel__close { border: 0; background: transparent; color: #64748b; cursor: pointer; padding: 2px; }
+    .re__pollPanel__head { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid var(--ui-surface-2); font-weight: 700; color: var(--ui-text); }
+    .re__pollPanel__close { border: 0; background: transparent; color: var(--ui-muted); cursor: pointer; padding: 2px; }
     .re__pollTabs { display: flex; gap: 4px; padding: 8px 10px 0; }
-    .re__pollTabs button { flex: 1; padding: 7px 6px; border: 0; border-bottom: 2px solid transparent; background: transparent; font: inherit; font-size: 13px; color: #64748b; cursor: pointer; }
-    .re__pollTabs button.is-on { color: var(--color-brand-700, #2691a4); border-bottom-color: var(--color-brand-600, #2691a4); font-weight: 600; }
+    .re__pollTabs button { flex: 1; padding: 7px 6px; border: 0; border-bottom: 2px solid transparent; background: transparent; font: inherit; font-size: 13px; color: var(--ui-muted); cursor: pointer; }
+    .re__pollTabs button.is-on { color: var(--ui-brand-t700); border-bottom-color: var(--color-brand-600, #2691a4); font-weight: 600; }
     .re__pollBody { padding: 12px 14px; }
-    .re__pollLabel { font-size: 12px; font-weight: 700; color: #475569; margin: 12px 0 6px; }
+    .re__pollLabel { font-size: 12px; font-weight: 700; color: var(--ui-text-4); margin: 12px 0 6px; }
     .re__pollLabel:first-child { margin-top: 0; }
-    .re__pollRow { display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: #334155; margin: 8px 0; gap: 12px; }
-    .re__pollRadio { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #334155; padding: 4px 0; cursor: pointer; }
+    .re__pollRow { display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: var(--ui-text-3); margin: 8px 0; gap: 12px; }
+    .re__pollRadio { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ui-text-3); padding: 4px 0; cursor: pointer; }
     .re__pollSeg { display: flex; gap: 8px; }
-    .re__pollSeg button { flex: 1; padding: 7px 10px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; font: inherit; font-size: 13px; color: #475569; cursor: pointer; }
-    .re__pollSeg button.is-on { border-color: var(--color-brand-600, #2691a4); color: var(--color-brand-700, #2691a4); font-weight: 600; }
-    .re__pollColor { width: 100%; height: 36px; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; }
+    .re__pollSeg button { flex: 1; padding: 7px 10px; border: 1px solid var(--ui-line); border-radius: 8px; background: var(--ui-surface); font: inherit; font-size: 13px; color: var(--ui-text-4); cursor: pointer; }
+    .re__pollSeg button.is-on { border-color: var(--color-brand-600, #2691a4); color: var(--ui-brand-t700); font-weight: 600; }
+    .re__pollColor { width: 100%; height: 36px; border: 1px solid var(--ui-line); border-radius: 8px; cursor: pointer; }
     /* Stacked slider row (label above) — the narrow poll panel can't fit
        the figure-panel's inline label+slider+number on one line. */
     .re__pollSlider { display: flex; align-items: center; gap: 10px; }
     .re__pollSlider .re__figSlider { flex: 1; min-width: 0; }
     .re__pollNum { width: 84px; flex-shrink: 0; }
-    .re__pollBgImage { position: relative; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; }
+    .re__pollBgImage { position: relative; border: 1px solid var(--ui-line); border-radius: 8px; overflow: hidden; }
     .re__pollBgImage img { display: block; width: 100%; height: 110px; object-fit: cover; }
     .re__pollBgImageActions { display: flex; gap: 6px; padding: 6px; }
-    .re__pollBgImageActions button { flex: 1; padding: 6px; border: 1px solid #e2e8f0; border-radius: 6px; background: #fff; font: inherit; font-size: 12px; color: #475569; cursor: pointer; }
-    .re__pollBgImageActions button:hover { background: #f8fafc; }
+    .re__pollBgImageActions button { flex: 1; padding: 6px; border: 1px solid var(--ui-line); border-radius: 6px; background: var(--ui-surface); font: inherit; font-size: 12px; color: var(--ui-text-4); cursor: pointer; }
+    .re__pollBgImageActions button:hover { background: var(--ui-surface-1); }
     .re__pollBgImageEmpty {
       display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
-      width: 100%; height: 96px; border: 0; background: #f8fafc; color: #64748b; cursor: pointer; font: inherit; font-size: 13px;
+      width: 100%; height: 96px; border: 0; background: var(--ui-surface-1); color: var(--ui-muted); cursor: pointer; font: inherit; font-size: 13px;
     }
-    .re__pollBgImageEmpty:hover { background: #f1f5f9; }
+    .re__pollBgImageEmpty:hover { background: var(--ui-surface-2); }
 
     /* ── Product element chrome (toolbar / preset popover / panel) ── */
     .re__prodTb {
       position: absolute; z-index: 35; display: inline-flex; align-items: center; gap: 2px;
-      padding: 4px 6px; background: #fff; border: 1px solid #e2e8f0; border-radius: 999px;
+      padding: 4px 6px; background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: 999px;
       box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
     }
     .re__prodPresetMenu {
       position: absolute; top: calc(100% + 6px); left: 0; width: 230px; padding: 10px;
-      background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+      background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: 12px;
       box-shadow: 0 12px 28px rgba(15,23,42,.16);
     }
     .re__prodPresetGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .re__prodPresetTile {
-      padding: 6px; border: 1.5px solid #e2e8f0; border-radius: 8px; background: #fff;
+      padding: 6px; border: 1.5px solid var(--ui-line); border-radius: 8px; background: var(--ui-surface);
       cursor: pointer; transition: border-color .1s, background .1s;
     }
-    .re__prodPresetTile:hover { border-color: var(--color-brand-600, #2691a4); background: #f0fafc; }
+    .re__prodPresetTile:hover { border-color: var(--color-brand-600, #2691a4); background: var(--ui-x-f0fafc); }
     .re__prodPresetThumb { display: block; width: 100%; height: 46px; }
     .re__prodPanel {
       position: absolute; z-index: 40; width: 300px;
-      background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+      background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: 12px;
       box-shadow: 0 12px 28px rgba(15,23,42,.16);
     }
     .re__prodInput {
       width: 100%; padding: 8px 10px; font: inherit; font-size: 13px;
-      border: 1px solid #e2e8f0; border-radius: 8px; color: #0f172a;
+      border: 1px solid var(--ui-line); border-radius: 8px; color: var(--ui-text);
     }
     .re__prodInput:focus { outline: none; border-color: var(--color-brand-600, #2691a4); box-shadow: 0 0 0 3px rgba(38,145,164,.15); }
     .re__prodReset {
       display: inline-flex; align-items: center; gap: 6px; margin-top: 14px;
       border: 0; background: transparent; padding: 6px 0; font: inherit; font-size: 13px;
-      color: var(--color-brand-700, #2691a4); cursor: pointer;
+      color: var(--ui-brand-t700); cursor: pointer;
     }
     .re__prodReset:hover { text-decoration: underline; }
 
     /* ── Product card (in-surface render) ── */
     :host ::ng-deep .re__surface .re-product {
-      margin: 14px 0; background: #fff;
+      margin: 14px 0; background: var(--ui-surface);
     }
     :host ::ng-deep .re__surface .re-product.is-selected {
       outline: 2px solid var(--color-brand-500, #32acc1); outline-offset: 2px;
@@ -3819,7 +3819,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     :host ::ng-deep .re__surface .re-product[data-img-pos="right"] .re-product__card { flex-direction: row-reverse; }
     :host ::ng-deep .re__surface .re-product[data-img-pos="top"]   .re-product__card { flex-direction: column; }
     :host ::ng-deep .re__surface .re-product__media {
-      position: relative; flex: 0 0 42%; overflow: hidden; border-radius: 6px; background: #f1f5f9;
+      position: relative; flex: 0 0 42%; overflow: hidden; border-radius: 6px; background: var(--ui-surface-2);
     }
     :host ::ng-deep .re__surface .re-product[data-img-pos="top"] .re-product__media { flex: 0 0 auto; width: 100%; }
     :host ::ng-deep .re__surface .re-product[data-img-ratio="square"]    .re-product__media { aspect-ratio: 1 / 1; }
@@ -3842,15 +3842,15 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: 6px 14px;
     }
     :host ::ng-deep .re__surface .re-product__title {
-      font-size: 16px; font-weight: 700; color: var(--rp-primary, #0f172a); line-height: 1.3;
+      font-size: 16px; font-weight: 700; color: var(--rp-primary, var(--ui-text)); line-height: 1.3;
     }
     :host ::ng-deep .re__surface .re-product__price {
-      font-size: 15px; font-weight: 600; color: var(--rp-secondary, #475569);
+      font-size: 15px; font-weight: 600; color: var(--rp-secondary, var(--ui-text-4));
     }
     :host ::ng-deep .re__surface .re-product[data-show-price="false"] .re-product__price { display: none; }
     :host ::ng-deep .re__surface .re-product__btn {
       display: inline-block; margin-top: 4px; padding: 9px 18px; border-radius: 4px;
-      background: var(--rp-primary, #0f172a); color: #fff; font-size: 13px; font-weight: 600;
+      background: var(--rp-primary, var(--ui-ink)); color: #fff; font-size: 13px; font-weight: 600;
       text-decoration: none; cursor: pointer; width: fit-content;
     }
     :host ::ng-deep .re__surface .re-product[data-tp-layout="inline"] .re-product__btn { flex-basis: 100%; }
@@ -3858,7 +3858,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     :host ::ng-deep .re__surface .re-product__ribbon {
       position: absolute; top: 10px; left: 10px; z-index: 1;
       padding: 3px 10px; border-radius: 3px; font-size: 12px; font-weight: 700;
-      background: var(--rp-primary, #0f172a); color: #fff;
+      background: var(--rp-primary, var(--ui-ink)); color: #fff;
     }
     :host ::ng-deep .re__surface .re-product__ribbon--info {
       position: static; align-self: flex-start;
@@ -3894,8 +3894,8 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       align-items: center;
       gap: 4px;
       padding: 6px 10px;
-      background: #fff;
-      border: 1px solid #e2e8f0;
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-line);
       border-radius: 999px;
       box-shadow: 0 8px 24px rgba(15,23,42,.12);
       z-index: 8;
@@ -3909,19 +3909,19 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       background: transparent;
       border: none;
       border-radius: 999px;
-      color: #475569;
+      color: var(--ui-text-4);
       cursor: pointer;
       transition: background 120ms, color 120ms;
     }
-    .re__figTbBtn:hover { background: #f1f5f9; color: #0f172a; }
-    .re__figTbBtn--danger:hover { background: #fef2f2; color: #b91c1c; }
+    .re__figTbBtn:hover { background: var(--ui-surface-2); color: var(--ui-text); }
+    .re__figTbBtn--danger:hover { background: var(--ui-red-soft); color: var(--ui-red-text); }
     /* Labelled variant — primary actions (Settings, Banner) show the
        label text next to the icon. Slightly more horizontal padding so
        the chip reads as a button rather than a bare icon. */
     .re__figTbBtn--labelled { padding: 6px 12px; font-size: 13px; font-weight: 600; }
     .re__figTbBtn--labelled.is-on {
-      background: #e6f7fa;
-      color: #0e7490;
+      background: var(--ui-x-e6f7fa);
+      color: var(--ui-brand-text);
     }
     .re__figTb--banner { padding: 6px 12px; }
 
@@ -3935,8 +3935,8 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       align-items: center;
       gap: 4px;
       padding: 4px 10px;
-      background: #fff;
-      border: 1px solid #e2e8f0;
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-line);
       border-radius: 999px;
       box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
       z-index: 11;
@@ -3956,8 +3956,8 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       position: absolute;
       transform: translateX(-50%);
       width: 240px;
-      background: #fff;
-      border: 1px solid #e2e8f0;
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-line);
       border-radius: 8px;
       box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18);
       z-index: 12;
@@ -3967,12 +3967,12 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       align-items: center;
       justify-content: space-between;
       padding: 10px 12px;
-      border-bottom: 1px solid #e2e8f0;
+      border-bottom: 1px solid var(--ui-line);
       cursor: grab;
       user-select: none;
     }
     .re__btnSettingsHead:active { cursor: grabbing; }
-    .re__btnSettingsHead h4 { margin: 0; font: 600 14px/1 inherit; color: #0f172a; }
+    .re__btnSettingsHead h4 { margin: 0; font: 600 14px/1 inherit; color: var(--ui-text); }
     .re__btnSettingsClose {
       width: 24px; height: 24px;
       display: inline-flex; align-items: center; justify-content: center;
@@ -3980,15 +3980,15 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       background: transparent;
       border: 1px solid transparent;
       border-radius: 6px;
-      color: #475569;
+      color: var(--ui-text-4);
       cursor: pointer;
     }
-    .re__btnSettingsClose:hover { background: #f1f5f9; color: #0f172a; }
+    .re__btnSettingsClose:hover { background: var(--ui-surface-2); color: var(--ui-text); }
     /* Top-level tabs across the popover head — Settings | Design.
        Underline on the active tab matches the intended layout. */
     .re__btnTabs {
       display: flex;
-      border-bottom: 1px solid #e2e8f0;
+      border-bottom: 1px solid var(--ui-line);
       padding: 0 12px;
     }
     .re__btnTab {
@@ -3997,12 +3997,12 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       background: transparent;
       border: none;
       font: 500 13px/1 inherit;
-      color: #475569;
+      color: var(--ui-text-4);
       cursor: pointer;
       position: relative;
       transition: color .12s;
     }
-    .re__btnTab:hover { color: #0f172a; }
+    .re__btnTab:hover { color: var(--ui-text); }
     .re__btnTab.is-on { color: var(--ricos-custom-settings-action-color, #32acc1); }
     .re__btnTab.is-on::after {
       content: '';
@@ -4018,7 +4018,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       grid-template-columns: 1fr 1fr;
       gap: 0;
       padding: 0;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--ui-line);
       border-radius: 6px;
       margin-bottom: 4px;
     }
@@ -4027,11 +4027,11 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       background: transparent;
       border: none;
       font: 500 12px/1 inherit;
-      color: #475569;
+      color: var(--ui-text-4);
       cursor: pointer;
     }
     .re__btnStateGroup button.is-on {
-      background: color-mix(in srgb, var(--ricos-custom-settings-action-color, #32acc1) 6%, #fff);
+      background: color-mix(in srgb, var(--ricos-custom-settings-action-color, #32acc1) 6%, var(--ui-surface));
       border: 1px solid var(--ricos-custom-settings-action-color, #32acc1);
       color: var(--ricos-custom-settings-action-color, #32acc1);
       border-radius: 5px;
@@ -4048,15 +4048,15 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       align-items: center;
       gap: 8px;
       font: 500 12px/1 inherit;
-      color: #0f172a;
+      color: var(--ui-text);
     }
-    .re__btnField > span { color: #475569; }
+    .re__btnField > span { color: var(--ui-text-4); }
     .re__btnField--row { align-items: center; }
     .re__btnField input[type="text"],
     .re__btnField input[type="number"] {
       width: 100%;
       padding: 6px 8px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--ui-line);
       border-radius: 6px;
       font: inherit;
       color: inherit;
@@ -4070,7 +4070,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       width: 32px;
       height: 24px;
       padding: 0;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--ui-line);
       border-radius: 4px;
       background: transparent;
       cursor: pointer;
@@ -4119,7 +4119,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       gap: 2px;
       max-height: 220px;
       overflow-y: auto;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--ui-line);
       border-radius: 6px;
       padding: 4px;
     }
@@ -4134,9 +4134,9 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       text-align: left;
       cursor: pointer;
     }
-    .re__figLinkSectionList button:hover { background: #f1f5f9; }
+    .re__figLinkSectionList button:hover { background: var(--ui-surface-2); }
     .re__figLinkSectionList button.is-on {
-      background: color-mix(in srgb, var(--ricos-custom-settings-action-color, #32acc1) 12%, #fff);
+      background: color-mix(in srgb, var(--ricos-custom-settings-action-color, #32acc1) 12%, var(--ui-surface));
       color: var(--ricos-custom-settings-action-color, #32acc1);
     }
     .re__figLinkSectionTag {
@@ -4145,27 +4145,27 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       justify-content: center;
       width: 22px; height: 22px;
       border-radius: 4px;
-      background: #f1f5f9;
-      color: #475569;
+      background: var(--ui-surface-2);
+      color: var(--ui-text-4);
       font: 700 10px/1 inherit;
       text-transform: uppercase;
     }
-    .re__figLinkSectionLabel { font: 500 13px/1.2 inherit; color: #0f172a; }
+    .re__figLinkSectionLabel { font: 500 13px/1.2 inherit; color: var(--ui-text); }
     .re__figLinkEmpty {
       padding: 12px;
-      border: 1px dashed #e2e8f0;
+      border: 1px dashed var(--ui-line);
       border-radius: 6px;
       font: 400 12px/1.4 inherit;
-      color: #64748b;
-      background: #f8fafc;
+      color: var(--ui-muted);
+      background: var(--ui-surface-1);
     }
     .re__figLinkUrl {
       width: 100%;
       padding: 8px 10px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--ui-line);
       border-radius: 6px;
       font: 400 13px/1 inherit;
-      color: #0f172a;
+      color: var(--ui-text);
       outline: none;
     }
     .re__figLinkUrl:focus { border-color: var(--ricos-custom-settings-action-color, #32acc1); }
@@ -4174,20 +4174,20 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       justify-content: flex-end;
       gap: 8px;
       padding: 12px 16px;
-      border-top: 1px solid #e2e8f0;
-      background: #fff;
+      border-top: 1px solid var(--ui-line);
+      background: var(--ui-surface);
     }
     .re__figFootBtn {
       padding: 6px 16px;
       border: 1px solid var(--ricos-custom-settings-action-color, #32acc1);
       border-radius: 999px;
-      background: #fff;
+      background: var(--ui-surface);
       font: 600 13px/1 inherit;
       color: var(--ricos-custom-settings-action-color, #32acc1);
       cursor: pointer;
     }
     .re__figFootBtn:hover {
-      background: color-mix(in srgb, var(--ricos-custom-settings-action-color, #32acc1) 6%, #fff);
+      background: color-mix(in srgb, var(--ricos-custom-settings-action-color, #32acc1) 6%, var(--ui-surface));
     }
     .re__figFootBtn.re__figFootBtn--primary {
       background: var(--ricos-custom-settings-action-color, #32acc1);
@@ -4209,17 +4209,17 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       align-items: center;
       justify-content: center;
       padding: 0;
-      background: #fff;
-      border: 1px solid #e2e8f0;
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-line);
       border-radius: 6px;
-      color: #475569;
+      color: var(--ui-text-4);
       cursor: pointer;
       position: relative;
       transition: border-color .12s, background-color .12s, color .12s;
     }
-    .re__btnSizeGroup button:hover { background: #f1f5f9; color: #0f172a; }
+    .re__btnSizeGroup button:hover { background: var(--ui-surface-2); color: var(--ui-text); }
     .re__btnSizeGroup button.is-on {
-      background: color-mix(in srgb, var(--ricos-custom-settings-action-color, #32acc1) 8%, #fff);
+      background: color-mix(in srgb, var(--ricos-custom-settings-action-color, #32acc1) 8%, var(--ui-surface));
       border-color: var(--ricos-custom-settings-action-color, #32acc1);
       color: var(--ricos-custom-settings-action-color, #32acc1);
     }
@@ -4231,7 +4231,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       width: 12px; height: 12px;
       background: var(--ricos-custom-settings-action-color, #32acc1);
       border-radius: 50%;
-      border: 2px solid #fff;
+      border: 2px solid var(--ui-surface);
     }
 
     /* Alignment dropdown — sibling of the link/settings buttons in
@@ -4242,8 +4242,8 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       top: calc(100% + 6px);
       left: 0;
       min-width: 140px;
-      background: #fff;
-      border: 1px solid #e2e8f0;
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-line);
       border-radius: 8px;
       box-shadow: 0 12px 24px rgba(15, 23, 42, 0.15);
       padding: 4px;
@@ -4260,24 +4260,24 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       border: none;
       border-radius: 4px;
       font: 500 12px/1 inherit;
-      color: #0f172a;
+      color: var(--ui-text);
       text-align: left;
       cursor: pointer;
     }
-    .re__btnAlignMenu button:hover { background: #f1f5f9; }
+    .re__btnAlignMenu button:hover { background: var(--ui-surface-2); }
     .re__btnAlignMenu button.is-on {
       background: var(--ricos-custom-settings-action-color, #32acc1);
       color: #ffffff;
     }
-    .re__btnAlignMenu button.is-danger { color: #dc2626; }
+    .re__btnAlignMenu button.is-danger { color: var(--ui-red-text); }
     /* Table toolbar menus (background / borders). */
     .re__tableMenu--pad { padding: 10px !important; gap: 8px !important; min-width: 180px; }
     .re__tableSwatches { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
     .re__btnAlignMenu .re__tableSwatch {
       width: 24px !important; height: 24px !important; padding: 0 !important;
-      border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer;
+      border: 1px solid var(--ui-line-strong); border-radius: 4px; cursor: pointer;
     }
-    .re__btnAlignMenu .re__tableSwatch.is-none { position: relative; background: #fff !important; }
+    .re__btnAlignMenu .re__tableSwatch.is-none { position: relative; background: var(--ui-surface) !important; }
     .re__btnAlignMenu .re__tableSwatch.is-none::after {
       content: ""; position: absolute; inset: 0;
       background: linear-gradient(to top right, transparent 46%, #ef4444 47%, #ef4444 53%, transparent 54%);
@@ -4285,59 +4285,59 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     /* Custom-colour trigger row in the background menu. */
     .re__btnAlignMenu .re__tableCustomColor {
       display: flex !important; align-items: center; gap: 8px; width: 100% !important;
-      padding: 7px 8px; border: 1px solid #e2e8f0 !important; border-radius: 6px; background: #fff; cursor: pointer;
-      font: 500 12px/1 inherit; color: #475569; text-align: left !important;
+      padding: 7px 8px; border: 1px solid var(--ui-line) !important; border-radius: 6px; background: var(--ui-surface); cursor: pointer;
+      font: 500 12px/1 inherit; color: var(--ui-text-4); text-align: left !important;
     }
-    .re__btnAlignMenu .re__tableCustomColor:hover { background: #f8fafc; }
-    .re__tableCustomDot { width: 18px; height: 18px; border-radius: 4px; border: 1px solid #cbd5e1; background: var(--swatch-color, #000); }
+    .re__btnAlignMenu .re__tableCustomColor:hover { background: var(--ui-surface-1); }
+    .re__tableCustomDot { width: 18px; height: 18px; border-radius: 4px; border: 1px solid var(--ui-line-strong); background: var(--swatch-color, #000); }
     /* 3×3 border-side configuration grid. */
     .re__bdGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
     .re__btnAlignMenu .re__bdBtn {
       display: flex !important; align-items: center; justify-content: center; width: auto !important;
-      padding: 5px !important; border: 1px solid #e2e8f0 !important; border-radius: 6px; background: #fff; cursor: pointer;
+      padding: 5px !important; border: 1px solid var(--ui-line) !important; border-radius: 6px; background: var(--ui-surface); cursor: pointer;
     }
-    .re__btnAlignMenu .re__bdBtn:hover { background: #f1f5f9; }
-    .re__btnAlignMenu .re__bdBtn.is-on { border-color: #2563eb !important; background: #eef2ff; color: #2563eb; }
+    .re__btnAlignMenu .re__bdBtn:hover { background: var(--ui-surface-2); }
+    .re__btnAlignMenu .re__bdBtn.is-on { border-color: #2563eb !important; background: var(--ui-x-eef2ff); color: var(--ui-t-2563eb); }
     /* WIX-style "Borders" popover. */
     .re__bordersPop { min-width: 230px !important; gap: 12px !important; }
     .re__bordersHead { display: flex; align-items: center; justify-content: space-between; }
-    .re__bordersTitle { font-size: 15px; font-weight: 700; color: #0f172a; }
+    .re__bordersTitle { font-size: 15px; font-weight: 700; color: var(--ui-text); }
     .re__bordersClose {
       display: inline-flex; align-items: center; justify-content: center;
-      width: 24px; height: 24px; border: 1px solid #e2e8f0; border-radius: 999px;
-      background: #fff; color: #64748b; cursor: pointer; padding: 0;
+      width: 24px; height: 24px; border: 1px solid var(--ui-line); border-radius: 999px;
+      background: var(--ui-surface); color: var(--ui-muted); cursor: pointer; padding: 0;
     }
-    .re__bordersClose:hover { background: #f1f5f9; color: #0f172a; }
+    .re__bordersClose:hover { background: var(--ui-surface-2); color: var(--ui-text); }
     .re__bordersPop .re__bdGrid { gap: 8px; }
     .re__bordersPop .re__bdBtn { padding: 8px !important; border-radius: 8px; }
-    .re__tableBorderField { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #475569; }
+    .re__tableBorderField { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ui-text-4); }
     /* Label takes the slack; the controls sit flush-right (WIX layout). */
     .re__tableBorderField > span:first-child { flex: 1; min-width: 0; white-space: nowrap; }
-    .re__tableBorderField .re__bdUnit { color: #94a3b8; flex-shrink: 0; }
-    .re__tableBorderField input[type="color"] { width: 36px; height: 26px; border: 1px solid #e2e8f0; border-radius: 4px; padding: 1px; cursor: pointer; }
-    .re__tableBorderField input[type="number"] { width: 54px; padding: 6px 8px; border: 1px solid #e2e8f0; border-radius: 8px; font: inherit; text-align: center; }
+    .re__tableBorderField .re__bdUnit { color: var(--ui-faint); flex-shrink: 0; }
+    .re__tableBorderField input[type="color"] { width: 36px; height: 26px; border: 1px solid var(--ui-line); border-radius: 4px; padding: 1px; cursor: pointer; }
+    .re__tableBorderField input[type="number"] { width: 54px; padding: 6px 8px; border: 1px solid var(--ui-line); border-radius: 8px; font: inherit; text-align: center; }
     .re__tableBorderField .re__bdOpacity { width: 56px; }
     /* Table edge +-handles. */
     .re__tableAdd {
       position: absolute; z-index: 12; display: flex; align-items: center; justify-content: center;
-      border: 1px solid #c7dcf7; background: #fff; color: #4475c5; cursor: pointer;
+      border: 1px solid var(--ui-x-c7dcf7); background: var(--ui-surface); color: var(--ui-t-4475c5); cursor: pointer;
       font-size: 18px; line-height: 1; box-shadow: 0 1px 4px rgba(15,23,42,.1);
     }
-    .re__tableAdd:hover { background: #eef4ff; border-color: #9bbcf0; }
+    .re__tableAdd:hover { background: var(--ui-x-eef4ff); border-color: #9bbcf0; }
     .re__tableAdd--col { width: 22px; height: 36px; border-radius: 999px; }
     .re__tableAdd--row { width: 36px; height: 22px; border-radius: 999px; }
     /* Table row/column header tabs. */
     .re__tableHandle {
       position: absolute; z-index: 12; display: flex; align-items: center; justify-content: center;
-      border: 1px solid #c7dcf7; background: #fff; color: #6b7b90; cursor: pointer;
+      border: 1px solid var(--ui-x-c7dcf7); background: var(--ui-surface); color: var(--ui-t-6b7b90); cursor: pointer;
       box-shadow: 0 1px 4px rgba(15,23,42,.1);
     }
-    .re__tableHandle:hover { background: #eef4ff; border-color: #9bbcf0; color: #4475c5; }
+    .re__tableHandle:hover { background: var(--ui-x-eef4ff); border-color: #9bbcf0; color: var(--ui-t-4475c5); }
     .re__tableHandle--row { width: 16px; height: 24px; border-radius: 6px; }
     .re__tableHandle--col { width: 24px; height: 16px; border-radius: 6px; }
     .re__btnAlignMenuDivider {
       height: 1px;
-      background: #e2e8f0;
+      background: var(--ui-line);
       margin: 4px -4px;
     }
     .re__btnAlignMenuToggleRow {
@@ -4346,7 +4346,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       justify-content: space-between;
       padding: 6px 10px;
       font: 500 12px/1 inherit;
-      color: #0f172a;
+      color: var(--ui-text);
     }
 
     /* Selection ring on the picked cell-element — uses the editor's
@@ -4376,21 +4376,21 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       justify-content: center;
       width: 16px;
       height: 24px;
-      color: #94a3b8;
+      color: var(--ui-faint);
       cursor: grab;
       border-radius: 4px;
       transition: background-color .12s, color .12s;
       flex-shrink: 0;
     }
-    .re__tbDrag:hover { background: #f1f5f9; color: #0f172a; }
+    .re__tbDrag:hover { background: var(--ui-surface-2); color: var(--ui-text); }
     .re__tbDrag:active { cursor: grabbing; }
-    .re__figTbSep { width: 1px; height: 18px; background: #e2e8f0; margin: 0 4px; }
+    .re__figTbSep { width: 1px; height: 18px; background: var(--ui-line); margin: 0 4px; }
     .re__figTbDd { position: relative; display: inline-flex; }
     /* Right-click actions menu (cursor-positioned). */
     .re__ctxBackdrop { position: fixed; inset: 0; z-index: 1000; }
     .re__ctxMenu {
       position: fixed; z-index: 1001; min-width: 220px; padding: 6px;
-      background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+      background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: 12px;
       box-shadow: 0 10px 30px rgba(15,23,42,.18);
       display: flex; flex-direction: column; gap: 2px;
     }
@@ -4406,8 +4406,8 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       transform: translateX(-50%);
       min-width: 180px;
       padding: 6px;
-      background: #fff;
-      border: 1px solid #e2e8f0;
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-line);
       border-radius: 12px;
       box-shadow: 0 8px 24px rgba(15,23,42,.14);
       display: flex;
@@ -4425,26 +4425,26 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       border: none;
       border-radius: 8px;
       font-size: 13px;
-      color: #1e293b;
+      color: var(--ui-text-2);
       cursor: pointer;
       text-align: start;
     }
-    .re__figTbItem:hover { background: #f1f5f9; }
-    .re__figTbItem.is-on { background: #32acc1; color: #fff; }
-    .re__figTbItem.is-danger { color: #dc2626; }
-    .re__figTbItem.is-danger:hover { background: #fef2f2; }
+    .re__figTbItem:hover { background: var(--ui-surface-2); }
+    .re__figTbItem.is-on { background: var(--ui-b-32acc1); color: #fff; }
+    .re__figTbItem.is-danger { color: var(--ui-red-text); }
+    .re__figTbItem.is-danger:hover { background: var(--ui-red-soft); }
     .re__figTbKbd {
       font-size: 11px;
-      color: #94a3b8;
+      color: var(--ui-faint);
       font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     }
     .re__figTbMenu--more { min-width: 220px; }
-    .re__figTbDivider { height: 1px; background: #e2e8f0; margin: 4px 6px; }
+    .re__figTbDivider { height: 1px; background: var(--ui-line); margin: 4px 6px; }
     .re__figTbToggle {
       display: inline-block;
       width: 28px;
       height: 16px;
-      background: #cbd5e1;
+      background: var(--ui-line-strong);
       border-radius: 999px;
       position: relative;
       transition: background 120ms;
@@ -4454,7 +4454,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       position: absolute;
       top: 2px; left: 2px;
       width: 12px; height: 12px;
-      background: #fff;
+      background: var(--ui-surface);
       border-radius: 50%;
       transition: transform 120ms;
     }
@@ -4471,8 +4471,8 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       transform: translateX(-50%);
       min-width: 240px;
       padding: 12px 14px;
-      background: #fff;
-      border: 1px solid #e2e8f0;
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-line);
       border-radius: 12px;
       box-shadow: 0 8px 24px rgba(15,23,42,.14);
       display: flex;
@@ -4489,26 +4489,26 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       display: flex; align-items: center; justify-content: space-between;
       margin-bottom: 2px;
     }
-    .re__figTbPanelHead h4 { margin: 0; font-size: 14px; font-weight: 700; color: #0f172a; }
+    .re__figTbPanelHead h4 { margin: 0; font-size: 14px; font-weight: 700; color: var(--ui-text); }
     .re__figTbPanelClose {
       width: 22px; height: 22px;
       display: inline-flex; align-items: center; justify-content: center;
-      background: transparent; border: none; border-radius: 50%; color: #64748b; cursor: pointer;
+      background: transparent; border: none; border-radius: 50%; color: var(--ui-muted); cursor: pointer;
     }
-    .re__figTbPanelClose:hover { background: #f1f5f9; color: #0f172a; }
-    .re__figTbLabel { font-size: 12px; font-weight: 500; color: #475569; }
+    .re__figTbPanelClose:hover { background: var(--ui-surface-2); color: var(--ui-text); }
+    .re__figTbLabel { font-size: 12px; font-weight: 500; color: var(--ui-text-4); }
     .re__figTbInput {
       width: 100%;
       padding: 8px 10px;
       font: inherit;
       font-size: 13px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--ui-line);
       border-radius: 8px;
-      color: #0f172a;
+      color: var(--ui-text);
     }
     .re__figTbInput:focus { outline: none; border-color: #32acc1; box-shadow: 0 0 0 3px rgba(50,172,193,.15); }
-    .re__figTbInput:disabled { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; opacity: .8; }
-    .re__figTbRow { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #1e293b; padding: 2px 0; }
+    .re__figTbInput:disabled { background: var(--ui-surface-2); color: var(--ui-faint); cursor: not-allowed; opacity: .8; }
+    .re__figTbRow { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--ui-text-2); padding: 2px 0; }
     .re__figTbRow--grid { gap: 12px; }
     .re__figTbRow .re__figTbToggle { cursor: pointer; }
     /* Number + unit combined into a single rounded chip — number input
@@ -4523,8 +4523,8 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       padding: 0 10px;
       height: 28px;
       width: 118px;
-      background: #fff;
-      border: 1px solid #e2e8f0;
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-line);
       border-radius: 8px;
       transition: border-color 120ms, box-shadow 120ms;
     }
@@ -4539,7 +4539,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       font: inherit;
       font-size: 13px;
       text-align: end;
-      color: #0f172a;
+      color: var(--ui-text);
     }
     .re__figTbInput--num:focus { outline: none !important; box-shadow: none !important; border: 0 !important; }
     /* Hide the native number spinner buttons — the slider popover
@@ -4547,22 +4547,22 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     .re__figTbInput--num::-webkit-outer-spin-button,
     .re__figTbInput--num::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     .re__figTbInput--num[type=number] { -moz-appearance: textfield; }
-    .re__figTbUnit { font-size: 12px; color: #94a3b8; flex-shrink: 0; }
+    .re__figTbUnit { font-size: 12px; color: var(--ui-faint); flex-shrink: 0; }
     .re__figTbActions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
     .re__figTbBtnGhost {
       padding: 6px 14px;
-      background: #f1f5f9;
+      background: var(--ui-surface-2);
       border: none;
       border-radius: 999px;
       font-size: 13px;
       font-weight: 600;
-      color: #475569;
+      color: var(--ui-text-4);
       cursor: pointer;
     }
-    .re__figTbBtnGhost:hover { background: #e2e8f0; color: #0f172a; }
+    .re__figTbBtnGhost:hover { background: var(--ui-line); color: var(--ui-text); }
     .re__figTbBtnPrimary {
       padding: 6px 14px;
-      background: #32acc1;
+      background: var(--ui-b-32acc1);
       border: none;
       border-radius: 999px;
       font-size: 13px;
@@ -4571,7 +4571,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       cursor: pointer;
     }
     .re__figTbBtnPrimary:hover { background: #2a93a6; }
-    .re__figTbBtn.is-on { background: #e6f7fa; color: #0e7490; }
+    .re__figTbBtn.is-on { background: var(--ui-x-e6f7fa); color: var(--ui-brand-text); }
 
     /* Column toolbar — same pill chrome as the figure toolbar, sits
        above the selected column inside a banner. */
@@ -4582,8 +4582,8 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       align-items: center;
       gap: 4px;
       padding: 6px 10px;
-      background: #fff;
-      border: 1px solid #e2e8f0;
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-line);
       border-radius: 999px;
       box-shadow: 0 8px 24px rgba(15,23,42,.12);
       z-index: 9;
@@ -4643,7 +4643,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     }
     :host ::ng-deep .re__surface .re-banner-col-handle--bottom {
       bottom: -10px !important;
-      background: #ffffff !important;
+      background: var(--ui-surface) !important;
       border: 1px solid #32acc1 !important;
     }
     /* Active drag state — applied while a resize handle is being
@@ -4677,8 +4677,8 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       position: fixed;
       width: 320px;
       max-height: min(640px, calc(100vh - 32px));
-      background: #fff;
-      border: 1px solid #e2e8f0;
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-line);
       border-radius: 12px;
       box-shadow: 0 12px 32px rgba(15,23,42,.15);
       display: flex;
@@ -4695,17 +4695,17 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       user-select: none;
     }
     .re__figPanelHead:active { cursor: grabbing; }
-    .re__figPanelHead h4 { margin: 0; font-size: 16px; font-weight: 700; color: #0f172a; }
+    .re__figPanelHead h4 { margin: 0; font-size: 16px; font-weight: 700; color: var(--ui-text); }
     .re__figPanelClose {
       width: 26px; height: 26px;
       display: inline-flex; align-items: center; justify-content: center;
-      background: transparent; border: none; border-radius: 50%; color: #64748b; cursor: pointer;
+      background: transparent; border: none; border-radius: 50%; color: var(--ui-muted); cursor: pointer;
     }
-    .re__figPanelClose:hover { background: #f1f5f9; color: #0f172a; }
+    .re__figPanelClose:hover { background: var(--ui-surface-2); color: var(--ui-text); }
     .re__figPanelTabs {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      border-bottom: 1px solid #e2e8f0;
+      border-bottom: 1px solid var(--ui-line);
     }
     .re__figPanelTab {
       padding: 10px 6px;
@@ -4714,10 +4714,10 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       border-bottom: 2px solid transparent;
       font-size: 13px;
       font-weight: 600;
-      color: #64748b;
+      color: var(--ui-muted);
       cursor: pointer;
     }
-    .re__figPanelTab:hover { color: #0f172a; }
+    .re__figPanelTab:hover { color: var(--ui-text); }
     .re__figPanelTab.is-on { color: #32acc1; border-bottom-color: #32acc1; }
     .re__figPanelBody {
       padding: 12px 16px 16px;
@@ -4735,13 +4735,13 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     /* Sub-section hint paragraph — small grey copy beneath a section
        heading, like the reference's "Choose how your content behaves
        when the screen size changes." text under Responsive behavior. */
-    .re__figPanelHint { margin: -8px 0 4px; font-size: 12px; color: #64748b; line-height: 1.4; }
-    .re__figPanelSection { margin: 6px 0 2px; font-size: 13px; font-weight: 700; color: #0f172a; }
+    .re__figPanelHint { margin: -8px 0 4px; font-size: 12px; color: var(--ui-muted); line-height: 1.4; }
+    .re__figPanelSection { margin: 6px 0 2px; font-size: 13px; font-weight: 700; color: var(--ui-text); }
 
     /* Segmented selector used inside the Layout-section panel
        (Color/Image, One/Two column). Pill-style with the active
        segment in teal. */
-    .re__figSegment { display: flex; gap: 6px; padding: 4px; background: #f1f5f9; border-radius: 10px; }
+    .re__figSegment { display: flex; gap: 6px; padding: 4px; background: var(--ui-surface-2); border-radius: 10px; }
     .re__figSegBtn {
       flex: 1;
       padding: 6px 10px;
@@ -4750,15 +4750,15 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       border-radius: 7px;
       font-size: 12px;
       font-weight: 600;
-      color: #475569;
+      color: var(--ui-text-4);
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
     }
-    .re__figSegBtn:hover { color: #0f172a; }
-    .re__figSegBtn.is-on { background: #fff; color: #32acc1; border-color: #32acc1; box-shadow: 0 1px 2px rgba(15,23,42,.05); }
+    .re__figSegBtn:hover { color: var(--ui-text); }
+    .re__figSegBtn.is-on { background: var(--ui-surface); color: #32acc1; border-color: #32acc1; box-shadow: 0 1px 2px rgba(15,23,42,.05); }
     .re__figSegBtn--icon { padding: 8px; }
 
     /* Section-background image picker tile. Big "+" when empty,
@@ -4766,16 +4766,16 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     .re__figBgImage { display: flex; flex-direction: column; gap: 6px; }
     /* Image preview tile — shorter aspect (16/9) so the panel doesn't
        balloon vertically when an image is set. */
-    .re__figBgImage img { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0; }
+    .re__figBgImage img { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 8px; border: 1px solid var(--ui-line); }
     .re__figBgImageActions { display: flex; gap: 6px; }
     .re__figBgImageActions .re__figTbBtnGhost { flex: 1; }
     .re__figBgImageEmpty {
       width: 100%;
       aspect-ratio: 16/9;
-      background: #f8fafc;
-      border: 2px dashed #cbd5e1;
+      background: var(--ui-surface-1);
+      border: 2px dashed var(--ui-line-strong);
       border-radius: 8px;
-      color: #94a3b8;
+      color: var(--ui-faint);
       cursor: pointer;
       display: flex; align-items: center; justify-content: center;
     }
@@ -4792,7 +4792,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       border: 1px solid rgba(15,23,42,.18);
       border-radius: 6px;
       cursor: pointer;
-      box-shadow: inset 0 0 0 1px #fff;
+      box-shadow: inset 0 0 0 1px var(--ui-surface);
     }
     .re__figBgTrigger.is-active { border-color: #32acc1; box-shadow: 0 0 0 2px rgba(50,172,193,.18); }
     .re__figBgTrigger:hover { border-color: #94a3b8; }
@@ -4817,7 +4817,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
          without a background-image clobbering the checkerboard. */
       background-image:
         linear-gradient(var(--swatch-color, transparent), var(--swatch-color, transparent)),
-        repeating-conic-gradient(#cbd5e1 0% 25%, #f1f5f9 0% 50%);
+        repeating-conic-gradient(var(--ui-line-strong) 0% 25%, var(--ui-surface-2) 0% 50%);
       background-size: auto, 8px 8px;
     }
     .re__figColorTrigger:hover { border-color: #94a3b8; }
@@ -4830,17 +4830,17 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       width: 38px;
       height: 38px;
       padding: 0;
-      background: #fff;
-      border: 1px solid #e2e8f0;
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-line);
       border-radius: 8px;
-      color: #475569;
+      color: var(--ui-text-4);
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
     }
-    .re__figIconToggle:hover { color: #0f172a; border-color: #cbd5e1; }
+    .re__figIconToggle:hover { color: var(--ui-text); border-color: var(--ui-line-strong); }
     .re__figIconToggle.is-on {
       border-color: #32acc1;
       color: #32acc1;
@@ -4852,8 +4852,8 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       right: -4px;
       width: 14px;
       height: 14px;
-      background: #32acc1;
-      border: 1.5px solid #fff;
+      background: var(--ui-b-32acc1);
+      border: 1.5px solid var(--ui-surface);
       border-radius: 50%;
       color: #fff;
       display: inline-flex;
@@ -4877,8 +4877,8 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     }
     .re__figPosCell {
       width: 24px; height: 24px;
-      background: #fff;
-      border: 1px solid #e2e8f0;
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-line);
       border-radius: 3px;
       cursor: pointer;
       display: inline-flex;
@@ -4903,10 +4903,10 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
          the grid bleed into the next row. */
       min-height: 84px;
     }
-    .re__figPosCell:hover { border-color: #cbd5e1; }
+    .re__figPosCell:hover { border-color: var(--ui-line-strong); }
     .re__figPosCell.is-on { background: #32acc1; border-color: #32acc1; }
     .re__figPosDot { width: 6px; height: 6px; background: #94a3b8; border-radius: 50%; opacity: 0; transition: opacity 100ms; }
-    .re__figPosCell.is-on .re__figPosDot { background: #fff; opacity: 1; }
+    .re__figPosCell.is-on .re__figPosDot { background: var(--ui-surface); opacity: 1; }
 
     /* Variants used by the new Layout-tab rows. */
     .re__figRow--stack { flex-direction: column; align-items: stretch; gap: 4px; }
@@ -4924,18 +4924,18 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     .re__figLinkBtn {
       width: 30px; height: 30px;
       padding: 4px;
-      background: #fff;
-      border: 1px solid #e2e8f0;
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-line);
       border-radius: 6px;
-      color: #64748b;
+      color: var(--ui-muted);
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
     }
-    .re__figLinkBtn:hover { color: #0f172a; border-color: #cbd5e1; }
-    .re__figLinkBtn.is-on { background: #e6f7fa; color: #0e7490; border-color: #32acc1; }
+    .re__figLinkBtn:hover { color: var(--ui-text); border-color: var(--ui-line-strong); }
+    .re__figLinkBtn.is-on { background: var(--ui-x-e6f7fa); color: var(--ui-brand-text); border-color: #32acc1; }
     /* Column-padding chip layout. Default is 2 chips side-by-side
        (legacy X/Y mode); the --quad modifier opens it into a 2×2
        grid for the 4-edge view (top/right/bottom/left chips). */
@@ -4989,7 +4989,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       gap: 0;
     }
     .re__figTbNum--wide { width: 96px; }
-    .re__figTbNumIcon { color: #94a3b8; flex-shrink: 0; }
+    .re__figTbNumIcon { color: var(--ui-faint); flex-shrink: 0; }
     .re__figSegment--icon { padding: 4px; gap: 4px; }
     .re__figTbLabel--info { display: inline-flex; align-items: center; gap: 4px; }
     /* Section header that doubles as a collapsible toggle. */
@@ -5002,12 +5002,12 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       background: transparent;
       border: none;
       cursor: pointer;
-      color: #0f172a;
+      color: var(--ui-text);
       font-size: 13px;
       font-weight: 700;
       text-align: start;
     }
-    .re__figPanelSection--toggle svg { color: #64748b; transition: transform 120ms; }
+    .re__figPanelSection--toggle svg { color: var(--ui-muted); transition: transform 120ms; }
 
     /* Small "no color" button — red diagonal slash inside a white
        square. Shown next to every colour picker; clicking sets the
@@ -5016,14 +5016,14 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       width: 28px; height: 28px;
       padding: 0;
       background: transparent;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--ui-line);
       border-radius: 6px;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       justify-content: center;
     }
-    .re__figNoColor:hover { border-color: #cbd5e1; }
+    .re__figNoColor:hover { border-color: var(--ui-line-strong); }
     .re__figNoColor.is-on { border-color: #ef4444; box-shadow: 0 0 0 2px rgba(239,68,68,.15); }
     /* Compact labeled slider row — label · chip · slider, all
        inline and vertically centred. Generous gap between the
@@ -5039,7 +5039,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     .re__figRow > .re__figTbLabel {
       flex: 0 0 auto;
       font-size: 13px;
-      color: #4a4a55;
+      color: var(--ui-t-4a4a55);
       font-weight: 500;
       min-width: 88px;
       max-width: 120px;
@@ -5060,7 +5060,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     .re__figSwatch ::ng-deep button {
       width: auto !important;
       padding: 3px !important;
-      border-color: #e2e8f0 !important;
+      border-color: var(--ui-line) !important;
       border-radius: 6px !important;
     }
     /* Hide the hex text wrapper (anything that isn't the swatch
@@ -5100,8 +5100,8 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       position: fixed;
       width: 88px;
       padding: 8px 10px;
-      background: #fff;
-      border: 1px solid #e2e8f0;
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-line);
       border-radius: 999px;
       box-shadow: 0 6px 18px rgba(15,23,42,.12);
       -webkit-appearance: none;
@@ -5138,18 +5138,18 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     :host ::ng-deep .re__figSlider::-webkit-slider-runnable-track {
       height: 4px;
       border-radius: 999px;
-      background: #e2e8f0;
+      background: var(--ui-line);
     }
     :host ::ng-deep .re__figSlider::-moz-range-track {
       height: 4px;
       border-radius: 999px;
-      background: #e2e8f0;
+      background: var(--ui-line);
     }
     :host ::ng-deep .re__figSlider::-webkit-slider-thumb {
       -webkit-appearance: none; appearance: none;
       width: 16px; height: 16px;
       background: #32acc1;
-      border: 2px solid #fff;
+      border: 2px solid var(--ui-surface);
       border-radius: 50%;
       margin-top: -6px;
       box-shadow: 0 1px 3px rgba(15,23,42,.2);
@@ -5157,7 +5157,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     :host ::ng-deep .re__figSlider::-moz-range-thumb {
       width: 16px; height: 16px;
       background: #32acc1;
-      border: 2px solid #fff;
+      border: 2px solid var(--ui-surface);
       border-radius: 50%;
       box-shadow: 0 1px 3px rgba(15,23,42,.2);
     }
@@ -5169,11 +5169,11 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       height: 8px;
       background:
         linear-gradient(to right, rgba(0,0,0,0), var(--c, #000)),
-        repeating-conic-gradient(#cbd5e1 0% 25%, #f1f5f9 0% 50%) 0 0 / 8px 8px;
+        repeating-conic-gradient(var(--ui-line-strong) 0% 25%, var(--ui-surface-2) 0% 50%) 0 0 / 8px 8px;
     }
     .re__figSlider--opacity::-webkit-slider-thumb,
     .re__figSlider--opacity::-moz-range-thumb {
-      background: #0f172a;
+      background: var(--ui-ink);
     }
     .re__figSlider--opacity::-webkit-slider-thumb { margin-top: -4px; }
     /* Label + info-icon pair used in the Settings rows. The (i)
@@ -5185,7 +5185,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       align-items: center;
       justify-content: center;
       width: 16px; height: 16px;
-      color: #94a3b8;
+      color: var(--ui-faint);
       cursor: help;
     }
     .re__figInfo:hover { color: #32acc1; }
@@ -5211,7 +5211,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       position: absolute !important;
       width: 12px !important;
       height: 12px !important;
-      background: #fff !important;
+      background: var(--ui-surface) !important;
       border: 2px solid #32acc1 !important;
       border-radius: 50% !important;
       z-index: 6 !important;
@@ -5240,14 +5240,14 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       width: 10px !important;
       height: 10px !important;
       margin: -5px 0 0 -5px !important;
-      background: #fff !important;
+      background: var(--ui-surface) !important;
       border: 2px solid #32acc1 !important;
       border-radius: 3px !important;
       cursor: nwse-resize !important;
       z-index: 6 !important;
       box-shadow: 0 1px 3px rgba(15,23,42,.2) !important;
     }
-    :host ::ng-deep .re__surface .re__radiusGrip:hover { background: #e6f7fa !important; }
+    :host ::ng-deep .re__surface .re__radiusGrip:hover { background: var(--ui-x-e6f7fa) !important; }
 
     /* Transient "Radius N" feedback chip — same visual language as
        the size indicator that appears on the media blocks while
@@ -5257,8 +5257,8 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       top: 8px !important;
       left: 8px !important;
       padding: 4px 10px !important;
-      background: #e6f7fa !important;
-      color: #0e7490 !important;
+      background: var(--ui-x-e6f7fa) !important;
+      color: var(--ui-brand-text) !important;
       font-size: 12px !important;
       font-weight: 600 !important;
       border-radius: 999px !important;
@@ -5640,7 +5640,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     :host ::ng-deep .re__surface .re-banner-handle {
       position: absolute !important;
       background: #32acc1 !important;
-      border: 1.5px solid #fff !important;
+      border: 1.5px solid var(--ui-surface) !important;
       border-radius: 4px !important;
       z-index: 5 !important;
       box-shadow: 0 1px 4px rgba(15, 23, 42, 0.2) !important;
@@ -5665,7 +5665,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       transform: translateX(-50%) !important;
       width: 36px !important;
       height: 14px !important;
-      background: #ffffff !important;
+      background: var(--ui-surface) !important;
       border: 1px solid var(--ricos-custom-settings-action-color, #32acc1) !important;
       border-radius: 999px !important;
       box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12) !important;
@@ -5723,7 +5723,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       left: 50% !important;
       width: 10px !important;
       height: 10px !important;
-      background: #ffffff !important;
+      background: var(--ui-surface) !important;
       border: 1.5px solid var(--ricos-custom-settings-action-color, #32acc1) !important;
       border-radius: 50% !important;
       box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12) !important;
@@ -5795,7 +5795,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       transform: translateX(-50%) !important;
       width: 36px !important;
       height: 14px !important;
-      background: #ffffff !important;
+      background: var(--ui-surface) !important;
       border: 1px solid var(--ricos-custom-settings-action-color, #32acc1) !important;
       border-radius: 999px !important;
       display: inline-flex !important;
@@ -5814,7 +5814,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
        does NOT change the handle's appearance; the solid focused
        state below stays put. */
     :host ::ng-deep .re__surface .re-banner.is-selected .re-banner-cell:not(.is-selected-col):hover .re-banner-cell-handle {
-      background: color-mix(in srgb, var(--ricos-custom-settings-action-color, #32acc1) 8%, #ffffff) !important;
+      background: color-mix(in srgb, var(--ricos-custom-settings-action-color, #32acc1) 8%, var(--ui-surface)) !important;
       transform: translateX(-50%) scale(1.05) !important;
     }
     /* Focused state — solid primary color with white dots. */
@@ -5852,7 +5852,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       width: 4px !important;
       height: 40px !important;
       background: #32acc1 !important;
-      border: 1.5px solid #fff !important;
+      border: 1.5px solid var(--ui-surface) !important;
       border-radius: 999px !important;
       box-shadow: 0 1px 4px rgba(15, 23, 42, 0.2) !important;
       transform: translate(-50%, -50%) !important;
@@ -5972,7 +5972,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
        column so the surface scrolls inside its allotted space
        instead of growing past the viewport with tall content. */
     .re--bare { border: 0; border-radius: 0; display: flex; flex-direction: column; height: 100%; min-height: 0; }
-    .re--bare .re__toolbar { background: #fff; flex-shrink: 0; }
+    .re--bare .re__toolbar { background: var(--ui-surface); flex-shrink: 0; }
     .re--bare .re__slot { flex-shrink: 0; }
     /* In bare mode the editor flows with the document body —
        scrolling happens at the page level, so neither the surface
@@ -5996,11 +5996,11 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       outline: none;
       font-size: 14px;
       line-height: 1.55;
-      color: #1e293b;
+      color: var(--ui-text-2);
     }
     .re__surface:empty::before {
       content: attr(data-placeholder);
-      color: #94a3b8;
+      color: var(--ui-faint);
       pointer-events: none;
     }
     :host ::ng-deep .re__surface p { margin: 0 0 8px !important; }
@@ -6009,7 +6009,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     :host ::ng-deep .re__surface h3 { font-size: 18px !important; font-weight: 600 !important; line-height: 1.3 !important; margin: 12px 0 6px !important; color: inherit; }
     :host ::ng-deep .re__surface h4 { font-size: 16px !important; font-weight: 600 !important; line-height: 1.3 !important; margin: 10px 0 6px !important; color: inherit; }
     :host ::ng-deep .re__surface h5 { font-size: 14px !important; font-weight: 600 !important; line-height: 1.35 !important; margin: 10px 0 6px !important; color: inherit; }
-    :host ::ng-deep .re__surface h6 { font-size: 13px !important; font-weight: 600 !important; line-height: 1.35 !important; margin: 10px 0 6px !important; color: #64748b !important; }
+    :host ::ng-deep .re__surface h6 { font-size: 13px !important; font-weight: 600 !important; line-height: 1.35 !important; margin: 10px 0 6px !important; color: var(--ui-muted) !important; }
 
     /* Lists — explicit list-style + outside positioning so Tailwind's
        "ul, ol { list-style: none }" reset doesn't hide the markers.
@@ -6039,22 +6039,22 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     :host ::ng-deep .re__surface blockquote {
       margin: 8px 0 !important;
       padding: 8px 14px !important;
-      border-inline-start: 3px solid #cbd5e1 !important;
-      color: #64748b !important;
+      border-inline-start: 3px solid var(--ui-line-strong) !important;
+      color: var(--ui-muted) !important;
       font-style: italic !important;
-      background: #f8fafc !important;
+      background: var(--ui-surface-1) !important;
     }
     :host ::ng-deep .re__surface pre {
       margin: 8px 0 !important;
       padding: 10px 12px !important;
-      background: #f1f5f9 !important;
+      background: var(--ui-surface-2) !important;
       border-radius: 6px !important;
       font-family: ui-monospace, SFMono-Regular, Menlo, monospace !important;
       font-size: 12px !important;
       white-space: pre-wrap !important;
     }
     :host ::ng-deep .re__surface code {
-      background: #f1f5f9 !important;
+      background: var(--ui-surface-2) !important;
       padding: 1px 4px !important;
       border-radius: 4px !important;
       font-family: ui-monospace, SFMono-Regular, Menlo, monospace !important;
@@ -6079,7 +6079,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       margin: 12px 0 !important;
       border-radius: 10px !important;
       overflow: hidden !important;
-      background: #0f172a !important;
+      background: var(--ui-ink) !important;
     }
     :host ::ng-deep .re__surface .re-embed-video iframe {
       position: absolute !important;
@@ -6121,16 +6121,16 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     :host ::ng-deep .re__surface .re-embed-audio audio { height: auto !important; }
     :host ::ng-deep .re__surface .re-embed-video__spinner {
       width: 26px !important; height: 26px !important; margin-bottom: 8px !important;
-      border: 2.5px solid rgba(255,255,255,.35) !important; border-top-color: #fff !important;
+      border: 2.5px solid rgba(255,255,255,.35) !important; border-top-color: var(--ui-surface) !important;
       border-radius: 50% !important; animation: re-embed-spin .8s linear infinite !important;
     }
     @keyframes re-embed-spin { to { transform: rotate(360deg); } }
     :host ::ng-deep .re__surface .re-embed-card {
       display: block !important;
       margin: 10px 0 !important;
-      border: 1px solid #e2e8f0 !important;
+      border: 1px solid var(--ui-line) !important;
       border-radius: 10px !important;
-      background: #f8fafc !important;
+      background: var(--ui-surface-1) !important;
       overflow: hidden !important;
     }
     :host ::ng-deep .re__surface .re-embed-card a {
@@ -6139,10 +6139,10 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       gap: 2px !important;
       padding: 12px 14px !important;
       text-decoration: none !important;
-      color: #0f172a !important;
+      color: var(--ui-text) !important;
     }
-    :host ::ng-deep .re__surface .re-embed-card__host { font-size: 12px !important; font-weight: 600 !important; color: #64748b !important; text-transform: uppercase !important; letter-spacing: .04em !important; }
-    :host ::ng-deep .re__surface .re-embed-card__url  { font-size: 13px !important; color: #0f172a !important; word-break: break-all !important; }
+    :host ::ng-deep .re__surface .re-embed-card__host { font-size: 12px !important; font-weight: 600 !important; color: var(--ui-muted) !important; text-transform: uppercase !important; letter-spacing: .04em !important; }
+    :host ::ng-deep .re__surface .re-embed-card__url  { font-size: 13px !important; color: var(--ui-text) !important; word-break: break-all !important; }
 
     /* Table — editable bordered grid. Cells are contenteditable (inherit
        from the surface). Phase 2 adds the cell-selection toolbar. */
@@ -6152,20 +6152,20 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     }
     :host ::ng-deep .re__surface .re-table td,
     :host ::ng-deep .re__surface .re-table th {
-      border: 1px solid var(--ricos-custom-border-color, #d7dde3) !important;
+      border: 1px solid var(--ricos-custom-border-color, var(--ui-x-d7dde3)) !important;
       padding: 8px 10px !important; vertical-align: top !important;
       min-width: 40px !important; min-height: 24px !important; word-break: break-word !important;
     }
-    :host ::ng-deep .re__surface .re-table th { font-weight: 600 !important; background: #f8fafc !important; }
+    :host ::ng-deep .re__surface .re-table th { font-weight: 600 !important; background: var(--ui-surface-1) !important; }
     /* Presets (re-table--*). Per-cell inline styles from the toolbar always
        win over these defaults. */
-    :host ::ng-deep .re__surface .re-table--header tbody tr:first-child td { font-weight: 600 !important; background: #f1f5f9 !important; }
-    :host ::ng-deep .re__surface .re-table--striped tbody tr:nth-child(even) td { background: #f8fafc !important; }
+    :host ::ng-deep .re__surface .re-table--header tbody tr:first-child td { font-weight: 600 !important; background: var(--ui-surface-2) !important; }
+    :host ::ng-deep .re__surface .re-table--striped tbody tr:nth-child(even) td { background: var(--ui-surface-1) !important; }
     :host ::ng-deep .re__surface .re-table--minimal td { border-left: 0 !important; border-right: 0 !important; }
     :host ::ng-deep .re__surface .re-table--borderless td { border-color: transparent !important; }
     /* Per-cell selection highlight (set by the table toolbar in phase 2). */
     :host ::ng-deep .re__surface .re-table td.re-cell-sel,
-    :host ::ng-deep .re__surface .re-table th.re-cell-sel { box-shadow: inset 0 0 0 2px #32acc1 !important; background: #eaf7fb !important; }
+    :host ::ng-deep .re__surface .re-table th.re-cell-sel { box-shadow: inset 0 0 0 2px #32acc1 !important; background: var(--ui-x-eaf7fb) !important; }
     /* Hovered draggable boundary — bold the single edge under the cursor
        (a column's right edge or a row's bottom edge), full span, so it's
        clear that border can be dragged to resize. Inset shadow so it
@@ -6187,14 +6187,14 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     :host ::ng-deep .re__surface .re-embed-figure--html:not(.is-selected) .re-html-render { pointer-events: none !important; }
     :host ::ng-deep .re__surface .re-html-render:empty::before {
       content: "Empty HTML block — select it and click “HTML” to add code." !important;
-      color: #94a3b8 !important; font-size: 13px !important;
+      color: var(--ui-faint) !important; font-size: 13px !important;
     }
     :host ::ng-deep .re__surface textarea.re-html-code {
       display: block !important; width: 100% !important; min-height: 160px !important;
       box-sizing: border-box !important; padding: 12px !important;
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace !important;
-      font-size: 13px !important; line-height: 1.5 !important; color: #0f172a !important;
-      background: #f8fafc !important; border: 1px solid #e2e8f0 !important; border-radius: 8px !important;
+      font-size: 13px !important; line-height: 1.5 !important; color: var(--ui-text) !important;
+      background: var(--ui-surface-1) !important; border: 1px solid var(--ui-line) !important; border-radius: 8px !important;
       resize: vertical !important; white-space: pre !important; tab-size: 2 !important;
     }
     :host ::ng-deep .re__surface textarea.re-html-code:focus {
@@ -6207,7 +6207,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
        single line. */
     :host ::ng-deep .re__surface hr {
       -webkit-appearance: none !important; appearance: none !important;
-      border: 0 !important; border-top: 1px solid var(--ricos-custom-border-color, #dcdce1) !important;
+      border: 0 !important; border-top: 1px solid var(--ricos-custom-border-color, var(--ui-x-dcdce1)) !important;
       height: 0 !important; width: 100% !important; margin: 26px auto !important;
       background: none !important; box-sizing: border-box !important;
       position: relative !important; cursor: pointer !important;
@@ -6277,7 +6277,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       text-align: center !important;
       padding: 6px 12px !important;
       font-size: 13px !important;
-      color: #475569 !important;
+      color: var(--ui-text-4) !important;
       outline: none !important;
       min-height: 1.6em !important;
     }
@@ -6287,10 +6287,10 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       align-items: center !important;
       gap: 6px !important;
       padding: 4px 12px !important;
-      border: 1px solid #e2e8f0 !important;
+      border: 1px solid var(--ui-line) !important;
       border-radius: 999px !important;
-      background: #fff !important;
-      color: #64748b !important;
+      background: var(--ui-surface) !important;
+      color: var(--ui-muted) !important;
       font-size: 12px !important;
       cursor: text !important;
       pointer-events: none;
@@ -6313,7 +6313,7 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       display: block; width: 100% !important; height: 100% !important;
     }
     :host ::ng-deep .re__surface .re-gallery[data-crop="crop"] .re-gallery-item img { object-fit: cover !important; }
-    :host ::ng-deep .re__surface .re-gallery[data-crop="fit"]  .re-gallery-item img { object-fit: contain !important; background: #f1f5f9; }
+    :host ::ng-deep .re__surface .re-gallery[data-crop="fit"]  .re-gallery-item img { object-fit: contain !important; background: var(--ui-surface-2); }
 
     /* All layouts read the spacing var (--re-gal-gap, default 6px). */
     /* Grid — equal cells, fixed aspect-ratio per tile. */
@@ -6443,12 +6443,12 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       width: 40px !important; height: 40px !important; padding: 0 !important;
       display: flex !important; align-items: center !important; justify-content: center !important;
       border: none !important; border-radius: 999px !important;
-      background: rgba(255, 255, 255, .9) !important; color: #1a1a1a !important;
+      background: var(--ui-surface) !important; color: var(--ui-t-1a1a1a) !important;
       box-shadow: 0 1px 5px rgba(0, 0, 0, .25) !important;
       cursor: pointer !important; transform: translateY(-50%) !important;
       transition: background .15s ease, box-shadow .15s ease !important; -webkit-user-select: none !important; user-select: none !important;
     }
-    :host ::ng-deep .re__surface .re-gallery .re-gal-nav:hover { background: #fff !important; box-shadow: 0 2px 8px rgba(0, 0, 0, .3) !important; }
+    :host ::ng-deep .re__surface .re-gallery .re-gal-nav:hover { background: var(--ui-surface) !important; box-shadow: 0 2px 8px rgba(0, 0, 0, .3) !important; }
 
     /* Masonry — layout model. Horizontal orientation (default) = justified
        rows: every tile is --re-gal-row-h tall and grows to fill the
@@ -6547,12 +6547,12 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
       display: block !important;
       margin: 8px 0 !important;
       padding: 10px 12px !important;
-      background: repeating-linear-gradient(45deg,#f8fafc,#f8fafc 6px,#fff 6px,#fff 12px) !important;
-      border: 1px dashed #cbd5e1 !important;
+      background: repeating-linear-gradient(45deg,var(--ui-surface-1),var(--ui-surface-1) 6px,var(--ui-surface) 6px,var(--ui-surface) 12px) !important;
+      border: 1px dashed var(--ui-line-strong) !important;
       border-radius: 8px !important;
       font-family: ui-monospace, monospace !important;
       font-size: 12px !important;
-      color: #475569 !important;
+      color: var(--ui-text-4) !important;
       white-space: pre-wrap !important;
     }
     :host ::ng-deep .re__surface table {
@@ -6562,12 +6562,12 @@ type ResizeDir = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
     }
     :host ::ng-deep .re__surface table td,
     :host ::ng-deep .re__surface table th {
-      border: 1px solid #e2e8f0 !important;
+      border: 1px solid var(--ui-line) !important;
       padding: 6px 10px !important;
       min-width: 60px !important;
     }
     :host ::ng-deep .re__surface table th {
-      background: #f1f5f9 !important;
+      background: var(--ui-surface-2) !important;
       font-weight: 600 !important;
     }
   `],

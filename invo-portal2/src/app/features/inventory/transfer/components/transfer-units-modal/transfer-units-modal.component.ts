@@ -114,22 +114,22 @@ const toDate = (s: string | null): Date | null => (s ? new Date(s.slice(0, 10) +
   styles: [`
     .tum { padding: 16px 20px; min-width: min(680px, 94vw); display: flex; flex-direction: column; gap: 10px; }
     .tum__add { display: flex; gap: 8px; }
-    .tum__input { flex: 1; height: 38px; padding: 0 12px; border: 1px solid #d0d5dd; border-radius: 8px; font: inherit; font-size: 14px; outline: none; }
+    .tum__input { flex: 1; height: 38px; padding: 0 12px; border: 1px solid var(--ui-line-strong); border-radius: 8px; font: inherit; font-size: 14px; outline: none; }
     .tum__input:focus { border-color: #32acc1; box-shadow: 0 0 0 3px rgba(50,172,193,.12); }
     .tum__list { list-style: none; margin: 0; padding: 0; max-height: 360px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
-    .tum__row { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 12px; padding: 9px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; }
-    .tum__row--expired { background: #fef2f2; border-color: #fecaca; }
+    .tum__row { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 12px; padding: 9px 12px; border: 1px solid var(--ui-line); border-radius: 8px; font-size: 14px; }
+    .tum__row--expired { background: var(--ui-red-soft); border-color: var(--ui-red-soft-2); }
     .tum__name { min-width: 120px; align-self: center; }
-    .tum__row small { color: #64748b; align-self: center; }
-    .tum__bad { color: #dc2626 !important; font-weight: 600; }
-    .tum__fld { display: flex; flex-direction: column; gap: 2px; font-size: 12px; color: #64748b; }
-    .tum__qty { width: 96px; height: 34px; padding: 0 8px; border: 1px solid #d0d5dd; border-radius: 8px; font: inherit; font-size: 14px; }
-    .tum__x { margin-inline-start: auto; align-self: center; width: 28px; height: 28px; border: 0; border-radius: 6px; background: #fee2e2; color: #b91c1c; font-size: 18px; cursor: pointer; }
-    .tum__err { margin: 0; font-size: 12.5px; color: #dc2626; }
-    .tum__empty { padding: 18px; text-align: center; color: #94a3b8; }
-    .tum__count { margin-inline-end: auto; color: #64748b; font-size: 13px; }
-    .tum__btn { padding: 9px 16px; border-radius: 8px; border: 1px solid #d0d5dd; background: #fff; color: #334155; font-weight: 600; font-size: 13.5px; cursor: pointer; }
-    .tum__btn--primary { border-color: #2691a4; background: #2691a4; color: #fff; }
+    .tum__row small { color: var(--ui-muted); align-self: center; }
+    .tum__bad { color: var(--ui-red-text) !important; font-weight: 600; }
+    .tum__fld { display: flex; flex-direction: column; gap: 2px; font-size: 12px; color: var(--ui-muted); }
+    .tum__qty { width: 96px; height: 34px; padding: 0 8px; border: 1px solid var(--ui-line-strong); border-radius: 8px; font: inherit; font-size: 14px; }
+    .tum__x { margin-inline-start: auto; align-self: center; width: 28px; height: 28px; border: 0; border-radius: 6px; background: var(--ui-red-soft); color: var(--ui-red-text); font-size: 18px; cursor: pointer; }
+    .tum__err { margin: 0; font-size: 12.5px; color: var(--ui-red-text); }
+    .tum__empty { padding: 18px; text-align: center; color: var(--ui-faint); }
+    .tum__count { margin-inline-end: auto; color: var(--ui-muted); font-size: 13px; }
+    .tum__btn { padding: 9px 16px; border-radius: 8px; border: 1px solid var(--ui-line-strong); background: var(--ui-surface); color: var(--ui-text-3); font-weight: 600; font-size: 13.5px; cursor: pointer; }
+    .tum__btn--primary { border-color: #2691a4; background: var(--ui-b-2691a4); color: #fff; }
     .tum__btn:disabled { opacity: .5; cursor: not-allowed; }
   `],
 })

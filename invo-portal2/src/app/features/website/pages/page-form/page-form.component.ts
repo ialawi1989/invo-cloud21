@@ -186,17 +186,17 @@ interface Option { id: string; name: string; }
   styles: [`
     .pf-page { padding-bottom: 80px; }
     .pf-loading { display: flex; justify-content: center; padding: 60px 0; }
-    .card { background: #fff; border-radius: 12px; box-shadow: 0 1px 2px rgba(15,23,42,.04); margin-bottom: 16px; overflow: hidden; }
-    .card__head { padding: 14px 18px; border-bottom: 1px solid #f1f5f9; }
-    .card__title { margin: 0; font-size: 15px; font-weight: 600; color: #0f172a; }
+    .card { background: var(--ui-surface); border-radius: 12px; box-shadow: 0 1px 2px rgba(15,23,42,.04); margin-bottom: 16px; overflow: hidden; }
+    .card__head { padding: 14px 18px; border-bottom: 1px solid var(--ui-surface-2); }
+    .card__title { margin: 0; font-size: 15px; font-weight: 600; color: var(--ui-text); }
     .card__body { padding: 16px 18px; }
     .grid--2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
     .field { display: flex; flex-direction: column; gap: 6px; }
     .field--inline { flex-direction: row; align-items: center; justify-content: space-between; margin-top: 14px; }
-    .field-label { font-size: 12px; color: #64748b; font-weight: 500; }
-    .field-hint { margin: 0; font-size: 11px; color: #94a3b8; }
-    .required { color: #dc2626; margin-inline-start: 2px; }
-    .input { padding: 8px 10px; font-size: 13px; border: 1px solid #dbe2ea; border-radius: 8px; background: #fff; color: #1e293b; }
+    .field-label { font-size: 12px; color: var(--ui-muted); font-weight: 500; }
+    .field-hint { margin: 0; font-size: 11px; color: var(--ui-faint); }
+    .required { color: var(--ui-red-text); margin-inline-start: 2px; }
+    .input { padding: 8px 10px; font-size: 13px; border: 1px solid var(--ui-x-dbe2ea); border-radius: 8px; background: var(--ui-field); color: var(--ui-text-2); }
   `],
 })
 export class WebsitePageFormComponent implements OnInit, CanLeaveComponent {

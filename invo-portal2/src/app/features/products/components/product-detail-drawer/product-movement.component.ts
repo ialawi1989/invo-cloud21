@@ -268,37 +268,37 @@ import { BranchConnectionService, BranchConnection } from '../../../../core/layo
     @media (max-width: 900px) { .metrics { grid-template-columns: 1fr 1fr; } }
     @media (max-width: 480px) { .metrics { grid-template-columns: 1fr; } }
     .metric {
-      background: #f1f5f9;
-      border: 1px solid #e2e8f0;
+      background: var(--ui-surface-2);
+      border: 1px solid var(--ui-line);
       border-radius: 10px;
       padding: 12px 14px;
       display: flex; flex-direction: column; gap: 4px;
     }
     .metric-label {
-      font-size: 11px; font-weight: 600; color: #64748b;
+      font-size: 11px; font-weight: 600; color: var(--ui-muted);
       text-transform: uppercase; letter-spacing: .04em;
     }
     .metric-value {
-      font-size: 20px; font-weight: 700; color: #0f172a;
+      font-size: 20px; font-weight: 700; color: var(--ui-text);
       font-variant-numeric: tabular-nums;
     }
-    .metric[data-trend="up"]   { background:#f0fdf4; border-color:#bbf7d0; }
-    .metric[data-trend="up"]   .metric-value { color:#15803d; }
-    .metric[data-trend="down"] { background:#fef2f2; border-color:#fecaca; }
-    .metric[data-trend="down"] .metric-value { color:#b91c1c; }
+    .metric[data-trend="up"]   { background:var(--ui-x-f0fdf4); border-color:var(--ui-x-bbf7d0); }
+    .metric[data-trend="up"]   .metric-value { color:var(--ui-green-text); }
+    .metric[data-trend="down"] { background:var(--ui-red-soft); border-color:var(--ui-red-soft-2); }
+    .metric[data-trend="down"] .metric-value { color:var(--ui-red-text); }
 
     .chart-card { margin-bottom: 12px; }
     .chart-head {
       display: flex; align-items: center; justify-content: space-between; gap: 12px;
     }
-    .chart-title { font-size: 13px; font-weight: 600; color: #0f172a; }
-    .chart-title-branch { font-weight: 500; color: #64748b; margin-inline-start: 4px; }
+    .chart-title { font-size: 13px; font-weight: 600; color: var(--ui-text); }
+    .chart-title-branch { font-weight: 500; color: var(--ui-muted); margin-inline-start: 4px; }
     .chart-branch-select {
-      padding: 4px 8px; border-radius: 6px; border: 1px solid #e2e8f0;
-      background: #fff; font-size: 12px; font-weight: 600; color: #475569;
+      padding: 4px 8px; border-radius: 6px; border: 1px solid var(--ui-line);
+      background: var(--ui-field); font-size: 12px; font-weight: 600; color: var(--ui-text-4);
       cursor: pointer; max-width: 220px;
     }
-    .chart-branch-select:hover { background: #f8fafc; }
+    .chart-branch-select:hover { background: var(--ui-surface-1); }
 
     .chart-body { padding: 4px 4px 0; }
     :host ::ng-deep .chart-body .apexcharts-canvas {
@@ -319,7 +319,7 @@ import { BranchConnectionService, BranchConnection } from '../../../../core/layo
     .chart-legend {
       display: flex; flex-wrap: wrap; gap: 16px;
       padding: 14px 8px 10px;
-      font-size: 12px; color: #475569;
+      font-size: 12px; color: var(--ui-text-4);
     }
     .legend-item { display: inline-flex; align-items: center; gap: 6px; }
     .legend-swatch {
@@ -328,13 +328,13 @@ import { BranchConnectionService, BranchConnection } from '../../../../core/layo
     .legend-swatch--line { width: 18px; height: 3px; border-radius: 2px; }
     :host ::ng-deep .dp-trigger {
       padding: 6px 10px; border-radius: 6px;
-      border: 1px solid #e2e8f0; background: #fff;
-      font-size: 12px; font-weight: 600; color: #475569;
+      border: 1px solid var(--ui-line); background: var(--ui-surface);
+      font-size: 12px; font-weight: 600; color: var(--ui-text-4);
       cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
       outline: none;
       transition: border-color .12s, box-shadow .12s, background .12s;
     }
-    :host ::ng-deep .dp-trigger:hover { background: #f8fafc; border-color: #cbd5e1; }
+    :host ::ng-deep .dp-trigger:hover { background: var(--ui-surface-1); border-color: var(--ui-line-strong); }
     :host ::ng-deep .dp-trigger:focus-visible,
     :host ::ng-deep .dp-trigger[aria-expanded="true"] {
       border-color: #32acc1;
@@ -352,83 +352,83 @@ import { BranchConnectionService, BranchConnection } from '../../../../core/layo
     .branch-menu {
       position: absolute; top: calc(100% + 4px); inset-inline-start: 0;
       min-width: 220px; max-height: 260px; overflow-y: auto;
-      background: #fff; border: 1px solid #e2e8f0; border-radius: 8px;
+      background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: 8px;
       box-shadow: 0 6px 20px rgba(15, 23, 42, .08);
       padding: 6px; z-index: 10;
     }
     .menu-item {
       display: flex; align-items: center; gap: 8px;
       padding: 6px 8px; border-radius: 6px;
-      font-size: 13px; color: #0f172a; cursor: pointer;
+      font-size: 13px; color: var(--ui-text); cursor: pointer;
     }
-    .menu-item:hover { background: #f8fafc; }
+    .menu-item:hover { background: var(--ui-surface-1); }
     .menu-item input { cursor: pointer; }
-    .menu-empty { padding: 12px; font-size: 12px; color: #94a3b8; text-align: center; }
-    .menu-divider { height: 1px; background: #e2e8f0; margin: 4px 0; }
+    .menu-empty { padding: 12px; font-size: 12px; color: var(--ui-faint); text-align: center; }
+    .menu-divider { height: 1px; background: var(--ui-line); margin: 4px 0; }
 
     .card {
-      background:#fff; border:1px solid #e2e8f0; border-radius:10px;
+      background:var(--ui-surface); border:1px solid var(--ui-line); border-radius:10px;
       overflow:hidden; margin-bottom: 12px;
     }
     .card:last-child { margin-bottom: 0; }
     .card-head {
       display:flex; align-items:center; justify-content:space-between; gap:16px;
-      padding:10px 14px; background:#f8fafc; border-bottom:1px solid #e2e8f0;
-      font-size:13px; font-weight:600; color:#0f172a;
+      padding:10px 14px; background:var(--ui-surface-1); border-bottom:1px solid var(--ui-line);
+      font-size:13px; font-weight:600; color:var(--ui-text);
     }
     .card-body { padding:0; }
 
     .pager { display:inline-flex; align-items:center; gap:8px; }
     .pager-num {
       padding:2px 10px; border-radius:999px;
-      background:#e0f2f7; color:#0e7490;
+      background:var(--ui-x-e0f2f7); color:var(--ui-brand-text);
       font-size:12px; font-weight:600; font-variant-numeric:tabular-nums;
     }
     .btn {
       padding:5px 10px; border-radius:6px;
-      border:1px solid #e2e8f0; background:#fff;
-      font-size:12px; font-weight:600; color:#475569;
+      border:1px solid var(--ui-line); background:var(--ui-surface);
+      font-size:12px; font-weight:600; color:var(--ui-text-4);
       cursor:pointer; transition: background .12s, border-color .12s;
     }
-    .btn:hover:not(:disabled) { background:#f8fafc; }
+    .btn:hover:not(:disabled) { background:var(--ui-surface-1); }
     .btn:disabled { opacity:.45; cursor:not-allowed; }
-    .btn--primary { background:#32acc1; border-color:#32acc1; color:#fff; }
+    .btn--primary { background:var(--ui-b-32acc1); border-color:#32acc1; color:#fff; }
     .btn--primary:hover:not(:disabled) { background:#2890a3; border-color:#2890a3; }
-    .btn--ghost { background:transparent; border-color:transparent; color:#64748b; }
-    .btn--ghost:hover { background:#f1f5f9; }
+    .btn--ghost { background:transparent; border-color:transparent; color:var(--ui-muted); }
+    .btn--ghost:hover { background:var(--ui-surface-2); }
 
     .tbl-wrap { width:100%; overflow-x:auto; }
     .tbl { width:100%; border-collapse:separate; border-spacing:0; font-size:13px; }
     .tbl thead th {
-      background:#f8fafc; color:#64748b;
+      background:var(--ui-surface-1); color:var(--ui-muted);
       font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.04em;
-      padding:10px 14px; border-bottom:1px solid #e2e8f0; white-space:nowrap;
+      padding:10px 14px; border-bottom:1px solid var(--ui-line); white-space:nowrap;
     }
-    .tbl tbody td { padding:10px 14px; border-bottom:1px solid #f1f5f9; color:#0f172a; }
+    .tbl tbody td { padding:10px 14px; border-bottom:1px solid var(--ui-surface-2); color:var(--ui-text); }
     .tbl tbody tr:last-child td { border-bottom:none; }
-    .tbl tbody tr:hover { background:#f8fafc; }
+    .tbl tbody tr:hover { background:var(--ui-surface-1); }
     .start { text-align:start; }
     .end   { text-align:end; }
     .mono  { font-variant-numeric:tabular-nums; }
     .nowrap { white-space:nowrap; }
 
-    .link { color:#0e7490; font-weight:500; text-decoration:none; }
+    .link { color:var(--ui-brand-text); font-weight:500; text-decoration:none; }
     .link:hover { text-decoration:underline; }
 
     .empty {
       display:flex; flex-direction:column;
       align-items:center; justify-content:center;
-      gap:8px; padding:48px 20px; color:#94a3b8;
+      gap:8px; padding:48px 20px; color:var(--ui-faint);
     }
     .empty svg { opacity:.5; }
     .empty p { margin:0; font-size:13px; }
 
-    .row-skel { display:grid; grid-template-columns: repeat(7, 1fr); gap:10px; padding:14px; border-bottom:1px solid #f1f5f9; }
+    .row-skel { display:grid; grid-template-columns: repeat(7, 1fr); gap:10px; padding:14px; border-bottom:1px solid var(--ui-surface-2); }
     .row-skel:last-child { border-bottom:none; }
     @keyframes skel-shimmer { 0%{background-position:-200% 0;} 100%{background-position:200% 0;} }
     .skeleton {
       height:12px;
-      background: linear-gradient(90deg,#e2e8f0 0%,#f1f5f9 50%,#e2e8f0 100%);
+      background: linear-gradient(90deg,var(--ui-line) 0%,var(--ui-surface-2) 50%,var(--ui-line) 100%);
       background-size:200% 100%;
       animation: skel-shimmer 1.4s ease-in-out infinite;
       border-radius:6px;

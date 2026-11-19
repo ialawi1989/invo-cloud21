@@ -4,7 +4,7 @@ $border: #e0e0e0;
 
 // Header
 .modal-title {
-  font-size: 16px; font-weight: 600; color: #333;
+  font-size: 16px; font-weight: 600; color: var(--ui-text-2);
 }
 
 // Body: dual panel layout
@@ -31,7 +31,7 @@ $border: #e0e0e0;
 .panel-title {
   padding: 10px 14px; font-size: 11px; font-weight: 600;
   text-transform: uppercase; letter-spacing: .05em;
-  color: #888; background: #fafafa; border-bottom: 1px solid $border;
+  color: #888; background: var(--ui-x-fafafa); border-bottom: 1px solid $border;
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
 }
 .panel-count {
@@ -39,7 +39,7 @@ $border: #e0e0e0;
   text-transform: none; letter-spacing: 0;
 }
 .panel-search {
-  padding: 8px 10px; border-bottom: 1px solid #f0f0f0;
+  padding: 8px 10px; border-bottom: 1px solid var(--ui-x-f0f0f0);
   display: flex; align-items: center; gap: 8px;
   .search-box { flex: 1; }
 }
@@ -59,19 +59,19 @@ $border: #e0e0e0;
 }
 .search-box {
   display: flex; align-items: center; gap: 8px;
-  padding: 7px 10px; background: #fafafa;
+  padding: 7px 10px; background: var(--ui-x-fafafa);
   border: 1px solid $border; border-radius: 6px;
   svg { color: #bbb; flex-shrink: 0; }
   input {
     flex: 1; border: none; background: none; outline: none;
-    font-family: inherit; font-size: 13px; color: #333;
+    font-family: inherit; font-size: 13px; color: var(--ui-text-2);
     &::placeholder { color: #bbb; }
   }
 }
 .panel-list {
   flex: 1; overflow-y: auto;
   &::-webkit-scrollbar { width: 4px; }
-  &::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
+  &::-webkit-scrollbar-thumb { background: var(--ui-x-dddddd); border-radius: 4px; }
 }
 .group-label {
   padding: 8px 14px; font-size: 11px; color: #aaa;
@@ -79,9 +79,9 @@ $border: #e0e0e0;
 }
 .list-item {
   padding: 7px 14px; font-size: 13px; cursor: pointer;
-  color: #333; transition: background .1s;
+  color: var(--ui-text-2); transition: background .1s;
   display: flex; align-items: center; gap: 10px;
-  &:hover { background: #f5f5f5; }
+  &:hover { background: var(--ui-x-f5f5f5); }
   &.highlighted { background: rgba(0, 170, 179, 0.08); }
   // Left panel rows: checkbox + label only — label takes the remaining space
   > .item-name { flex: 1; min-width: 0; }
@@ -93,8 +93,8 @@ $border: #e0e0e0;
 .item-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .item-table { font-size: 11px; color: #4285f4; flex-shrink: 0; }
 .agg-select {
-  font-size: 11px; padding: 2px 4px; border: 1px solid #ddd;
-  border-radius: 4px; background: #fafafa; color: #555;
+  font-size: 11px; padding: 2px 4px; border: 1px solid var(--ui-x-dddddd);
+  border-radius: 4px; background: var(--ui-x-fafafa); color: #555;
   cursor: pointer; flex-shrink: 0; max-width: 80px;
   &:focus { border-color: $accent; outline: none; }
 }
@@ -110,7 +110,7 @@ $border: #e0e0e0;
 }
 .arrow-btn {
   width: 36px; height: 36px; border-radius: 50%;
-  border: 1px solid #ddd; background: #fff;
+  border: 1px solid var(--ui-x-dddddd); background: var(--ui-surface);
   display: flex; align-items: center; justify-content: center;
   cursor: pointer; color: #999; transition: all .15s;
   &:hover { border-color: $accent; color: $accent; }

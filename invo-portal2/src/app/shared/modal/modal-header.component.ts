@@ -36,13 +36,13 @@ import { ModalRef } from './modal.service';
     .mh-left { display: flex; align-items: center; gap: 12px; }
     .mh-icon {
       width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
-      background: linear-gradient(135deg, #e8f8fb, #d0eef5);
+      background: linear-gradient(135deg, var(--ui-x-e8f8fb), var(--ui-x-d0eef5));
       color: #32acc1;
       display: flex; align-items: center; justify-content: center;
     }
-    .mh-title { font-size: 15px; font-weight: 600; color: #111827; margin: 0 0 2px; }
-    .mh-sub   { font-size: 12px; color: #9ca3af; margin: 0; }
-    .mh-divider { height: 1px; background: #f1f5f9; }
+    .mh-title { font-size: 15px; font-weight: 600; color: var(--ui-text); margin: 0 0 2px; }
+    .mh-sub   { font-size: 12px; color: var(--ui-faint); margin: 0; }
+    .mh-divider { height: 1px; background: var(--ui-surface-2); }
   `]
 })
 export class ModalHeaderComponent {

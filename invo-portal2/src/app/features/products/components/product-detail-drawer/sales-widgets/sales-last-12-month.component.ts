@@ -64,8 +64,8 @@ import { VisibleDirective } from '../../../../../shared/directives/visible.direc
     :host { display: block; min-height: 320px; }
     :host(.loaded) { min-height: 0; }
     .card {
-      background: #fff;
-      border: 1px solid #e2e8f0;
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-line);
       border-radius: 10px;
       overflow: hidden;
     }
@@ -73,9 +73,9 @@ import { VisibleDirective } from '../../../../../shared/directives/visible.direc
       display: flex; align-items: center; justify-content: space-between;
       gap: 16px;
       padding: 10px 14px;
-      background: #f8fafc;
-      border-bottom: 1px solid #e2e8f0;
-      font-size: 13px; font-weight: 600; color: #0f172a;
+      background: var(--ui-surface-1);
+      border-bottom: 1px solid var(--ui-line);
+      font-size: 13px; font-weight: 600; color: var(--ui-text);
     }
     .card-body { padding: 14px; }
 
@@ -84,7 +84,7 @@ import { VisibleDirective } from '../../../../../shared/directives/visible.direc
       align-items: center; justify-content: center;
       gap: 8px;
       padding: 48px 20px;
-      color: #94a3b8;
+      color: var(--ui-faint);
     }
     .empty svg { opacity: .5; }
     .empty p { margin: 0; font-size: 13px; }
@@ -104,7 +104,7 @@ import { VisibleDirective } from '../../../../../shared/directives/visible.direc
     }
     .skeleton-bar {
       height: var(--h);
-      background: linear-gradient(90deg, #e2e8f0 0%, #f1f5f9 50%, #e2e8f0 100%);
+      background: linear-gradient(90deg, var(--ui-line) 0%, var(--ui-surface-2) 50%, var(--ui-line) 100%);
       background-size: 200% 100%;
       animation: skel-shimmer 1.4s ease-in-out infinite;
       border-radius: 4px 4px 0 0;

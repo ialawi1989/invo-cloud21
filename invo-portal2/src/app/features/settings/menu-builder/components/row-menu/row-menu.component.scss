@@ -1,18 +1,18 @@
 :host { display: inline-flex; }
 .rm__btn {
   width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;
-  border: 0; border-radius: 8px; background: transparent; color: #64748b; cursor: pointer;
-  &:hover { background: #e2e8f0; color: #0f172a; }
+  border: 0; border-radius: 8px; background: transparent; color: var(--ui-muted); cursor: pointer;
+  &:hover { background: var(--ui-line); color: var(--ui-text); }
   &:focus-visible { outline: 2px solid var(--color-brand-600, #2691a4); outline-offset: 1px; }
 }
 .rm__panel {
-  position: fixed; z-index: 1200; min-width: 176px; padding: 4px; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
+  position: fixed; z-index: 1200; min-width: 176px; padding: 4px; background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: 10px;
   box-shadow: 0 12px 28px rgba(15, 23, 42, 0.14); display: flex; flex-direction: column;
 }
 .rm__item {
-  text-align: start; padding: 8px 10px; border: 0; border-radius: 6px; background: transparent; font: inherit; font-size: 13px; color: #0f172a; cursor: pointer;
-  &:hover:not(:disabled), &:focus-visible { background: #f1f5f9; outline: none; }
+  text-align: start; padding: 8px 10px; border: 0; border-radius: 6px; background: transparent; font: inherit; font-size: 13px; color: var(--ui-text); cursor: pointer;
+  &:hover:not(:disabled), &:focus-visible { background: var(--ui-surface-2); outline: none; }
   &:disabled { opacity: 0.45; cursor: not-allowed; }
-  &--danger { color: #b91c1c; &:hover:not(:disabled), &:focus-visible { background: #fef2f2; } }
+  &--danger { color: var(--ui-red-text); &:hover:not(:disabled), &:focus-visible { background: var(--ui-red-soft); } }
 }
-.rm__sep { height: 1px; margin: 4px 2px; background: #eef2f6; }
+.rm__sep { height: 1px; margin: 4px 2px; background: var(--ui-surface-2); }

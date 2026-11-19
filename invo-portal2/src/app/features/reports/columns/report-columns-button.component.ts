@@ -22,12 +22,12 @@ import { ReportColumnsModalComponent, ReportColumnsModalData } from './report-co
   styles: [`
     .rcb {
       display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px;
-      background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; color: #334155;
+      background: var(--ui-surface); border: 1px solid var(--ui-line-strong); border-radius: 8px; color: var(--ui-text-3);
       font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; transition: border-color .15s, color .15s;
-      &:hover { border-color: #1e8c9f; color: #1e8c9f; }
+      &:hover { border-color: #1e8c9f; color: var(--ui-brand-text); }
       &:focus-visible { outline: 2px solid #1e8c9f; outline-offset: 2px; }
     }
-    .rcb-badge { min-width: 18px; padding: 1px 6px; border-radius: 999px; background: #1e8c9f; color: #fff; font-size: 11.5px; font-weight: 600; text-align: center; }
+    .rcb-badge { min-width: 18px; padding: 1px 6px; border-radius: 999px; background: var(--ui-b-1e8c9f); color: #fff; font-size: 11.5px; font-weight: 600; text-align: center; }
   `],
 })
 export class ReportColumnsButtonComponent {

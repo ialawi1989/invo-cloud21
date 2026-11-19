@@ -112,12 +112,12 @@ export interface KitBuildModalData {
   styles: [`
     .body { padding: 16px 20px 8px; }
     .row--split { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px; }
-    .label { font-size: 13px; font-weight: 600; color: #0f172a; }
-    .max   { font-size: 12px; color: #64748b; }
-    .max-val { color: #0f172a; font-weight: 600; }
+    .label { font-size: 13px; font-weight: 600; color: var(--ui-text); }
+    .max   { font-size: 12px; color: var(--ui-muted); }
+    .max-val { color: var(--ui-text); font-weight: 600; }
     .input {
-      width: 100%; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 8px;
-      font-size: 15px; font-weight: 600; color: #0f172a; background: #fff;
+      width: 100%; padding: 10px 14px; border: 1px solid var(--ui-line); border-radius: 8px;
+      font-size: 15px; font-weight: 600; color: var(--ui-text); background: var(--ui-field);
       font-variant-numeric: tabular-nums;
     }
     .input:focus { outline: none; border-color: #32acc1; box-shadow: 0 0 0 3px rgba(50,172,193,.18); }
@@ -125,32 +125,32 @@ export interface KitBuildModalData {
     /* Component table — same chrome as stock modal */
     .tbl-wrap {
       margin-top: 14px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--ui-line);
       border-radius: 10px;
       overflow: hidden;
-      background: #fff;
+      background: var(--ui-surface);
     }
     .tbl { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
     .tbl thead th {
-      background: #f8fafc; color: #64748b;
+      background: var(--ui-surface-1); color: var(--ui-muted);
       font-weight: 600; font-size: 11px;
       text-transform: uppercase; letter-spacing: .04em;
       padding: 10px 14px;
-      border-bottom: 1px solid #e2e8f0;
+      border-bottom: 1px solid var(--ui-line);
     }
     .tbl tbody td {
       padding: 10px 14px;
-      border-bottom: 1px solid #f1f5f9;
-      color: #0f172a;
+      border-bottom: 1px solid var(--ui-surface-2);
+      color: var(--ui-text);
       vertical-align: middle;
     }
     .tbl tbody tr:last-child td { border-bottom: none; }
-    .tbl tbody tr:hover { background: #f8fafc; }
+    .tbl tbody tr:hover { background: var(--ui-surface-1); }
     .tbl tfoot th {
       padding: 10px 14px;
-      background: #f8fafc;
-      border-top: 1px solid #e2e8f0;
-      color: #0f172a; font-weight: 700; font-size: 13px;
+      background: var(--ui-surface-1);
+      border-top: 1px solid var(--ui-line);
+      color: var(--ui-text); font-weight: 700; font-size: 13px;
       text-transform: none; letter-spacing: 0;
     }
     .start { text-align: start; }
@@ -159,14 +159,14 @@ export interface KitBuildModalData {
     .usage-col { width: 90px; }
 
     /* Row when a build would drive this component below zero */
-    .row--warn td { background: #fef2f2; }
-    .row--warn:hover td { background: #fee2e2; }
+    .row--warn td { background: var(--ui-red-soft); }
+    .row--warn:hover td { background: var(--ui-red-soft); }
 
     .comp-name { display: flex; align-items: center; gap: 8px; }
-    .name      { font-weight: 500; color: #0f172a; }
+    .name      { font-weight: 500; color: var(--ui-text); }
     .uom {
       padding: 1px 8px; border-radius: 999px;
-      background: #e0f2f7; color: #0e7490;
+      background: var(--ui-x-e0f2f7); color: var(--ui-brand-text);
       font-size: 11px; font-weight: 500;
     }
 
@@ -174,28 +174,28 @@ export interface KitBuildModalData {
     .usage-pill {
       display: inline-flex; align-items: center; justify-content: center;
       padding: 3px 10px; border-radius: 999px;
-      background: #f1f5f9; color: #475569;
+      background: var(--ui-surface-2); color: var(--ui-text-4);
       font-weight: 600; font-size: 12px; font-variant-numeric: tabular-nums;
     }
 
     /* Delta projection underneath the current value */
     .delta { margin-top: 2px; font-size: 11px; font-weight: 600; font-variant-numeric: tabular-nums; }
-    .delta--down { color: #b91c1c; }
+    .delta--down { color: var(--ui-red-text); }
 
     .state--error {
       margin-top: 12px; padding: 10px 12px;
-      background: #fef2f2; border: 1px solid #fecaca;
-      color: #991b1b; border-radius: 8px; font-size: 12px;
+      background: var(--ui-red-soft); border: 1px solid var(--ui-red-soft-2);
+      color: var(--ui-red-text); border-radius: 8px; font-size: 12px;
     }
 
     .btn {
       padding: 8px 16px; border-radius: 8px;
-      border: 1px solid #e2e8f0; background: #fff;
-      font-size: 13px; font-weight: 600; color: #475569;
+      border: 1px solid var(--ui-line); background: var(--ui-surface);
+      font-size: 13px; font-weight: 600; color: var(--ui-text-4);
       cursor: pointer; transition: background .12s;
     }
-    .btn:hover:not(:disabled) { background: #f8fafc; }
-    .btn--primary { background: #32acc1; border-color: #32acc1; color: #fff; }
+    .btn:hover:not(:disabled) { background: var(--ui-surface-1); }
+    .btn--primary { background: var(--ui-b-32acc1); border-color: #32acc1; color: #fff; }
     .btn--primary:hover:not(:disabled) { background: #2b95a8; border-color: #2b95a8; }
     .btn:disabled { opacity: .5; cursor: not-allowed; }
   `],

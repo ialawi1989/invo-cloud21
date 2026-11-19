@@ -9,12 +9,13 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule } from '@ngx-translate/core';
 import { BindingPickerService } from '../../services/binding-picker.service';
 import { DesignerStateService } from '../../services/designer-state.service';
 import { flattenPaths } from '../../utils/binding-paths.utils';
 
-import { TooltipDirective } from '@shared/directives/tooltip.directive';
 type CategoryId = 'patterns' | 'fields' | 'filters' | 'operators';
 
 interface DialogItem {
@@ -50,7 +51,7 @@ interface DialogItem {
   selector: 'app-binding-dialog',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TooltipDirective, CommonModule, FormsModule],
+  imports: [TooltipDirective, CommonModule, FormsModule, TranslateModule],
   templateUrl: './binding-dialog.component.html',
   styleUrls: ['./binding-dialog.component.scss'],
 })
@@ -64,16 +65,21 @@ export class BindingDialogComponent {
 
   @ViewChild('editor') private editor?: ElementRef<HTMLTextAreaElement>;
 
+  /** Literal `{{ }}` for the syntax hint. Kept off the template so the
+   *  braces never reach Angular's interpolation scanner. */
+  readonly BRACES = '{{ }}';
+  readonly BRACES_EXAMPLE = '{{companyNote}}';
+
   readonly expression = signal('');
   readonly searchQuery = signal('');
   readonly selectedCategory = signal<CategoryId>('fields');
   readonly selectedItem = signal<DialogItem | null>(null);
 
   readonly CATEGORIES: ReadonlyArray<{ id: CategoryId; label: string }> = [
-    { id: 'patterns',  label: 'Patterns' },
-    { id: 'fields',    label: 'Fields' },
-    { id: 'filters',   label: 'Filters' },
-    { id: 'operators', label: 'Operators' },
+    { id: 'patterns',  label: 'DOCUMENT_BUILDER.CAT_PATTERNS' },
+    { id: 'fields',    label: 'DOCUMENT_BUILDER.CAT_FIELDS' },
+    { id: 'filters',   label: 'DOCUMENT_BUILDER.CAT_FILTERS' },
+    { id: 'operators', label: 'DOCUMENT_BUILDER.CAT_OPERATORS' },
   ];
 
   /**
@@ -93,16 +99,16 @@ export class BindingDialogComponent {
       snippet: '{{row.productName}}' },
 
     { id: 'p-currency',
-      label: 'Currency (BHD)',
-      description: 'A number formatted as BHD currency. Use on row.total / row.price / row.subTotal.',
-      example: '{{row.total | currency:BHD}}  →  "BHD 6.500"',
-      snippet: '{{row.total | currency:BHD}}' },
+      label: 'Currency',
+      description: "The company's own currency symbol and decimal places. Use on row.total / row.price / row.subTotal.",
+      example: '{{row.total | Currency}}  →  "BHD 6.500"',
+      snippet: '{{row.total | Currency}}' },
 
     { id: 'p-number-2',
-      label: 'Number 0.00',
-      description: 'Plain number with two decimals.',
-      example: '{{row.qty | number:2:2}}  →  "1.00"',
-      snippet: '{{row.qty | number:2:2}}' },
+      label: 'Number',
+      description: "A plain number at the company's decimal places, with thousand separators.",
+      example: '{{row.qty | Number}}  →  "1.000"',
+      snippet: '{{row.qty | Number}}' },
 
     { id: 'p-date-medium',
       label: "Date — medium",
@@ -191,6 +197,8 @@ export class BindingDialogComponent {
 
   /** Filter catalog — mirrors `builtInFilters` from the expression engine. */
   readonly FILTERS: DialogItem[] = [
+    { id: 'f-mycurrency', label: 'Currency',   description: "The company's configured currency symbol and decimal places. Prefer this over currency: — it matches the rest of the app.", example: '177.54 → BHD 177.540',  snippet: ' | Currency' },
+    { id: 'f-mynumber',   label: 'Number',     description: "A plain number at the company's decimal places, with thousand separators. Values carrying more precision keep it.",        example: '1234.5 → 1,234.500',    snippet: ' | Number' },
     { id: 'f-curr-bhd', label: 'currency:BHD',  description: 'Format a number as Bahraini Dinar (3-decimal) using the template locale.', example: '177.54 → BHD 177.540',                 snippet: ' | currency:BHD' },
     { id: 'f-curr-usd', label: 'currency:USD',  description: 'Format a number as US Dollars (2-decimal).',                                   example: '177.54 → $177.54',                       snippet: ' | currency:USD' },
     { id: 'f-num-2',    label: "number:2:2",    description: 'Format a number with min/max fraction digits.',                                example: '177.5 → 177.50',                         snippet: ' | number:2:2' },
@@ -212,6 +220,7 @@ export class BindingDialogComponent {
     { id: 'f-join',     label: "join:', '",     description: 'Join array elements with a separator. Use after `pluck` to flatten arrays of objects.', example: "['a','b'] → 'a, b'",                     snippet: " | join:', '" },
     { id: 'f-join-nl',  label: "join:'\\n'",   description: 'Join with newlines — table cells render newlines as visual line breaks.',         example: "['a','b'] → 'a\\nb'",                    snippet: " | join:'\\n'" },
     { id: 'f-arabic',   label: 'arabicDigits',  description: "Convert Western digits to Arabic-Indic when the locale starts with 'ar'.",     example: "'2026' → '٢٠٢٦' (ar)",                   snippet: ' | arabicDigits' },
+    { id: 'f-lname',    label: 'localizedName', description: "A product's name in the UI language, from its `translation`. Falls back to the English translation, then the original name. Pair with `||` for lines without a product.", example: "(row.selectedItem | localizedName) || row.productName → 'شاورما'", snippet: ' | localizedName' },
   ];
 
   /**
@@ -320,7 +329,10 @@ export class BindingDialogComponent {
           t.setSelectionRange(t.value.length, t.value.length);
         }
       });
-    });
+      // Seeding IS a signal write, and Angular 17 rejects those in an effect
+      // unless opted in — without this the whole body throws NG0600 on its
+      // first line and the dialog opens blank on the default tab.
+    }, { allowSignalWrites: true });
   }
 
   onSelectCategory(id: CategoryId): void {
@@ -357,12 +369,25 @@ export class BindingDialogComponent {
     });
   }
 
-  /** Field paths get the `{{ }}` wrapper when the editor is already in
-   *  template mode (contains `{{ }}` somewhere). Filters and operators are
-   *  always inserted raw — they only make sense inline. */
+  /** Field paths get the `{{ }}` wrapper, because almost every box that
+   *  offers fx is a template — a bare path there renders as literal text.
+   *  The exceptions are inputs that ARE one expression (`visibleWhen`,
+   *  dataSource, column/totals expressions); those pass `rawExpression` and
+   *  keep the path bare. Filters and operators are always raw — they only
+   *  make sense inline. */
   private shouldWrapInBraces(item: DialogItem, current: string): boolean {
     if (this.selectedCategory() !== 'fields') return false;
-    return current.includes('{{') || current.includes('}}');
+    if (this.svc.rawExpression()) return false;
+    // Don't double-wrap when the caret sits inside an existing placeholder.
+    return !this.isInsidePlaceholder(current);
+  }
+
+  /** True when the caret is between a `{{` and its closing `}}`. */
+  private isInsidePlaceholder(current: string): boolean {
+    const caret = this.editor?.nativeElement.selectionStart ?? current.length;
+    const before = current.slice(0, caret);
+    const open = before.lastIndexOf('{{');
+    return open !== -1 && before.indexOf('}}', open) === -1;
   }
 
   commit(): void {

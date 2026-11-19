@@ -29,9 +29,9 @@ export type RemainingChoice = 'wallet' | 'change' | 'cancel';
   `,
   styles: [`
     .ra { padding: 16px 20px; min-width: min(460px, 90vw); }
-    .ra p { margin: 0; color: #334155; }
-    .ra__btn { padding: 9px 16px; border-radius: 8px; border: 1px solid #d0d5dd; background: #fff; color: #334155; font-weight: 600; font-size: 13.5px; cursor: pointer; }
-    .ra__btn--primary { border-color: #2691a4; background: #2691a4; color: #fff; }
+    .ra p { margin: 0; color: var(--ui-text-3); }
+    .ra__btn { padding: 9px 16px; border-radius: 8px; border: 1px solid var(--ui-line-strong); background: var(--ui-surface); color: var(--ui-text-3); font-weight: 600; font-size: 13.5px; cursor: pointer; }
+    .ra__btn--primary { border-color: #2691a4; background: var(--ui-b-2691a4); color: #fff; }
   `],
 })
 export class RemainingAmountModalComponent {

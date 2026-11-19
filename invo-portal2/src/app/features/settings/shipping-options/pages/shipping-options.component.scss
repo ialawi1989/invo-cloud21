@@ -1,22 +1,22 @@
 .sop-page { padding: 16px 20px 100px; display: flex; flex-direction: column; gap: 16px; }
 
 .page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; &__titles { display: flex; flex-direction: column; gap: 4px; } }
-.page-title { margin: 0; font-size: 22px; font-weight: 700; color: #0f172a; }
-.page-sub   { margin: 0; font-size: 13px; color: #64748b; max-width: 80ch; line-height: 1.5; }
+.page-title { margin: 0; font-size: 22px; font-weight: 700; color: var(--ui-text); }
+.page-sub   { margin: 0; font-size: 13px; color: var(--ui-muted); max-width: 80ch; line-height: 1.5; }
 
 .sop-card {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;
-  padding: 18px; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+  padding: 18px; background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: 12px;
 }
 .sop-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-.sop-label { font-size: 12px; font-weight: 600; color: #475569; }
+.sop-label { font-size: 12px; font-weight: 600; color: var(--ui-text-4); }
 
 .save-bar {
   position: fixed; inset-inline: 0; bottom: 0; z-index: 60; display: flex; justify-content: flex-end; align-items: center; gap: 8px;
-  padding: 10px 20px; background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(8px); border-top: 1px solid #e2e8f0;
+  padding: 10px 20px; background: var(--ui-footer-bg); border-top: 1px solid var(--ui-line);
 }
 .spinner {
-  width: 14px; height: 14px; border: 2px solid rgba(255, 255, 255, 0.4); border-top-color: #fff; border-radius: 50%;
+  width: 14px; height: 14px; border: 2px solid rgba(255, 255, 255, 0.4); border-top-color: var(--ui-surface); border-radius: 50%;
   animation: sop-spin 0.7s linear infinite;
 }
 @keyframes sop-spin { to { transform: rotate(360deg); } }

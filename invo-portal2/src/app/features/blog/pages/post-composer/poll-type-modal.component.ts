@@ -32,13 +32,13 @@ export type PollType = 'simple' | 'image' | 'grid';
     .pm__body { padding: 18px 20px 22px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
     .pm__tile {
       display: flex; flex-direction: column; align-items: center; gap: 10px;
-      padding: 16px 10px; border: 1.5px solid #e2e8f0; border-radius: 12px; background: #fff; cursor: pointer;
+      padding: 16px 10px; border: 1.5px solid var(--ui-line); border-radius: 12px; background: var(--ui-surface); cursor: pointer;
       transition: border-color .1s, background .1s;
     }
-    .pm__tile:hover { border-color: #32acc1; background: #f0fafc; }
+    .pm__tile:hover { border-color: #32acc1; background: var(--ui-x-f0fafc); }
     .pm__thumb { display: block; width: 96px; height: 72px; }
     .pm__thumb :where(svg) { width: 100%; height: 100%; }
-    .pm__name { font-size: 13px; font-weight: 600; color: #334155; }
+    .pm__name { font-size: 13px; font-weight: 600; color: var(--ui-text-3); }
   `],
 })
 export class PollTypeModalComponent {

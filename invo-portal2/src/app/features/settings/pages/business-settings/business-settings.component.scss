@@ -18,8 +18,8 @@
   &__actions { flex-shrink: 0; }
 }
 
-.page-title { font-size: 20px; font-weight: 700; color: #1e293b; margin: 6px 0 0; }
-.page-sub   { font-size: 13px; color: #64748b;  margin: 2px 0 0; }
+.page-title { font-size: 20px; font-weight: 700; color: var(--ui-text-2); margin: 6px 0 0; }
+.page-sub   { font-size: 13px; color: var(--ui-muted);  margin: 2px 0 0; }
 
 .btn {
   padding: 8px 18px;
@@ -42,18 +42,18 @@
     &:not(:disabled):hover { background: #2a93a6; }
   }
   &-outline {
-    background: #fff;
-    color: #0e7490;
-    border-color: #a5f3fc;
-    &:hover { background: #ecfeff; border-color: #67e8f9; }
+    background: var(--ui-surface);
+    color: var(--ui-brand-text);
+    border-color: var(--ui-brand-soft-2);
+    &:hover { background: var(--ui-brand-soft); border-color: var(--ui-x-67e8f9); }
   }
   &-ghost {
     background: transparent;
-    color: #475569;
+    color: var(--ui-text-4);
     border-color: transparent;
-    &:hover { background: #f1f5f9; color: #0f172a; }
+    &:hover { background: var(--ui-surface-2); color: var(--ui-text); }
   }
-  &-danger { color: #dc2626; &:hover { background: #fef2f2; color: #b91c1c; } }
+  &-danger { color: var(--ui-red-text); &:hover { background: var(--ui-red-soft); color: var(--ui-red-text); } }
 }
 
 .loading {
@@ -65,7 +65,7 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  border: 3px solid #e2e8f0;
+  border: 3px solid var(--ui-line);
   border-top-color: #32acc1;
   display: inline-block;
   animation: bs-spin .8s linear infinite;
@@ -75,17 +75,17 @@
 
 // ── Card sections ──────────────────────────────────────────────────────
 .card {
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
   border-radius: 12px;
   margin-bottom: 16px;
 
   &__head {
     padding: 16px 20px 12px;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--ui-surface-2);
   }
-  &__title { margin: 0; font-size: 15px; font-weight: 600; color: #0f172a; }
-  &__sub   { margin: 4px 0 0; font-size: 12px; color: #64748b; }
+  &__title { margin: 0; font-size: 15px; font-weight: 600; color: var(--ui-text); }
+  &__sub   { margin: 4px 0 0; font-size: 12px; color: var(--ui-muted); }
 
   &__body { padding: 18px 20px; }
 }
@@ -97,7 +97,7 @@
   gap: 16px;
   margin-bottom: 20px;
   padding-bottom: 18px;
-  border-bottom: 1px dashed #e2e8f0;
+  border-bottom: 1px dashed var(--ui-line);
 }
 
 .logo-thumb {
@@ -105,10 +105,10 @@
   width: 96px;
   height: 96px;
   flex-shrink: 0;
-  border: 1px dashed #cbd5e1;
+  border: 1px dashed var(--ui-line-strong);
   border-radius: 12px;
-  background: #f8fafc;
-  color: #94a3b8;
+  background: var(--ui-surface-1);
+  color: var(--ui-faint);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -116,7 +116,7 @@
   overflow: hidden;
   transition: border-color 120ms ease, background 120ms ease;
 
-  &:hover { border-color: #94a3b8; background: #f1f5f9; }
+  &:hover { border-color: #94a3b8; background: var(--ui-surface-2); }
   img { width: 100%; height: 100%; object-fit: contain; padding: 6px; }
 }
 
@@ -154,33 +154,33 @@
 .field-label {
   font-size: 13px;
   font-weight: 500;
-  color: #0f172a;
+  color: var(--ui-text);
   display: inline-flex;
   align-items: center;
   gap: 4px;
 
-  .required { color: #ef4444; font-weight: 700; }
+  .required { color: var(--ui-red-text); font-weight: 700; }
 }
 
 .field-hint {
   margin: 0;
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--ui-faint);
 }
 
 .field-error {
   margin: 0;
   font-size: 12px;
-  color: #dc2626;
+  color: var(--ui-red-text);
 }
 
 .input {
   width: 100%;
   padding: 9px 12px;
   font-size: 14px;
-  color: #0f172a;
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  color: var(--ui-text);
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
   border-radius: 8px;
   transition: border-color 120ms ease, box-shadow 120ms ease;
 
@@ -198,8 +198,8 @@
   // for keyboard navigation, etc.).
   &--readonly,
   &:disabled {
-    background: #f8fafc;
-    color: #475569;
+    background: var(--ui-surface-1);
+    color: var(--ui-text-4);
     cursor: not-allowed;
   }
 }
@@ -218,7 +218,7 @@
     width: 38px;
     height: 22px;
     border-radius: 999px;
-    background: #cbd5e1;
+    background: var(--ui-line-strong);
     position: relative;
     flex-shrink: 0;
     transition: background 120ms ease;
@@ -227,7 +227,7 @@
     width: 18px;
     height: 18px;
     border-radius: 50%;
-    background: #fff;
+    background: var(--ui-surface);
     position: absolute;
     top: 2px;
     inset-inline-start: 2px;
@@ -249,16 +249,16 @@
 }
 
 // ── Rounding guide ─────────────────────────────────────────────────────
-.guide-note { margin: 0 0 14px; font-size: 13px; color: #475569; line-height: 1.5; }
-.guide-wrap { overflow-x: auto; border: 1px solid #e5e7eb; border-radius: 10px; }
+.guide-note { margin: 0 0 14px; font-size: 13px; color: var(--ui-text-4); line-height: 1.5; }
+.guide-wrap { overflow-x: auto; border: 1px solid var(--ui-line); border-radius: 10px; }
 .guide-table {
   width: 100%; border-collapse: collapse; font-size: 13px;
-  th { text-align: start; padding: 12px 14px; font-weight: 600; color: #334155; background: #f8fafc; border-bottom: 1px solid #e5e7eb; }
-  td { padding: 12px 14px; color: #475569; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+  th { text-align: start; padding: 12px 14px; font-weight: 600; color: var(--ui-text-3); background: var(--ui-surface-1); border-bottom: 1px solid var(--ui-line); }
+  td { padding: 12px 14px; color: var(--ui-text-4); border-bottom: 1px solid var(--ui-surface-2); vertical-align: middle; }
   tr:last-child td { border-bottom: 0; }
-  td + td, th + th { border-inline-start: 1px solid #f1f5f9; }
-  &__type { font-weight: 600; color: #0f172a; white-space: nowrap; }
-  code { font-size: 12px; color: #db2777; white-space: nowrap; }
+  td + td, th + th { border-inline-start: 1px solid var(--ui-surface-2); }
+  &__type { font-weight: 600; color: var(--ui-text); white-space: nowrap; }
+  code { font-size: 12px; color: var(--ui-t-db2777); white-space: nowrap; }
 }
 
 // Small pen badge on the logo's corner: opens the photo editor.
@@ -271,11 +271,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--ui-line);
   border-radius: 50%;
-  background: #fff;
-  color: #334155;
+  background: var(--ui-surface);
+  color: var(--ui-text-3);
   box-shadow: 0 2px 6px rgba(15, 23, 42, 0.18);
   cursor: pointer;
-  &:hover { color: var(--color-brand-600, #0e7490); border-color: var(--color-brand-300, #67e8f9); }
+  &:hover { color: var(--ui-brand-t600); border-color: var(--color-brand-300, var(--ui-x-67e8f9)); }
 }

@@ -42,7 +42,7 @@
 
   <!-- ── Layers tree ────────────────────────────────────────────── -->
   <div class="toolbox__scroll" *ngIf="activeTab() === 'layers'">
-    <p class="toolbox__empty" *ngIf="layerSections().length === 0">No blocks yet.</p>
+    <p class="toolbox__empty" *ngIf="layerSections().length === 0">{{ 'DESIGNER.NO_BLOCKS_YET' | translate }}</p>
 
     <ng-container *ngFor="let section of layerSections()">
       <div class="toolbox__section-head">
@@ -50,7 +50,7 @@
         <span class="toolbox__count">({{ section.blocks.length }})</span>
       </div>
 
-      <p class="toolbox__empty toolbox__empty--inline" *ngIf="section.blocks.length === 0">empty</p>
+      <p class="toolbox__empty toolbox__empty--inline" *ngIf="section.blocks.length === 0">{{ 'DESIGNER.EMPTY' | translate }}</p>
 
       <button *ngFor="let b of section.blocks"
               type="button"
@@ -63,10 +63,10 @@
 
         <span class="toolbox__layer-label">{{ labelFor(b) }}</span>
 
-        <i *ngIf="b.locked" class="mdi mdi-lock toolbox__layer-badge" appTooltip="Locked"></i>
+        <i *ngIf="b.locked" class="mdi mdi-lock toolbox__layer-badge" [appTooltip]="'DESIGNER.LOCKED' | translate"></i>
         <i *ngIf="b.visibleWhen"
            class="mdi mdi-help-rhombus-outline toolbox__layer-badge toolbox__layer-badge--conditional"
-           [appTooltip]="'Conditional: ' + b.visibleWhen"></i>
+           [appTooltip]="'DESIGNER.CONDITIONAL' | translate: { expression: b.visibleWhen }"></i>
       </button>
     </ng-container>
   </div>

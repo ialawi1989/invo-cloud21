@@ -71,23 +71,23 @@ export interface UnitCostAdjustResult {
     .ua-body { padding: 16px 24px 8px; display: flex; flex-direction: column; gap: 14px; }
 
     .ua-field { display: flex; flex-direction: column; gap: 6px; }
-    .ua-label { font-size: 12px; font-weight: 600; color: #475569; }
+    .ua-label { font-size: 12px; font-weight: 600; color: var(--ui-text-4); }
 
     .ua-input {
-      width: 100%; padding: 10px 12px; border: 1px solid #d1d5db;
+      width: 100%; padding: 10px 12px; border: 1px solid var(--ui-line-strong);
       border-radius: 8px; font-size: 14px; outline: none;
       transition: border-color .12s, box-shadow .12s;
 
       &:focus { border-color: #32acc1; box-shadow: 0 0 0 3px rgba(50,172,193,.15); }
 
-      &--readonly { background: #f8fafc; color: #64748b; cursor: not-allowed; }
+      &--readonly { background: var(--ui-surface-1); color: var(--ui-muted); cursor: not-allowed; }
     }
 
-    .ua-error { font-size: 12px; color: #dc2626; }
+    .ua-error { font-size: 12px; color: var(--ui-red-text); }
 
     .ua-footer {
       display: flex; justify-content: flex-end; gap: 8px;
-      padding: 16px 24px 20px; border-top: 1px solid #f1f5f9;
+      padding: 16px 24px 20px; border-top: 1px solid var(--ui-surface-2);
     }
     .ua-btn {
       display: inline-flex; align-items: center; gap: 8px;
@@ -96,7 +96,7 @@ export interface UnitCostAdjustResult {
 
       &:disabled { opacity: .5; cursor: not-allowed; }
     }
-    .ua-btn--ghost   { background: #fff; border-color: #e5e7eb; color: #374151; }
+    .ua-btn--ghost   { background: var(--ui-surface); border-color: var(--ui-line); color: var(--ui-text-3); }
     .ua-btn--primary { background: #32acc1; color: #fff;
       &:not(:disabled):hover { background: #2a93a6; }
     }

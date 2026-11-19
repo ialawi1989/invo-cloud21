@@ -14,15 +14,15 @@
     > label {
       font-size: 12px;
       font-weight: 600;
-      color: #475569;
+      color: var(--ui-text-4);
     }
 
     &-loading,
     &-empty {
       padding: 8px 12px;
-      border: 1px dashed #cbd5e1;
+      border: 1px dashed var(--ui-line-strong);
       border-radius: 8px;
-      color: #64748b;
+      color: var(--ui-muted);
       font-size: 13px;
     }
   }
@@ -33,21 +33,21 @@
     justify-content: center;
     min-height: 220px;
     padding: 16px;
-    background: repeating-conic-gradient(#f1f5f9 0 25%, #fff 0 50%) 0 0 / 12px 12px;
-    border: 1px solid #e2e8f0;
+    background: repeating-conic-gradient(var(--ui-surface-2) 0 25%, var(--ui-surface) 0 50%) 0 0 / 12px 12px;
+    border: 1px solid var(--ui-line);
     border-radius: 10px;
 
     &-img {
       max-width: 100%;
       max-height: 320px;
-      background: #fff;
+      background: var(--ui-surface);
       box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06),
                   0 8px 24px rgba(15, 23, 42, 0.08);
       border-radius: 4px;
     }
     &-loading,
     &-empty {
-      color: #64748b;
+      color: var(--ui-muted);
       font-size: 13px;
     }
   }
@@ -55,17 +55,17 @@
   &__product {
     margin: 0;
     font-size: 13px;
-    color: #475569;
+    color: var(--ui-text-4);
     display: inline-flex;
     align-items: center;
     gap: 8px;
 
-    &-label { color: #94a3b8; }
+    &-label { color: var(--ui-faint); }
     &-barcode {
       padding: 2px 8px;
       border-radius: 999px;
-      background: var(--color-brand-50, #ecfeff);
-      color: var(--color-brand-700, #0e7490);
+      background: var(--color-brand-50, var(--ui-brand-soft));
+      color: var(--ui-brand-t700);
       font-size: 11px;
       font-weight: 600;
     }
@@ -73,8 +73,8 @@
       margin-inline-start: auto;
       padding: 2px 8px;
       border-radius: 6px;
-      background: #f1f5f9;
-      color: #334155;
+      background: var(--ui-surface-2);
+      color: var(--ui-text-3);
       font-size: 12px;
       font-weight: 600;
     }
@@ -91,10 +91,10 @@
     transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
 
     &--ghost {
-      background: #f3f4f6;
-      border-color: #e5e7eb;
-      color: #334155;
-      &:hover:not(:disabled) { background: #e5e7eb; }
+      background: var(--ui-surface-2);
+      border-color: var(--ui-line);
+      color: var(--ui-text-3);
+      &:hover:not(:disabled) { background: var(--ui-line); }
     }
     &--primary {
       background: var(--color-brand-600, #0891b2);

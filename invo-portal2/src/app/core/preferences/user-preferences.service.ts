@@ -25,11 +25,24 @@ export class UserPreferencesService {
   readonly timezone = computed(() => this.prefs().timezone || undefined);
   readonly dateFormat = computed(() => this.prefs().dateFormat || undefined);
   readonly firstDayOfWeek = computed(() => this.prefs().firstDayOfWeek ?? 0);
+  /** Unsaved choice from My Account, shown immediately so the user can see it before saving. */
+  private readonly themePreview = signal<EmployeePreferences['theme'] | null>(null);
+  readonly theme = computed(() => this.themePreview() ?? this.prefs().theme ?? 'light');
   readonly timePattern = computed(() => (this.prefs().timeFormat === '12h' ? 'hh:mm a' : 'HH:mm'));
 
   constructor() {
     // Every `date` pipe follows the chosen date format and clock, whatever pattern its template names.
     installDatePipePreferences(() => ({ date: this.dateFormat(), time: this.prefs().timeFormat }));
+    // Dark mode: a class on <html> (see styles/_dark.scss). 'system' follows the OS live.
+    const mq = typeof matchMedia === 'function' ? matchMedia('(prefers-color-scheme: dark)') : null;
+    const systemDark = signal(!!mq?.matches);
+    mq?.addEventListener?.('change', e => systemDark.set(e.matches));
+    effect(() => {
+      const t = this.theme();
+      const dark = t === 'dark' || (t === 'system' && systemDark());
+      document.documentElement.classList.toggle('app-dark', dark);
+      try { localStorage.setItem('invo.theme', t); } catch { /* storage unavailable */ }
+    });
     // Switching language from the top bar also becomes the employee's choice, so the next sign-in does not undo it.
     effect(() => {
       const code = this.lang.current();
@@ -38,6 +51,9 @@ export class UserPreferencesService {
       });
     });
   }
+
+  /** Shows `theme` right away without saving; pass null to go back to the saved one. */
+  previewTheme(theme: EmployeePreferences['theme'] | null): void { this.themePreview.set(theme); }
 
   /** Reads the saved preferences and applies the language. Safe to call repeatedly. */
   async load(): Promise<void> {
@@ -55,6 +71,7 @@ export class UserPreferencesService {
     const current = (await this.options.get()) ?? {};
     await this.options.setStrict({ ...current, preferences: clean });
     this.prefs.set(clean);
+    this.themePreview.set(null);
     if (clean.language && clean.language !== this.lang.current()) await this.lang.use(clean.language);
   }
 }

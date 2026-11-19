@@ -38,12 +38,12 @@ import { TranslateModule } from '@ngx-translate/core';
       white-space: nowrap;
     }
     .b[data-tone="draft"],
-    .b[data-tone="deleted"]  { background: #f1f5f9; color: #475569; }
+    .b[data-tone="deleted"]  { background: var(--ui-surface-2); color: var(--ui-text-4); }
     .b[data-tone="published"],
-    .b[data-tone="visible"]  { background: #ecfdf5; color: #047857; }
-    .b[data-tone="scheduled"] { background: #eff6ff; color: #1d4ed8; }
-    .b[data-tone="pending"]   { background: #fffbeb; color: #b45309; }
-    .b[data-tone="flagged"]   { background: #fef2f2; color: #b91c1c; }
+    .b[data-tone="visible"]  { background: var(--ui-green-soft); color: var(--ui-green-text); }
+    .b[data-tone="scheduled"] { background: var(--ui-x-eff6ff); color: var(--ui-t-1d4ed8); }
+    .b[data-tone="pending"]   { background: var(--ui-amber-soft); color: var(--ui-amber-text); }
+    .b[data-tone="flagged"]   { background: var(--ui-red-soft); color: var(--ui-red-text); }
   `],
 })
 export class StatusBadgeComponent {

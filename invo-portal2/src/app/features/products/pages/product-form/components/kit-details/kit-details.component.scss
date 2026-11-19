@@ -12,7 +12,7 @@
   padding: 0.625rem 0.875rem;
   border: 0;
   background: transparent;
-  color: #0e7490;
+  color: var(--ui-brand-text);
   font-size: 0.8125rem;
   font-weight: 500;
   text-align: start;
@@ -21,8 +21,8 @@
 
   &:hover,
   &:focus-visible {
-    background: #ecfeff;
-    color: #155e75;
+    background: var(--ui-brand-soft);
+    color: var(--ui-t-155e75);
     outline: 0;
   }
 

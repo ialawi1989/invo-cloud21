@@ -141,7 +141,7 @@ import { StorefrontUrlService } from '@core/auth/storefront-url.service';
       width: 100%;
       height: 100%;
       border: none;
-      background: white;
+      background: var(--ui-surface);
     }
     
     .loading-overlay {

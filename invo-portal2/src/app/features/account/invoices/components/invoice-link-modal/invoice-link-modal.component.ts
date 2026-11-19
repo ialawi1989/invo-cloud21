@@ -53,16 +53,16 @@ export interface InvoiceLinkModalData {
   `,
   styles: [`
     .il { padding: 16px 20px; min-width: min(520px, 92vw); display: flex; flex-direction: column; gap: 10px; }
-    .il__hint { margin: 0; font-size: 13px; color: #64748b; }
-    .il__label { font-size: 13px; font-weight: 600; color: #334155; margin-top: 6px; }
-    .il__copy { display: flex; gap: 8px; padding: 12px; border: 1px solid #e4e7ec; border-radius: 10px; background: #f8fafc; }
-    .il__input { flex: 1; min-width: 0; border: 1px solid #d0d5dd; border-radius: 8px; padding: 9px 12px; font: inherit; font-size: 13.5px; background: #fff;
+    .il__hint { margin: 0; font-size: 13px; color: var(--ui-muted); }
+    .il__label { font-size: 13px; font-weight: 600; color: var(--ui-text-3); margin-top: 6px; }
+    .il__copy { display: flex; gap: 8px; padding: 12px; border: 1px solid var(--ui-line); border-radius: 10px; background: var(--ui-surface-1); }
+    .il__input { flex: 1; min-width: 0; border: 1px solid var(--ui-line-strong); border-radius: 8px; padding: 9px 12px; font: inherit; font-size: 13.5px; background: var(--ui-surface);
       &:focus { outline: none; border-color: #2691a4; box-shadow: 0 0 0 3px rgba(38, 145, 164, .12); }
       &--err { border-color: #dc2626; } }
-    .il__err { color: #dc2626; }
+    .il__err { color: var(--ui-red-text); }
     .il__end { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
-    .il__btn { padding: 9px 18px; border-radius: 8px; border: 1px solid #d0d5dd; background: #fff; font-weight: 600; font-size: 13.5px; cursor: pointer; white-space: nowrap;
-      &--primary { border-color: #2691a4; background: #2691a4; color: #fff; }
+    .il__btn { padding: 9px 18px; border-radius: 8px; border: 1px solid var(--ui-line-strong); background: var(--ui-surface); font-weight: 600; font-size: 13.5px; cursor: pointer; white-space: nowrap;
+      &--primary { border-color: #2691a4; background: var(--ui-b-2691a4); color: #fff; }
       &:disabled { opacity: .5; cursor: not-allowed; } }
   `],
 })

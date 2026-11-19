@@ -10,7 +10,7 @@
 
   &__hint {
     margin: 0;
-    color: #64748b;
+    color: var(--ui-muted);
     font-size: 13px;
     line-height: 1.5;
   }
@@ -23,20 +23,20 @@
     > span {
       font-size: 12px;
       font-weight: 600;
-      color: #475569;
+      color: var(--ui-text-4);
     }
   }
 
   &__textarea {
     appearance: none;
     width: 100%;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--ui-line);
     border-radius: 8px;
     padding: 8px 10px;
     font-family: ui-monospace, "SF Mono", Menlo, Monaco, monospace;
     font-size: 12px;
-    color: #0f172a;
-    background: #f8fafc;
+    color: var(--ui-text);
+    background: var(--ui-surface-1);
     line-height: 1.5;
     resize: vertical;
     min-height: 120px;
@@ -44,8 +44,8 @@
     &:focus {
       outline: 0;
       border-color: var(--color-brand-400, #7dd3fc);
-      box-shadow: 0 0 0 2px var(--color-brand-100, #e0f2fe);
-      background: #fff;
+      box-shadow: 0 0 0 2px var(--color-brand-100, var(--ui-sky-soft));
+      background: var(--ui-surface);
     }
   }
 
@@ -61,30 +61,30 @@
     align-items: center;
     gap: 6px;
     padding: 6px 12px;
-    border: 1px dashed #cbd5e1;
+    border: 1px dashed var(--ui-line-strong);
     border-radius: 8px;
-    color: var(--color-brand-700, #0e7490);
-    background: #fff;
+    color: var(--color-brand-700, var(--ui-brand-text));
+    background: var(--ui-surface);
     font-size: 12px;
     font-weight: 600;
     transition: background 120ms ease, border-color 120ms ease;
 
     &:hover {
-      background: var(--color-brand-50, #ecfeff);
-      border-color: var(--color-brand-300, #bae6fd);
+      background: var(--color-brand-50, var(--ui-brand-soft));
+      border-color: var(--color-brand-300, var(--ui-sky-soft-2));
     }
   }
 
   &__file-name {
-    color: #64748b;
+    color: var(--ui-muted);
     font-size: 12px;
   }
 
   &__count {
     margin: 0;
     padding: 6px 10px;
-    background: var(--color-brand-50, #ecfeff);
-    color: var(--color-brand-700, #0e7490);
+    background: var(--color-brand-50, var(--ui-brand-soft));
+    color: var(--ui-brand-t700);
     border-radius: 8px;
     font-size: 12px;
     font-weight: 600;
@@ -102,10 +102,10 @@
     transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
 
     &--ghost {
-      background: #f3f4f6;
-      border-color: #e5e7eb;
-      color: #334155;
-      &:hover:not(:disabled) { background: #e5e7eb; }
+      background: var(--ui-surface-2);
+      border-color: var(--ui-line);
+      color: var(--ui-text-3);
+      &:hover:not(:disabled) { background: var(--ui-line); }
     }
     &--primary {
       background: var(--color-brand-600, #0891b2);

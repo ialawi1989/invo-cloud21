@@ -30,7 +30,7 @@ export { MODAL_DATA, MODAL_REF };
   styles: [`
     :host { display: block; width: 100%; height: inherit; }
     .modal-panel {
-      background: #fff; border-radius: 16px; position: relative;
+      background: var(--ui-surface); border-radius: 16px; position: relative;
       overflow: hidden; display: flex; flex-direction: column;
       width: 100%; height: inherit; max-height: calc(100vh - 48px);
       box-shadow:
@@ -47,11 +47,11 @@ export { MODAL_DATA, MODAL_REF };
     .modal-close {
       position: absolute; top: 14px; right: 14px;
       width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
-      background: #f3f4f6; border: none; border-radius: 8px;
-      color: #6b7280; cursor: pointer; z-index: 10;
+      background: var(--ui-surface-2); border: none; border-radius: 8px;
+      color: var(--ui-muted); cursor: pointer; z-index: 10;
       transition: background .15s, color .15s;
     }
-    .modal-close:hover { background: #e5e7eb; color: #111827; }
+    .modal-close:hover { background: var(--ui-line); color: var(--ui-text); }
   `],
 })
 export class ModalContainerComponent implements OnInit {

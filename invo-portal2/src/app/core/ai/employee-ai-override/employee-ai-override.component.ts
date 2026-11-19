@@ -65,12 +65,12 @@ import { AiSettingsFormComponent } from '../ai-settings-form/ai-settings-form.co
   styles: [`
     .eo { display:flex; flex-direction:column; max-height:80vh; min-width:min(520px, 92vw); }
     .eo__head { display:flex; align-items:center; gap:12px; padding:16px 20px 0; }
-    .eo__title { margin:0; font-size:18px; font-weight:700; color:#0f172a; flex:1; }
-    .eo__close { background:transparent; border:0; color:#94a3b8; cursor:pointer; padding:4px; border-radius:6px; }
-    .eo__close:hover { background:#f1f5f9; color:#0f172a; }
-    .eo__intro { margin:6px 20px 0; font-size:13px; color:#64748b; }
+    .eo__title { margin:0; font-size:18px; font-weight:700; color:var(--ui-text); flex:1; }
+    .eo__close { background:transparent; border:0; color:var(--ui-faint); cursor:pointer; padding:4px; border-radius:6px; }
+    .eo__close:hover { background:var(--ui-surface-2); color:var(--ui-text); }
+    .eo__intro { margin:6px 20px 0; font-size:13px; color:var(--ui-muted); }
     .eo__body { padding:16px 20px; overflow:auto; }
-    .eo__foot { display:flex; align-items:center; gap:8px; padding:12px 20px; border-top:1px solid #e5e7eb; }
+    .eo__foot { display:flex; align-items:center; gap:8px; padding:12px 20px; border-top:1px solid var(--ui-line); }
   `],
 })
 export class EmployeeAiOverrideComponent implements OnInit {

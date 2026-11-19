@@ -6,7 +6,7 @@
 }
 
 .page-header { display: flex; flex-direction: column; gap: 4px; }
-.page-title  { margin: 0; font-size: 22px; font-weight: 700; color: #0f172a; }
+.page-title  { margin: 0; font-size: 22px; font-weight: 700; color: var(--ui-text); }
 
 // Two-column layout — mirrors the discount-form. Sidebar sticks to
 // the top so the toggle cards remain visible while editing tall
@@ -44,20 +44,20 @@
 }
 
 .card {
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
   border-radius: 12px;
   overflow: hidden;
 
   &__head {
     padding: 14px 16px;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--ui-surface-2);
     display: flex;
     flex-direction: column;
     gap: 2px;
   }
-  &__title { margin: 0; font-size: 14px; font-weight: 700; color: #0f172a; }
-  &__sub   { margin: 0; font-size: 12px; color: #64748b; line-height: 1.5; }
+  &__title { margin: 0; font-size: 14px; font-weight: 700; color: var(--ui-text); }
+  &__sub   { margin: 0; font-size: 12px; color: var(--ui-muted); line-height: 1.5; }
   &__body  { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
 
   // Compact sidebar variant — tighter chrome so multiple small
@@ -73,7 +73,7 @@
       border-radius: 0;
     }
     .checkbox-field + .checkbox-field {
-      border-top: 1px solid #f1f5f9;
+      border-top: 1px solid var(--ui-surface-2);
     }
   }
 }
@@ -86,7 +86,7 @@
   &__label {
     font-size: 12px;
     font-weight: 600;
-    color: #475569;
+    color: var(--ui-text-4);
 
     &--with-action {
       display: flex;
@@ -95,28 +95,28 @@
       gap: 8px;
     }
   }
-  &__hint  { font-size: 11px; color: #94a3b8; }
-  &__err   { font-size: 11px; color: #b91c1c; font-weight: 600; }
+  &__hint  { font-size: 11px; color: var(--ui-faint); }
+  &__err   { font-size: 11px; color: var(--ui-red-text); font-weight: 600; }
 
   &__input {
     appearance: none;
     width: 100%;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--ui-line);
     border-radius: 8px;
     padding: 9px 12px;
     font-size: 13px;
-    color: #0f172a;
-    background: #fff;
+    color: var(--ui-text);
+    background: var(--ui-surface);
 
     &:focus {
       outline: 0;
       border-color: var(--color-brand-400, #7dd3fc);
-      box-shadow: 0 0 0 2px var(--color-brand-100, #e0f2fe);
+      box-shadow: 0 0 0 2px var(--color-brand-100, var(--ui-sky-soft));
     }
-    &::placeholder { color: #94a3b8; }
+    &::placeholder { color: var(--ui-faint); }
     &--err {
-      border-color: #fecaca;
-      &:focus { box-shadow: 0 0 0 2px #fee2e2; }
+      border-color: var(--ui-red-soft-2);
+      &:focus { box-shadow: 0 0 0 2px var(--ui-red-soft); }
     }
   }
 
@@ -125,14 +125,14 @@
   &__suffix-wrap {
     display: flex;
     align-items: stretch;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--ui-line);
     border-radius: 8px;
-    background: #fff;
+    background: var(--ui-surface);
     overflow: hidden;
 
     &:focus-within {
       border-color: var(--color-brand-400, #7dd3fc);
-      box-shadow: 0 0 0 2px var(--color-brand-100, #e0f2fe);
+      box-shadow: 0 0 0 2px var(--color-brand-100, var(--ui-sky-soft));
     }
 
     .field__input {
@@ -145,10 +145,10 @@
     display: inline-flex;
     align-items: center;
     padding: 0 12px;
-    color: #64748b;
+    color: var(--ui-muted);
     font-size: 13px;
-    background: #f8fafc;
-    border-inline-start: 1px solid #e2e8f0;
+    background: var(--ui-surface-1);
+    border-inline-start: 1px solid var(--ui-line);
   }
 }
 
@@ -157,9 +157,9 @@
   align-items: flex-start;
   gap: 10px;
   padding: 10px 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--ui-line);
   border-radius: 8px;
-  background: #f8fafc;
+  background: var(--ui-surface-1);
   cursor: pointer;
 
   input[type='checkbox'] {
@@ -168,8 +168,8 @@
     accent-color: var(--color-brand-600, #0891b2);
   }
   &__text  { display: flex; flex-direction: column; gap: 2px; }
-  &__label { font-size: 13px; font-weight: 600; color: #0f172a; }
-  &__hint  { font-size: 11px; color: #64748b; line-height: 1.5; }
+  &__label { font-size: 13px; font-weight: 600; color: var(--ui-text); }
+  &__hint  { font-size: 11px; color: var(--ui-muted); line-height: 1.5; }
 }
 
 // "Per-branch override" button — opens the BranchAdvance modal.
@@ -184,17 +184,17 @@
   gap: 6px;
   margin-top: 4px;
   padding: 6px 12px;
-  border: 1px solid #e2e8f0;
-  background: #fff;
+  border: 1px solid var(--ui-line);
+  background: var(--ui-surface);
   border-radius: 6px;
   font: inherit;
   font-size: 12px;
   font-weight: 600;
-  color: #475569;
+  color: var(--ui-text-4);
   cursor: pointer;
   transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
 
-  &:hover { background: #f8fafc; border-color: #cbd5e1; color: #0f172a; }
+  &:hover { background: var(--ui-surface-1); border-color: var(--ui-line-strong); color: var(--ui-text); }
 
   &__badge {
     display: inline-flex;
@@ -202,8 +202,8 @@
     justify-content: center;
     min-width: 18px;
     padding: 1px 6px;
-    background: var(--color-brand-50, #ecfeff);
-    color: var(--color-brand-700, #0e7490);
+    background: var(--color-brand-50, var(--ui-brand-soft));
+    color: var(--ui-brand-t700);
     border-radius: 999px;
     font-size: 11px;
     font-weight: 700;
@@ -221,12 +221,12 @@
   font: inherit;
   font-size: 11px;
   font-weight: 600;
-  color: var(--color-brand-700, #0e7490);
+  color: var(--color-brand-700, var(--ui-brand-text));
   cursor: pointer;
   text-decoration: underline;
   text-underline-offset: 2px;
 
-  &:hover { color: var(--color-brand-800, #155e75); }
+  &:hover { color: var(--ui-brand-t800); }
 }
 
 // Icon picker — a small thumbnail tile alongside Replace/Remove
@@ -245,8 +245,8 @@
     width: 56px;
     height: 56px;
     border-radius: 10px;
-    border: 1px solid #e2e8f0;
-    background: #fff;
+    border: 1px solid var(--ui-line);
+    background: var(--ui-surface);
     padding: 4px;
     cursor: pointer;
     display: inline-flex;
@@ -264,12 +264,12 @@
 
     &:hover {
       border-color: var(--color-brand-400, #7dd3fc);
-      box-shadow: 0 0 0 2px var(--color-brand-100, #e0f2fe);
+      box-shadow: 0 0 0 2px var(--color-brand-100, var(--ui-sky-soft));
     }
 
     &--empty {
-      background: #f8fafc;
-      color: #94a3b8;
+      background: var(--ui-surface-1);
+      color: var(--ui-faint);
     }
   }
 
@@ -282,24 +282,24 @@
 
   &__btn {
     appearance: none;
-    border: 1px solid #e2e8f0;
-    background: #fff;
+    border: 1px solid var(--ui-line);
+    background: var(--ui-surface);
     border-radius: 6px;
     padding: 6px 12px;
     font: inherit;
     font-size: 12px;
     font-weight: 600;
-    color: #475569;
+    color: var(--ui-text-4);
     cursor: pointer;
     transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
 
-    &:hover { background: #f8fafc; border-color: #cbd5e1; color: #0f172a; }
+    &:hover { background: var(--ui-surface-1); border-color: var(--ui-line-strong); color: var(--ui-text); }
 
     &--ghost {
       background: transparent;
       border-color: transparent;
-      color: #94a3b8;
-      &:hover { background: #f1f5f9; color: #b91c1c; border-color: transparent; }
+      color: var(--ui-faint);
+      &:hover { background: var(--ui-surface-2); color: var(--ui-red-text); border-color: transparent; }
     }
   }
 }
@@ -319,11 +319,11 @@
   font: inherit;
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-brand-700, #0e7490);
+  color: var(--color-brand-700, var(--ui-brand-text));
   cursor: pointer;
   transition: background 120ms ease;
 
-  &:hover { background: var(--color-brand-50, #ecfeff); }
+  &:hover { background: var(--color-brand-50, var(--ui-brand-soft)); }
   > svg { color: currentColor; flex-shrink: 0; }
 }
 
@@ -337,16 +337,15 @@
   align-items: center;
   gap: 8px;
   padding: 10px 20px;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(8px);
-  border-top: 1px solid #e2e8f0;
+  background: var(--ui-footer-bg);
+  border-top: 1px solid var(--ui-line);
 }
 
 .spinner {
   width: 14px;
   height: 14px;
   border: 2px solid rgba(255, 255, 255, 0.4);
-  border-top-color: #fff;
+  border-top-color: var(--ui-surface);
   border-radius: 50%;
   animation: pmf-spin 0.7s linear infinite;
 }

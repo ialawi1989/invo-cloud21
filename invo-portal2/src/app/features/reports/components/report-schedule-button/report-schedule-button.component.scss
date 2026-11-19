@@ -3,9 +3,9 @@
 
 .rs-btn {
   position: relative; display: flex; align-items: center; justify-content: center; padding: .5rem;
-  background: transparent; border: 0; border-radius: .5rem; cursor: pointer; color: #6b7280; transition: all .2s;
-  &:hover { background: #f3f4f6; }
-  &.has-active { color: #167d8f; }
+  background: transparent; border: 0; border-radius: .5rem; cursor: pointer; color: var(--ui-muted); transition: all .2s;
+  &:hover { background: var(--ui-surface-2); }
+  &.has-active { color: var(--ui-t-167d8f); }
   &:focus-visible { outline: 2px solid #1e8c9f; outline-offset: 2px; }
 }
 .rs-badge {
@@ -18,7 +18,7 @@
 .rs-backdrop { position: fixed; inset: 0; z-index: 1000; }
 .rs-menu {
   position: absolute; top: calc(100% + 8px); inset-inline-end: 0; z-index: 1001; width: 300px; max-width: 90vw;
-  padding: 8px; background: #fff; border-radius: .75rem;
+  padding: 8px; background: var(--ui-surface); border-radius: .75rem;
   box-shadow: 0 10px 40px -5px rgba(0, 0, 0, .15), 0 0 0 1px rgba(0, 0, 0, .05);
   animation: rs-pop .12s ease;
 }
@@ -27,19 +27,19 @@
 .rs-list { display: flex; flex-direction: column; gap: 6px; max-height: 280px; overflow-y: auto; margin-bottom: 6px; }
 .rs-card {
   display: flex; flex-direction: column; gap: 4px; width: 100%; padding: 9px 12px; text-align: start; font-family: inherit; cursor: pointer;
-  background: #f8fafc; border: 1px solid #e5e7eb; border-radius: .5rem; transition: border-color .15s, background .15s;
-  &:hover { background: #f1f5f9; border-color: #167d8f; }
+  background: var(--ui-surface-1); border: 1px solid var(--ui-line); border-radius: .5rem; transition: border-color .15s, background .15s;
+  &:hover { background: var(--ui-surface-2); border-color: #167d8f; }
 }
 .rs-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.rs-freq { font-size: .8125rem; font-weight: 600; color: #111827; text-transform: capitalize; }
+.rs-freq { font-size: .8125rem; font-weight: 600; color: var(--ui-text); text-transform: capitalize; }
 .rs-state {
-  padding: 1px 8px; border-radius: 999px; font-size: .6875rem; font-weight: 600; background: #f3f4f6; color: #6b7280;
-  &.on { background: #ecfdf5; color: #047857; }
+  padding: 1px 8px; border-radius: 999px; font-size: .6875rem; font-weight: 600; background: var(--ui-surface-2); color: var(--ui-muted);
+  &.on { background: var(--ui-green-soft); color: var(--ui-green-text); }
 }
-.rs-card-dates { display: flex; flex-direction: column; gap: 1px; font-size: .75rem; color: #6b7280; }
+.rs-card-dates { display: flex; flex-direction: column; gap: 1px; font-size: .75rem; color: var(--ui-muted); }
 
 .rs-new {
   display: flex; align-items: center; gap: .5rem; width: 100%; padding: 9px 12px; background: transparent; border: 0; border-radius: .5rem;
   color: #167d8f; font-size: .875rem; font-weight: 600; font-family: inherit; cursor: pointer; transition: background .15s;
-  &:hover { background: #ecfeff; }
+  &:hover { background: var(--ui-brand-soft); }
 }

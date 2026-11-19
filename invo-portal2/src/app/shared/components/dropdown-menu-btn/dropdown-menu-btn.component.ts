@@ -187,8 +187,8 @@ export interface DropdownMenuBtnItem {
       margin: 0;
       padding: 6px 0;
       list-style: none;
-      background: #fff;
-      border: 1px solid #e5e7eb;
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-line);
       border-radius: 10px;
       box-shadow: 0 6px 16px -4px rgba(15, 23, 42, 0.12),
                   0 2px 4px -1px  rgba(15, 23, 42, 0.06);
@@ -216,7 +216,7 @@ export interface DropdownMenuBtnItem {
     .dmb__submenu {
       position: absolute; top: -7px; inset-inline-start: calc(100% + 4px);
       margin: 0; padding: 6px 0; list-style: none;
-      background: #fff; border: 1px solid #e5e7eb; border-radius: 10px;
+      background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: 10px;
       box-shadow: 0 6px 16px -4px rgba(15, 23, 42, .12), 0 2px 4px -1px rgba(15, 23, 42, .06);
       min-width: 200px; z-index: 51;
     }
@@ -232,21 +232,21 @@ export interface DropdownMenuBtnItem {
       border-radius: 0;
       font-size: 13px;
       font-weight: 500;
-      color: #1f2937;
+      color: var(--ui-text-2);
       text-align: start;
       cursor: pointer;
       transition: background 80ms ease, color 80ms ease;
 
-      &:hover:not(:disabled)  { background: #f8fafc; color: #0f172a; }
+      &:hover:not(:disabled)  { background: var(--ui-surface-1); color: var(--ui-text); }
       &:focus                 { outline: none; }
-      &:focus-visible         { background: #f1f5f9; }
-      &:active:not(:disabled) { background: #f1f5f9; }
+      &:focus-visible         { background: var(--ui-surface-2); }
+      &:active:not(:disabled) { background: var(--ui-surface-2); }
       &:disabled              { opacity: 0.5; cursor: not-allowed; }
     }
 
     .dmb__item--danger {
-      color: #b91c1c !important;
-      &:hover:not(:disabled) { background: #fef2f2 !important; color: #991b1b !important; }
+      color: var(--ui-red-text) !important;
+      &:hover:not(:disabled) { background: var(--ui-red-soft) !important; color: var(--ui-red-text) !important; }
     }
 
     .dmb__item-icon  { color: currentColor; flex-shrink: 0; opacity: 0.85; }
@@ -263,7 +263,7 @@ export interface DropdownMenuBtnItem {
     .dmb__sep {
       height: 1px;
       margin: 6px 0;
-      background: #f1f5f9;
+      background: var(--ui-surface-2);
     }
 
     .dmb__header {
@@ -272,7 +272,7 @@ export interface DropdownMenuBtnItem {
       font-weight: 700;
       letter-spacing: 0.06em;
       text-transform: uppercase;
-      color: #94a3b8;
+      color: var(--ui-faint);
     }
 
     .dmb__tag {
@@ -287,10 +287,10 @@ export interface DropdownMenuBtnItem {
       letter-spacing: 0.04em;
       flex-shrink: 0;
 
-      &--cyan  { background: #ecfeff; color: #0e7490; border: 1px solid #a5f3fc; }
-      &--green { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
-      &--amber { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
-      &--slate { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }
+      &--cyan  { background: var(--ui-brand-soft); color: var(--ui-brand-text); border: 1px solid var(--ui-brand-soft-2); }
+      &--green { background: var(--ui-green-soft); color: var(--ui-green-text); border: 1px solid var(--ui-x-a7f3d0); }
+      &--amber { background: var(--ui-amber-soft); color: var(--ui-amber-text); border: 1px solid var(--ui-amber-soft-2); }
+      &--slate { background: var(--ui-surface-2); color: var(--ui-text-3); border: 1px solid var(--ui-line-strong); }
     }
   `],
 })

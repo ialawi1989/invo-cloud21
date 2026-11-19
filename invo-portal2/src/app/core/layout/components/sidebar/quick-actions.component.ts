@@ -351,7 +351,7 @@ const ALL_CATEGORIES: QuickCategory[] = [
     .qa-panel {
       position: fixed; top: 56px; left: 0;
       width: 380px; height: calc(100vh - 56px); max-height: none;
-      background: #fff;
+      background: var(--ui-surface);
       display: flex; flex-direction: column;
       z-index: 1200;
       box-shadow: 4px 0 24px rgba(0,0,0,.14);
@@ -366,37 +366,37 @@ const ALL_CATEGORIES: QuickCategory[] = [
     .qa-header {
       display: flex; align-items: flex-start; justify-content: space-between;
       padding: 20px 20px 14px;
-      border-bottom: 1px solid #f0f2f5;
+      border-bottom: 1px solid var(--ui-x-f0f2f5);
       flex-shrink: 0;
     }
-    .qa-title { font-size: 16px; font-weight: 700; color: #1a1f2e; margin: 0 0 3px; }
-    .qa-subtitle { font-size: 12px; color: #74788d; margin: 0; }
+    .qa-title { font-size: 16px; font-weight: 700; color: var(--ui-t-1a1f2e); margin: 0 0 3px; }
+    .qa-subtitle { font-size: 12px; color: var(--ui-t-74788d); margin: 0; }
     .qa-close {
       width: 28px; height: 28px; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
       background: transparent; border: none; cursor: pointer;
-      color: #9ca3af; border-radius: 6px; transition: all .12s;
+      color: var(--ui-faint); border-radius: 6px; transition: all .12s;
     }
-    .qa-close:hover { background: #f4f5f7; color: #1a1f2e; }
+    .qa-close:hover { background: var(--ui-x-f4f5f7); color: var(--ui-t-1a1f2e); }
 
     /* Search bar */
     .qa-search-bar {
       display: flex; flex-direction: column; gap: 8px;
-      padding: 10px 16px 12px; border-bottom: 1px solid #f0f2f5;
+      padding: 10px 16px 12px; border-bottom: 1px solid var(--ui-x-f0f2f5);
       flex-shrink: 0;
     }
     .qa-search-row-top {
       display: flex; align-items: center; justify-content: space-between;
     }
-    .qa-search-label { font-size: 12px; color: #74788d; }
+    .qa-search-label { font-size: 12px; color: var(--ui-t-74788d); }
     .qa-search-box {
       display: flex; align-items: center; gap: 8px;
-      border: 1.5px solid #e0e4ee; border-radius: 6px; padding: 9px 12px;
+      border: 1.5px solid var(--ui-x-e0e4ee); border-radius: 6px; padding: 9px 12px;
       transition: border-color .15s;
-      svg { color: #9ca3af; flex-shrink: 0; }
+      svg { color: var(--ui-faint); flex-shrink: 0; }
       input {
         flex: 1; border: none; outline: none;
-        font-size: 16px; color: #1a1f2e; background: transparent;
+        font-size: 16px; color: var(--ui-t-1a1f2e); background: transparent;
         width: 100%;
         &::placeholder { color: #b0b8c1; }
       }
@@ -411,9 +411,9 @@ const ALL_CATEGORIES: QuickCategory[] = [
 
     .cat-dropdown {
       position: absolute; top: calc(100% + 6px); right: 0;
-      background: #fff; border-radius: 8px;
+      background: var(--ui-surface); border-radius: 8px;
       box-shadow: 0 4px 20px rgba(0,0,0,.16);
-      border: 1px solid #e8eaed;
+      border: 1px solid var(--ui-x-e8eaed);
       min-width: 190px; z-index: 200;
       overflow: hidden;
       animation: dropIn .12s ease;
@@ -423,10 +423,10 @@ const ALL_CATEGORIES: QuickCategory[] = [
       to   { opacity: 1; transform: translateY(0); }
     }
     .cat-option {
-      padding: 10px 16px; font-size: 13px; color: #2a3042;
+      padding: 10px 16px; font-size: 13px; color: var(--ui-t-2a3042);
       cursor: pointer; transition: background .1s;
     }
-    .cat-option:hover { background: var(--color-brand-50, #effbfd); }
+    .cat-option:hover { background: var(--color-brand-50, var(--ui-brand-soft)); }
     .cat-option.selected {
       background: var(--color-brand-500, #32acc1); color: #fff; font-weight: 600;
     }
@@ -441,18 +441,18 @@ const ALL_CATEGORIES: QuickCategory[] = [
     .qa-empty {
       display: flex; flex-direction: column; align-items: center;
       gap: 10px; padding: 40px 20px;
-      color: #9ca3af; font-size: 13px; text-align: center;
-      strong { color: #495057; }
+      color: var(--ui-faint); font-size: 13px; text-align: center;
+      strong { color: var(--ui-t-495057); }
     }
 
     /* Category */
     .qa-category { padding: 16px 0 4px; }
     .qa-cat-title {
-      font-size: 13px; font-weight: 700; color: #1a1f2e;
+      font-size: 13px; font-weight: 700; color: var(--ui-t-1a1f2e);
       margin: 0 0 2px; padding: 0 16px;
     }
     .qa-cat-subtitle {
-      font-size: 11px; color: #74788d; margin: 0 0 10px; padding: 0 16px;
+      font-size: 11px; color: var(--ui-t-74788d); margin: 0 0 10px; padding: 0 16px;
     }
 
     /* Action rows */
@@ -461,36 +461,36 @@ const ALL_CATEGORIES: QuickCategory[] = [
       display: flex; align-items: center; gap: 12px;
       padding: 11px 16px;
       border: 1px solid transparent;
-      text-decoration: none; color: #1a1f2e;
+      text-decoration: none; color: var(--ui-t-1a1f2e);
       transition: all .12s; cursor: pointer;
       border-radius: 0;
       &:hover {
-        background: var(--color-brand-50, #effbfd);
-        border-color: var(--color-brand-100, #d6f4f8);
+        background: var(--color-brand-50, var(--ui-brand-soft));
+        border-color: var(--color-brand-100, var(--ui-x-d6f4f8));
       }
       &:hover .qa-action-plus {
         border-color: var(--color-brand-500, #32acc1);
         color: var(--color-brand-500, #32acc1);
       }
-      &:not(:last-child) { border-bottom: 1px solid #f4f5f7; }
+      &:not(:last-child) { border-bottom: 1px solid var(--ui-x-f4f5f7); }
     }
 
     .qa-action-icon {
       width: 36px; height: 36px; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
-      background: #f4f5f7; border-radius: 8px; color: var(--color-brand-500, #32acc1);
+      background: var(--ui-x-f4f5f7); border-radius: 8px; color: var(--color-brand-500, #32acc1);
       svg { width: 18px; height: 18px; }
     }
 
     .qa-action-label {
-      flex: 1; font-size: 13.5px; font-weight: 500; color: #2a3042;
+      flex: 1; font-size: 13.5px; font-weight: 500; color: var(--ui-t-2a3042);
     }
 
     .qa-action-plus {
       width: 26px; height: 26px; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
-      border: 1px solid #d1d5db; border-radius: 50%;
-      color: #9ca3af; transition: all .12s;
+      border: 1px solid var(--ui-line-strong); border-radius: 50%;
+      color: var(--ui-faint); transition: all .12s;
     }
 
     /* ── RTL ── */

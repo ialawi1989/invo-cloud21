@@ -21,6 +21,12 @@ export interface OpenOptions {
    *  array and prefixes paths with `row.`, matching the binding context
    *  cell expressions are evaluated in. */
   rowSource?: string;
+  /** Set on inputs whose entire value is ONE expression — `visibleWhen`,
+   *  dataSource paths, column/totals expressions. There, `{{ }}` is a syntax
+   *  error, so inserted fields stay bare. Everywhere else the box is a
+   *  template and a bare path would render literally, so inserts are
+   *  wrapped. */
+  rawExpression?: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -34,10 +40,12 @@ export class BindingPickerService {
    *  per-block expression input automatically gets `row.x` field suggestions
    *  without each call site having to plumb the parent context through. */
   private readonly _defaultRowSource = signal<string | null>(null);
+  private readonly _rawExpression = signal(false);
 
   readonly target = this._target.asReadonly();
   readonly label = this._label.asReadonly();
   readonly rowSource = this._rowSource.asReadonly();
+  readonly rawExpression = this._rawExpression.asReadonly();
   readonly open = computed(() => this._target() !== null);
 
   /** Set the implicit row-source used when `openFor` doesn't get an explicit
@@ -51,6 +59,7 @@ export class BindingPickerService {
     this._label.set(label);
     const explicit = opts.rowSource && opts.rowSource.trim() ? opts.rowSource : null;
     this._rowSource.set(explicit ?? this._defaultRowSource());
+    this._rawExpression.set(opts.rawExpression === true);
     this._target.set(el);
   }
 

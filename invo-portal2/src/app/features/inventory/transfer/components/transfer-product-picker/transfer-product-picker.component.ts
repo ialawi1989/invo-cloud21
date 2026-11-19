@@ -63,19 +63,19 @@ const PAGE_SIZE = 30;
   `,
   styles: [`
     .tpp { padding: 16px 20px; min-width: min(560px, 92vw); display: flex; flex-direction: column; gap: 10px; }
-    .tpp__search { height: 38px; padding: 0 12px; border: 1px solid #d0d5dd; border-radius: 8px; font: inherit; font-size: 14px; outline: none; }
+    .tpp__search { height: 38px; padding: 0 12px; border: 1px solid var(--ui-line-strong); border-radius: 8px; font: inherit; font-size: 14px; outline: none; }
     .tpp__search:focus { border-color: #32acc1; box-shadow: 0 0 0 3px rgba(50,172,193,.12); }
     .tpp__list { list-style: none; margin: 0; padding: 0; max-height: 380px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
-    .tpp__item { display: flex; align-items: center; gap: 12px; padding: 9px 12px; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; font-size: 14px; }
-    .tpp__item:hover:not(.tpp__item--off) { background: #f1f5f9; }
+    .tpp__item { display: flex; align-items: center; gap: 12px; padding: 9px 12px; border: 1px solid var(--ui-line); border-radius: 8px; cursor: pointer; font-size: 14px; }
+    .tpp__item:hover:not(.tpp__item--off) { background: var(--ui-surface-2); }
     .tpp__item--off { opacity: .45; cursor: not-allowed; }
     .tpp__name { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-    .tpp__name small { color: #64748b; }
-    .tpp__hand { font-weight: 600; color: #0f172a; min-width: 48px; text-align: end; }
-    .tpp__hand--none { color: #dc2626; }
-    .tpp__empty { padding: 18px; text-align: center; color: #94a3b8; }
-    .tpp__btn { padding: 9px 16px; border-radius: 8px; border: 1px solid #d0d5dd; background: #fff; color: #334155; font-weight: 600; font-size: 13.5px; cursor: pointer; }
-    .tpp__btn--primary { border-color: #2691a4; background: #2691a4; color: #fff; }
+    .tpp__name small { color: var(--ui-muted); }
+    .tpp__hand { font-weight: 600; color: var(--ui-text); min-width: 48px; text-align: end; }
+    .tpp__hand--none { color: var(--ui-red-text); }
+    .tpp__empty { padding: 18px; text-align: center; color: var(--ui-faint); }
+    .tpp__btn { padding: 9px 16px; border-radius: 8px; border: 1px solid var(--ui-line-strong); background: var(--ui-surface); color: var(--ui-text-3); font-weight: 600; font-size: 13.5px; cursor: pointer; }
+    .tpp__btn--primary { border-color: #2691a4; background: var(--ui-b-2691a4); color: #fff; }
   `],
 })
 export class TransferProductPickerComponent implements OnInit, OnDestroy {

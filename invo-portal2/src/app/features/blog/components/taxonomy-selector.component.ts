@@ -143,15 +143,15 @@ import { TooltipDirective } from '@shared/directives/tooltip.directive';
       flex: 1;
       padding: 8px 12px;
       font-size: 13px;
-      color: #0f172a;
-      background: #fff;
-      border: 1px solid #e2e8f0;
+      color: var(--ui-text);
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-line);
       border-radius: 8px;
     }
     .ts__search:focus { outline: none; border-color: #32acc1; }
     .ts__addBtn {
       padding: 8px 14px;
-      background: #32acc1;
+      background: var(--ui-b-32acc1);
       border: none;
       border-radius: 8px;
       color: #fff;
@@ -166,8 +166,8 @@ import { TooltipDirective } from '@shared/directives/tooltip.directive';
       top: 42px;
       inset-inline-start: 0;
       right: 0;
-      background: #fff;
-      border: 1px solid #e2e8f0;
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-line);
       border-radius: 8px;
       box-shadow: 0 4px 14px rgba(15,23,42,.08);
       padding: 4px;
@@ -187,12 +187,12 @@ import { TooltipDirective } from '@shared/directives/tooltip.directive';
       border-radius: 6px;
       text-align: start;
       font-size: 13px;
-      color: #0f172a;
+      color: var(--ui-text);
       cursor: pointer;
     }
-    .ts__menuItem:hover { background: #f1f5f9; }
-    .ts__menuCount { font-size: 11px; color: #94a3b8; }
-    .ts__menuEmpty { padding: 10px; text-align: center; font-size: 12px; color: #94a3b8; }
+    .ts__menuItem:hover { background: var(--ui-surface-2); }
+    .ts__menuCount { font-size: 11px; color: var(--ui-faint); }
+    .ts__menuEmpty { padding: 10px; text-align: center; font-size: 12px; color: var(--ui-faint); }
     .ts__sentinel { display: flex; align-items: center; justify-content: center; min-height: 8px; padding: 4px 0; }
 
     .ts__chips {
@@ -201,8 +201,8 @@ import { TooltipDirective } from '@shared/directives/tooltip.directive';
       gap: 6px;
       min-height: 36px;
       padding: 6px;
-      background: #f8fafc;
-      border: 1px dashed #e2e8f0;
+      background: var(--ui-surface-1);
+      border: 1px dashed var(--ui-line);
       border-radius: 8px;
     }
     .ts__chip {
@@ -210,15 +210,15 @@ import { TooltipDirective } from '@shared/directives/tooltip.directive';
       align-items: center;
       gap: 6px;
       padding: 4px 10px;
-      background: #fff;
-      border: 1px solid #e2e8f0;
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-line);
       border-radius: 999px;
       font-size: 12px;
-      color: #0f172a;
+      color: var(--ui-text);
     }
     .ts__chip--main {
-      background: #ecfeff;
-      border-color: #a5f3fc;
+      background: var(--ui-brand-soft);
+      border-color: var(--ui-brand-soft-2);
     }
     .ts__star {
       display: inline-flex;
@@ -237,30 +237,30 @@ import { TooltipDirective } from '@shared/directives/tooltip.directive';
     .ts__chipX {
       background: transparent;
       border: none;
-      color: #94a3b8;
+      color: var(--ui-faint);
       font-size: 16px;
       line-height: 1;
       cursor: pointer;
       padding: 0;
     }
-    .ts__chipX:hover { color: #ef4444; }
-    .ts__empty { font-size: 12px; color: #94a3b8; padding: 4px 8px; }
-    .ts__count { margin: 0; font-size: 11px; color: #94a3b8; }
-    .ts__count.is-warn { color: #b45309; font-weight: 500; }
+    .ts__chipX:hover { color: var(--ui-red-text); }
+    .ts__empty { font-size: 12px; color: var(--ui-faint); padding: 4px 8px; }
+    .ts__count { margin: 0; font-size: 11px; color: var(--ui-faint); }
+    .ts__count.is-warn { color: var(--ui-amber-text); font-weight: 500; }
 
     /* ── Create with AI ── */
     .ts__aiBtn {
       display: inline-flex; align-items: center; gap: 6px; align-self: flex-start;
       padding: 4px 2px; background: transparent; border: 0; cursor: pointer;
-      font-size: 13px; font-weight: 600; color: var(--color-brand-600, #2691a4);
+      font-size: 13px; font-weight: 600; color: var(--ui-brand-t600);
     }
     .ts__aiBtn:hover { text-decoration: underline; }
     .ts__ai {
-      border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px;
-      background: #f8fdfe; display: flex; flex-direction: column; gap: 8px;
+      border: 1px solid var(--ui-line); border-radius: 10px; padding: 10px 12px;
+      background: var(--ui-x-f8fdfe); display: flex; flex-direction: column; gap: 8px;
     }
-    .ts__aiHint { margin: 0 0 2px; font-size: 12px; color: #475569; }
-    .ts__aiItem { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #0f172a; cursor: pointer; padding: 3px 0; border-top: 1px solid #f1f5f9; }
+    .ts__aiHint { margin: 0 0 2px; font-size: 12px; color: var(--ui-text-4); }
+    .ts__aiItem { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ui-text); cursor: pointer; padding: 3px 0; border-top: 1px solid var(--ui-surface-2); }
     .ts__aiItem:first-of-type { border-top: 0; }
     .ts__aiItem input { accent-color: var(--color-brand-600, #2691a4); }
     .ts__aiActions { display: flex; gap: 8px; margin-top: 4px; }
@@ -270,13 +270,13 @@ import { TooltipDirective } from '@shared/directives/tooltip.directive';
     }
     .ts__aiAdd:disabled { opacity: .5; cursor: not-allowed; }
     .ts__aiRegen, .ts__aiRetry {
-      padding: 7px 12px; border: 1px solid #e2e8f0; border-radius: 999px; background: #fff;
-      font-size: 13px; color: #475569; cursor: pointer;
+      padding: 7px 12px; border: 1px solid var(--ui-line); border-radius: 999px; background: var(--ui-surface);
+      font-size: 13px; color: var(--ui-text-4); cursor: pointer;
     }
-    .ts__aiError { margin: 0; font-size: 12px; color: #b91c1c; }
-    .ts__aiLoading { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #64748b; }
+    .ts__aiError { margin: 0; font-size: 12px; color: var(--ui-red-text); }
+    .ts__aiLoading { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ui-muted); }
     .ts__aiSpin {
-      width: 14px; height: 14px; border: 2px solid #cbeef4; border-top-color: var(--color-brand-600, #2691a4);
+      width: 14px; height: 14px; border: 2px solid var(--ui-x-cbeef4); border-top-color: var(--color-brand-600, #2691a4);
       border-radius: 50%; animation: ts-spin .7s linear infinite;
     }
     @keyframes ts-spin { to { transform: rotate(360deg); } }

@@ -36,11 +36,11 @@ import { TranslateModule } from '@ngx-translate/core';
       font: inherit;
       font-size: 12px;
       font-weight: 600;
-      color: var(--color-brand-700, #0e7490);
+      color: var(--color-brand-700, var(--ui-brand-text));
       cursor: pointer;
       transition: color 120ms ease;
 
-      &:hover { color: var(--color-brand-800, #075985); }
+      &:hover { color: var(--ui-brand-t800); }
       svg { flex-shrink: 0; }
     }
   `],

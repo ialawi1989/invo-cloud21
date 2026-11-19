@@ -107,9 +107,9 @@ import { CommonModule } from '@angular/common';
       gap: 6px;
       padding: 56px 24px;
       text-align: center;
-      color: var(--color-brand-600, #0e7490);
+      color: var(--ui-brand-t600);
     }
-    .es[data-tone="error"] { color: #ef4444; }
+    .es[data-tone="error"] { color: var(--ui-red-text); }
     .es[data-tone="warn"]  { color: #f59e0b; }
 
     .es__art {
@@ -126,7 +126,7 @@ import { CommonModule } from '@angular/common';
       margin: 0;
       font-size: 17px;
       font-weight: 600;
-      color: #0f172a;
+      color: var(--ui-text);
       letter-spacing: -0.01em;
     }
     .es__desc {
@@ -134,7 +134,7 @@ import { CommonModule } from '@angular/common';
       max-width: 360px;
       font-size: 13px;
       line-height: 1.55;
-      color: #64748b;
+      color: var(--ui-muted);
     }
 
     .es__actions {
@@ -159,9 +159,9 @@ import { CommonModule } from '@angular/common';
     }
     .es__btn--ghost {
       background: transparent;
-      color: #475569;
-      border-color: #e2e8f0;
-      &:hover { background: #f1f5f9; color: #0f172a; }
+      color: var(--ui-text-4);
+      border-color: var(--ui-line);
+      &:hover { background: var(--ui-surface-2); color: var(--ui-text); }
     }
   `],
 })

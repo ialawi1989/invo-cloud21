@@ -32,14 +32,14 @@
   }
 
   &__size {
-    color: var(--text-muted, #6b7280);
+    color: var(--text-muted, var(--ui-muted));
     font-size: 12px;
   }
 
   &__remove {
     background: none;
     border: none;
-    color: var(--danger-color, #dc2626);
+    color: var(--danger-color, var(--ui-red-text));
     cursor: pointer;
     font-size: 18px;
     line-height: 1;
@@ -48,7 +48,7 @@
 
   &__empty,
   &__disabled {
-    color: var(--text-muted, #6b7280);
+    color: var(--text-muted, var(--ui-muted));
     font-size: 13px;
     margin: 0;
   }
@@ -56,7 +56,7 @@
   &__upload {
     align-self: flex-start;
     cursor: pointer;
-    border: 1px dashed var(--border-color, #d1d5db);
+    border: 1px dashed var(--border-color, var(--ui-line-strong));
     border-radius: 6px;
     padding: 6px 12px;
     font-size: 13px;
@@ -66,7 +66,7 @@
     display: flex;
     flex-direction: column;
     gap: 2px;
-    background: var(--danger-bg, #fef2f2);
+    background: var(--danger-bg, var(--ui-red-soft));
     border: 1px solid var(--danger-color, #dc2626);
     border-radius: 6px;
     padding: 8px 10px;
@@ -75,7 +75,7 @@
 
   &__error-detail,
   &__error-hint {
-    color: var(--text-muted, #6b7280);
+    color: var(--text-muted, var(--ui-muted));
     font-size: 12px;
   }
 }

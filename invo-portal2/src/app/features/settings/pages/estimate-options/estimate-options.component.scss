@@ -16,22 +16,22 @@
   &__actions { flex-shrink: 0; }
 }
 
-.page-title { font-size: 20px; font-weight: 700; color: #1e293b; margin: 6px 0 0; }
-.page-sub   { font-size: 13px; color: #64748b;  margin: 2px 0 0; }
+.page-title { font-size: 20px; font-weight: 700; color: var(--ui-text-2); margin: 6px 0 0; }
+.page-sub   { font-size: 13px; color: var(--ui-muted);  margin: 2px 0 0; }
 
 // ── Card sections ──────────────────────────────────────────────────────
 .card {
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
   border-radius: 12px;
   margin-bottom: 16px;
 
   &__head {
     padding: 16px 20px 12px;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--ui-surface-2);
   }
-  &__title { margin: 0; font-size: 15px; font-weight: 600; color: #0f172a; }
-  &__sub   { margin: 4px 0 0; font-size: 12px; color: #64748b; }
+  &__title { margin: 0; font-size: 15px; font-weight: 600; color: var(--ui-text); }
+  &__sub   { margin: 4px 0 0; font-size: 12px; color: var(--ui-muted); }
 
   &__body { padding: 18px 20px; }
 }
@@ -55,18 +55,18 @@
 .field-label {
   font-size: 13px;
   font-weight: 500;
-  color: #0f172a;
+  color: var(--ui-text);
   display: inline-flex;
   align-items: center;
   gap: 4px;
 
-  .required { color: #ef4444; font-weight: 700; }
+  .required { color: var(--ui-red-text); font-weight: 700; }
 }
 
 .field-hint {
   margin: 0;
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--ui-faint);
 }
 
 .input,
@@ -74,9 +74,9 @@
   width: 100%;
   padding: 9px 12px;
   font-size: 14px;
-  color: #0f172a;
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  color: var(--ui-text);
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
   border-radius: 8px;
   font-family: inherit;
   transition: border-color 120ms ease, box-shadow 120ms ease;
@@ -105,7 +105,7 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  border: 3px solid #e2e8f0;
+  border: 3px solid var(--ui-line);
   border-top-color: #32acc1;
   display: inline-block;
   animation: eo-spin .8s linear infinite;

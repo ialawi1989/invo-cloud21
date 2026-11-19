@@ -30,9 +30,9 @@
     width: 34px;
     height: 34px;
     border-radius: 999px;
-    background: #ffffff;
-    border: 1.5px solid #cbd5e1;          // slate-300
-    color: #64748b;                        // slate-500
+    background: var(--ui-surface);
+    border: 1.5px solid var(--ui-line-strong);          // slate-300
+    color: var(--ui-muted);                        // slate-500
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -59,7 +59,7 @@
   &__label {
     font-size: 13px;
     font-weight: 600;
-    color: #64748b;                        // slate-500
+    color: var(--ui-muted);                        // slate-500
     text-align: center;
     white-space: nowrap;
     transition: color .15s;
@@ -69,7 +69,7 @@
   // underneath them — hence the fixed offset rather than `align-self: center`.
   &__line {
     height: 1.5px;
-    background: #e2e8f0;                   // slate-200
+    background: var(--ui-line);                   // slate-200
     flex: 1 1 auto;
     min-width: 32px;
     max-width: 180px;
@@ -80,11 +80,11 @@
   &__step--active {
     .stepper__dot {
       border-color: var(--color-brand-500);
-      color: var(--color-brand-700);
+      color: var(--ui-brand-t700);
       background: var(--color-brand-50);
     }
     .stepper__label {
-      color: #0f172a;                      // slate-900
+      color: var(--ui-text);                      // slate-900
       font-weight: 700;
     }
   }
@@ -96,7 +96,7 @@
       border-color: var(--color-brand-500);
       color: #ffffff;
     }
-    .stepper__label { color: var(--color-brand-700); }
+    .stepper__label { color: var(--ui-brand-t700); }
   }
 }
 

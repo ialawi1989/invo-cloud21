@@ -72,20 +72,20 @@ export interface SendDocumentData {
   `,
   styles: [`
     .sd { padding: 16px 20px; min-width: min(520px, 92vw); display: flex; flex-direction: column; gap: 10px; }
-    .sd__label { font-size: 13px; font-weight: 600; color: #334155; small { font-weight: 400; color: #227d8d; } }
+    .sd__label { font-size: 13px; font-weight: 600; color: var(--ui-text-3); small { font-weight: 400; color: var(--ui-brand-text); } }
     .sd__end { display: flex; justify-content: flex-end; }
-    .sd__hr { border: 0; border-top: 1px solid #eef2f6; margin: 6px 0; width: 100%; }
-    .sd__wa-head { display: flex; align-items: center; gap: 10px; a { font-size: 12.5px; color: #227d8d; } }
-    .sd__badge { font-size: 11.5px; font-weight: 600; color: #b91c1c; background: #fee2e2; border-radius: 999px; padding: 2px 8px; }
+    .sd__hr { border: 0; border-top: 1px solid var(--ui-surface-2); margin: 6px 0; width: 100%; }
+    .sd__wa-head { display: flex; align-items: center; gap: 10px; a { font-size: 12.5px; color: var(--ui-brand-text); } }
+    .sd__badge { font-size: 11.5px; font-weight: 600; color: var(--ui-red-text); background: var(--ui-red-soft); border-radius: 999px; padding: 2px 8px; }
     /* Country code + number read as ONE field: a single bordered box, the code picker and the input sit inside it with a divider between. */
-    .sd__phone { display: flex; align-items: stretch; border: 1px solid #d0d5dd; border-radius: 8px; background: #fff; }
+    .sd__phone { display: flex; align-items: stretch; border: 1px solid var(--ui-line-strong); border-radius: 8px; background: var(--ui-surface); }
     .sd__phone:focus-within { border-color: #2691a4; box-shadow: 0 0 0 3px rgba(38, 145, 164, .12); }
-    .sd__code { width: 120px; flex: 0 0 auto; border-inline-end: 1px solid #e4e7ec; }
+    .sd__code { width: 120px; flex: 0 0 auto; border-inline-end: 1px solid var(--ui-line); }
     .sd__code ::ng-deep button { border: 0 !important; border-radius: 0 !important; box-shadow: none !important; background: transparent !important; height: 100%; }
     .sd__input { flex: 1; min-width: 0; border: 0; outline: none; background: transparent; border-radius: 0; padding: 9px 12px; font: inherit; font-size: 13.5px; }
-    .sd__btn { padding: 9px 18px; border-radius: 8px; border: 1px solid #d0d5dd; background: #fff; font-weight: 600; font-size: 13.5px; cursor: pointer; }
-    .sd__btn--primary { border-color: #2691a4; background: #2691a4; color: #fff; }
-    .sd__btn--wa { border-color: #16a34a; background: #16a34a; color: #fff; }
+    .sd__btn { padding: 9px 18px; border-radius: 8px; border: 1px solid var(--ui-line-strong); background: var(--ui-surface); font-weight: 600; font-size: 13.5px; cursor: pointer; }
+    .sd__btn--primary { border-color: #2691a4; background: var(--ui-b-2691a4); color: #fff; }
+    .sd__btn--wa { border-color: #16a34a; background: var(--ui-b-16a34a); color: #fff; }
     .sd__btn:disabled { opacity: .5; cursor: not-allowed; }
   `],
 })

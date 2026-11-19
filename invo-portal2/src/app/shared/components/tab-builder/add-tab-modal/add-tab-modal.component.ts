@@ -84,9 +84,9 @@ interface AddTabData {
   styles: [`
     .modal-body  { padding: 16px 20px; display: flex; flex-direction: column; gap: 16px; }
     .field       { display: flex; flex-direction: column; gap: 6px; }
-    .field__label{ font-size: 12px; font-weight: 600; color: #374151; }
+    .field__label{ font-size: 12px; font-weight: 600; color: var(--ui-text-3); }
     .field__input{
-      padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px;
+      padding: 8px 12px; border: 1px solid var(--ui-line-strong); border-radius: 8px;
       font-size: 14px; outline: none;
       &:focus { border-color: #32acc1; box-shadow: 0 0 0 3px rgba(50,172,193,.15); }
     }
@@ -98,27 +98,27 @@ interface AddTabData {
       border-color: #dc2626;
       &:focus { border-color: #dc2626; box-shadow: 0 0 0 3px rgba(220,38,38,.15); }
     }
-    .field__error{ font-size: 12px; color: #dc2626; font-weight: 600; }
+    .field__error{ font-size: 12px; color: var(--ui-red-text); font-weight: 600; }
 
     .types       { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .type-card {
-      padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px;
-      background: #fff; text-align: start; cursor: pointer;
+      padding: 10px 12px; border: 1px solid var(--ui-line); border-radius: 8px;
+      background: var(--ui-surface); text-align: start; cursor: pointer;
       display: flex; align-items: flex-start; gap: 10px;
       transition: border-color .12s, background .12s;
-      color: #475569;
-      &:hover  { border-color: #cbd5e1; }
+      color: var(--ui-text-4);
+      &:hover  { border-color: var(--ui-line-strong); }
     }
-    .type-card--selected{ border-color: #32acc1; background: #f0fafc; color: #0f172a; }
+    .type-card--selected{ border-color: #32acc1; background: var(--ui-x-f0fafc); color: var(--ui-text); }
     .type-card__body { flex: 1; min-width: 0; }
     .type-card__label{ font-size: 13px; font-weight: 600; margin: 0; }
-    .type-card__desc { font-size: 11px; color: #64748b; margin: 2px 0 0; }
+    .type-card__desc { font-size: 11px; color: var(--ui-muted); margin: 2px 0 0; }
 
     .btn {
       padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer;
       font-size: 14px; font-weight: 500;
     }
-    .btn-ghost   { background: transparent; color: #475569; &:hover { background: #f1f5f9; } }
+    .btn-ghost   { background: transparent; color: var(--ui-text-4); &:hover { background: var(--ui-surface-2); } }
     .btn-primary { background: #32acc1; color: #fff;
       &:disabled { opacity: .5; cursor: not-allowed; }
       &:not(:disabled):hover { background: #2a93a6; }

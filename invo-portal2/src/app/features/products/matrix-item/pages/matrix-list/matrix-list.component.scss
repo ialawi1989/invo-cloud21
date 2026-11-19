@@ -9,12 +9,12 @@
     padding: 12px 14px;
     text-align: start;
     font-size: 13px;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--ui-surface-2);
   }
 
   thead th {
-    background: #f8fafc;
-    color: #64748b;
+    background: var(--ui-surface-1);
+    color: var(--ui-muted);
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
@@ -24,17 +24,17 @@
   tbody tr {
     cursor: pointer;
     transition: background 100ms ease;
-    &:hover { background: #f8fafc; }
+    &:hover { background: var(--ui-surface-1); }
     &:last-child td { border-bottom: 0; }
   }
 
   &__name    { width: 50%; }
   &__barcode { width: 25%; }
-  &__price   { width: 25%; color: #0f172a; font-weight: 600; }
+  &__price   { width: 25%; color: var(--ui-text); font-weight: 600; }
   &__actions { width: 60px; text-align: end; }
 }
 
-.row-name { font-weight: 600; color: #0f172a; }
+.row-name { font-weight: 600; color: var(--ui-text); }
 
 // Sortable column header. The dot/arrow is a pseudo-CSS arrow
 // drawn from `border` so we don't ship another SVG inline.
@@ -53,8 +53,8 @@
   align-items: center;
   gap: 4px;
 
-  &:hover { color: #0f172a; }
-  &.is-sorted { color: #0f172a; }
+  &:hover { color: var(--ui-text); }
+  &.is-sorted { color: var(--ui-text); }
 
   &__arrow {
     width: 8px;
@@ -86,11 +86,11 @@
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  color: #64748b;
+  color: var(--ui-muted);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
-  &:hover { background: #f1f5f9; color: #0f172a; }
+  &:hover { background: var(--ui-surface-2); color: var(--ui-text); }
 }

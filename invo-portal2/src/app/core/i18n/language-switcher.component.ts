@@ -49,20 +49,20 @@ import { LanguageService } from './language.service';
     .lang-trigger {
       display: flex; align-items: center; gap: 6px;
       padding: 6px 10px; border-radius: 8px;
-      border: 1px solid #e9ecef;
+      border: 1px solid var(--ui-x-e9ecef);
       background: transparent; cursor: pointer;
-      color: #495057; font-size: 13px; font-weight: 500;
+      color: var(--ui-t-495057); font-size: 13px; font-weight: 500;
       font-family: inherit; transition: all .15s;
     }
-    .lang-trigger:hover { background: #f1f3f5; border-color: #dee2e6; }
-    .lang-trigger svg { color: #6c757d; flex-shrink: 0; }
+    .lang-trigger:hover { background: var(--ui-x-f1f3f5); border-color: var(--ui-x-dee2e6); }
+    .lang-trigger svg { color: var(--ui-t-6c757d); flex-shrink: 0; }
     .chevron { transition: transform .2s; }
     .chevron.open { transform: rotate(180deg); }
 
     .lang-dropdown {
       position: absolute; top: calc(100% + 6px); right: 0;
-      min-width: 150px; background: #fff;
-      border: 1px solid #e9ecef; border-radius: 10px;
+      min-width: 150px; background: var(--ui-surface);
+      border: 1px solid var(--ui-x-e9ecef); border-radius: 10px;
       box-shadow: 0 4px 20px rgba(0,0,0,.12);
       overflow: hidden; z-index: 200;
       animation: dropIn .12s ease;
@@ -79,11 +79,11 @@ import { LanguageService } from './language.service';
       cursor: pointer; font-family: inherit;
       transition: background .1s;
     }
-    .lang-option:hover { background: #f8f9fa; }
-    .lang-option.active { background: #f0f4ff; }
-    .lang-option .check { color: #556ee6; flex-shrink: 0; }
+    .lang-option:hover { background: var(--ui-x-f8f9fa); }
+    .lang-option.active { background: var(--ui-x-f0f4ff); }
+    .lang-option .check { color: var(--ui-t-556ee6); flex-shrink: 0; }
     .check-placeholder { width: 13px; flex-shrink: 0; }
-    .lang-native { font-size: 13px; font-weight: 500; color: #212529; }
+    .lang-native { font-size: 13px; font-weight: 500; color: var(--ui-t-212529); }
   `]
 })
 export class LanguageSwitcherComponent {

@@ -37,9 +37,9 @@ import { EInvoiceCompany } from '../../models/e-invoice.model';
   styles: [`
     :host { display: block; }
     .eip__zoom { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
-    .eip__zoom label { font-size: 13px; color: #475569; }
+    .eip__zoom label { font-size: 13px; color: var(--ui-text-4); }
     .eip__slider { width: 260px; max-width: 100%; }
-    .eip__viewer { overflow: auto; background: #f1f5f9; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; }
+    .eip__viewer { overflow: auto; background: var(--ui-surface-2); border: 1px solid var(--ui-line); border-radius: 12px; padding: 16px; }
     .eip__scale { width: max-content; margin-inline: auto; }
   `],
 })

@@ -34,8 +34,8 @@ import { DaySpan, PeriodUnit } from '../../models/common.model';
   styles: [`
     .dsc { display: flex; gap: 8px; align-items: stretch; }
     .dsc__num {
-      width: 110px; padding: 9px 12px; border: 1px solid #d0d5dd; border-radius: 8px;
-      font-size: 13.5px; color: #0f172a;
+      width: 110px; padding: 9px 12px; border: 1px solid var(--ui-line-strong); border-radius: 8px;
+      font-size: 13.5px; color: var(--ui-text);
     }
     .dsc__num:focus { outline: none; border-color: #2691a4; box-shadow: 0 0 0 3px rgba(38,145,164,.12); }
     .dsc__unit { flex: 1; min-width: 140px; }

@@ -1,6 +1,8 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, ViewChild, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { DesignerStateService } from '../../services/designer-state.service';
 import { blockRegistry, PropertyGroup } from '../../core/registry/block-registry';
 import {
@@ -13,14 +15,20 @@ import {
 } from '../../core/types/block.types';
 import { BlockStyle } from '../../core/types/style.types';
 import { Orientation, PageMargins, PaperSize } from '../../core/types/template.types';
+import {
+  FontOption,
+  fontOptionsIncluding,
+  normalizeSeedFontFamily,
+  themeFontOptionsIncluding,
+} from '../../utils/fonts.utils';
 import { BindingPickerService } from '../../services/binding-picker.service';
 import { BindingDialogComponent } from '../binding-dialog/binding-dialog.component';
 import { DesignerColorPickerComponent } from '../style-controls/designer-color-picker.component';
 import { AlignmentButtonsComponent } from '../style-controls/alignment-buttons.component';
 import { FontStyleButtonsComponent } from '../style-controls/font-style-buttons.component';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { InvoicesService } from '@features/account/invoices/services/invoices.service';
 
-import { TooltipDirective } from '@shared/directives/tooltip.directive';
 type VisibleEval = { kind: 'ok'; truthy: boolean; display: string } | { kind: 'error'; message: string };
 
 type RowVisibleEval = { kind: 'ok'; matched: number; total: number } | { kind: 'error'; message: string };
@@ -28,6 +36,23 @@ type RowVisibleEval = { kind: 'ok'; matched: number; total: number } | { kind: '
 type ExprValidation = { kind: 'empty' } | { kind: 'ok'; display: string } | { kind: 'error'; message: string };
 
 type WatermarkKind = 'none' | 'text' | 'image';
+
+/** Returns `style` with `font.<key>` removed, so it stops overriding the
+ *  inherited value. Drops the whole `font` object once empty, and `style`
+ *  becomes `undefined` once both `font` and every other field are empty. */
+function dropFontKey<K extends keyof NonNullable<BlockStyle['font']>>(
+  style: BlockStyle | undefined,
+  key: K,
+): BlockStyle | undefined {
+  if (!style?.font || !(key in style.font)) return style;
+  const font = { ...style.font };
+  delete font[key];
+  const hasFont = Object.keys(font).length > 0;
+  const next: BlockStyle = { ...style };
+  if (hasFont) next.font = font;
+  else delete next.font;
+  return Object.keys(next).length > 0 ? next : undefined;
+}
 
 /**
  * Right rail. Shows one fieldset per property group declared by the selected
@@ -44,15 +69,7 @@ type WatermarkKind = 'none' | 'text' | 'image';
   selector: 'app-designer-property-panel',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TooltipDirective, 
-    CommonModule,
-    FormsModule,
-    NgSelectModule,
-    BindingDialogComponent,
-    DesignerColorPickerComponent,
-    AlignmentButtonsComponent,
-    FontStyleButtonsComponent,
-  ],
+  imports: [TooltipDirective, CommonModule, FormsModule, NgSelectModule, BindingDialogComponent, DesignerColorPickerComponent, AlignmentButtonsComponent, FontStyleButtonsComponent, TranslateModule],
   templateUrl: './property-panel.component.html',
   styleUrls: ['./property-panel.component.scss'],
 })
@@ -64,6 +81,12 @@ export class PropertyPanelComponent {
   /** Owns the binding dialog's open/close and text insertion. Each
    *  expression input pairs with a small fx button calling `openFor(ref)`. */
   readonly picker = inject(BindingPickerService);
+
+  /** Lets the sample-data modal offer "import lines from a real invoice"
+   *  instead of hand-typing rows. */
+  private readonly _invoicesService = inject(InvoicesService);
+
+  private readonly translate = inject(TranslateService);
 
   constructor() {
     // Keep the binding picker's implicit row-source aligned with the
@@ -79,7 +102,21 @@ export class PropertyPanelComponent {
       }
       const parent = this.state.findBlock(selected[0].id)?.parent;
       this.picker.setDefaultRowSource(parent?.type === 'repeater' ? parent.dataSource : null);
-    });
+      // setDefaultRowSource writes a signal — see the note in BindingDialog.
+    }, { allowSignalWrites: true });
+
+    // Mirror the template's sample data into the JSON editor draft whenever
+    // it changes from outside this panel (host `[data]`, Apply below, or
+    // Reset to default) — but never while the user is mid-edit, so typing
+    // a comma to start a new row doesn't get clobbered by a re-render.
+    effect(() => {
+      const data = this.state.template()?.sampleData;
+      if (data === this._lastSyncedSampleData) return;
+      this._lastSyncedSampleData = data;
+      this.sampleDataDraft.set(JSON.stringify(data ?? {}, null, 2));
+      this.sampleDataError.set(null);
+      this.syncSampleDataTextarea();
+    }, { allowSignalWrites: true });
   }
 
   // ─── Static option lists ────────────────────────────────────────
@@ -92,19 +129,19 @@ export class PropertyPanelComponent {
   readonly PAYMENT_COLUMN_CATALOG = PAYMENT_COLUMN_CATALOG;
 
   readonly DIVIDER_PATTERNS = [
-    { value: 'solid', label: 'Solid' },
-    { value: 'dashed', label: 'Dashed' },
-    { value: 'dotted', label: 'Dotted' },
+    { value: 'solid', label: 'DOCUMENT_BUILDER.SOLID' },
+    { value: 'dashed', label: 'DOCUMENT_BUILDER.DASHED' },
+    { value: 'dotted', label: 'DOCUMENT_BUILDER.DOTTED' },
   ] as const;
 
   /** Block alignment includes `justify`, which the shared
    *  app-alignment-buttons component doesn't model — hence a local
    *  segmented control styled to match it. */
   readonly ALIGNMENTS = [
-    { value: 'left', label: 'Align left', icon: 'mdi-format-align-left' },
-    { value: 'center', label: 'Align center', icon: 'mdi-format-align-center' },
-    { value: 'right', label: 'Align right', icon: 'mdi-format-align-right' },
-    { value: 'justify', label: 'Justify', icon: 'mdi-format-align-justify' },
+    { value: 'left', label: 'DOCUMENT_BUILDER.ALIGN_LEFT', icon: 'mdi-format-align-left' },
+    { value: 'center', label: 'DOCUMENT_BUILDER.ALIGN_CENTER', icon: 'mdi-format-align-center' },
+    { value: 'right', label: 'DOCUMENT_BUILDER.ALIGN_RIGHT', icon: 'mdi-format-align-right' },
+    { value: 'justify', label: 'DOCUMENT_BUILDER.JUSTIFY', icon: 'mdi-format-align-justify' },
   ] as const;
 
   /** Table columns don't support justify. */
@@ -114,20 +151,209 @@ export class PropertyPanelComponent {
    *  containers (table, nested repeater) inside a card aren't supported by
    *  the renderers. */
   readonly REPEATER_CHILD_KINDS: ReadonlyArray<{ type: BlockType; label: string; icon: string }> = [
-    { type: 'text', label: 'Text', icon: 'mdi-format-text' },
-    { type: 'rich-text', label: 'Rich', icon: 'mdi-format-color-text' },
-    { type: 'image', label: 'Image', icon: 'mdi-image-outline' },
-    { type: 'dynamic-field', label: 'Field', icon: 'mdi-function-variant' },
-    { type: 'line', label: 'Line', icon: 'mdi-minus' },
-    { type: 'rectangle', label: 'Rect', icon: 'mdi-rectangle-outline' },
-    { type: 'divider', label: 'Divider', icon: 'mdi-drag-horizontal-variant' },
-    { type: 'qr-code', label: 'QR', icon: 'mdi-qrcode' },
-    { type: 'barcode', label: 'Barcode', icon: 'mdi-barcode' },
+    { type: 'text', label: 'DOCUMENT_BUILDER.CHILD_TEXT', icon: 'mdi-format-text' },
+    { type: 'rich-text', label: 'DOCUMENT_BUILDER.CHILD_RICH', icon: 'mdi-format-color-text' },
+    { type: 'image', label: 'DOCUMENT_BUILDER.IMAGE', icon: 'mdi-image-outline' },
+    { type: 'dynamic-field', label: 'DOCUMENT_BUILDER.CHILD_FIELD', icon: 'mdi-function-variant' },
+    { type: 'line', label: 'DOCUMENT_BUILDER.CHILD_LINE', icon: 'mdi-minus' },
+    { type: 'rectangle', label: 'DOCUMENT_BUILDER.CHILD_RECT', icon: 'mdi-rectangle-outline' },
+    { type: 'divider', label: 'DOCUMENT_BUILDER.DIVIDER', icon: 'mdi-drag-horizontal-variant' },
+    { type: 'qr-code', label: 'DOCUMENT_BUILDER.CHILD_QR', icon: 'mdi-qrcode' },
+    { type: 'barcode', label: 'DOCUMENT_BUILDER.BARCODE', icon: 'mdi-barcode' },
   ];
 
   // ─── Selection / template ───────────────────────────────────────
 
   readonly template = this.state.template;
+
+  // ─── Sample data (JSON) ─────────────────────────────────────────
+
+  /** Editable draft of `template().sampleData`, kept separate from state so
+   *  typing doesn't apply until the user confirms. */
+  readonly sampleDataDraft = signal<string>('{}');
+  readonly sampleDataError = signal<string | null>(null);
+  readonly sampleDataModalOpen = signal(false);
+  /** Reference the draft was last synced from — lets the mirroring effect
+   *  tell "the host/Apply/Reset changed it" apart from "we're the one who
+   *  just wrote it", without re-serializing on every keystroke. */
+  private _lastSyncedSampleData: unknown = undefined;
+
+  /**
+   * Deliberately NOT bound via `[ngModel]`/`[value]` — see `(input)` in the
+   * template. Angular re-writing a textarea's `.value` from a signal on
+   * every keystroke resets the browser's own selection to the end of the
+   * text, so what you typed lands wherever the caret was last reset to
+   * rather than where you're actually looking. Typing goes straight to the
+   * DOM and only reads back into the signal for the highlight/gutter layers;
+   * this ref exists purely so Format/Apply/Import/open — the few places that
+   * change the draft from OUTSIDE typing — can push their result back in.
+   */
+  @ViewChild('sdTextarea') private _sdTextareaRef?: ElementRef<HTMLTextAreaElement>;
+
+  private syncSampleDataTextarea(): void {
+    const el = this._sdTextareaRef?.nativeElement;
+    if (el) el.value = this.sampleDataDraft();
+  }
+
+  openSampleDataModal(): void {
+    this.sampleDataModalOpen.set(true);
+    // The textarea doesn't exist until the *ngIf's change detection pass
+    // actually runs and creates it — a microtask can still fire before that
+    // pass, leaving `_sdTextareaRef` unset and the sync a silent no-op
+    // (exactly what happened: gutter showed real line numbers from the
+    // signal, textarea stayed empty). A macrotask reliably lands after CD.
+    setTimeout(() => this.syncSampleDataTextarea(), 0);
+  }
+
+  /** Discards any unapplied edits by re-seeding the draft from state, same
+   *  as the mirroring effect would once the modal reopens — done eagerly
+   *  here so a stale draft isn't visible if the modal is reopened first. */
+  cancelSampleDataModal(): void {
+    const data = this.state.template()?.sampleData;
+    this.sampleDataDraft.set(JSON.stringify(data ?? {}, null, 2));
+    this.sampleDataError.set(null);
+    this.sampleDataModalOpen.set(false);
+  }
+
+  /** Parse the draft and write it back — the only path that touches
+   *  `state.setSampleData`, so a syntax error never reaches the template. */
+  applySampleData(): void {
+    try {
+      const parsed = JSON.parse(this.sampleDataDraft());
+      this.state.setSampleData(parsed);
+      this.sampleDataError.set(null);
+      this.sampleDataModalOpen.set(false);
+    } catch (err) {
+      this.sampleDataError.set(err instanceof Error ? err.message : 'Invalid JSON');
+    }
+  }
+
+  /** Re-indent the draft in place — doesn't apply it, just cleans up the text
+   *  the same way Apply's JSON.parse/stringify round-trip would. */
+  formatSampleData(): void {
+    try {
+      const parsed = JSON.parse(this.sampleDataDraft());
+      this.sampleDataDraft.set(JSON.stringify(parsed, null, 2));
+      this.sampleDataError.set(null);
+      this.syncSampleDataTextarea();
+    } catch (err) {
+      this.sampleDataError.set(err instanceof Error ? err.message : 'Invalid JSON');
+    }
+  }
+
+  /** Tab inserts two spaces instead of jumping focus — the one behavior a
+   *  plain textarea needs help with to feel like a code editor. Edits the
+   *  DOM directly (see the ViewChild note above) so the caret move is
+   *  synchronous instead of racing a signal-triggered re-render. */
+  onSampleDataKeydown(ev: KeyboardEvent): void {
+    if (ev.key !== 'Tab') return;
+    ev.preventDefault();
+    const el = ev.target as HTMLTextAreaElement;
+    const { selectionStart, selectionEnd, value } = el;
+    el.value = `${value.slice(0, selectionStart)}  ${value.slice(selectionEnd)}`;
+    el.selectionStart = el.selectionEnd = selectionStart + 2;
+    this.sampleDataDraft.set(el.value);
+  }
+
+  /** Keeps the line-number gutter's vertical scroll under the textarea's in
+   *  lockstep — see the template's scroll handler. */
+  syncEditorScroll(source: HTMLTextAreaElement, gutter: HTMLElement): void {
+    gutter.scrollTop = source.scrollTop;
+  }
+
+  /** 1..N for the gutter — recomputed from line count only, not the whole
+   *  highlighted markup. */
+  readonly sampleDataLineNumbers = computed<number[]>(() => {
+    const count = this.sampleDataDraft().split('\n').length;
+    return Array.from({ length: count }, (_, i) => i + 1);
+  });
+
+  // ─── Sample data: import lines from a real invoice ──────────────
+
+  readonly invoiceOptions = signal<any[]>([]);
+  readonly loadingInvoices = signal(false);
+  readonly importingInvoiceLines = signal(false);
+  private _invoicePage = 1;
+  private _invoiceSearchTerm = '';
+  private _invoiceSearchTimer: any;
+  private static readonly _invoicePageLimit = 20;
+
+  /** Called once when the modal opens — `[ngValue]` bindings only see loaded
+   *  items, so an empty select would look broken until the user typed a search. */
+  loadInvoiceOptionsIfEmpty(): void {
+    if (this.invoiceOptions().length === 0) this.loadInvoiceOptions();
+  }
+
+  private async loadInvoiceOptions(): Promise<void> {
+    this.loadingInvoices.set(true);
+    try {
+      const res = await this._invoicesService.getInvoiceList({
+        page: this._invoicePage,
+        limit: PropertyPanelComponent._invoicePageLimit,
+        searchTerm: this._invoiceSearchTerm,
+      });
+      const list = res?.list ?? [];
+      this.invoiceOptions.update((cur) => (this._invoicePage === 1 ? list : [...cur, ...list]));
+    } finally {
+      this.loadingInvoices.set(false);
+    }
+  }
+
+  /** Arrow property, not a method — ng-select invokes `searchFn` itself, so
+   *  a regular method would lose `this` when called that way. Always
+   *  returns true: the real filtering happens server-side via the debounced
+   *  reload below, not client-side against `invoiceOptions`. */
+  onInvoiceSearch = (term: string): boolean => {
+    clearTimeout(this._invoiceSearchTimer);
+    this._invoiceSearchTimer = setTimeout(() => {
+      this._invoiceSearchTerm = term;
+      this._invoicePage = 1;
+      this.loadInvoiceOptions();
+    }, 400);
+    return true;
+  };
+
+  onInvoiceScroll(): void {
+    if (this.loadingInvoices()) return;
+    this._invoicePage += 1;
+    this.loadInvoiceOptions();
+  }
+
+  /** Fetches the picked invoice and splices its real `lines` into the draft
+   *  — everything else in the draft (header fields, other arrays) is left
+   *  alone, matching "import lines", not "replace the whole document". */
+  async importInvoiceLines(invoiceId: string): Promise<void> {
+    if (!invoiceId) return;
+    this.importingInvoiceLines.set(true);
+    try {
+      const invoice = await this._invoicesService.getInvoice(invoiceId);
+      let draft: Record<string, unknown>;
+      try {
+        draft = JSON.parse(this.sampleDataDraft());
+      } catch {
+        draft = {};
+      }
+      draft['lines'] = ((invoice?.lines ?? []) as any[]).map((line) => ({
+        ...line,
+        // Mirrors how the real invoice paper resolves a line's display name
+        // (delivery-note.component.html): selectedItem's localized name
+        // first, `note` when selectedItem has none — productName alone is
+        // often blank on real rows, so the default table column (which binds
+        // row.productName) would otherwise read empty for an imported line.
+        productName:
+          line.productName ||
+          line.selectedItem?.translation?.name?.en ||
+          line.selectedItem?.name ||
+          line.note ||
+          '',
+      }));
+      this.sampleDataDraft.set(JSON.stringify(draft, null, 2));
+      this.sampleDataError.set(null);
+      this.syncSampleDataTextarea();
+    } finally {
+      this.importingInvoiceLines.set(false);
+    }
+  }
 
   readonly block = computed<Block | null>(() => {
     const sel = this.state.selectedBlocks();
@@ -160,12 +386,12 @@ export class PropertyPanelComponent {
     const theme = this.template()?.theme;
     if (!theme) return [];
     const slots: Array<[string, string | undefined]> = [
-      ['Primary', theme.primaryColor],
-      ['On primary', theme.onPrimaryColor],
-      ['Accent', theme.accentColor],
-      ['Text', theme.textColor],
-      ['Muted', theme.mutedColor],
-      ['Surface', theme.surfaceColor],
+      [this.translate.instant('DOCUMENT_BUILDER.PRIMARY'), theme.primaryColor],
+      [this.translate.instant('DOCUMENT_BUILDER.ON_PRIMARY'), theme.onPrimaryColor],
+      [this.translate.instant('DOCUMENT_BUILDER.ACCENT'), theme.accentColor],
+      [this.translate.instant('DOCUMENT_BUILDER.TEXT'), theme.textColor],
+      [this.translate.instant('DOCUMENT_BUILDER.MUTED'), theme.mutedColor],
+      [this.translate.instant('DOCUMENT_BUILDER.SURFACE'), theme.surfaceColor],
     ];
     return slots
       .filter((s): s is [string, string] => !!s[1])
@@ -175,6 +401,68 @@ export class PropertyPanelComponent {
   // Bound appliers for the shared `swatchRow` template. Arrow properties so
   // `this` survives being passed through ngTemplateOutlet context — one
   // markup block then serves every color slot instead of six copies.
+  /**
+   * The selected block's own family, as a bare string.
+   *
+   * Exists so `fontOptions` below can be keyed on the family alone. Reading
+   * the block object there instead would recompute on every unrelated edit
+   * — a drag changes `position`, which replaces the block — and hand
+   * ng-select a fresh array each time. See `fontOptions` for why that breaks
+   * the picker outright.
+   */
+  private readonly selectedFontFamily = computed<string>(
+    () => this.block()?.style?.font?.family ?? '',
+  );
+
+  /**
+   * The font picker's options: the standard families, plus whatever the block
+   * already uses when that isn't one of them — so a family this build
+   * doesn't offer isn't silently dropped from a design authored elsewhere.
+   *
+   * A computed, NOT a method, and this matters. ng-select rebuilds its whole
+   * option list whenever the `items` array identity changes, and tracks the
+   * rendered rows by the object identity of the items it built — so a new
+   * array means every option row in the open dropdown is destroyed and
+   * recreated. A method call here returned a new array on every change
+   * detection pass, including the one Angular runs on the search input's
+   * `blur` when you press the mouse down on an option: the row under the
+   * cursor was replaced between mousedown and mouseup, so the browser
+   * dispatched `click` on their common ancestor — the panel, which has no
+   * handler — and the choice was silently dropped. Keyed on the family
+   * string, the array identity now survives every edit that isn't a font
+   * change.
+   */
+  readonly fontOptions = computed<FontOption[]>(
+    () => fontOptionsIncluding(this.selectedFontFamily()),
+  );
+
+  /** The template's font as the renderers resolve it, so the picker can't
+   *  show a legacy seed value the canvas has already normalised away. */
+  readonly themeFontFamily = computed<string>(
+    () => normalizeSeedFontFamily(this.template()?.theme?.fontFamily) ?? '',
+  );
+
+  /** Same list for the document-wide picker in the Theme group, where the
+   *  empty option is the DEFAULT_FONT_STACK fallback rather than "inherit".
+   *  Computed for the same reason as `fontOptions`. */
+  readonly themeFontOptions = computed<FontOption[]>(
+    () => themeFontOptionsIncluding(this.themeFontFamily()),
+  );
+
+  /**
+   * True when the selected block's family survives a PDF export — i.e. it
+   * names a font the exporter has registered (see `resolvePdfFontName`).
+   * "Inherit" counts as safe: it resolves to the theme font, which the Theme
+   * group flags on its own. Everything else gets a warning under the picker,
+   * because the group heading alone is easy to miss once the dropdown is
+   * closed.
+   */
+  readonly fontIsPdfSafe = computed<boolean>(() => {
+    const family = this.selectedFontFamily().trim();
+    if (!family) return true;
+    return this.fontOptions().some((o) => o.value === family && o.pdfSafe);
+  });
+
   readonly applyFontColor = (color: string, b: Block): void => this.setFont(b, 'color', color);
   readonly applyBackground = (color: string, b: Block): void => this.setStyle(b, 'background', color);
   readonly applyBorderColor = (color: string, b: Block): void => this.setUniformBorder(b, 'color', color);
@@ -355,10 +643,20 @@ export class PropertyPanelComponent {
   }
 
   setSize(b: Block, axis: 'width' | 'height', value: number): void {
-    this.state.patchBlock(b.id, (cur) => ({
-      ...cur,
-      size: { ...cur.size, [axis]: Math.max(1, Number(value) || 1) },
-    }));
+    const next = Math.max(1, Number(value) || 1);
+    this.state.patchBlock(b.id, (cur) => {
+      const sized = { ...cur, size: { ...cur.size, [axis]: next } };
+      // A card list's box IS one card: the renderers lay out N cards of
+      // `itemHeight`, so a box height that disagrees with it is a lie the
+      // canvas tells. The resize handle and the Item height field both keep
+      // the two in step already — this field was the one way to drift them
+      // apart, and the drift showed up as a gap under the card list that the
+      // real document didn't have (pagination anchors the blocks below on
+      // the designed box, the renderer ends the cards at `itemHeight`).
+      return axis === 'height' && sized.type === 'repeater'
+        ? { ...sized, itemHeight: next }
+        : sized;
+    });
   }
 
   setAutoHeight(b: Block, on: boolean): void {
@@ -379,10 +677,30 @@ export class PropertyPanelComponent {
     key: K,
     value: NonNullable<BlockStyle['font']>[K],
   ): void {
-    this.state.patchBlock(b.id, (cur) => ({
-      ...cur,
-      style: { ...(cur.style ?? {}), font: { ...(cur.style?.font ?? {}), [key]: value } },
-    }));
+    this.state.patchBlock(b.id, (cur) => {
+      const next = {
+        ...cur,
+        style: { ...(cur.style ?? {}), font: { ...(cur.style?.font ?? {}), [key]: value } },
+      };
+      // Table columns carry their own headerStyle/cellStyle.font, which
+      // there's no per-column UI to edit — on most tables (esp. ones
+      // migrated from the classic builder) every column has the same value
+      // baked in, which then silently shadows this block-level control via
+      // CSS specificity. Since the user has no other way to touch it,
+      // clear the field being edited here from every column so the new
+      // block-level value actually takes effect.
+      if (next.type === 'table') {
+        return {
+          ...next,
+          columns: next.columns.map((col) => ({
+            ...col,
+            headerStyle: dropFontKey(col.headerStyle, key),
+            cellStyle: dropFontKey(col.cellStyle, key),
+          })),
+        };
+      }
+      return next;
+    });
   }
 
   /** Write all four border sides at once. The panel only exposes a uniform
@@ -406,9 +724,13 @@ export class PropertyPanelComponent {
     });
   }
 
+  /** Untouched border defaults to 0.5pt (see setUniformBorder's own seed
+   *  value) — not 0. A bare `?? 0` here would show "0" for a table that's
+   *  actually still rendering its default border, so typing nothing looked
+   *  identical to explicitly asking for no border at all. */
   borderWidth(): number {
     const side = this.borderSide();
-    return side?.width ?? 0;
+    return side?.width ?? 0.5;
   }
 
   borderColor(): string {
@@ -516,6 +838,18 @@ export class PropertyPanelComponent {
   }
 
   // ─── Table columns ──────────────────────────────────────────────
+
+  /** Every editor here patches immutably, so a fresh object comes back on each
+   *  keystroke. Without a stable key ngFor would drop the row's DOM mid-edit,
+   *  blurring the input and jumping the panel's scroll. */
+  trackColumn(_i: number, col: { id: string }): string {
+    return col.id;
+  }
+
+  /** Same, for lists whose items carry no id (totals rows). */
+  trackIndex(i: number): number {
+    return i;
+  }
 
   updateColumn(b: Block, idx: number, patch: Record<string, unknown>): void {
     this.patchTable(b, (cur) => {
@@ -672,7 +1006,7 @@ export class PropertyPanelComponent {
   addTotalsRow(b: Block): void {
     this.patchTotals(b, (cur) => ({
       ...cur,
-      rows: [...cur.rows, { label: 'Total', expression: '0', format: 'currency:BHD' }],
+      rows: [...cur.rows, { label: 'Total', expression: '0', format: 'Currency' }],
     }));
   }
 

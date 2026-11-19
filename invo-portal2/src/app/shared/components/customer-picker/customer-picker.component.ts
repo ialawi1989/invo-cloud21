@@ -56,10 +56,10 @@ export interface CustomerMini {
   styles: [`
     .cp-row { display: flex; gap: 8px; align-items: stretch; }
     .cp-row > app-search-dropdown { flex: 1; min-width: 0; }
-    .cp-adv { flex: 0 0 auto; width: 42px; border: 1px solid #2691a4; background: #2691a4; color: #fff; border-radius: 8px; cursor: pointer; display: grid; place-items: center; }
+    .cp-adv { flex: 0 0 auto; width: 42px; border: 1px solid #2691a4; background: var(--ui-b-2691a4); color: #fff; border-radius: 8px; cursor: pointer; display: grid; place-items: center; }
     .cp-adv:hover { background: #227d8d; }
-    .cp-new { display: flex; align-items: center; gap: 8px; width: 100%; padding: 10px 14px; border: 0; background: none; color: #227d8d; font-weight: 500; cursor: pointer; text-align: start; }
-    .cp-new:hover { background: #f1f5f9; }
+    .cp-new { display: flex; align-items: center; gap: 8px; width: 100%; padding: 10px 14px; border: 0; background: none; color: var(--ui-brand-text); font-weight: 500; cursor: pointer; text-align: start; }
+    .cp-new:hover { background: var(--ui-surface-2); }
     .cp-new__plus { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: #227d8d; color: #fff; font-size: 14px; line-height: 1; }
   `],
 })

@@ -40,14 +40,14 @@ export interface WastePopupResult { isWaste: true; wasteReason: string; }
   `,
   styles: [`
     .wp { padding: 16px 20px; display: flex; flex-direction: column; gap: 8px; }
-    .wp > label { font-size: 13px; font-weight: 600; color: #334155; }
-    .wp__req { color: #dc2626; }
-    .wp__text { width: 100%; box-sizing: border-box; padding: 9px 12px; border: 1px solid #d0d5dd; border-radius: 8px; font: inherit; resize: vertical;
+    .wp > label { font-size: 13px; font-weight: 600; color: var(--ui-text-3); }
+    .wp__req { color: var(--ui-red-text); }
+    .wp__text { width: 100%; box-sizing: border-box; padding: 9px 12px; border: 1px solid var(--ui-line-strong); border-radius: 8px; font: inherit; resize: vertical;
       &:focus { outline: none; border-color: #2691a4; box-shadow: 0 0 0 3px rgba(38, 145, 164, .15); } }
     .wp__text--bad { border-color: #dc2626; }
-    .wp__error { margin: 0; font-size: 12px; color: #dc2626; }
-    .wp__btn { padding: 9px 18px; border-radius: 8px; border: 1px solid #d0d5dd; background: #fff; color: #334155; font-size: 13.5px; font-weight: 600; cursor: pointer;
-      &:hover:not(:disabled) { background: #f8fafc; } &:disabled { opacity: .5; cursor: not-allowed; }
+    .wp__error { margin: 0; font-size: 12px; color: var(--ui-red-text); }
+    .wp__btn { padding: 9px 18px; border-radius: 8px; border: 1px solid var(--ui-line-strong); background: var(--ui-surface); color: var(--ui-text-3); font-size: 13.5px; font-weight: 600; cursor: pointer;
+      &:hover:not(:disabled) { background: var(--ui-surface-1); } &:disabled { opacity: .5; cursor: not-allowed; }
       &--primary { border-color: #2691a4; background: #2691a4; color: #fff; &:hover:not(:disabled) { background: #227d8d; } } }
   `],
 })

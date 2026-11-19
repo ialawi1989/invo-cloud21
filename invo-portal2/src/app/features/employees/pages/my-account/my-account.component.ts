@@ -220,6 +220,11 @@ export class MyAccountComponent implements OnInit, CanLeaveComponent {
     { value: '24h', label: 'EMPLOYEES.MY_ACCOUNT.PREF_24H' },
     { value: '12h', label: 'EMPLOYEES.MY_ACCOUNT.PREF_12H' },
   ];
+  readonly themeOptions: SegmentedToggleOption<'light' | 'dark' | 'system'>[] = [
+    { value: 'light', label: 'EMPLOYEES.MY_ACCOUNT.PREF_THEME_LIGHT' },
+    { value: 'dark', label: 'EMPLOYEES.MY_ACCOUNT.PREF_THEME_DARK' },
+    { value: 'system', label: 'EMPLOYEES.MY_ACCOUNT.PREF_THEME_SYSTEM' },
+  ];
   readonly weekStartOptions: SegmentedToggleOption<string>[] = [
     { value: '0', label: 'EMPLOYEES.MY_ACCOUNT.PREF_SUNDAY' },
     { value: '1', label: 'EMPLOYEES.MY_ACCOUNT.PREF_MONDAY' },
@@ -236,6 +241,7 @@ export class MyAccountComponent implements OnInit, CanLeaveComponent {
 
   setPref<K extends keyof EmployeePreferences>(key: K, value: EmployeePreferences[K]): void {
     this.prefs.update(p => ({ ...p, [key]: value }));
+    if (key === 'theme') this.userPrefs.previewTheme(value as EmployeePreferences['theme']);
     this.dirtyExtra.set(true);
   }
 

@@ -32,6 +32,54 @@ export function isArabicDominant(text: string): boolean {
   return arabic > latin;
 }
 
+/** A maximal same-script slice of a string, as produced by `splitByScript`. */
+export interface ScriptSegment {
+  text: string;
+  /** True when the segment's strong characters are Arabic. */
+  arabic: boolean;
+}
+
+/** Strong Latin — the letters that decide a segment's script, accents included. */
+const LATIN_RANGE = /[A-Za-zÀ-ɏ]/;
+
+/**
+ * Split mixed text into runs of one script each, so a caller can give each run
+ * its own font. `"Invoice / فاتورة #12"` → `[{'Invoice / ', latin},
+ * {'فاتورة #12', arabic}]`.
+ *
+ * Only needed by the PDF renderer. Browsers do this themselves, per glyph, as
+ * they walk a font stack — which is why the canvas and the HTML export get
+ * mixed-language lines right from DEFAULT_FONT_STACK alone. pdfmake has no
+ * such fallback: one `font` applies to a whole text node, so the runs have to
+ * be cut here instead.
+ *
+ * Neutral characters — spaces, digits, punctuation — join the run already in
+ * progress rather than opening one of their own. Otherwise `"فاتورة #12"`
+ * would break into three runs and the digits would render in a different face
+ * from the words they belong to. A neutral prefix before the first letter
+ * joins the run that follows it.
+ */
+export function splitByScript(text: string): ScriptSegment[] {
+  const out: ScriptSegment[] = [];
+  let buffer = '';
+  // null until the first strong character decides what `buffer` holds.
+  let arabic: boolean | null = null;
+
+  for (const ch of text) {
+    const isArabic = ARABIC_RANGE.test(ch);
+    const isStrong = isArabic || LATIN_RANGE.test(ch);
+    if (isStrong && arabic !== null && isArabic !== arabic) {
+      out.push({ text: buffer, arabic });
+      buffer = '';
+    }
+    if (isStrong) arabic = isArabic;
+    buffer += ch;
+  }
+
+  if (buffer) out.push({ text: buffer, arabic: arabic ?? false });
+  return out;
+}
+
 /** Convert ASCII digits to Arabic-Indic digits (٠١٢٣٤٥٦٧٨٩). */
 export function toArabicIndicDigits(input: string): string {
   return input.replace(/[0-9]/g, (d) =>

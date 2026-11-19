@@ -145,20 +145,20 @@ interface ModalInput {
     .tf__field { display: flex; flex-direction: column; gap: 4px; }
     .tf__field--full   { grid-column: 1 / -1; }
     .tf__field--narrow { max-width: 120px; }
-    .tf__label { font-size: 12px; font-weight: 500; color: #475569; }
-    .req { color: #ef4444; }
+    .tf__label { font-size: 12px; font-weight: 500; color: var(--ui-text-4); }
+    .req { color: var(--ui-red-text); }
     .tf__input {
       width: 100%;
       padding: 8px 12px;
       font-size: 13px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--ui-line);
       border-radius: 8px;
-      color: #0f172a;
+      color: var(--ui-text);
     }
     .tf__input:focus { outline: none; border-color: #32acc1; box-shadow: 0 0 0 3px rgba(50,172,193,.12); }
     .tf__input--mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
     .tf__textarea { resize: vertical; min-height: 60px; }
-    .tf__shared { display: flex; gap: 12px; padding-top: 12px; border-top: 1px dashed #e2e8f0; }
+    .tf__shared { display: flex; gap: 12px; padding-top: 12px; border-top: 1px dashed var(--ui-line); }
     .tf__imageRow { display: flex; gap: 6px; }
     .tf__imagePreview { width: 80px; height: 80px; border-radius: 8px; object-fit: cover; margin-top: 6px; }
 
@@ -170,11 +170,11 @@ interface ModalInput {
       font-weight: 500;
       cursor: pointer;
     }
-    .tf-btn--primary { background: #32acc1; color: #fff; }
+    .tf-btn--primary { background: var(--ui-b-32acc1); color: #fff; }
     .tf-btn--primary:hover:not(:disabled) { background: #2a93a6; }
     .tf-btn--primary:disabled { opacity: .4; cursor: not-allowed; }
-    .tf-btn--ghost { background: transparent; color: #475569; }
-    .tf-btn--ghost:hover { background: #f1f5f9; color: #0f172a; }
+    .tf-btn--ghost { background: transparent; color: var(--ui-text-4); }
+    .tf-btn--ghost:hover { background: var(--ui-surface-2); color: var(--ui-text); }
   `],
 })
 export class TaxonomyFormModalComponent {

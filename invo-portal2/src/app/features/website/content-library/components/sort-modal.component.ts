@@ -23,35 +23,35 @@ export interface SortResult {
   imports: [CommonModule, FormsModule, ModalHeaderComponent, ModalFooterComponent],
   styles: [`
     .body { padding:4px 0 8px; }
-    .section-label { font-size:11px; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:.05em; padding:12px 20px 6px; }
+    .section-label { font-size:11px; font-weight:600; color:var(--ui-muted); text-transform:uppercase; letter-spacing:.05em; padding:12px 20px 6px; }
     .field-opt {
       display:flex; align-items:center; gap:10px;
-      padding:9px 20px; cursor:pointer; transition:background .08s; font-size:13px; color:#111827;
+      padding:9px 20px; cursor:pointer; transition:background .08s; font-size:13px; color:var(--ui-text);
       border:none; background:transparent; width:100%; text-align:left; font-family:inherit;
     }
-    .field-opt:hover { background:#f8fafc; }
-    .field-opt.on { background:#f0fdff; color:#0e7a8a; font-weight:500; }
-    .field-ico { width:20px; height:20px; border-radius:4px; background:#f1f5f9; display:flex; align-items:center; justify-content:center; flex-shrink:0; color:#6b7280; }
-    .field-opt.on .field-ico { background:#e6f7fa; color:#32acc1; }
-    .sep { height:1px; background:#f1f5f9; margin:6px 0; }
+    .field-opt:hover { background:var(--ui-surface-1); }
+    .field-opt.on { background:var(--ui-x-f0fdff); color:var(--ui-t-0e7a8a); font-weight:500; }
+    .field-ico { width:20px; height:20px; border-radius:4px; background:var(--ui-surface-2); display:flex; align-items:center; justify-content:center; flex-shrink:0; color:var(--ui-muted); }
+    .field-opt.on .field-ico { background:var(--ui-x-e6f7fa); color:#32acc1; }
+    .sep { height:1px; background:var(--ui-surface-2); margin:6px 0; }
     .dir-row {
       display:flex; align-items:center; gap:12px;
       padding:10px 20px 10px 16px; cursor:pointer;
       border:none; background:transparent; width:100%; font-family:inherit; transition:background .08s;
     }
-    .dir-row:hover { background:#f8fafc; }
-    .dir-radio { width:16px; height:16px; border-radius:50%; border:2px solid #cbd5e1; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all .12s; }
+    .dir-row:hover { background:var(--ui-surface-1); }
+    .dir-radio { width:16px; height:16px; border-radius:50%; border:2px solid var(--ui-line-strong); display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all .12s; }
     .dir-row.on .dir-radio { border-color:#32acc1; background:#32acc1; }
-    .dir-dot { width:6px; height:6px; border-radius:50%; background:#fff; }
+    .dir-dot { width:6px; height:6px; border-radius:50%; background:var(--ui-surface); }
     .dir-info { text-align:left; }
-    .dir-name { font-size:13px; font-weight:500; color:#111827; }
-    .dir-sub  { font-size:11px; color:#6b7280; margin-top:1px; }
-    .btn-cancel { padding:9px 20px; background:#f3f4f6; border:1px solid #e5e7eb; border-radius:8px; font-size:13px; cursor:pointer; font-family:inherit; }
-    .btn-cancel:hover { background:#e5e7eb; }
-    .btn-apply { padding:9px 24px; background:#32acc1; color:#fff; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; }
+    .dir-name { font-size:13px; font-weight:500; color:var(--ui-text); }
+    .dir-sub  { font-size:11px; color:var(--ui-muted); margin-top:1px; }
+    .btn-cancel { padding:9px 20px; background:var(--ui-surface-2); border:1px solid var(--ui-line); border-radius:8px; font-size:13px; cursor:pointer; font-family:inherit; }
+    .btn-cancel:hover { background:var(--ui-line); }
+    .btn-apply { padding:9px 24px; background:var(--ui-b-32acc1); color:#fff; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; }
     .btn-apply:hover { background:#2b95a8; }
-    .btn-remove { padding:9px 20px; background:#fef2f2; color:#ef4444; border:1px solid #fecaca; border-radius:8px; font-size:13px; cursor:pointer; font-family:inherit; margin-right:auto; }
-    .btn-remove:hover { background:#fee2e2; }
+    .btn-remove { padding:9px 20px; background:var(--ui-red-soft); color:var(--ui-red-text); border:1px solid var(--ui-red-soft-2); border-radius:8px; font-size:13px; cursor:pointer; font-family:inherit; margin-right:auto; }
+    .btn-remove:hover { background:var(--ui-red-soft); }
   `],
   template: `
     <app-modal-header title="Sort items" icon="<line x1='12' y1='5' x2='12' y2='19'/><polyline points='19 12 12 5 5 12'/>"/>

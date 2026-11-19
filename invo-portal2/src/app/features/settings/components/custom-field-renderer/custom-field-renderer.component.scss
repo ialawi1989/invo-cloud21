@@ -17,28 +17,28 @@
   &__label {
     font-size: 12px;
     font-weight: 600;
-    color: #334155;
+    color: var(--ui-text-3);
     display: inline-flex;
     align-items: center;
     gap: 4px;
   }
 
-  &__req { color: #dc2626; font-weight: 700; }
+  &__req { color: var(--ui-red-text); font-weight: 700; }
 
   // ── Inputs (text / email / url / phone / number / textarea) ─────────
   &__input {
     width: 100%;
     padding: 8px 12px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--ui-line);
     border-radius: 8px;
-    background: #fff;
+    background: var(--ui-surface);
     font: inherit;
     font-size: 13px;
-    color: #0f172a;
+    color: var(--ui-text);
     transition: border-color 120ms ease, box-shadow 120ms ease;
 
-    &::placeholder { color: #94a3b8; }
-    &:hover:not(:disabled) { border-color: #cbd5e1; }
+    &::placeholder { color: var(--ui-faint); }
+    &:hover:not(:disabled) { border-color: var(--ui-line-strong); }
     &:focus {
       outline: none;
       border-color: var(--color-brand-500);
@@ -65,7 +65,7 @@
     transform: translateY(-50%);
     font-size: 12px;
     font-weight: 600;
-    color: #94a3b8;
+    color: var(--ui-faint);
     pointer-events: none;
   }
 
@@ -86,7 +86,7 @@
     width: 36px;
     height: 20px;
     border-radius: 999px;
-    background: #cbd5e1;
+    background: var(--ui-line-strong);
     flex-shrink: 0;
     transition: background 120ms ease;
   }
@@ -97,7 +97,7 @@
     inset-inline-start: 2px;
     width: 16px;
     height: 16px;
-    background: #fff;
+    background: var(--ui-surface);
     border-radius: 999px;
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.18);
     transition: inset-inline-start 120ms ease;
@@ -106,13 +106,13 @@
   input:checked + &__toggle-track { background: var(--color-brand-600); }
   input:checked + &__toggle-track .cfr__toggle-thumb { inset-inline-start: 18px; }
 
-  &__toggle-label { font-size: 13px; color: #475569; }
+  &__toggle-label { font-size: 13px; color: var(--ui-text-4); }
 
   // ── Error line ──────────────────────────────────────────────────────
   &__error {
     margin: 0;
     font-size: 11px;
     font-weight: 500;
-    color: #dc2626;
+    color: var(--ui-red-text);
   }
 }

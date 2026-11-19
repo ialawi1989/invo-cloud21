@@ -24,7 +24,7 @@
     flex: 1;
     min-width: 0;
     font-size: 13px;
-    color: #334155;
+    color: var(--ui-text-3);
   }
 
   // Hide the native checkbox; the .pf-switch__track from the shared mixin
@@ -48,7 +48,7 @@
   .pf-switch__track {
     position: absolute;
     inset: 0;
-    background: #cbd5e1;
+    background: var(--ui-line-strong);
     border-radius: 999px;
     transition: background 150ms ease;
     &::before {
@@ -58,7 +58,7 @@
       inset-inline-start: 2px;
       width: 18px;
       height: 18px;
-      background: #fff;
+      background: var(--ui-surface);
       border-radius: 999px;
       transition: transform 150ms ease;
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
@@ -83,12 +83,12 @@
   gap: 10px;
   width: 100%;
 
-  &__name  { font-weight: 500; color: #1e293b; }
+  &__name  { font-weight: 500; color: var(--ui-text-2); }
   &__group {
     flex-shrink: 0;
     padding: 2px 8px;
-    background: #f1f5f9;
-    color: #475569;
+    background: var(--ui-surface-2);
+    color: var(--ui-text-4);
     border-radius: 999px;
     font-size: 11px;
     font-weight: 600;
@@ -98,7 +98,7 @@
 }
 
 .pf-field--divider {
-  border-top: 1px solid var(--pf-border, #e5e7eb);
+  border-top: 1px solid var(--pf-border, var(--ui-line));
   padding-top: 0.75rem;
   margin-top: 0.25rem;
 }
@@ -109,9 +109,9 @@
   gap: 0.375rem;
   min-height: 2.25rem;
   padding: 0.25rem;
-  border: 1px solid var(--pf-border, #d1d5db);
+  border: 1px solid var(--pf-border, var(--ui-line-strong));
   border-radius: var(--pf-radius, 0.5rem);
-  background: var(--pf-input-bg, #fff);
+  background: var(--pf-input-bg, var(--ui-surface));
   transition: border-color 120ms ease, box-shadow 120ms ease;
 
   &:focus-within {
@@ -141,7 +141,7 @@
   color: inherit;
 
   &::placeholder {
-    color: var(--pf-placeholder, #9ca3af);
+    color: var(--pf-placeholder, var(--ui-faint));
   }
 }
 
@@ -150,8 +150,8 @@
   align-items: center;
   gap: 0.25rem;
   padding: 0.25rem 0.5rem 0.25rem 0.625rem;
-  background: var(--pf-chip-bg, #eef2ff);
-  color: var(--pf-chip-fg, #3730a3);
+  background: var(--pf-chip-bg, var(--ui-x-eef2ff));
+  color: var(--pf-chip-fg, var(--ui-t-3730a3));
   border-radius: 999px;
   font-size: 0.8125rem;
   line-height: 1.25;
@@ -189,8 +189,8 @@
   margin: 0;
   padding: 0.25rem;
   list-style: none;
-  background: var(--pf-input-bg, #fff);
-  border: 1px solid var(--pf-border, #d1d5db);
+  background: var(--pf-input-bg, var(--ui-surface));
+  border: 1px solid var(--pf-border, var(--ui-line-strong));
   border-radius: var(--pf-radius, 0.5rem);
   box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
   z-index: 20;
@@ -203,7 +203,7 @@
   font-size: 0.875rem;
 
   &:hover {
-    background: var(--pf-hover-bg, #f3f4f6);
+    background: var(--pf-hover-bg, var(--ui-surface-2));
   }
 }
 
@@ -211,10 +211,10 @@
   font-weight: 400;
   font-size: 0.75rem;
   margin-left: 0.25rem;
-  color: var(--pf-muted, #6b7280);
+  color: var(--pf-muted, var(--ui-muted));
 }
 
 .pf-muted {
-  color: var(--pf-muted, #6b7280);
+  color: var(--pf-muted, var(--ui-muted));
   font-weight: 400;
 }

@@ -13,10 +13,10 @@
 // "white is selected".
 .cp-checker {
   background-image:
-    linear-gradient(45deg, #e2e8f0 25%, transparent 25%),
-    linear-gradient(-45deg, #e2e8f0 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #e2e8f0 75%),
-    linear-gradient(-45deg, transparent 75%, #e2e8f0 75%);
+    linear-gradient(45deg, var(--ui-line) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--ui-line) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--ui-line) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--ui-line) 75%);
   background-size: 8px 8px;
   background-position: 0 0, 0 4px, 4px -4px, -4px 0;
 }
@@ -26,7 +26,7 @@
 // in a `<section class="cp-section">`. Header is a button so the whole
 // row is keyboard-accessible. The chevron rotates 180° when expanded.
 .cp-section {
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid var(--ui-surface-2);
   padding-top: 8px;
   margin-top: -2px;
   display: flex;
@@ -46,17 +46,17 @@
     font: inherit;
     font-size: 11px;
     font-weight: 600;
-    color: #64748b;
+    color: var(--ui-muted);
     text-transform: uppercase;
     letter-spacing: 0.04em;
     cursor: pointer;
     border-radius: 6px;
 
-    &:hover { color: #0f172a; }
+    &:hover { color: var(--ui-text); }
   }
 
   &__chev {
-    color: #94a3b8;
+    color: var(--ui-faint);
     transition: transform 120ms ease;
 
     &--open { transform: rotate(-180deg); }
@@ -97,7 +97,7 @@
 .cp-swatch {
   width: 24px; height: 24px;
   border-radius: 6px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--ui-line);
   cursor: pointer;
   transition: transform 120ms ease, box-shadow 120ms ease;
 
@@ -110,7 +110,7 @@
 
   &--active {
     box-shadow:
-      0 0 0 1px #fff,
+      0 0 0 1px var(--ui-surface),
       0 0 0 3px var(--color-brand-600, #32acc1);
   }
 }
@@ -136,13 +136,13 @@
     inset: 0;
     pointer-events: none;
   }
-  &__sat { background: linear-gradient(to right, #fff, transparent); }
+  &__sat { background: linear-gradient(to right, var(--ui-surface), transparent); }
   &__val { background: linear-gradient(to top, #000, transparent); }
 
   &__thumb {
     position: absolute;
     width: 14px; height: 14px;
-    border: 2px solid #fff;
+    border: 2px solid var(--ui-surface);
     border-radius: 999px;
     box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);
     transform: translate(-50%, -50%);
@@ -160,7 +160,7 @@
   touch-action: none;
   background: linear-gradient(to right,
     #ff0000 0%,
-    #ffff00 17%,
+    var(--ui-x-ffff00) 17%,
     #00ff00 33%,
     #00ffff 50%,
     #0000ff 67%,
@@ -171,7 +171,7 @@
     position: absolute;
     top: 50%;
     width: 10px; height: 18px;
-    border: 2px solid #fff;
+    border: 2px solid var(--ui-surface);
     border-radius: 4px;
     background: transparent;
     box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);
@@ -192,21 +192,21 @@
   align-items: center;
   gap: 6px;
   padding: 6px 8px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--ui-line);
   border-radius: 8px;
-  background: #fff;
+  background: var(--ui-surface);
   font: inherit;
-  color: #0f172a;
+  color: var(--ui-text);
   cursor: pointer;
   text-align: start;
   transition: border-color 120ms ease, background 120ms ease;
 
-  &:hover { border-color: var(--color-brand-300, #bae6fd); background: #f8fafc; }
+  &:hover { border-color: var(--color-brand-300, var(--ui-sky-soft-2)); background: var(--ui-surface-1); }
 
   &__label {
     font-size: 10px;
     font-weight: 700;
-    color: #64748b;
+    color: var(--ui-muted);
     flex-shrink: 0;
     width: 36px;
   }
@@ -214,16 +214,16 @@
     flex: 1;
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 11px;
-    color: #0f172a;
+    color: var(--ui-text);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
   &__copy {
-    color: #94a3b8;
+    color: var(--ui-faint);
     flex-shrink: 0;
   }
-  &:hover &__copy { color: var(--color-brand-600, #32acc1); }
+  &:hover &__copy { color: var(--ui-brand-t600); }
 }
 
 // WCAG 2.1 contrast badge — small chip showing the picked colour's
@@ -265,27 +265,27 @@
   }
 
   &--fail {
-    background: #fef2f2;
-    border-color: #fecaca;
-    color: #991b1b;
-    .cp-wcag__chip { background: #ef4444; color: #fff; }
+    background: var(--ui-red-soft);
+    border-color: var(--ui-red-soft-2);
+    color: var(--ui-red-text);
+    .cp-wcag__chip { background: var(--ui-b-ef4444); color: #fff; }
   }
   &--aa-large {
-    background: #fffbeb;
-    border-color: #fde68a;
-    color: #92400e;
-    .cp-wcag__chip { background: #d97706; color: #fff; }
+    background: var(--ui-amber-soft);
+    border-color: var(--ui-amber-soft-2);
+    color: var(--ui-amber-text);
+    .cp-wcag__chip { background: var(--ui-b-d97706); color: #fff; }
   }
   &--aa {
-    background: #ecfdf5;
-    border-color: #bbf7d0;
-    color: #065f46;
-    .cp-wcag__chip { background: #10b981; color: #fff; }
+    background: var(--ui-green-soft);
+    border-color: var(--ui-x-bbf7d0);
+    color: var(--ui-t-065f46);
+    .cp-wcag__chip { background: var(--ui-b-10b981); color: #fff; }
   }
   &--aaa {
-    background: #ecfdf5;
+    background: var(--ui-green-soft);
     border-color: #6ee7b7;
-    color: #065f46;
+    color: var(--ui-t-065f46);
     .cp-wcag__chip { background: #047857; color: #fff; }
   }
 }

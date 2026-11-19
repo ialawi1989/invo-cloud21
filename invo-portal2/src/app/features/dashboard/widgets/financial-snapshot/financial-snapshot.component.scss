@@ -6,29 +6,29 @@
 
 .fs__tile {
   padding: 14px;
-  background: #f8fafc;
-  border: 1px solid #eef2f6;
+  background: var(--ui-surface-1);
+  border: 1px solid var(--ui-surface-2);
   border-radius: 12px;
   container-type: inline-size;
 
   &--profit {
-    background: #ecfdf5;
-    border-color: #a7f3d0;
-    .fs__value { color: #047857; }
+    background: var(--ui-green-soft);
+    border-color: var(--ui-x-a7f3d0);
+    .fs__value { color: var(--ui-green-text); }
   }
   &--neg {
-    background: #fef2f2;
-    border-color: #fecaca;
-    .fs__value { color: #b91c1c; }
+    background: var(--ui-red-soft);
+    border-color: var(--ui-red-soft-2);
+    .fs__value { color: var(--ui-red-text); }
   }
 }
 
 .fs__label {
   font-size: 11.5px; font-weight: 600; text-transform: uppercase;
-  letter-spacing: .3px; color: #94a3b8;
+  letter-spacing: .3px; color: var(--ui-faint);
 }
 .fs__value {
   margin-top: 6px;
-  font-size: clamp(14px, 9cqi, 21px); font-weight: 700; color: #0f172a;
+  font-size: clamp(14px, 9cqi, 21px); font-weight: 700; color: var(--ui-text);
   line-height: 1.15; font-variant-numeric: tabular-nums; overflow-wrap: anywhere;
 }

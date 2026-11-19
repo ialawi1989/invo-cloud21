@@ -92,8 +92,8 @@ import { LanguageService } from '@core/i18n/language.service';
       justify-content: space-between;
       gap: 12px;
       padding: 8px 12px;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
+      background: var(--ui-surface-1);
+      border: 1px solid var(--ui-line);
       border-radius: 10px;
       flex-wrap: wrap;
     }
@@ -103,19 +103,19 @@ import { LanguageService } from '@core/i18n/language.service';
       align-items: center;
       gap: 6px;
       padding: 6px 12px;
-      background: #fff;
-      border: 1px solid #e2e8f0;
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-line);
       border-radius: 999px;
-      color: #475569;
+      color: var(--ui-text-4);
       font-size: 13px;
       font-weight: 500;
       cursor: pointer;
       transition: border-color 120ms ease, color 120ms ease, background 120ms ease;
     }
-    .lt__tab:hover { border-color: #cbd5e1; }
+    .lt__tab:hover { border-color: var(--ui-line-strong); }
     .lt__tab.is-on {
-      background: #0f172a;
-      border-color: #0f172a;
+      background: var(--ui-ink);
+      border-color: var(--ui-ink);
       color: #fff;
     }
     .lt__code { text-transform: uppercase; font-weight: 600; letter-spacing: .04em; font-size: 11px; }
@@ -138,20 +138,20 @@ import { LanguageService } from '@core/i18n/language.service';
     .lt__addBtn {
       padding: 6px 12px;
       background: transparent;
-      border: 1px dashed #cbd5e1;
+      border: 1px dashed var(--ui-line-strong);
       border-radius: 999px;
-      color: #475569;
+      color: var(--ui-text-4);
       font-size: 12px;
       font-weight: 500;
       cursor: pointer;
     }
-    .lt__addBtn:hover { color: #0f172a; border-color: #94a3b8; }
+    .lt__addBtn:hover { color: var(--ui-text); border-color: #94a3b8; }
     .lt__menu {
       position: absolute;
       top: calc(100% + 4px);
       inset-inline-start: 0;
-      background: #fff;
-      border: 1px solid #e2e8f0;
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-line);
       border-radius: 8px;
       box-shadow: 0 4px 12px rgba(15,23,42,.08);
       padding: 4px;
@@ -167,19 +167,19 @@ import { LanguageService } from '@core/i18n/language.service';
       text-align: start;
       cursor: pointer;
       font-size: 13px;
-      color: #0f172a;
+      color: var(--ui-text);
     }
-    .lt__menuItem:hover { background: #f1f5f9; }
+    .lt__menuItem:hover { background: var(--ui-surface-2); }
 
     .lt__default { display: inline-flex; align-items: center; gap: 6px; }
-    .lt__defaultLabel { font-size: 12px; color: #64748b; }
+    .lt__defaultLabel { font-size: 12px; color: var(--ui-muted); }
     .lt__defaultSel {
       padding: 4px 22px 4px 8px;
       font-size: 12px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--ui-line);
       border-radius: 6px;
-      background: #fff;
-      color: #0f172a;
+      background: var(--ui-surface);
+      color: var(--ui-text);
       cursor: pointer;
     }
   `],

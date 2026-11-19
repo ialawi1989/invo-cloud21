@@ -15,6 +15,8 @@ const mapLine = (l: PurchaseOrderLine): Record<string, unknown> => ({
   note: l.selectedItem?.name && l.note ? l.note : '',
   sic: l.SIC,
   options: [],
+  customFields: (l as any).selectedItem?.customFields ?? {},
+  translation: (l as any).selectedItem?.translation ?? null,
   voidedItems: [],
 });
 
@@ -38,7 +40,8 @@ export function purchaseOrderToRenderData(po: PurchaseOrder): DocumentRenderData
       number: po.purchaseNumber,
       date: fmtDate(po.purchaseDate),
       dueDate: fmtDate(po.dueDate),
-      reference: po.reference,
+      reference: po.refrenceNumber || po.reference,
+      createdDate: fmtDate(po.createdAt),
       isInclusiveTax: po.isInclusiveTax,
       status: po.status,
       customerNote: '',

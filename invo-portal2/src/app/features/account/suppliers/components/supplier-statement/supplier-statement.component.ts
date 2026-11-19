@@ -102,23 +102,23 @@ const num = (v: unknown): number => {
     :host { display: block; }
     .cs-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
     @media (max-width: 720px) { .cs-summary { grid-template-columns: 1fr; } }
-    .cs-summary__head, .cs-summary__box { border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; background: #fff; }
-    .cs-summary__box { background: #f8fafc; }
-    h4 { margin: 0 0 8px; font-size: 18px; font-weight: 700; color: #0f172a; }
-    .cs-meta { font-size: 13px; color: #64748b; margin-top: 4px; }
-    .cs-tag { display: inline-block; font-size: 12px; font-weight: 600; color: #b45309; background: #fef3c7; border-radius: 999px; padding: 2px 10px; }
-    .cs-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; color: #475569; }
-    .cs-row--total { border-top: 1px solid #e2e8f0; margin-top: 6px; padding-top: 10px; font-weight: 700; color: #0f172a; }
-    .cs-pos { color: #16a34a; } .cs-neg { color: #dc2626; }
-    .cs-table-wrap { border: 1px solid #e5e7eb; border-radius: 12px; overflow-x: auto; background: #fff; }
+    .cs-summary__head, .cs-summary__box { border: 1px solid var(--ui-line); border-radius: 12px; padding: 16px; background: var(--ui-surface); }
+    .cs-summary__box { background: var(--ui-surface-1); }
+    h4 { margin: 0 0 8px; font-size: 18px; font-weight: 700; color: var(--ui-text); }
+    .cs-meta { font-size: 13px; color: var(--ui-muted); margin-top: 4px; }
+    .cs-tag { display: inline-block; font-size: 12px; font-weight: 600; color: var(--ui-amber-text); background: var(--ui-amber-soft); border-radius: 999px; padding: 2px 10px; }
+    .cs-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; color: var(--ui-text-4); }
+    .cs-row--total { border-top: 1px solid var(--ui-line); margin-top: 6px; padding-top: 10px; font-weight: 700; color: var(--ui-text); }
+    .cs-pos { color: #16a34a; } .cs-neg { color: var(--ui-red-text); }
+    .cs-table-wrap { border: 1px solid var(--ui-line); border-radius: 12px; overflow-x: auto; background: var(--ui-surface); }
     .cs-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-    th { text-align: start; background: #f8fafc; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 12px; padding: 10px 14px; }
-    td { padding: 10px 14px; border-top: 1px solid #f1f5f9; color: #334155; }
+    th { text-align: start; background: var(--ui-surface-1); color: var(--ui-muted); font-weight: 600; text-transform: uppercase; font-size: 12px; padding: 10px 14px; }
+    td { padding: 10px 14px; border-top: 1px solid var(--ui-surface-2); color: var(--ui-text-3); }
     .end { text-align: end; }
-    tfoot td { background: #f8fafc; }
-    .cs-opening td { background: #eff6ff; }
-    .cs-empty { text-align: center; color: #94a3b8; padding: 24px; }
-    a { color: #2691a4; text-decoration: none; } a:hover { text-decoration: underline; }
+    tfoot td { background: var(--ui-surface-1); }
+    .cs-opening td { background: var(--ui-x-eff6ff); }
+    .cs-empty { text-align: center; color: var(--ui-faint); padding: 24px; }
+    a { color: var(--ui-brand-text); text-decoration: none; } a:hover { text-decoration: underline; }
   `],
 })
 export class SupplierStatementComponent {

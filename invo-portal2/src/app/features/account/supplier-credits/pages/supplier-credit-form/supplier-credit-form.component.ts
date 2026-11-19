@@ -52,9 +52,9 @@ const ALL = 'all';
   styles: [`
     .sf-import { display: flex; justify-content: flex-end; margin-bottom: 8px; }
     .sf-totals { display: flex; justify-content: flex-end; margin-top: 8px; }
-    .sf-sum { min-width: 320px; background: #fff; border: 1px solid #e4e7ec; border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
-    .sf-row { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; color: #334155; }
-    .sf-row--total { border-top: 1px solid #e2e8f0; padding-top: 10px; font-size: 18px; color: #0f172a; }
+    .sf-sum { min-width: 320px; background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+    .sf-row { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; color: var(--ui-text-3); }
+    .sf-row--total { border-top: 1px solid var(--ui-line); padding-top: 10px; font-size: 18px; color: var(--ui-text); }
   `],
 })
 export class SupplierCreditFormComponent extends DocumentFormBase {

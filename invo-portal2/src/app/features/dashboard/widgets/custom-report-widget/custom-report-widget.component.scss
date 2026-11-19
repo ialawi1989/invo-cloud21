@@ -10,7 +10,7 @@
   margin-bottom: 0;
   display: flex;
   flex-direction: column;
-  background: #fff;
+  background: var(--ui-surface);
   border: 0;
   border-radius: 12px;
   box-shadow: 0 1px 2px rgba(15, 23, 42, .04), 0 1px 3px rgba(15, 23, 42, .06);
@@ -53,9 +53,9 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.4px;
-  color: #00838f;
+  color: var(--ui-t-00838f);
   padding: 2px 6px;
-  background: #e0f7fa;
+  background: var(--ui-x-e0f7fa);
   border-radius: 3px;
 }
 
@@ -102,7 +102,7 @@
 .cr-spinner {
   width: 24px;
   height: 24px;
-  border: 3px solid #eef2f7;
+  border: 3px solid var(--ui-x-eef2f7);
   border-top-color: #00bcd4;
   border-radius: 50%;
   animation: cr-spin 0.6s linear infinite;
@@ -117,7 +117,7 @@
    dashboard's table chrome — an outer rounded border, row dividers and roomy
    cell spacing — to match the other dashboard widgets. */
 :host ::ng-deep .table-wrap {
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--ui-line);
   border-radius: 12px;
   // chart-preview forces `overflow-x: scroll` (always-on bar) for the report
   // canvas. In a dashboard card we only want the bar when the table actually
@@ -129,10 +129,10 @@
 
 :host ::ng-deep th {
   padding: 14px 12px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--ui-line);
 }
 
 :host ::ng-deep td {
   padding: 14px 12px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--ui-line);
 }

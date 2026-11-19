@@ -4,7 +4,7 @@
   /* Receipt-paper ink style: dark text on the slightly off-white
      paper background. Using `currentColor` lets QR / barcode swap
      to brand cyan when the row is selected (handled in the parent). */
-  color: #1f2937;
+  color: var(--ui-ink-2);
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   line-height: 1.25;
 }
@@ -41,7 +41,7 @@
   &__rule {
     display: block;
     border-top-width: 1px;
-    border-top-color: #1f2937;
+    border-top-color: var(--ui-ink-2);
   }
 }
 
@@ -61,9 +61,9 @@
     align-items: center;
     justify-content: center;
     gap: 4px;
-    border: 1px dashed #cbd5e1;
+    border: 1px dashed var(--ui-line-strong);
     border-radius: 4px;
-    color: #94a3b8;
+    color: var(--ui-faint);
     background: rgba(255, 255, 255, 0.5);
 
     small {
@@ -89,17 +89,17 @@
 .er-qr-frame {
   position: relative;
   display: inline-block;
-  border: 2px solid #1f2937;
+  border: 2px solid var(--ui-ink-2);
   padding: 6px;
-  background: #fff;
-  color: #1f2937;
+  background: var(--ui-surface);
+  color: var(--ui-text-2);
 
   // ZATCA QR (Saudi Arabia tax-compliance). Tinted ink + a corner
   // badge so the user can spot the legally-required QR at a glance
   // among ordinary feedback / link QR codes.
   &--zatca {
     border-color: #047857;
-    color: #064e3b;
+    color: var(--ui-t-064e3b);
   }
 }
 
@@ -139,7 +139,7 @@
 .er-barcode {
   display: block;
   max-width: 100%;
-  background: #fff;
+  background: var(--ui-surface);
 
   /* Natural size (the bar height the user picked), shrinking proportionally only when wider than the paper. */
   > svg {
@@ -151,7 +151,7 @@
 
 .er-barcode-wrap small {
   font-size: 10px;
-  color: #1f2937;
+  color: var(--ui-text-2);
   letter-spacing: 0.05em;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
@@ -175,11 +175,11 @@
 
     &--header {
       font-weight: 700;
-      color: #475569;
+      color: var(--ui-text-4);
       text-transform: uppercase;
       letter-spacing: 0.04em;
       font-size: 10px;
-      border-bottom: 1px solid #cbd5e1;
+      border-bottom: 1px solid var(--ui-line-strong);
       padding-bottom: 2px;
     }
 
@@ -195,7 +195,7 @@
     flex-direction: column;
     padding: 2px 0;
 
-    & + & { border-top: 1px dotted #e2e8f0; }
+    & + & { border-top: 1px dotted var(--ui-line); }
   }
 
   &__row {
@@ -216,7 +216,7 @@
   &__hint {
     display: block;
     text-align: center;
-    color: #94a3b8;
+    color: var(--ui-faint);
     font-style: italic;
     padding: 12px 0;
   }

@@ -55,14 +55,14 @@ $ink: #111827;
   font-size: 14px;
   font-weight: 600;
   color: $ink;
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
   border-radius: 10px;
   cursor: pointer;
   transition: border-color 0.15s ease, background 0.15s ease;
 
-  &:hover { border-color: #cbd5e1; background: #f8fafc; }
-  svg { color: #6b7280; }
+  &:hover { border-color: var(--ui-line-strong); background: var(--ui-surface-1); }
+  svg { color: var(--ui-muted); }
 }
 
 .week-pill {
@@ -70,13 +70,13 @@ $ink: #111827;
   font-size: 14px;
   font-weight: 600;
   color: $ink;
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
   border-radius: 10px;
   cursor: pointer;
   transition: border-color 0.15s ease, background 0.15s ease;
 
-  &:hover { border-color: #cbd5e1; background: #f8fafc; }
+  &:hover { border-color: var(--ui-line-strong); background: var(--ui-surface-1); }
 }
 
 .week-nav {
@@ -84,8 +84,8 @@ $ink: #111827;
   align-items: center;
   gap: 2px;
   padding: 3px;
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
   border-radius: 10px;
 }
 
@@ -98,11 +98,11 @@ $ink: #111827;
   border-radius: 8px;
   background: transparent;
   border: none;
-  color: #374151;
+  color: var(--ui-text-3);
   cursor: pointer;
   transition: background 0.15s ease;
 
-  &:hover { background: #f1f5f9; }
+  &:hover { background: var(--ui-surface-2); }
   i { font-size: 18px; }
 }
 
@@ -121,8 +121,8 @@ $ink: #111827;
   cursor: pointer;
   transition: background 0.15s ease;
 
-  &:hover { background: #f1f5f9; }
-  svg { color: #6b7280; }
+  &:hover { background: var(--ui-surface-2); }
+  svg { color: var(--ui-muted); }
 }
 
 // Week-jump calendar popover — no styling here: the inline `<app-date-picker>`
@@ -135,7 +135,7 @@ $ink: #111827;
 // ── Board ────────────────────────────────────────────────────────────────
 .board-card {
   position: relative;
-  background: #fff;
+  background: var(--ui-surface);
   border: 1px solid $border;
   border-radius: 16px;
   overflow: hidden;
@@ -183,7 +183,7 @@ $ink: #111827;
   gap: 4px;
 
   .day-name { font-weight: 600; color: $ink; }
-  .day-hours { font-size: 12px; color: #6b7280; }
+  .day-hours { font-size: 12px; color: var(--ui-muted); }
 }
 
 /*
@@ -207,7 +207,7 @@ th.holiday-col {
   border-radius: 999px;
   font-size: 11px;
   font-weight: 600;
-  color: #b45309;
+  color: var(--ui-amber-text);
   background: rgba($warning, 0.16);
   border: 1px solid rgba($warning, 0.3);
   white-space: nowrap;
@@ -247,7 +247,7 @@ th.holiday-col {
 
   .emp-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
   .emp-name { font-size: 14px; font-weight: 600; color: $ink; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .emp-hours { font-size: 12px; font-weight: 500; color: #6b7280; }
+  .emp-hours { font-size: 12px; font-weight: 500; color: var(--ui-muted); }
 }
 
 // The pencil trigger for the row menu.
@@ -260,12 +260,12 @@ th.holiday-col {
   border-radius: 8px;
   background: transparent;
   border: none;
-  color: #9ca3af;
+  color: var(--ui-faint);
   cursor: pointer;
   flex-shrink: 0;
   transition: background 0.15s ease, color 0.15s ease;
 
-  &:hover { background: #f1f5f9; color: #374151; }
+  &:hover { background: var(--ui-surface-2); color: var(--ui-text-3); }
   i { font-size: 17px; }
 }
 
@@ -299,16 +299,16 @@ th.holiday-col {
 }
 
 ::ng-deep .cell .chip-active {
-  background: var(--color-brand-50, #effbfd);
-  color: var(--color-brand-700, #207484);
-  border-color: var(--color-brand-100, #d7f3f7);
+  background: var(--color-brand-50, var(--ui-brand-soft));
+  color: var(--color-brand-700, var(--ui-brand-text));
+  border-color: var(--color-brand-100, var(--ui-x-d7f3f7));
 
-  &:hover { background: var(--color-brand-100, #d7f3f7); }
+  &:hover { background: var(--color-brand-100, var(--ui-x-d7f3f7)); }
 }
 
 ::ng-deep .cell .chip-off {
   background: rgba($warning, 0.12);
-  color: #b45309;
+  color: var(--ui-amber-text);
   border-color: rgba($warning, 0.25);
 
   &:hover { background: rgba($warning, 0.18); }
@@ -319,12 +319,12 @@ th.holiday-col {
 // is hovered so populated days stay tidy.
 ::ng-deep .cell .chip-add {
   padding: 7px 8px;
-  background: var(--color-brand-50, #effbfd);
+  background: var(--color-brand-50, var(--ui-brand-soft));
   border-color: transparent;
   opacity: 0;
   transition: background 0.15s ease, opacity 0.15s ease;
 
-  &:hover { background: var(--color-brand-100, #d6f4f8); }
+  &:hover { background: var(--color-brand-100, var(--ui-x-d6f4f8)); }
 }
 // Reveal the "+" only for the specific day cell being hovered.
 .cell:hover ::ng-deep .chip-add { opacity: 1; }
@@ -338,17 +338,17 @@ th.holiday-col {
   height: 22px;
   border-radius: 50%;
   border: 1px solid var(--color-brand-300, #7dd3e0);
-  color: var(--color-brand-600, #2b95a8);
+  color: var(--ui-brand-t600);
 }
 
 // Empty days read as muted "Not working"; hovering hints they're clickable.
 ::ng-deep .cell .chip-empty {
-  background: #f8fafc;
-  color: #9ca3af;
+  background: var(--ui-surface-1);
+  color: var(--ui-faint);
   font-weight: 500;
   border-color: transparent;
 
-  &:hover { background: #f1f5f9; color: #6b7280; }
+  &:hover { background: var(--ui-surface-2); color: var(--ui-muted); }
 }
 
 .empty {
@@ -363,7 +363,7 @@ th.holiday-col {
     width: 76px;
     height: 76px;
     border-radius: 50%;
-    background: #f9fafb;
+    background: var(--ui-surface-1);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -372,7 +372,7 @@ th.holiday-col {
   }
 
   h4 { font-size: 17px; font-weight: 600; color: $ink; margin: 0 0 6px; }
-  p  { font-size: 14px; color: #6b7280; margin: 0; }
+  p  { font-size: 14px; color: var(--ui-muted); margin: 0; }
 }
 
 // ── Info banner ──────────────────────────────────────────────────────────
@@ -382,11 +382,11 @@ th.holiday-col {
   gap: 10px;
   margin-top: 14px;
   padding: 14px 18px;
-  background: #f8fafc;
+  background: var(--ui-surface-1);
   border: 1px solid $border;
   border-radius: 12px;
   font-size: 13px;
-  color: #6b7280;
+  color: var(--ui-muted);
 
   svg { color: $primary; flex-shrink: 0; }
 }
@@ -396,7 +396,7 @@ th.holiday-col {
 .board-mobile__toggle { display: block; margin-bottom: 12px; }
 
 .mcard {
-  background: #fff;
+  background: var(--ui-surface);
   border: 1px solid $border;
   border-radius: 14px;
   margin-bottom: 10px;
@@ -428,21 +428,21 @@ th.holiday-col {
 }
 .mcard__meta { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .mcard__name { font-size: 15px; font-weight: 600; color: $ink; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.mcard__hours { font-size: 12px; color: #6b7280; }
+.mcard__hours { font-size: 12px; color: var(--ui-muted); }
 
 .mcard__actions { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
 ::ng-deep .mcard__actions .icon-btn {
   width: 34px; height: 34px;
   display: inline-flex; align-items: center; justify-content: center;
-  border-radius: 8px; border: none; background: transparent; color: #6b7280; cursor: pointer;
-  &:hover { background: #f1f5f9; }
+  border-radius: 8px; border: none; background: transparent; color: var(--ui-muted); cursor: pointer;
+  &:hover { background: var(--ui-surface-2); }
 }
 .chev-btn {
   width: 34px; height: 34px;
   display: inline-flex; align-items: center; justify-content: center;
-  border-radius: 8px; border: none; background: transparent; color: #6b7280; cursor: pointer;
+  border-radius: 8px; border: none; background: transparent; color: var(--ui-muted); cursor: pointer;
   transition: transform 0.15s ease, background 0.15s ease;
-  &:hover { background: #f1f5f9; }
+  &:hover { background: var(--ui-surface-2); }
   &.open { transform: rotate(180deg); }
 }
 
@@ -450,7 +450,7 @@ th.holiday-col {
 .mday {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
   padding: 10px 14px;
-  border-top: 1px solid #f8fafc;
+  border-top: 1px solid var(--ui-surface-1);
   &:first-child { border-top: none; }
 }
 .mday__label { font-size: 13px; font-weight: 600; color: $ink; flex-shrink: 0; }
@@ -458,10 +458,10 @@ th.holiday-col {
 
 .mcard__dayhead {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 12px 14px; background: #f8fafc;
+  padding: 12px 14px; background: var(--ui-surface-1);
   span:first-child { font-size: 14px; font-weight: 700; color: $ink; }
 }
-.mcard__dayhours { font-size: 12px; color: #6b7280; }
+.mcard__dayhours { font-size: 12px; color: var(--ui-muted); }
 
 // Inline variant of the day cell: chips sit on the right at content width
 // instead of the full-width desktop column.

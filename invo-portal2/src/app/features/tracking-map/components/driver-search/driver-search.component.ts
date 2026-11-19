@@ -29,19 +29,19 @@ import { TrackingMapService } from '../../services/tracking-map.service';
   `,
   styles: [`
     .driver-search { position: relative; display: flex; align-items: center; }
-    .driver-search__icon { position: absolute; left: 10px; color: #94a3b8; pointer-events: none; }
+    .driver-search__icon { position: absolute; left: 10px; color: var(--ui-faint); pointer-events: none; }
     .driver-search__input {
       width: 100%;
       padding: 8px 30px 8px 32px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--ui-line);
       border-radius: 8px;
       font-size: 13px;
-      background: #f8fafc;
-      color: #1a1d29;
+      background: var(--ui-surface-1);
+      color: var(--ui-text-2);
       outline: none;
       transition: border-color 120ms ease, background 120ms ease;
     }
-    .driver-search__input:focus { border-color: #2691a4; background: #fff; }
+    .driver-search__input:focus { border-color: #2691a4; background: var(--ui-field); }
     .driver-search__clear {
       position: absolute;
       right: 6px;
@@ -49,13 +49,13 @@ import { TrackingMapService } from '../../services/tracking-map.service';
       height: 20px;
       border: 0;
       background: transparent;
-      color: #94a3b8;
+      color: var(--ui-faint);
       font-size: 16px;
       line-height: 1;
       cursor: pointer;
       border-radius: 4px;
     }
-    .driver-search__clear:hover { background: #e2e8f0; color: #475569; }
+    .driver-search__clear:hover { background: var(--ui-line); color: var(--ui-text-4); }
   `],
 })
 export class DriverSearchComponent {

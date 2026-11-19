@@ -12,7 +12,7 @@
 
   &__count {
     margin: 0;
-    color: #64748b;
+    color: var(--ui-muted);
     font-size: 12px;
   }
 
@@ -26,15 +26,15 @@
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 12px;
     padding: 4px;
-    background: repeating-conic-gradient(#f1f5f9 0 25%, #fff 0 50%) 0 0 / 16px 16px;
-    border: 1px solid #e2e8f0;
+    background: repeating-conic-gradient(var(--ui-surface-2) 0 25%, var(--ui-surface) 0 50%) 0 0 / 16px 16px;
+    border: 1px solid var(--ui-line);
     border-radius: 10px;
   }
 
   &__card {
     position: relative;
-    background: #fff;
-    border: 1px solid #e2e8f0;
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-line);
     border-radius: 6px;
     overflow: hidden;
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
@@ -73,10 +73,10 @@
     transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
 
     &--ghost {
-      background: #f3f4f6;
-      border-color: #e5e7eb;
-      color: #334155;
-      &:hover:not(:disabled) { background: #e5e7eb; }
+      background: var(--ui-surface-2);
+      border-color: var(--ui-line);
+      color: var(--ui-text-3);
+      &:hover:not(:disabled) { background: var(--ui-line); }
     }
     &--primary {
       background: var(--color-brand-600, #0891b2);

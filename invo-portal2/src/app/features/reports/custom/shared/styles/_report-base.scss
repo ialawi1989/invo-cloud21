@@ -30,7 +30,7 @@
 }
 
 .skeleton-container {
-  background: #fff;
+  background: var(--ui-surface);
   border-radius: $border-radius;
   box-shadow: $shadow-base;
   overflow: hidden;
@@ -114,7 +114,7 @@
 
 .error-card {
   text-align: center;
-  background: #fff;
+  background: var(--ui-surface);
   border-radius: $border-radius;
   padding: 2.5rem;
   box-shadow: $shadow-base;
@@ -129,7 +129,7 @@
     align-items: center;
     justify-content: center;
     margin: 0 auto 1.5rem;
-    i { font-size: 28px; color: #ef4444; }
+    i { font-size: 28px; color: var(--ui-red-text); }
   }
 
   .error-title {
@@ -157,7 +157,7 @@
 .empty-state {
   text-align: center;
   padding: 4rem 2rem;
-  background: #fff;
+  background: var(--ui-surface);
   border-radius: $border-radius;
   box-shadow: $shadow-sm;
 
@@ -165,7 +165,7 @@
     width: 80px;
     height: 80px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%);
+    background: linear-gradient(135deg, var(--ui-sky-soft) 0%, var(--ui-x-dbeafe) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -174,8 +174,8 @@
   }
 
   &.initial-state .empty-icon {
-    background: linear-gradient(135deg, #f3e8ff 0%, #ede9fe 100%);
-    i { color: #8b5cf6; }
+    background: linear-gradient(135deg, var(--ui-x-f3e8ff) 0%, var(--ui-x-ede9fe) 100%);
+    i { color: var(--ui-t-8b5cf6); }
   }
 
   h5 {
@@ -208,7 +208,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem 1rem;
-  background-color: #ffffff;
+  background-color: var(--ui-surface);
   border: 1px solid $gray-200;
   border-radius: $border-radius-md $border-radius-md 0 0;
   border-bottom: none;
@@ -247,7 +247,7 @@
     padding: 0.3125rem 1.75rem 0.3125rem 0.625rem;
     border: 1px solid $gray-300;
     border-radius: 6px;
-    background-color: #fff;
+    background-color: var(--ui-surface);
     color: $gray-700;
     cursor: pointer;
 
@@ -271,7 +271,7 @@
     height: 2.25rem;
     padding: 0;
     border: 1px solid $gray-300;
-    background: #fff;
+    background: var(--ui-surface);
     color: $gray-500;
     border-radius: 6px;
     transition: all $transition-fast;
@@ -350,7 +350,7 @@
   height: 32px;
   border-radius: 50%;
   border: 1px solid rgba(0,0,0,0.15);
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--ui-surface);
   color: $gray-600;
   display: flex;
   align-items: center;
@@ -361,7 +361,7 @@
   padding: 0;
 
   &:hover:not(:disabled) {
-    background: #fff;
+    background: var(--ui-surface);
     color: $primary-color;
     border-color: $primary-color;
     box-shadow: 0 3px 10px rgba(0,0,0,0.2);
@@ -390,7 +390,7 @@
   overflow-x: auto;
 
   &::-webkit-scrollbar { height: 8px; }
-  &::-webkit-scrollbar-track { background: #f1f5f9; }
+  &::-webkit-scrollbar-track { background: var(--ui-surface-2); }
   &::-webkit-scrollbar-thumb {
     background: #94a3b8;
     border-radius: 4px;
@@ -401,10 +401,10 @@
 // ==============================================
 // REPORT TABLE — Unified Design
 // ==============================================
-// Header: #0f172a (dark navy)
+// Header: var(--ui-ink) (dark navy)
 // Borders: 1px solid $gray-200 on body cells
 // Even rows: $gray-50
-// Hover: #f1f5f9
+// Hover: var(--ui-surface-2)
 // Total row: #E8EFFF with 2px top border
 // Border-radius: 0 0 0.5rem 0.5rem (bottom corners)
 // ==============================================
@@ -415,7 +415,7 @@
   border-collapse: separate;
   border-spacing: 0;
   font-size: $font-size-base;
-  background: #fff;
+  background: var(--ui-surface);
   margin-bottom: 0;
   border: 1px solid $gray-200;
   border-radius: 0 0 $border-radius-md $border-radius-md;
@@ -504,7 +504,7 @@
       border: 1px solid $gray-200;
       vertical-align: middle;
       color: $gray-700;
-      background: #fff;
+      background: var(--ui-surface);
     }
 
     .data-row {
@@ -512,7 +512,7 @@
 
       &:hover td { background-color: $row-hover-bg; }
       &.even-row td { background-color: $row-even-bg; }
-      &.even-row:hover td { background-color: #eef2f7; }
+      &.even-row:hover td { background-color: var(--ui-x-eef2f7); }
 
       // Sticky column in data rows
       td.sticky-col-1 {
@@ -540,12 +540,12 @@
 
     // ====== GROUP / SECTION ROWS ======
     .group-first-row td {
-      background-color: #f0f9ff !important;
+      background-color: var(--ui-x-f0f9ff) !important;
       border-top: 2px solid $header-bg;
     }
 
     .group-header-row td {
-      background: #e0f2fe !important;
+      background: var(--ui-sky-soft) !important;
       font-weight: 600;
       color: $debit-color;
     }
@@ -553,7 +553,7 @@
     .group-data-row td { padding-left: 2rem; }
 
     .group-subtotal-row td {
-      background: #f0f9ff !important;
+      background: var(--ui-x-f0f9ff) !important;
       font-weight: 500;
     }
 
@@ -566,7 +566,7 @@
     }
 
     .section-subtotal-row td {
-      background: #f0f9ff !important;
+      background: var(--ui-x-f0f9ff) !important;
       font-weight: 600;
       color: $gray-700;
     }
@@ -724,7 +724,7 @@
 
 // Card wrapper (used in some report modules)
 .card-wrapper {
-  background: #fff;
+  background: var(--ui-surface);
   border-radius: $border-radius-md;
   border: 1px solid $gray-200;
   overflow: hidden;
@@ -761,8 +761,8 @@
 
   &.bg-success { background: $success-color-light !important; color: $success-color-dark !important; }
   &.bg-danger { background: $danger-color-light !important; color: $danger-color-dark !important; }
-  &.bg-warning { background: $warning-color-light !important; color: #d97706 !important; }
-  &.bg-info { background: $info-color-light !important; color: #2563eb !important; }
+  &.bg-warning { background: $warning-color-light !important; color: var(--ui-orange-text) !important; }
+  &.bg-info { background: $info-color-light !important; color: var(--ui-t-2563eb); }
 }
 
 // ==============================================
@@ -777,7 +777,7 @@
   font-weight: 500;
 
   &.success { background: rgba($success-color, 0.1); color: $success-color-dark; }
-  &.warning { background: rgba($warning-color, 0.1); color: #d97706; }
+  &.warning { background: rgba($warning-color, 0.1); color: var(--ui-orange-text); }
   &.danger { background: rgba($danger-color, 0.1); color: $danger-color-dark; }
 }
 
@@ -836,7 +836,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(255, 255, 255, 0.8);
+  background: rgb(var(--ui-surface-rgb) / 0.8);
   z-index: 10;
 }
 

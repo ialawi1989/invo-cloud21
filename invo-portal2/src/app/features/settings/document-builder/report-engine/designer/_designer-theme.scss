@@ -1,51 +1,37 @@
 // Design tokens for the free-position designer UI.
 //
-// Every value defers to the portal's design system (`--cl-*`, defined in
-// styles/_content-library-design-system.scss) so the designer inherits the
-// portal's look — including any future retheme — instead of carrying its own
-// palette. Import this partial at the top of every designer component's SCSS
+// Deliberately mirrors document-builder.component.scss so the Classic and
+// Free Design modes read as one product — same primary, same greys, same
+// radii. Import this partial at the top of every designer component's SCSS
 // rather than redeclaring values.
-//
-// These stay SCSS variables rather than becoming `--cl-*` references at every
-// call site: the components use them inside `rgba()`, `darken()` and mixin
-// defaults, which CSS custom properties can't do. Each one resolves to a token
-// where the design system has an equivalent, and to a literal only where it
-// doesn't (the designer needs a few colors the portal has no token for).
 
 // ── Brand ──────────────────────────────────────────────────────────
-$d-primary: var(--cl-brand);
-$d-primary-hover: var(--cl-brand-dark);
-$d-primary-light: var(--cl-brand-light);
-// Brand at partial alpha. `rgba()` can't take a var(), so these go through
-// color-mix — which can — and stay tied to the token rather than to a hex
-// copy of it.
-$d-primary-tint: color-mix(in srgb, var(--cl-brand) 12%, transparent);
-$d-primary-soft: color-mix(in srgb, var(--cl-brand) 10%, transparent);
+$d-primary: #32acc1;
+$d-primary-hover: #2b92a4;
+$d-primary-light: #eff6ff;
+$d-primary-tint: rgba(50, 172, 193, 0.12);
 
 // ── Text ───────────────────────────────────────────────────────────
-$d-text: var(--cl-t1);
-$d-text-secondary: var(--cl-t3);
-$d-text-muted: var(--cl-t4);
-$d-text-label: var(--cl-t2);
+$d-text: #1f2937;
+$d-text-secondary: #6b7280;
+$d-text-muted: #9ca3af;
+$d-text-label: #374151;
 
 // ── Surfaces ───────────────────────────────────────────────────────
-$d-white: var(--cl-surface);
-$d-bg: var(--cl-bg);
-$d-bg-alt: var(--cl-border-sub);
-$d-bg-panel: var(--cl-bg);
-// The canvas surround — deliberately darker than the page so the paper edge
-// reads as a physical sheet. The portal has no token this dark; --cl-border
-// is the closest and doubles as the surround.
-$d-canvas-bg: var(--cl-border);
+$d-white: #ffffff;
+$d-bg: #f9fafb;
+$d-bg-alt: #f3f4f6;
+$d-bg-panel: #fafbfc;
+// The canvas surround — deliberately darker than the page so the paper
+// edge reads as a physical sheet.
+$d-canvas-bg: #e5e7eb;
 
 // ── Lines ──────────────────────────────────────────────────────────
-$d-border: var(--cl-border);
-$d-border-light: var(--cl-border-sub);
+$d-border: #e5e7eb;
+$d-border-light: #f3f4f6;
 $d-border-input: #d1d5db;
 
 // ── Semantic ───────────────────────────────────────────────────────
-// No design-system tokens exist for these yet; they match the portal's
-// Tailwind amber/red/emerald 500s.
 $d-warning: #f59e0b;
 $d-danger: #ef4444;
 $d-success: #10b981;
@@ -54,15 +40,15 @@ $d-success: #10b981;
 $d-guide: #ec4899;
 
 // ── Geometry ───────────────────────────────────────────────────────
-$d-radius: var(--cl-r-md);
-$d-radius-sm: var(--cl-r-sm);
+$d-radius: 8px;
+$d-radius-sm: 6px;
 $d-radius-xs: 4px;
 
-$d-shadow-sm: var(--cl-sh);
-$d-shadow-md: var(--cl-sh-card);
+$d-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+$d-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 $d-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 
-$d-transition: 0.15s var(--cl-ease);
+$d-transition: 0.15s ease;
 
 // Panel rails. The canvas takes whatever is left.
 $d-rail-width: 240px;
@@ -123,7 +109,7 @@ $d-icon-btn: 32px;
   &:focus {
     outline: none;
     border-color: $d-primary;
-    box-shadow: 0 0 0 3px $d-primary-soft;
+    box-shadow: 0 0 0 3px rgba($d-primary, 0.1);
   }
 
   &::placeholder {

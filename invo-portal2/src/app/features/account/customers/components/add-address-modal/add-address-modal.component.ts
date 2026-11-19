@@ -93,17 +93,17 @@ export interface AddAddressModalData {
     .aa__body { padding: 16px 20px; max-height: 68vh; overflow-y: auto; min-width: 560px; max-width: 100%; display: flex; flex-direction: column; gap: 14px; }
     .aa-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
     .aa-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-    .aa-field > label { font-size: 13px; font-weight: 600; color: #334155; }
-    .aa-input { padding: 9px 12px; border: 1px solid #d0d5dd; border-radius: 8px; font-size: 13.5px; color: #0f172a; font-family: inherit; }
+    .aa-field > label { font-size: 13px; font-weight: 600; color: var(--ui-text-3); }
+    .aa-input { padding: 9px 12px; border: 1px solid var(--ui-line-strong); border-radius: 8px; font-size: 13.5px; color: var(--ui-text); font-family: inherit; }
     .aa-input:focus { outline: none; border-color: #2691a4; box-shadow: 0 0 0 3px rgba(38, 145, 164, .12); }
     .aa-input.is-invalid { border-color: #dc2626; }
-    .aa-error { margin: 0; font-size: 12px; color: #dc2626; }
+    .aa-error { margin: 0; font-size: 12px; color: var(--ui-red-text); }
     .aa-presets { display: flex; flex-wrap: wrap; gap: 8px; }
-    .aa-chip { padding: 4px 12px; border-radius: 999px; border: 1px solid #d0d5dd; background: #fff; font-size: 12px; font-weight: 600; color: #475569; cursor: pointer; }
-    .aa-chip.is-on { background: #2691a4; border-color: #2691a4; color: #fff; }
-    .aa-btn { padding: 9px 18px; border-radius: 8px; border: 1px solid #d0d5dd; background: #fff; color: #334155; font-size: 13.5px; font-weight: 600; cursor: pointer; }
-    .aa-btn:hover { background: #f8fafc; }
-    .aa-btn--primary { border-color: #2691a4; background: #2691a4; color: #fff; }
+    .aa-chip { padding: 4px 12px; border-radius: 999px; border: 1px solid var(--ui-line-strong); background: var(--ui-surface); font-size: 12px; font-weight: 600; color: var(--ui-text-4); cursor: pointer; }
+    .aa-chip.is-on { background: var(--ui-b-2691a4); border-color: #2691a4; color: #fff; }
+    .aa-btn { padding: 9px 18px; border-radius: 8px; border: 1px solid var(--ui-line-strong); background: var(--ui-surface); color: var(--ui-text-3); font-size: 13.5px; font-weight: 600; cursor: pointer; }
+    .aa-btn:hover { background: var(--ui-surface-1); }
+    .aa-btn--primary { border-color: #2691a4; background: var(--ui-b-2691a4); color: #fff; }
     .aa-btn--primary:hover { background: #227d8d; }
   `],
 })

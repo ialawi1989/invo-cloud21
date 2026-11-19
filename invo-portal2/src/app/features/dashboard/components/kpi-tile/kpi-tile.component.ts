@@ -76,39 +76,39 @@ import { TooltipDirective } from '@shared/directives/tooltip.directive';
       height: 100%;
       display: flex; flex-direction: column; gap: 2px;
       padding: 12px 14px;
-      background: #fff;
-      border: 1px solid #e2e8f0;
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-line);
       border-radius: 10px;
       // Lets the headline number scale to THIS tile's width (tiles can be
       // narrow even on wide screens at a small colSpan), not the viewport's.
       container-type: inline-size;
 
-      &--accent { background: var(--color-brand-50, #effbfd); border-color: var(--color-brand-200, #afe7ef); }
+      &--accent { background: var(--color-brand-50, var(--ui-brand-soft)); border-color: var(--color-brand-200, var(--ui-x-afe7ef)); }
     }
 
     // Tone tints the tile so a strip of KPIs is scannable by kind. Every tone
     // also carries its own icon and label, so colour is reinforcement and never
     // the only thing telling two figures apart.
-    .kpi--neutral { background: #f8fafc; border-color: #e2e8f0;
-      .kpi__label, .kpi__icon { color: #64748b; } .kpi__value { color: #0f172a; } }
-    .kpi--brand { background: #f0fbfd; border-color: #b8e8f0;
-      .kpi__label, .kpi__icon { color: #1d7d8d; } .kpi__value { color: #14606e; } }
-    .kpi--amber { background: #fffbeb; border-color: #fde68a;
-      .kpi__label, .kpi__icon { color: #b45309; } .kpi__value { color: #92400e; } }
-    .kpi--violet { background: #f8f5ff; border-color: #ddd0fe;
-      .kpi__label, .kpi__icon { color: #6d3fd4; } .kpi__value { color: #5b30bd; } }
-    .kpi--rose { background: #fef4f4; border-color: #fbcfcf;
-      .kpi__label, .kpi__icon { color: #b91c1c; } .kpi__value { color: #991b1b; } }
-    .kpi--green { background: #f2fbf6; border-color: #b9ecd0;
-      .kpi__label, .kpi__icon { color: #157347; } .kpi__value { color: #10603c; } }
+    .kpi--neutral { background: var(--ui-surface-1); border-color: var(--ui-line);
+      .kpi__label, .kpi__icon { color: var(--ui-muted); } .kpi__value { color: var(--ui-text); } }
+    .kpi--brand { background: var(--ui-x-f0fbfd); border-color: var(--ui-x-b8e8f0);
+      .kpi__label, .kpi__icon { color: var(--ui-t-1d7d8d); } .kpi__value { color: var(--ui-t-14606e); } }
+    .kpi--amber { background: var(--ui-amber-soft); border-color: var(--ui-amber-soft-2);
+      .kpi__label, .kpi__icon { color: var(--ui-amber-text); } .kpi__value { color: var(--ui-amber-text); } }
+    .kpi--violet { background: var(--ui-x-f8f5ff); border-color: var(--ui-x-ddd0fe);
+      .kpi__label, .kpi__icon { color: var(--ui-t-6d3fd4); } .kpi__value { color: var(--ui-t-5b30bd); } }
+    .kpi--rose { background: var(--ui-x-fef4f4); border-color: var(--ui-x-fbcfcf);
+      .kpi__label, .kpi__icon { color: var(--ui-red-text); } .kpi__value { color: var(--ui-red-text); } }
+    .kpi--green { background: var(--ui-x-f2fbf6); border-color: var(--ui-x-b9ecd0);
+      .kpi__label, .kpi__icon { color: var(--ui-t-157347); } .kpi__value { color: var(--ui-t-10603c); } }
     // A negative figure is a state, not a palette choice.
-    .kpi--bad .kpi__value { color: #b91c1c; }
+    .kpi--bad .kpi__value { color: var(--ui-red-text); }
 
     .kpi__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
     .kpi__icon { flex-shrink: 0; display: inline-flex; opacity: .85; }
 
     .kpi__label {
-      font-size: 11.5px; font-weight: 600; color: #64748b;
+      font-size: 11.5px; font-weight: 600; color: var(--ui-muted);
       text-transform: uppercase; letter-spacing: .03em;
       display: inline-flex; align-items: center; gap: 4px;
     }
@@ -123,11 +123,11 @@ import { TooltipDirective } from '@shared/directives/tooltip.directive';
       // Scales with the tile width so long currency values (e.g. seven-figure
       // balances) never clip; wraps as a last resort instead of overflowing.
       font-size: clamp(14px, 8.5cqi, 21px);
-      font-weight: 800; color: #0f172a;
+      font-weight: 800; color: var(--ui-text);
       letter-spacing: -0.01em; font-variant-numeric: tabular-nums;
       min-width: 0; overflow-wrap: anywhere; line-height: 1.15;
     }
-    .kpi__hint { font-size: 11.5px; color: #94a3b8; }
+    .kpi__hint { font-size: 11.5px; color: var(--ui-faint); }
   `],
 })
 export class KpiTileComponent {

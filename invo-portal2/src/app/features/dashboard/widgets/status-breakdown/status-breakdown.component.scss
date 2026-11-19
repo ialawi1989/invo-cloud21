@@ -7,9 +7,9 @@
   gap: 10px;
 }
 .sb__status {
-  font-size: 13px; color: #0f172a; text-transform: capitalize;
+  font-size: 13px; color: var(--ui-text); text-transform: capitalize;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.sb__bar { height: 8px; border-radius: 999px; background: #eef2f6; overflow: hidden; }
+.sb__bar { height: 8px; border-radius: 999px; background: var(--ui-surface-2); overflow: hidden; }
 .sb__barFill { display: block; height: 100%; border-radius: 999px; background: var(--color-brand-500, #32acc1); }
-.sb__count { font-size: 13px; font-weight: 600; color: #0f172a; font-variant-numeric: tabular-nums; min-width: 28px; text-align: end; }
+.sb__count { font-size: 13px; font-weight: 600; color: var(--ui-text); font-variant-numeric: tabular-nums; min-width: 28px; text-align: end; }

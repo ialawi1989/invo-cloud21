@@ -39,10 +39,10 @@ import { SupplierFormDetailsComponent } from '../supplier-form-details/supplier-
   `,
   styles: [`
     .sqc__body { padding: 16px 20px; max-height: 68vh; overflow-y: auto; min-width: 640px; max-width: 100%; }
-    .sqc-btn { padding: 9px 18px; border-radius: 8px; border: 1px solid #d0d5dd; background: #fff; color: #334155; font-size: 13.5px; font-weight: 600; cursor: pointer; }
-    .sqc-btn:hover { background: #f8fafc; }
+    .sqc-btn { padding: 9px 18px; border-radius: 8px; border: 1px solid var(--ui-line-strong); background: var(--ui-surface); color: var(--ui-text-3); font-size: 13.5px; font-weight: 600; cursor: pointer; }
+    .sqc-btn:hover { background: var(--ui-surface-1); }
     .sqc-btn:disabled { opacity: .5; cursor: not-allowed; }
-    .sqc-btn--primary { border-color: #2691a4; background: #2691a4; color: #fff; }
+    .sqc-btn--primary { border-color: #2691a4; background: var(--ui-b-2691a4); color: #fff; }
     .sqc-btn--primary:hover:not(:disabled) { background: #227d8d; }
   `],
 })

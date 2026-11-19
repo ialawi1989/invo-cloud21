@@ -72,9 +72,9 @@ export interface ChangeLanguageModalData {
   `,
   styles: [`
     .cl__body  { padding: 14px 20px 6px; display: flex; flex-direction: column; gap: 10px; }
-    .cl__hint  { margin: 0; font-size: 13px; color: #475569; line-height: 1.5; }
-    .cl__hint strong { color: #0f172a; }
-    .cl__empty { margin: 8px 0; font-size: 13px; color: #94a3b8; font-style: italic; }
+    .cl__hint  { margin: 0; font-size: 13px; color: var(--ui-text-4); line-height: 1.5; }
+    .cl__hint strong { color: var(--ui-text); }
+    .cl__empty { margin: 8px 0; font-size: 13px; color: var(--ui-faint); font-style: italic; }
     .cl__list  { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
     .cl__row {
       display: flex;
@@ -86,11 +86,11 @@ export interface ChangeLanguageModalData {
       cursor: pointer;
       transition: background 120ms, border-color 120ms;
     }
-    .cl__row:hover { background: #f8fafc; }
-    .cl__row.is-on { background: #e6f7fa; border-color: #32acc1; }
+    .cl__row:hover { background: var(--ui-surface-1); }
+    .cl__row.is-on { background: var(--ui-x-e6f7fa); border-color: #32acc1; }
     .cl__row input { accent-color: #32acc1; }
     .cl__flag  { font-size: 18px; line-height: 1; }
-    .cl__label { font-size: 14px; color: #0f172a; }
+    .cl__label { font-size: 14px; color: var(--ui-text); }
     .cl__btn {
       padding: 8px 18px;
       border-radius: 999px;
@@ -99,9 +99,9 @@ export interface ChangeLanguageModalData {
       cursor: pointer;
       border: 1px solid transparent;
     }
-    .cl__btn--ghost   { background: #d4eef3; color: #0e7490; }
-    .cl__btn--ghost:hover { background: #b9e4ec; }
-    .cl__btn--primary { background: #32acc1; color: #fff; }
+    .cl__btn--ghost   { background: var(--ui-x-d4eef3); color: var(--ui-brand-text); }
+    .cl__btn--ghost:hover { background: var(--ui-x-b9e4ec); }
+    .cl__btn--primary { background: var(--ui-b-32acc1); color: #fff; }
     .cl__btn--primary:hover:not(:disabled) { background: #2a93a6; }
     .cl__btn--primary:disabled { opacity: .5; cursor: not-allowed; }
   `],

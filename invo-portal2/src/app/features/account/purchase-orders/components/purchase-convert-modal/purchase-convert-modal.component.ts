@@ -26,9 +26,9 @@ import { ModalFooterComponent } from '@shared/modal/modal-footer.component';
   `,
   styles: [`
     .pc { padding: 20px 24px; display: flex; flex-direction: column; gap: 12px; }
-    .pc p { margin: 0 0 4px; color: #374151; font-size: 14px; }
+    .pc p { margin: 0 0 4px; color: var(--ui-text-3); font-size: 14px; }
     .pc__opt { display: flex; gap: 8px; align-items: center; font-size: 14px; cursor: pointer; }
-    .pc__btn { height: 38px; padding: 0 16px; border-radius: 8px; border: 1px solid #d0d5dd; background: #fff; cursor: pointer; font: inherit; }
+    .pc__btn { height: 38px; padding: 0 16px; border-radius: 8px; border: 1px solid var(--ui-line-strong); background: var(--ui-surface); cursor: pointer; font: inherit; }
     .pc__btn--primary { background: #227d8d; border-color: #227d8d; color: #fff; }
   `],
 })

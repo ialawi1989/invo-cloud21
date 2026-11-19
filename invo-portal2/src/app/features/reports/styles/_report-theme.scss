@@ -18,14 +18,14 @@ $tones: income, expense, profit, asset, liability, equity;
 
 /// Design tokens as CSS custom properties — include once on `:host`.
 @mixin tokens {
-  --rp-surface: #fff;
-  --rp-surface-2: #f8fafc;
-  --rp-surface-3: #f1f5f9;
-  --rp-border: #e2e8f0;
-  --rp-border-strong: #cbd5e1;
-  --rp-text: #0f172a;
-  --rp-text-2: #334155;
-  --rp-muted: #64748b;
+  --rp-surface: var(--ui-surface);
+  --rp-surface-2: var(--ui-surface-1);
+  --rp-surface-3: var(--ui-surface-2);
+  --rp-border: var(--ui-line);
+  --rp-border-strong: var(--ui-line-strong);
+  --rp-text: var(--ui-text);
+  --rp-text-2: var(--ui-text-3);
+  --rp-muted: var(--ui-muted);
   --rp-radius: 12px;
 
   // Frozen account / code columns of the statement tables — narrower on phones so amounts keep room.
@@ -36,15 +36,15 @@ $tones: income, expense, profit, asset, liability, equity;
     --rp-col2: 52px;
   }
 
-  --rp-brand: #1e8c9f;
-  --rp-brand-soft: #e6f6f9;
+  --rp-brand: var(--ui-brand-text);
+  --rp-brand-soft: var(--ui-x-e6f6f9);
 
-  --rp-income: #047857;     --rp-income-soft: #ecfdf5;
-  --rp-expense: #b91c1c;    --rp-expense-soft: #fef2f2;
-  --rp-profit: #0e7490;     --rp-profit-soft: #ecfeff;
-  --rp-asset: #1d4ed8;      --rp-asset-soft: #eff6ff;
-  --rp-liability: #b45309;  --rp-liability-soft: #fffbeb;
-  --rp-equity: #6d28d9;     --rp-equity-soft: #f5f3ff;
+  --rp-income: var(--ui-green-text);     --rp-income-soft: var(--ui-green-soft);
+  --rp-expense: var(--ui-red-text);    --rp-expense-soft: var(--ui-red-soft);
+  --rp-profit: #0e7490;     --rp-profit-soft: var(--ui-brand-soft);
+  --rp-asset: #1d4ed8;      --rp-asset-soft: var(--ui-x-eff6ff);
+  --rp-liability: #b45309;  --rp-liability-soft: var(--ui-amber-soft);
+  --rp-equity: #6d28d9;     --rp-equity-soft: var(--ui-x-f5f3ff);
 }
 
 /// White rounded card with a hairline border (tables, charts, panels).
@@ -81,7 +81,7 @@ $tones: income, expense, profit, asset, liability, equity;
       font-weight: 600; font-size: 11.5px; text-transform: uppercase; letter-spacing: .04em;
       border-bottom: 1px solid var(--rp-border);
     }
-    tbody tr:nth-child(even):not(.total):not(.closing) td { background: #fcfdfe; }
+    tbody tr:nth-child(even):not(.total):not(.closing) td { background: var(--ui-x-fcfdfe); }
     tbody tr:hover td { background: var(--rp-brand-soft); }
 
     @include figures;
@@ -156,18 +156,18 @@ $tones: income, expense, profit, asset, liability, equity;
 
     th.total-header, td.total-cell { font-weight: 700; border-inline-start: 1px solid var(--rp-border); }
     // Legacy look: the Total column is a grey band; on section totals and profit rows it is darker.
-    td.total-cell { background: #eef2f6; }
-    tr.subtotal-row td.total-cell, tr.total-row td.total-cell, tr.profit-row td.total-cell { background: #dde4ec; }
+    td.total-cell { background: var(--ui-surface-2); }
+    tr.subtotal-row td.total-cell, tr.total-row td.total-cell, tr.profit-row td.total-cell { background: var(--ui-x-dde4ec); }
     th.total-header { background: var(--rp-brand); color: #fff; border-bottom-color: var(--rp-brand); }
 
     // Section totals (Total income / cost of goods sold / expenses): grey label cells like the legacy.
-    tr.subtotal-row td.sticky-col-1, tr.subtotal-row td.sticky-col-2 { background: #e5e7eb; font-weight: 700; }
-    tr.subtotal-row td { border-bottom: 2px solid #d1d5db; }
+    tr.subtotal-row td.sticky-col-1, tr.subtotal-row td.sticky-col-2 { background: var(--ui-line); font-weight: 700; }
+    tr.subtotal-row td { border-bottom: 2px solid var(--ui-line-strong); }
 
     // Gross / operating profit: tinted label cells. Net profit: dark band, white text, brand-coloured Total.
-    tr.profit-row.gross-profit td.sticky-col-1, tr.profit-row.gross-profit td.sticky-col-2 { background: #ddf4f7; }
-    tr.profit-row.operating-profit td.sticky-col-1, tr.profit-row.operating-profit td.sticky-col-2 { background: #dbeafe; }
-    tr.profit-row.net-profit td { background: #1f2937 !important; color: #fff !important; border-top-color: #1f2937; border-bottom: 0; }
+    tr.profit-row.gross-profit td.sticky-col-1, tr.profit-row.gross-profit td.sticky-col-2 { background: var(--ui-x-ddf4f7); }
+    tr.profit-row.operating-profit td.sticky-col-1, tr.profit-row.operating-profit td.sticky-col-2 { background: var(--ui-x-dbeafe); }
+    tr.profit-row.net-profit td { background: var(--ui-ink-2) !important; color: #fff !important; border-top-color: var(--ui-ink-2); border-bottom: 0; }
     tr.profit-row.net-profit td.negative { color: #fca5a5 !important; }
     tr.profit-row.net-profit td.total-cell { background: var(--rp-brand) !important; }
 
@@ -180,8 +180,8 @@ $tones: income, expense, profit, asset, liability, equity;
       // (Here the amount cell is the single data column — there is no separate Total cell — so match every non-label cell.)
       tr.subtotal-row td:not(.sticky-col-1):not(.sticky-col-2),
       tr.total-row td:not(.sticky-col-1):not(.sticky-col-2),
-      tr.profit-row td:not(.sticky-col-1):not(.sticky-col-2) { background: #f3f4f6; }
-      tr.profit-row.net-profit td.total-cell { background: #1f2937 !important; }
+      tr.profit-row td:not(.sticky-col-1):not(.sticky-col-2) { background: var(--ui-surface-2); }
+      tr.profit-row.net-profit td.total-cell { background: var(--ui-ink-2) !important; }
     }
 
     // Clean, Wix-style statement: white rows, tone only colours the text of section / total rows.
@@ -202,7 +202,7 @@ $tones: income, expense, profit, asset, liability, equity;
       thead th[class*="bo-p"] { text-transform: none; letter-spacing: 0; font-size: 13px; font-weight: 700; color: var(--rp-text); padding-top: 11px; padding-bottom: 9px; }
       @for $i from 1 through 10 {
         $h: ($i * 47 + 190) % 360;
-        th.bo-p#{$i} { background: linear-gradient(hsla($h, 65%, 55%, .16), hsla($h, 65%, 55%, .16)), #fff; box-shadow: inset 0 -3px 0 hsl($h, 60%, 48%); }
+        th.bo-p#{$i} { background: linear-gradient(hsla($h, 65%, 55%, .16), hsla($h, 65%, 55%, .16)), var(--ui-surface); box-shadow: inset 0 -3px 0 hsl($h, 60%, 48%); }
         td.bo-p#{$i}-cell { background: hsla($h, 60%, 55%, .10); }
         tr.subtotal-row td.bo-p#{$i}-cell, tr.total-row td.bo-p#{$i}-cell, tr.profit-row td.bo-p#{$i}-cell { background: hsla($h, 60%, 55%, .24); }
       }

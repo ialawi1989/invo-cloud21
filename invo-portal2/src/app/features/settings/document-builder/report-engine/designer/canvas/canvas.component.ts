@@ -9,14 +9,16 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 import { CdkDropList, CdkDragDrop } from '@angular/cdk/drag-drop';
 import { DesignerStateService } from '../../services/designer-state.service';
 import { computePageDimensions, mmToPx } from '../../core/layout/dimensions';
 import { CanvasBlockComponent } from './canvas-block.component';
 import { CanvasContextMenuComponent } from './canvas-context-menu.component';
 import { Block, BlockType } from '../../core/types/block.types';
-import { Section, SectionType } from '../../core/types/template.types';
+import { MASTER_PAGE_ID, Section, SectionType } from '../../core/types/template.types';
 import { snap, rectsIntersect, blockRect } from '../../utils/geometry.utils';
+import { DEFAULT_FONT_STACK, normalizeSeedFontFamily } from '../../utils/fonts.utils';
 
 /** One visual header/body/footer zone drawn behind the blocks. */
 interface SectionBand {
@@ -44,7 +46,7 @@ interface SectionBand {
   selector: 'app-designer-canvas',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, CdkDropList, CanvasBlockComponent, CanvasContextMenuComponent],
+  imports: [CommonModule, TranslateModule, CdkDropList, CanvasBlockComponent, CanvasContextMenuComponent],
   templateUrl: './canvas.component.html',
   styleUrls: ['./canvas.component.scss'],
 })
@@ -77,14 +79,47 @@ export class CanvasComponent {
         });
   });
 
-  readonly pageWidthPx = computed(() => mmToPx(this.pageDims().width) * this.zoom());
-  readonly pageHeightPx = computed(() => mmToPx(this.pageDims().height) * this.zoom());
+  /**
+   * Paper size in CSS px at 100%. Zoom is a `transform: scale()` on the page
+   * element, not a factor baked into every measurement — so everything
+   * inside the paper (type, padding, borders, radii, the mm and pt the style
+   * helpers emit) scales with the page instead of staying at its 100% size
+   * while the boxes around it grow. That's what makes the canvas agree with
+   * the HTML preview and the print at any zoom level; before this, only the
+   * geometry scaled and the design drifted from its output the moment you
+   * left 100%.
+   *
+   * A transform doesn't affect layout, so `pageBox*` below reserves the
+   * scaled footprint for the scroll area.
+   */
+  readonly pageWidthPx = computed(() => mmToPx(this.pageDims().width));
+  readonly pageHeightPx = computed(() => mmToPx(this.pageDims().height));
+
+  /** Footprint the scaled page occupies in the scroll area. */
+  readonly pageBoxWidthPx = computed(() => this.pageWidthPx() * this.zoom());
+  readonly pageBoxHeightPx = computed(() => this.pageHeightPx() * this.zoom());
   readonly pageBg = computed(() => this.state.template()?.page.background ?? '#ffffff');
 
-  readonly marginLeftPx = computed(() => mmToPx(this.state.template()?.page.margins.left ?? 15) * this.zoom());
-  readonly marginRightPx = computed(() => mmToPx(this.state.template()?.page.margins.right ?? 15) * this.zoom());
-  readonly marginTopPx = computed(() => mmToPx(this.state.template()?.page.margins.top ?? 15) * this.zoom());
-  readonly marginBottomPx = computed(() => mmToPx(this.state.template()?.page.margins.bottom ?? 15) * this.zoom());
+  /**
+   * Family the page cascades to every block whose own `style.font.family` is
+   * empty — i.e. the "Inherit" option. `blockStyleToCss` emits no
+   * `font-family` for those blocks, so they pick this up by CSS inheritance
+   * and a block with an explicit family still wins on its own inline style.
+   *
+   * This is the canvas half of the same fallback the HTML renderer writes onto
+   * `body`; keeping both on `theme.fontFamily ?? DEFAULT_FONT_STACK` is what
+   * makes the design surface preview the export rather than the app's own UI
+   * font. See DEFAULT_FONT_STACK for why the stack is Roboto-then-Amiri.
+   */
+  readonly pageFontFamily = computed(
+    () => normalizeSeedFontFamily(this.state.template()?.theme?.fontFamily) || DEFAULT_FONT_STACK,
+  );
+
+  // Inside the scaled page — 100% px, the transform does the rest.
+  readonly marginLeftPx = computed(() => mmToPx(this.state.template()?.page.margins.left ?? 15));
+  readonly marginRightPx = computed(() => mmToPx(this.state.template()?.page.margins.right ?? 15));
+  readonly marginTopPx = computed(() => mmToPx(this.state.template()?.page.margins.top ?? 15));
+  readonly marginBottomPx = computed(() => mmToPx(this.state.template()?.page.margins.bottom ?? 15));
 
   readonly watermark = computed(() => this.state.template()?.page?.watermark ?? null);
 
@@ -93,14 +128,20 @@ export class CanvasComponent {
     const t = this.state.template();
     if (!t) return [];
     const dims = this.pageDims();
-    const headerH = this.sectionExtentMm('page-header');
-    const firstHeaderH = this.sectionExtentMm('first-page-header');
-    const footerH = this.sectionExtentMm('page-footer');
-    const lastFooterH = this.sectionExtentMm('last-page-footer');
+    const activePage = this.state.activePageId();
+    // Header/footer bands only exist on the master page — extra pages are
+    // standalone content pages with no repeating header/footer of their own
+    // (see `Section.pageId`), so their body starts flush at the top.
+    const isMaster = activePage === MASTER_PAGE_ID;
+    const headerH = isMaster ? this.sectionExtentMm('page-header') : 0;
+    const firstHeaderH = isMaster ? this.sectionExtentMm('first-page-header') : 0;
+    const footerH = isMaster ? this.sectionExtentMm('page-footer') : 0;
+    const lastFooterH = isMaster ? this.sectionExtentMm('last-page-footer') : 0;
     const bodyOffset = Math.max(headerH, firstHeaderH);
 
     const out: { block: Block; yOffsetMm: number; sectionType: SectionType }[] = [];
     for (const sec of t.sections) {
+      if ((sec.pageId ?? MASTER_PAGE_ID) !== activePage) continue;
       let offset = 0;
       switch (sec.type) {
         case 'page-header':
@@ -126,21 +167,23 @@ export class CanvasComponent {
   readonly sectionBands = computed<SectionBand[]>(() => {
     const t = this.state.template();
     if (!t) return [];
-    const z = this.zoom();
     const dims = this.pageDims();
-    const headerHpx = mmToPx(this.sectionExtentMm('page-header')) * z;
-    const footerHpx = mmToPx(this.sectionExtentMm('page-footer')) * z;
-    const contentHpx = mmToPx(dims.contentHeight) * z;
+    // Extra pages have no header/footer bands of their own — see the same
+    // gating in `allBlocksWithOffset`.
+    const isMaster = this.state.activePageId() === MASTER_PAGE_ID;
+    const headerHpx = isMaster ? mmToPx(this.sectionExtentMm('page-header')) : 0;
+    const footerHpx = isMaster ? mmToPx(this.sectionExtentMm('page-footer')) : 0;
+    const contentHpx = mmToPx(dims.contentHeight);
 
     const bands: SectionBand[] = [];
     if (headerHpx > 0) {
-      bands.push({ type: 'page-header', topPx: 0, heightPx: headerHpx, label: 'Header', variant: 'header' });
+      bands.push({ type: 'page-header', topPx: 0, heightPx: headerHpx, label: 'DOCUMENT_BUILDER.HEADER_CHECK', variant: 'header' });
     }
     bands.push({
       type: 'body',
       topPx: headerHpx,
       heightPx: Math.max(0, contentHpx - headerHpx - footerHpx),
-      label: 'Body',
+      label: 'DOCUMENT_BUILDER.BODY',
       variant: 'body',
     });
     if (footerHpx > 0) {
@@ -148,14 +191,15 @@ export class CanvasComponent {
         type: 'page-footer',
         topPx: contentHpx - footerHpx,
         heightPx: footerHpx,
-        label: 'Footer',
+        label: 'DOCUMENT_BUILDER.FOOTER_CHECK',
         variant: 'footer',
       });
     }
     return bands;
   });
 
-  readonly gridStepPx = computed(() => Math.max(2, mmToPx(5) * this.zoom()));
+  // Inside the scaled page, so no zoom factor: the 5mm grid stays 5mm.
+  readonly gridStepPx = computed(() => mmToPx(5));
 
   // Ruler ticks every 10mm, offset by the page padding so 0 lines up with
   // the paper's left/top edge.
@@ -196,16 +240,20 @@ export class CanvasComponent {
     const xMm = (ev.dropPoint.x - rect.left) / mmToPx(1) / z - (t.page.margins.left ?? 0);
     const yMmInside = (ev.dropPoint.y - rect.top) / mmToPx(1) / z - (t.page.margins.top ?? 0);
 
+    const activePage = this.state.activePageId();
+    const isMaster = activePage === MASTER_PAGE_ID;
     const dims = this.pageDims();
-    const headerH = this.sectionExtentMm('page-header');
-    const footerH = this.sectionExtentMm('page-footer');
+    // Extra pages have no header/footer bands — see `allBlocksWithOffset`.
+    const headerH = isMaster ? this.sectionExtentMm('page-header') : 0;
+    const footerH = isMaster ? this.sectionExtentMm('page-footer') : 0;
     const footerTopMm = Math.max(0, dims.contentHeight - footerH);
     const inHeader = headerH > 0 && yMmInside < headerH;
     const inFooter = footerH > 0 && yMmInside > footerTopMm;
 
     const targetType: SectionType = inHeader ? 'page-header' : inFooter ? 'page-footer' : 'body';
+    const pageSections = t.sections.filter((s) => (s.pageId ?? MASTER_PAGE_ID) === activePage);
     const targetSection =
-      t.sections.find((s) => s.type === targetType) ?? t.sections.find((s) => s.type === 'body');
+      pageSections.find((s) => s.type === targetType) ?? pageSections.find((s) => s.type === 'body');
     if (!targetSection) return;
 
     const sectionTopMm = inHeader ? 0 : inFooter ? footerTopMm : headerH;
@@ -239,6 +287,9 @@ export class CanvasComponent {
   private marqueeOrigin: { x: number; y: number } | null = null;
 
   onSurfaceMouseDown(ev: MouseEvent): void {
+    // Middle button is the pan gesture (see onCanvasMouseDown) — not a
+    // marquee start.
+    if (ev.button !== 0) return;
     // The click may land on the surface, the margin frame, or a section
     // band — all of which count as empty area. Only bail when it landed
     // inside a real block; CanvasBlockComponent handles those itself.
@@ -312,10 +363,13 @@ export class CanvasComponent {
       const dx = ev.key === 'ArrowLeft' ? -step : ev.key === 'ArrowRight' ? step : 0;
       const dy = ev.key === 'ArrowUp' ? -step : ev.key === 'ArrowDown' ? step : 0;
       for (const id of ids) {
-        this.state.patchBlock(id, (b) => ({
-          ...b,
-          position: { x: snap(b.position.x + dx), y: snap(b.position.y + dy) },
-        }));
+        this.state.patchBlock(id, (b) => (
+          // Locked blocks can be selected, so a selection may include one —
+          // nudging it would defeat the lock the drag handler honors.
+          b.locked
+            ? b
+            : { ...b, position: { x: snap(b.position.x + dx), y: snap(b.position.y + dy) } }
+        ));
       }
       ev.preventDefault();
     }
@@ -324,6 +378,66 @@ export class CanvasComponent {
   @HostListener('window:keydown.escape')
   onEscape(): void {
     this.state.clearSelection();
+  }
+
+  /** Ctrl/Cmd+scroll zooms the canvas, matching the toolbar's zoom step —
+   *  preventDefault stops the browser's own page-zoom gesture from firing
+   *  alongside it. Plain scroll (no modifier) is left alone to pan/scroll
+   *  the canvas as normal. */
+  @HostListener('wheel', ['$event'])
+  onWheel(ev: WheelEvent): void {
+    if (!(ev.ctrlKey || ev.metaKey)) return;
+    ev.preventDefault();
+    const step = ev.deltaY < 0 ? 0.1 : -0.1;
+    this.state.setZoom(this.zoom() + step);
+  }
+
+  // ─── Middle-click pan (Adobe-style hand tool) ───────────────────────
+
+  @ViewChild('scrollEl') private scrollEl?: ElementRef<HTMLElement>;
+
+  /** Drives the grabbing cursor — a template class binding rather than
+   *  direct style writes, since OnPush still needs a signal read to update. */
+  readonly isPanning = signal(false);
+
+  private panning = false;
+  private panStartX = 0;
+  private panStartY = 0;
+  private panScrollLeft = 0;
+  private panScrollTop = 0;
+
+  /** Bound on the scroll container (mousedown), not the page surface — a
+   *  middle-click anywhere in the visible canvas, including outside the
+   *  paper, should start panning. */
+  onCanvasMouseDown(ev: MouseEvent): void {
+    if (ev.button !== 1) return;
+    const el = this.scrollEl?.nativeElement;
+    if (!el) return;
+    // Middle-click's default is the browser's own autoscroll icon — without
+    // this it fights our drag-to-pan for the same gesture.
+    ev.preventDefault();
+    this.panning = true;
+    this.isPanning.set(true);
+    this.panStartX = ev.clientX;
+    this.panStartY = ev.clientY;
+    this.panScrollLeft = el.scrollLeft;
+    this.panScrollTop = el.scrollTop;
+  }
+
+  @HostListener('window:mousemove', ['$event'])
+  onWindowMouseMove(ev: MouseEvent): void {
+    if (!this.panning) return;
+    const el = this.scrollEl?.nativeElement;
+    if (!el) return;
+    el.scrollLeft = this.panScrollLeft - (ev.clientX - this.panStartX);
+    el.scrollTop = this.panScrollTop - (ev.clientY - this.panStartY);
+  }
+
+  @HostListener('window:mouseup', ['$event'])
+  onWindowMouseUp(ev: MouseEvent): void {
+    if (ev.button !== 1 || !this.panning) return;
+    this.panning = false;
+    this.isPanning.set(false);
   }
 
   // ─── internals ─────────────────────────────────────────────────────

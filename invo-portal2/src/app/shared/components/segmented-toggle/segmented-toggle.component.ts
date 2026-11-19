@@ -121,8 +121,8 @@ export interface SegmentedToggleOption<T = string> {
       padding: 4px;
       /* Brighter than the gray app canvas (#eef2f6) so the toggle lifts off
          the page; a faint teal tint ties it to the filled-teal active pill. */
-      background: #f5fbfc;
-      border: 1px solid #e3eef0;
+      background: var(--ui-x-f5fbfc);
+      border: 1px solid var(--ui-x-e3eef0);
       border-radius: 9px;
       align-self: flex-start;
       flex-shrink: 0;
@@ -141,7 +141,7 @@ export interface SegmentedToggleOption<T = string> {
       border-radius: 6px;
       font-size: 13px;
       font-weight: 500;
-      color: #64748b;
+      color: var(--ui-muted);
       cursor: pointer;
       text-align: center;
       /* Keep labels on a single line — without this, a short label
@@ -150,7 +150,7 @@ export interface SegmentedToggleOption<T = string> {
       white-space: nowrap;
       transition: background 120ms ease, color 120ms ease, box-shadow 120ms ease;
     }
-    .st__btn:hover:not(:disabled):not(.is-on) { color: #334155; }
+    .st__btn:hover:not(:disabled):not(.is-on) { color: var(--ui-text-3); }
     .st__btn.is-on {
       background: var(--color-brand-600, #2691a4);
       color: #fff;
@@ -187,8 +187,8 @@ export interface SegmentedToggleOption<T = string> {
       font-size: 11px;
       font-weight: 600;
       line-height: 1.4;
-      color: #64748b;
-      background: #e2e8f0;
+      color: var(--ui-muted);
+      background: var(--ui-line);
       border-radius: 999px;
     }
     .st__btn.is-on .st__count {
@@ -199,7 +199,7 @@ export interface SegmentedToggleOption<T = string> {
     /* Locked variant — selected stays highlighted, unselected
        dimmed so the user reads it as "this can't change". */
     .st.is-locked { opacity: 0.85; }
-    .st.is-locked .st__btn:not(.is-on) { color: #94a3b8; }
+    .st.is-locked .st__btn:not(.is-on) { color: var(--ui-faint); }
   `],
 })
 export class SegmentedToggleComponent<T = string> {

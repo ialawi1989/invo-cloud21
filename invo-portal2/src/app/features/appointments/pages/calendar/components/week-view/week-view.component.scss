@@ -7,7 +7,7 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: #fff;
+  background: var(--ui-surface);
   border: none;
   border-radius: 0;
   overflow: hidden;
@@ -15,7 +15,7 @@
 
 .week-grid__header {
   display: flex;
-  border-bottom: 1px solid #e4e7ec;
+  border-bottom: 1px solid var(--ui-line);
   flex-shrink: 0;
 }
 
@@ -28,16 +28,16 @@
   text-align: center;
   padding: 8px 0;
   cursor: pointer;
-  border-left: 1px solid #f1f5f9;
+  border-left: 1px solid var(--ui-surface-2);
 
-  &:hover { background: #f8fafc; }
-  &.is-today .week-grid__day-num { background: #2691a4; color: #fff; }
+  &:hover { background: var(--ui-surface-1); }
+  &.is-today .week-grid__day-num { background: var(--ui-b-2691a4); color: #fff; }
 }
 
 .week-grid__day-name {
   display: block;
   font-size: 10.5px;
-  color: #94a3b8;
+  color: var(--ui-faint);
   text-transform: uppercase;
 }
 
@@ -61,7 +61,7 @@
 
 .week-grid__time-label {
   font-size: 10px;
-  color: #94a3b8;
+  color: var(--ui-faint);
   text-align: right;
   padding-right: 6px;
   transform: translateY(-6px);
@@ -72,14 +72,14 @@
   -webkit-user-select: none;
   position: relative;
   flex: 1;
-  border-left: 1px solid #f1f5f9;
+  border-left: 1px solid var(--ui-surface-2);
   cursor: pointer;
   touch-action: none;
 }
 
 .week-grid__slot-btn {
   width: 100%;
-  border-bottom: 1px solid #f8fafc;
+  border-bottom: 1px solid var(--ui-surface-1);
   box-sizing: border-box;
   pointer-events: none;
 
@@ -89,10 +89,10 @@
     background:
       repeating-linear-gradient(
         135deg,
-        #eef1f4,
-        #eef1f4 6px,
-        #f6f7f9 6px,
-        #f6f7f9 12px
+        var(--ui-x-eef1f4),
+        var(--ui-x-eef1f4) 6px,
+        var(--ui-x-f6f7f9) 6px,
+        var(--ui-x-f6f7f9) 12px
       );
   }
 }
@@ -129,18 +129,18 @@
   line-height: 1.3;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.1);
 
-  &[data-status='booked'] { background: #eef2f6; border-left-color: #6b7280; }
-  &[data-status='checked-in'] { background: #eff6ff; border-left-color: #2563eb; }
-  &[data-status='paid'] { background: #f0fdf4; border-left-color: #16a34a; }
+  &[data-status='booked'] { background: var(--ui-surface-2); border-left-color: #6b7280; }
+  &[data-status='checked-in'] { background: var(--ui-x-eff6ff); border-left-color: #2563eb; }
+  &[data-status='paid'] { background: var(--ui-x-f0fdf4); border-left-color: #16a34a; }
   &:active { cursor: grabbing; }
 
   &--group {
-    background: #f1f5f9;
+    background: var(--ui-surface-2);
     border-left-color: #2691a4;
     display: flex;
     align-items: center;
     font-weight: 600;
-    color: #2691a4;
+    color: var(--ui-brand-text);
   }
 }
 
@@ -150,12 +150,12 @@
   overflow: hidden;
   text-overflow: ellipsis;
   font-weight: 600;
-  color: #1a1d29;
+  color: var(--ui-text-2);
 }
 
 .week-appt__time {
   display: block;
-  color: #94a3b8;
+  color: var(--ui-faint);
   font-size: 9.5px;
 }
 
@@ -173,7 +173,7 @@
 .week-grid__guide-ghost {
   position: absolute; left: 2px; right: 2px; border: 2px dashed #2563eb; border-radius: 5px; background: rgba(37, 99, 235, 0.08);
   z-index: 3; pointer-events: none; overflow: hidden;
-  span { display: inline-block; margin: 1px 4px; font-size: 10px; font-weight: 700; color: #1d4ed8; }
+  span { display: inline-block; margin: 1px 4px; font-size: 10px; font-weight: 700; color: var(--ui-t-1d4ed8); }
 }
 
 /* Solid, borderless cards like Google Calendar. */

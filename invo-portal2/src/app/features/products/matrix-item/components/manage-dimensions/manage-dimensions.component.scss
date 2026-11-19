@@ -15,8 +15,8 @@
     display: flex;
     flex-direction: column;
     gap: 2px;
-    span { font-weight: 700; color: #0f172a; font-size: 14px; }
-    small { color: #94a3b8; font-size: 12px; }
+    span { font-weight: 700; color: var(--ui-text); font-size: 14px; }
+    small { color: var(--ui-faint); font-size: 12px; }
   }
 
   &__actions {
@@ -27,14 +27,14 @@
   }
 
   &__empty {
-    border: 1px dashed #e2e8f0;
+    border: 1px dashed var(--ui-line);
     border-radius: 12px;
     padding: 28px 20px;
     text-align: center;
-    background: #f8fafc;
+    background: var(--ui-surface-1);
 
-    h4 { margin: 0 0 6px; color: #0f172a; font-size: 15px; }
-    p  { margin: 0 auto 14px; color: #64748b; font-size: 13px; max-width: 420px; }
+    h4 { margin: 0 0 6px; color: var(--ui-text); font-size: 15px; }
+    p  { margin: 0 auto 14px; color: var(--ui-muted); font-size: 13px; max-width: 420px; }
   }
 }
 
@@ -45,10 +45,10 @@
 }
 
 .dim-card {
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--ui-line);
   border-radius: 12px;
   padding: 14px 16px;
-  background: #fff;
+  background: var(--ui-surface);
 
   &__head {
     display: flex;
@@ -65,7 +65,7 @@
     gap: 8px;
   }
 
-  &__label { font-weight: 700; color: #0f172a; font-size: 14px; }
+  &__label { font-weight: 700; color: var(--ui-text); font-size: 14px; }
 
   &__tools {
     display: inline-flex;
@@ -87,8 +87,8 @@
   gap: 6px;
   padding: 4px 8px 4px 10px;
   border-radius: 999px;
-  border: 1px solid #e2e8f0;
-  background: #f8fafc;
+  border: 1px solid var(--ui-line);
+  background: var(--ui-surface-1);
   font-size: 12px;
 
   &--radio { border-radius: 8px; }
@@ -101,9 +101,9 @@
     flex-shrink: 0;
   }
 
-  &__name { font-weight: 600; color: #0f172a; }
+  &__name { font-weight: 600; color: var(--ui-text); }
   &__code {
-    color: #94a3b8;
+    color: var(--ui-faint);
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.04em;
@@ -113,17 +113,17 @@
     appearance: none;
     border: 0;
     background: transparent;
-    color: #94a3b8;
+    color: var(--ui-faint);
     cursor: pointer;
     padding: 2px;
     border-radius: 4px;
     display: inline-flex;
-    &:hover { color: #ef4444; background: #fef2f2; }
+    &:hover { color: var(--ui-red-text); background: var(--ui-red-soft); }
   }
 
   /* The translate action shares the chip-button base but must NOT read as a
      delete — tint it brand-purple (matches the "Translate" link) on hover. */
-  &__translate:hover { color: var(--color-brand-700, #0e7490); background: var(--color-brand-50, #ecfeff); }
+  &__translate:hover { color: var(--ui-brand-t700); background: var(--color-brand-50, var(--ui-brand-soft)); }
 }
 
 .attr-add {
@@ -133,20 +133,20 @@
   gap: 5px;
   padding: 5px 10px;
   border-radius: 999px;
-  border: 1px dashed #cbd5e1;
+  border: 1px dashed var(--ui-line-strong);
   background: transparent;
-  color: #475569;
+  color: var(--ui-text-4);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  &:hover { border-color: var(--color-brand-500, #32acc1); color: var(--color-brand-700, #0e7490); background: var(--color-brand-50, #ecfeff); }
+  &:hover { border-color: var(--color-brand-500, #32acc1); color: var(--ui-brand-t700); background: var(--color-brand-50, var(--ui-brand-soft)); }
 }
 
 .link-btn {
   appearance: none;
   border: 0;
   background: transparent;
-  color: var(--color-brand-700, #0e7490);
+  color: var(--color-brand-700, var(--ui-brand-text));
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -169,11 +169,11 @@
   width: 30px;
   height: 30px;
   border-radius: 8px;
-  color: #64748b;
+  color: var(--ui-muted);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  &:hover { background: #f1f5f9; color: #0f172a; }
-  &.danger:hover { background: #fef2f2; color: #ef4444; }
+  &:hover { background: var(--ui-surface-2); color: var(--ui-text); }
+  &.danger:hover { background: var(--ui-red-soft); color: var(--ui-red-text); }
 }

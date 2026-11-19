@@ -107,7 +107,7 @@ import { RenderMode } from '../../services/document-template.types';
       margin: 0 0 16px;
       font-size: 13px;
       line-height: 1.5;
-      color: #475569;
+      color: var(--ui-text-4);
     }
 
     .tiles {
@@ -122,14 +122,14 @@ import { RenderMode } from '../../services/document-template.types';
       align-items: flex-start;
       gap: 6px;
       padding: 16px;
-      background: #fff;
-      border: 1.5px solid #e5e7eb;
+      background: var(--ui-surface);
+      border: 1.5px solid var(--ui-line);
       border-radius: 10px;
       text-align: left;
       cursor: pointer;
       transition: border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
 
-      &:hover { border-color: #cbd5e1; }
+      &:hover { border-color: var(--ui-line-strong); }
 
       &--on,
       &--on:hover {
@@ -142,25 +142,25 @@ import { RenderMode } from '../../services/document-template.types';
     .tile__icon {
       width: 56px; height: 56px;
       display: inline-flex; align-items: center; justify-content: center;
-      background: #f1f5f9;
+      background: var(--ui-surface-2);
       border-radius: 10px;
-      color: var(--color-brand-700);
+      color: var(--ui-brand-t700);
       margin-bottom: 4px;
 
-      .tile--on & { background: #fff; }
+      .tile--on & { background: var(--ui-surface); }
     }
 
     .tile__title {
       margin: 0;
       font-size: 14px;
       font-weight: 700;
-      color: #0f172a;
+      color: var(--ui-text);
     }
 
     .tile__desc {
       margin: 0;
       font-size: 12px;
-      color: #475569;
+      color: var(--ui-text-4);
       line-height: 1.5;
     }
 
@@ -168,7 +168,7 @@ import { RenderMode } from '../../services/document-template.types';
       margin: 6px 0 0;
       padding: 0 0 0 16px;
       font-size: 12px;
-      color: #475569;
+      color: var(--ui-text-4);
       line-height: 1.55;
 
       li { margin-bottom: 2px; }
@@ -180,20 +180,20 @@ import { RenderMode } from '../../services/document-template.types';
       gap: 8px;
       margin-top: 16px;
       padding: 10px 12px;
-      background: #fef3c7;
-      border: 1px solid #fcd34d;
+      background: var(--ui-amber-soft);
+      border: 1px solid var(--ui-x-fcd34d);
       border-radius: 8px;
       font-size: 12px;
-      color: #92400e;
+      color: var(--ui-amber-text);
       line-height: 1.5;
 
       svg { flex-shrink: 0; }
     }
 
     .btn-cancel {
-      padding: 9px 20px; background: #f3f4f6; border: 1px solid #e5e7eb;
+      padding: 9px 20px; background: var(--ui-surface-2); border: 1px solid var(--ui-line);
       border-radius: 8px; font-size: 13px; cursor: pointer;
-      &:hover { background: #e5e7eb; }
+      &:hover { background: var(--ui-line); }
     }
     .btn-confirm {
       padding: 9px 24px; background: #32acc1; color: #fff;

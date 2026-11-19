@@ -44,21 +44,21 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   `,
   styles: [`
     :host { display: flex; flex: 1; min-height: 0; overflow: hidden; }
-    .sk { display: flex; width: 100%; height: 100%; background: #fff; }
-    .b { display: inline-block; height: 12px; border-radius: 6px; background: linear-gradient(90deg, #eef2f6 25%, #e4e9ef 37%, #eef2f6 63%); background-size: 400% 100%; animation: sk-shimmer 1.4s ease infinite; }
+    .sk { display: flex; width: 100%; height: 100%; background: var(--ui-surface); }
+    .b { display: inline-block; height: 12px; border-radius: 6px; background: linear-gradient(90deg, var(--ui-surface-2) 25%, var(--ui-x-e4e9ef) 37%, var(--ui-surface-2) 63%); background-size: 400% 100%; animation: sk-shimmer 1.4s ease infinite; }
     .b.sm { height: 10px; }
     @keyframes sk-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
-    .sk__rail { width: 340px; flex: 0 0 340px; border-inline-end: 1px solid #e4e7ec; background: #fbfcfd; display: flex; flex-direction: column; overflow: hidden; }
+    .sk__rail { width: 340px; flex: 0 0 340px; border-inline-end: 1px solid var(--ui-line); background: var(--ui-x-fbfcfd); display: flex; flex-direction: column; overflow: hidden; }
     .sk__head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 8px; }
     .sk__search { padding: 4px 16px 10px; }
-    .sk__row { display: flex; align-items: center; gap: 14px; padding: 13px 16px; border-top: 1px solid #f1f5f9; background: #fff; }
+    .sk__row { display: flex; align-items: center; gap: 14px; padding: 13px 16px; border-top: 1px solid var(--ui-surface-2); background: var(--ui-surface); }
     .sk__row-body { flex: 1; display: flex; flex-direction: column; gap: 9px; }
     .sk__line { display: flex; justify-content: space-between; gap: 12px; }
     .sk__main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-    .sk__title { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid #e4e7ec; }
-    .sk__toolbar { display: flex; gap: 10px; padding: 10px 16px; border-bottom: 1px solid #e4e7ec; }
-    .sk__body { flex: 1; overflow: hidden; padding: 16px 20px; display: flex; flex-direction: column; gap: 14px; background: #f6f8fa; }
-    .sk__paper { background: #fff; border-radius: 6px; padding: 28px 32px; display: flex; flex-direction: column; gap: 14px; max-width: 800px; width: 100%; margin-inline: auto; box-shadow: 0 1px 3px rgba(15, 23, 42, .08); }
+    .sk__title { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--ui-line); }
+    .sk__toolbar { display: flex; gap: 10px; padding: 10px 16px; border-bottom: 1px solid var(--ui-line); }
+    .sk__body { flex: 1; overflow: hidden; padding: 16px 20px; display: flex; flex-direction: column; gap: 14px; background: var(--ui-x-f6f8fa); }
+    .sk__paper { background: var(--ui-surface); border-radius: 6px; padding: 28px 32px; display: flex; flex-direction: column; gap: 14px; max-width: 800px; width: 100%; margin-inline: auto; box-shadow: 0 1px 3px rgba(15, 23, 42, .08); }
     .sk__paper-top { display: flex; justify-content: space-between; align-items: center; }
     @media (max-width: 900px) { .sk { flex-direction: column; } .sk__rail { display: none; } }
   `],

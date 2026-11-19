@@ -1,18 +1,18 @@
 .mr { width: 100%; }
 
-.mr__crumbs { font-size: 12px; color: #64748b; display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
-.mr__crumbs a { color: var(--color-brand-700, #2691a4); text-decoration: none; &:hover { text-decoration: underline; } }
+.mr__crumbs { font-size: 12px; color: var(--ui-muted); display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+.mr__crumbs a { color: var(--color-brand-700, var(--ui-brand-text)); text-decoration: none; &:hover { text-decoration: underline; } }
 .mr__crumbSep { color: #cbd5e1; }
 
 .mr__titleRow { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
 .mr__back {
-  width: 32px; height: 32px; flex-shrink: 0; border: 0; background: transparent; color: #475569;
+  width: 32px; height: 32px; flex-shrink: 0; border: 0; background: transparent; color: var(--ui-text-4);
   cursor: pointer; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px;
-  &:hover { background: #eef2f6; color: #0f172a; }
+  &:hover { background: var(--ui-surface-2); color: var(--ui-text); }
 }
 .mr__titleText { flex: 1; min-width: 0; }
-.mr__title { margin: 0; font-size: 24px; font-weight: 800; color: #0f172a; letter-spacing: -0.02em; }
-.mr__sub { margin: 2px 0 0; font-size: 13px; color: #64748b; }
+.mr__title { margin: 0; font-size: 24px; font-weight: 800; color: var(--ui-text); letter-spacing: -0.02em; }
+.mr__sub { margin: 2px 0 0; font-size: 13px; color: var(--ui-muted); }
 
 .mr-btn {
   display: inline-flex; align-items: center; gap: 7px;
@@ -25,30 +25,30 @@
   &:hover { background: var(--color-brand-700, #2691a4); }
 }
 
-.mr__card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; }
-.mr__cardHead { padding: 14px 18px; font-size: 14px; font-weight: 700; color: #0f172a; border-bottom: 1px solid #f1f5f9; }
-.mr__state { padding: 48px; text-align: center; color: #94a3b8; font-size: 14px; }
+.mr__card { background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: 12px; overflow: hidden; }
+.mr__cardHead { padding: 14px 18px; font-size: 14px; font-weight: 700; color: var(--ui-text); border-bottom: 1px solid var(--ui-surface-2); }
+.mr__state { padding: 48px; text-align: center; color: var(--ui-faint); font-size: 14px; }
 
 .mr__table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .mr__table th {
-  text-align: start; padding: 10px 14px; color: #475569; font-weight: 600;
-  background: #eef4fb; border-bottom: 1px solid #e2e8f0;
+  text-align: start; padding: 10px 14px; color: var(--ui-text-4); font-weight: 600;
+  background: var(--ui-x-eef4fb); border-bottom: 1px solid var(--ui-line);
 }
-.mr__table td { padding: 14px 14px; border-bottom: 1px solid #f1f5f9; color: #0f172a; vertical-align: middle; }
+.mr__table td { padding: 14px 14px; border-bottom: 1px solid var(--ui-surface-2); color: var(--ui-text); vertical-align: middle; }
 .mr__table tr:last-child td { border-bottom: 0; }
 .mr__name { font-weight: 600; }
 .mr__chip {
   display: inline-block; padding: 3px 10px; border-radius: 999px;
-  background: #eef2f6; color: #334155; font-size: 12px; font-weight: 500;
+  background: var(--ui-surface-2); color: var(--ui-text-3); font-size: 12px; font-weight: 500;
 }
-.mr__exc { color: #94a3b8; }
+.mr__exc { color: var(--ui-faint); }
 .mr__status { display: inline-flex; align-items: center; gap: 8px; }
-.mr__status span { font-size: 13px; color: #94a3b8; }
-.mr__status span.is-on { color: #0f172a; font-weight: 500; }
+.mr__status span { font-size: 13px; color: var(--ui-faint); }
+.mr__status span.is-on { color: var(--ui-text); font-weight: 500; }
 .mr__num { text-align: end; width: 56px; }
 
 ::ng-deep .mr-more {
   width: 32px; height: 32px; border-radius: 999px; border: 1px solid transparent;
-  background: transparent; color: #475569; display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
-  &:hover { background: #f1f5f9; border-color: #e2e8f0; color: #0f172a; }
+  background: transparent; color: var(--ui-text-4); display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
+  &:hover { background: var(--ui-surface-2); border-color: var(--ui-line); color: var(--ui-text); }
 }

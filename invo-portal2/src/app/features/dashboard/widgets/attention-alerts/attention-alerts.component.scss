@@ -3,32 +3,32 @@
 .al__row {
   display: flex; align-items: center; gap: 10px;
   padding: 10px 12px;
-  border: 1px solid #eef2f6; border-radius: 10px;
-  background: #f8fafc;
+  border: 1px solid var(--ui-surface-2); border-radius: 10px;
+  background: var(--ui-surface-1);
 }
 .al__dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; background: #94a3b8; }
-.al__label { flex: 1; min-width: 0; font-size: 13px; color: #0f172a; }
+.al__label { flex: 1; min-width: 0; font-size: 13px; color: var(--ui-text); }
 .al__count {
   flex-shrink: 0; min-width: 26px; text-align: center;
   padding: 2px 8px; border-radius: 999px;
   font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums;
-  background: #eef2f6; color: #475569;
+  background: var(--ui-surface-2); color: var(--ui-text-4);
 }
 
-.al__row--danger { border-color: #fecaca; background: #fef2f2; }
+.al__row--danger { border-color: var(--ui-red-soft-2); background: var(--ui-red-soft); }
 .al__row--danger .al__dot { background: #dc2626; }
-.al__row--danger .al__count { background: #fee2e2; color: #991b1b; }
+.al__row--danger .al__count { background: var(--ui-red-soft); color: var(--ui-red-text); }
 
-.al__row--warn { border-color: #fde68a; background: #fffbeb; }
+.al__row--warn { border-color: var(--ui-amber-soft-2); background: var(--ui-amber-soft); }
 .al__row--warn .al__dot { background: #d97706; }
-.al__row--warn .al__count { background: #fef3c7; color: #92400e; }
+.al__row--warn .al__count { background: var(--ui-amber-soft); color: var(--ui-amber-text); }
 
 .al__row--info .al__dot { background: #2563eb; }
-.al__row--info .al__count { background: #dbeafe; color: #1e40af; }
+.al__row--info .al__count { background: var(--ui-x-dbeafe); color: var(--ui-t-1e40af); }
 
 .al__clear {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 8px; padding: 28px 12px; text-align: center; color: #64748b;
+  gap: 8px; padding: 28px 12px; text-align: center; color: var(--ui-muted);
 }
 .al__clearIcon { color: #16a34a; }
 .al__clear p { margin: 0; font-size: 13px; }

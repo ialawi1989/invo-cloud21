@@ -145,7 +145,7 @@ import { AuthService } from '../../../core/auth/auth.service';
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      background: #fff;
+      background: var(--ui-surface);
       border-radius: 16px;
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
       z-index: 1001;
@@ -165,17 +165,17 @@ import { AuthService } from '../../../core/auth/auth.service';
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #f3f4f6;
+      background: var(--ui-surface-2);
       border: none;
       border-radius: 8px;
-      color: #6b7280;
+      color: var(--ui-muted);
       cursor: pointer;
       transition: all 0.2s;
     }
 
     .dialog-close:hover {
-      background: #e5e7eb;
-      color: #111827;
+      background: var(--ui-line);
+      color: var(--ui-text);
     }
 
     /* Body */
@@ -191,7 +191,7 @@ import { AuthService } from '../../../core/auth/auth.service';
       width: 56px;
       height: 56px;
       border-radius: 14px;
-      background: #d9f2f6;
+      background: var(--ui-x-d9f2f6);
       color: #32acc1;
       display: flex;
       align-items: center;
@@ -207,23 +207,23 @@ import { AuthService } from '../../../core/auth/auth.service';
     h2 {
       font-size: 20px;
       font-weight: 700;
-      color: #111827;
+      color: var(--ui-text);
       margin: 0 0 8px;
       letter-spacing: -0.3px;
     }
 
     .desc {
       font-size: 13px;
-      color: #6b7280;
+      color: var(--ui-muted);
       line-height: 1.5;
       margin: 0 0 16px;
       max-width: 300px;
     }
 
-    .desc strong { color: #111827; }
+    .desc strong { color: var(--ui-text); }
     .desc.pin-label {
       font-weight: 500;
-      color: #111827;
+      color: var(--ui-text);
       margin-bottom: 12px;
     }
 
@@ -235,13 +235,13 @@ import { AuthService } from '../../../core/auth/auth.service';
       width: 100%;
       padding-bottom: 24px;
       margin-bottom: 24px;
-      border-bottom: 1px solid #e5e7eb;
+      border-bottom: 1px solid var(--ui-line);
     }
 
     .qr-box {
       padding: 16px;
-      background: #fff;
-      border: 1px solid #e5e7eb;
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-line);
       border-radius: 12px;
       margin-bottom: 12px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.05);
@@ -255,15 +255,15 @@ import { AuthService } from '../../../core/auth/auth.service';
       font-weight: 600;
       letter-spacing: 1px;
       padding: 12px 20px;
-      background: #f9fafb;
-      border: 1px solid #e5e7eb;
+      background: var(--ui-surface-1);
+      border: 1px solid var(--ui-line);
       border-radius: 8px;
       width: 100%;
       max-width: 280px;
       text-align: center;
       word-break: break-all;
       margin-bottom: 12px;
-      color: #111827;
+      color: var(--ui-text);
     }
 
     .btn-copy {
@@ -272,20 +272,20 @@ import { AuthService } from '../../../core/auth/auth.service';
       gap: 6px;
       padding: 8px 16px;
       background: transparent;
-      border: 1px solid #e5e7eb;
+      border: 1px solid var(--ui-line);
       border-radius: 8px;
       font-size: 13px;
       font-weight: 500;
       font-family: inherit;
-      color: #6b7280;
+      color: var(--ui-muted);
       cursor: pointer;
       transition: all 0.2s;
       margin-bottom: 8px;
     }
 
     .btn-copy:hover {
-      background: #f9fafb;
-      color: #111827;
+      background: var(--ui-surface-1);
+      color: var(--ui-text);
     }
 
     .link {
@@ -313,10 +313,10 @@ import { AuthService } from '../../../core/auth/auth.service';
       font-size: 20px;
       font-weight: 600;
       font-family: 'Inter', sans-serif;
-      color: #111827;
-      border: 1.5px solid #e5e7eb;
+      color: var(--ui-text);
+      border: 1.5px solid var(--ui-line);
       border-radius: 8px;
-      background: #fff;
+      background: var(--ui-field);
       outline: none;
       transition: all 0.2s;
     }
@@ -329,7 +329,7 @@ import { AuthService } from '../../../core/auth/auth.service';
     .pincode-row.error .pin-input {
       border-color: #ef4444;
       background: rgba(239, 68, 68, 0.04);
-      color: #ef4444;
+      color: var(--ui-red-text);
       animation: shake 0.4s ease;
     }
 
@@ -348,7 +348,7 @@ import { AuthService } from '../../../core/auth/auth.service';
       width: 100%;
       max-width: 280px;
       height: 44px;
-      background: #32acc1;
+      background: var(--ui-b-32acc1);
       color: #fff;
       border: none;
       border-radius: 8px;

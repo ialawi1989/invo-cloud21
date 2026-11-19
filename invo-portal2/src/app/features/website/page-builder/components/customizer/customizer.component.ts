@@ -481,7 +481,7 @@ const PAGE_DEFINITIONS: PageDefinition[] = [
       left: 50%;
       transform: translateX(-50%);
       width: 320px;
-      background: white;
+      background: var(--ui-surface);
       border-radius: 12px;
       box-shadow: 0 10px 40px rgba(0,0,0,0.2);
       z-index: 200;
@@ -546,19 +546,19 @@ const PAGE_DEFINITIONS: PageDefinition[] = [
       border: none;
       border-radius: 8px;
       font-size: 14px;
-      color: #374151;
+      color: var(--ui-text-3);
       cursor: pointer;
       transition: background 0.15s;
       text-align: left;
     }
     
     .page-item:hover {
-      background: #f3f4f6;
+      background: var(--ui-surface-2);
     }
     
     .page-item.active {
-      background: #eff6ff;
-      color: #2563eb;
+      background: var(--ui-x-eff6ff);
+      color: var(--ui-t-2563eb);
     }
     
     .page-item.child {
@@ -576,7 +576,7 @@ const PAGE_DEFINITIONS: PageDefinition[] = [
     }
     
     .page-item.active .page-icon {
-      color: #2563eb;
+      color: var(--ui-t-2563eb);
     }
     
     .page-name {
@@ -585,8 +585,8 @@ const PAGE_DEFINITIONS: PageDefinition[] = [
     
     .not-created-badge {
       padding: 2px 6px;
-      background: #fef3c7;
-      color: #92400e;
+      background: var(--ui-amber-soft);
+      color: var(--ui-amber-text);
       border-radius: 4px;
       font-size: 10px;
       font-weight: 500;
@@ -618,17 +618,17 @@ const PAGE_DEFINITIONS: PageDefinition[] = [
       border: none;
       border-radius: 8px;
       font-size: 14px;
-      color: #2563eb;
+      color: var(--ui-t-2563eb);
       cursor: pointer;
       transition: background 0.15s;
     }
     
     .create-template-btn:hover {
-      background: #eff6ff;
+      background: var(--ui-x-eff6ff);
     }
     
     .create-template-btn svg {
-      color: #2563eb;
+      color: var(--ui-t-2563eb);
     }
     
     .header-title {
@@ -904,7 +904,7 @@ const PAGE_DEFINITIONS: PageDefinition[] = [
       height: 18px;
       left: 3px;
       bottom: 3px;
-      background: white;
+      background: var(--ui-surface);
       border-radius: 50%;
       transition: 0.3s;
       box-shadow: 0 1px 3px rgba(0,0,0,0.2);
@@ -989,13 +989,13 @@ const PAGE_DEFINITIONS: PageDefinition[] = [
       border: none;
       border-radius: 8px;
       font-size: 14px;
-      color: #ef4444;
+      color: var(--ui-red-text);
       cursor: pointer;
       transition: background 0.2s;
     }
     
     .remove-btn:hover {
-      background: #fef2f2;
+      background: var(--ui-red-soft);
     }
     
     /* Default Empty State */

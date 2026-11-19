@@ -17,13 +17,13 @@
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  border: 1px solid #e2e8f0;
-  background: #fff;
-  color: #475569;
+  border: 1px solid var(--ui-line);
+  background: var(--ui-surface);
+  color: var(--ui-text-4);
 
   &:hover {
-    background: #f8fafc;
-    color: #0f172a;
+    background: var(--ui-surface-1);
+    color: var(--ui-text);
   }
 }
 
@@ -34,16 +34,16 @@
   border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
-  background: #f1f5f9;
-  color: #475569;
+  background: var(--ui-surface-2);
+  color: var(--ui-text-4);
 
   &--draft {
-    background: #fffbeb;
-    color: #b45309;
+    background: var(--ui-amber-soft);
+    color: var(--ui-amber-text);
   }
 
   &--open {
-    background: #ecfdf5;
-    color: #047857;
+    background: var(--ui-green-soft);
+    color: var(--ui-green-text);
   }
 }

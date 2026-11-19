@@ -102,21 +102,21 @@ export type BranchAdvanceResult = Record<string, string>;
   `,
   styles: [`
     .body { padding: 20px 24px; display: flex; flex-direction: column; gap: 14px; }
-    .sub  { margin: 0; font-size: 13px; color: #64748b; line-height: 1.5; }
+    .sub  { margin: 0; font-size: 13px; color: var(--ui-muted); line-height: 1.5; }
 
     .empty {
       text-align: center;
       padding: 24px 16px;
-      background: #f9fafb;
-      border: 1px dashed #e5e7eb;
+      background: var(--ui-surface-1);
+      border: 1px dashed var(--ui-line);
       border-radius: 8px;
-      color: #64748b;
+      color: var(--ui-muted);
 
       p { margin: 0; font-size: 13px; }
     }
 
     .table {
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--ui-line);
       border-radius: 10px;
       overflow: hidden;
     }
@@ -125,11 +125,11 @@ export type BranchAdvanceResult = Record<string, string>;
       grid-template-columns: 1fr 1.4fr;
       gap: 12px;
       padding: 10px 14px;
-      background: #f8fafc;
-      border-bottom: 1px solid #e2e8f0;
+      background: var(--ui-surface-1);
+      border-bottom: 1px solid var(--ui-line);
       font-size: 11px;
       font-weight: 700;
-      color: #64748b;
+      color: var(--ui-muted);
       text-transform: uppercase;
       letter-spacing: 0.04em;
     }
@@ -140,22 +140,22 @@ export type BranchAdvanceResult = Record<string, string>;
       gap: 12px;
       align-items: center;
       padding: 10px 14px;
-      border-top: 1px solid #f1f5f9;
+      border-top: 1px solid var(--ui-surface-2);
 
       &:first-of-type { border-top: 0; }
 
-      &__name { font-size: 13px; font-weight: 600; color: #0f172a; }
+      &__name { font-size: 13px; font-weight: 600; color: var(--ui-text); }
       &__picker { display: block; }
     }
 
     .btn-cancel {
       padding: 9px 20px;
-      background: #f3f4f6;
-      border: 1px solid #e5e7eb;
+      background: var(--ui-surface-2);
+      border: 1px solid var(--ui-line);
       border-radius: 8px;
       font-size: 13px;
       cursor: pointer;
-      &:hover { background: #e5e7eb; }
+      &:hover { background: var(--ui-line); }
     }
     .btn-confirm {
       padding: 9px 24px;

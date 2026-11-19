@@ -36,21 +36,21 @@ import { MODAL_REF } from '../../shared/modal/modal.tokens';
     }
     .icon {
       width: 56px; height: 56px; border-radius: 50%;
-      background: #fef3c7; color: #b45309;
+      background: var(--ui-amber-soft); color: var(--ui-amber-text);
       display: flex; align-items: center; justify-content: center;
       margin-bottom: 4px;
     }
     .title {
-      margin: 0; font-size: 17px; font-weight: 600; color: #0f172a;
+      margin: 0; font-size: 17px; font-weight: 600; color: var(--ui-text);
     }
     .msg {
-      margin: 0; font-size: 14px; color: #475569; line-height: 1.5;
+      margin: 0; font-size: 14px; color: var(--ui-text-4); line-height: 1.5;
       max-width: 320px;
     }
     .ok {
       margin-top: 8px;
       padding: 10px 28px; border: none; border-radius: 8px;
-      background: #32acc1; color: #fff;
+      background: var(--ui-b-32acc1); color: #fff;
       font-size: 14px; font-weight: 600; cursor: pointer;
       transition: background .12s;
       min-width: 120px;

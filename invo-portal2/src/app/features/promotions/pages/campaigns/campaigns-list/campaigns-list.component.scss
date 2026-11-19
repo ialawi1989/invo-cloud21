@@ -1,15 +1,15 @@
 .cl-btn {
   padding: 9px 16px;
   border-radius: 8px;
-  border: 1px solid #d0d5dd;
-  background: #fff;
-  color: #334155;
+  border: 1px solid var(--ui-line-strong);
+  background: var(--ui-surface);
+  color: var(--ui-text-3);
   font-size: 13.5px;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
 
-  &:hover:not(:disabled) { background: #f8fafc; }
+  &:hover:not(:disabled) { background: var(--ui-surface-1); }
 
   &--primary {
     border-color: #2691a4;
@@ -21,11 +21,11 @@
 }
 
 .cl-card {
-  background: #fff;
-  border: 1px solid #e4e7ec;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
   border-radius: 12px;
   padding: 14px 18px;
   margin-bottom: 16px;
 }
 .cl-bar { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-.cl-label { font-size: 13px; font-weight: 600; color: #475569; }
+.cl-label { font-size: 13px; font-weight: 600; color: var(--ui-text-4); }

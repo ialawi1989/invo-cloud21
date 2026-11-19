@@ -46,17 +46,17 @@ export interface SerialBatchData {
   `,
   styles: [`
     .sb { padding: 16px 20px; min-width: min(460px, 90vw); display: flex; flex-direction: column; gap: 10px; }
-    .sb__search { height: 38px; padding: 0 12px; border: 1px solid #d0d5dd; border-radius: 8px; font: inherit; font-size: 14px; outline: none; }
+    .sb__search { height: 38px; padding: 0 12px; border: 1px solid var(--ui-line-strong); border-radius: 8px; font: inherit; font-size: 14px; outline: none; }
     .sb__search:focus { border-color: #32acc1; box-shadow: 0 0 0 3px rgba(50,172,193,.12); }
     .sb__list { list-style: none; margin: 0; padding: 0; max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
-    .sb__item { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; font-size: 14px; }
-    .sb__item small { color: #64748b; }
-    .sb__item:hover:not(.sb__item--off) { background: #f1f5f9; }
-    .sb__item--on { border-color: #2691a4; background: #e8f4f7; }
+    .sb__item { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--ui-line); border-radius: 8px; cursor: pointer; font-size: 14px; }
+    .sb__item small { color: var(--ui-muted); }
+    .sb__item:hover:not(.sb__item--off) { background: var(--ui-surface-2); }
+    .sb__item--on { border-color: #2691a4; background: var(--ui-x-e8f4f7); }
     .sb__item--off { opacity: .45; cursor: not-allowed; }
-    .sb__empty { padding: 18px; text-align: center; color: #94a3b8; }
-    .sb__btn { padding: 9px 16px; border-radius: 8px; border: 1px solid #d0d5dd; background: #fff; color: #334155; font-weight: 600; font-size: 13.5px; cursor: pointer; }
-    .sb__btn--primary { border-color: #2691a4; background: #2691a4; color: #fff; }
+    .sb__empty { padding: 18px; text-align: center; color: var(--ui-faint); }
+    .sb__btn { padding: 9px 16px; border-radius: 8px; border: 1px solid var(--ui-line-strong); background: var(--ui-surface); color: var(--ui-text-3); font-weight: 600; font-size: 13.5px; cursor: pointer; }
+    .sb__btn--primary { border-color: #2691a4; background: var(--ui-b-2691a4); color: #fff; }
     .sb__btn--primary:disabled { opacity: .5; cursor: not-allowed; }
   `],
 })

@@ -136,33 +136,33 @@ const TABS: TabConfig[] = [
   styles: [`
     .body { padding: 16px; display: flex; flex-direction: column; gap: 18px; max-width: 520px; }
     .ie-notice { padding: 10px 14px; border-radius: 10px; font-size: 13px; font-weight: 500;
-      &--ok  { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-      &--err { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; } }
+      &--ok  { background: var(--ui-green-soft); color: var(--ui-green-text); border: 1px solid var(--ui-x-bbf7d0); }
+      &--err { background: var(--ui-red-soft); color: var(--ui-red-text); border: 1px solid var(--ui-red-soft-2); } }
     .ie-block { display: flex; flex-direction: column; gap: 8px; }
-    .ie-block--export { border-top: 1px solid #eef2f6; padding-top: 16px; }
-    .ie-h { margin: 0; font-size: 14px; font-weight: 700; color: #0f172a; }
-    .ie-hint { margin: 0; font-size: 12.5px; color: #64748b; }
+    .ie-block--export { border-top: 1px solid var(--ui-surface-2); padding-top: 16px; }
+    .ie-h { margin: 0; font-size: 14px; font-weight: 700; color: var(--ui-text); }
+    .ie-hint { margin: 0; font-size: 12.5px; color: var(--ui-muted); }
     .ie-drop {
       display: flex; align-items: center; gap: 10px; padding: 14px 16px;
-      border: 1.5px dashed #cbd5e1; border-radius: 12px; cursor: pointer; color: #475569;
-      background: #f8fafc; transition: border-color .15s, background .15s;
-      svg { color: #94a3b8; flex-shrink: 0; }
-      &:hover { border-color: var(--color-brand-400, #4fbfd0); background: #f1fbfd; }
-      &--has { border-style: solid; border-color: var(--color-brand-300, #7ad3df); background: var(--color-brand-50, #effbfd); color: #0f172a; }
+      border: 1.5px dashed var(--ui-line-strong); border-radius: 12px; cursor: pointer; color: var(--ui-text-4);
+      background: var(--ui-surface-1); transition: border-color .15s, background .15s;
+      svg { color: var(--ui-faint); flex-shrink: 0; }
+      &:hover { border-color: var(--color-brand-400, #4fbfd0); background: var(--ui-x-f1fbfd); }
+      &--has { border-style: solid; border-color: var(--color-brand-300, #7ad3df); background: var(--color-brand-50, var(--ui-brand-soft)); color: var(--ui-text); }
     }
-    .ie-count { margin-inline-start: auto; font-size: 12px; font-weight: 600; color: var(--color-brand-700, #207484); }
-    .ie-tpl { font-size: 12.5px; color: #64748b; display: flex; align-items: center; gap: 8px;
-      button { padding: 5px 12px; border: 1px solid #e2e8f0; background: #fff; border-radius: 8px; font-size: 12px; font-weight: 600; color: var(--color-brand-700, #207484); cursor: pointer;
-        &:hover:not(:disabled) { background: var(--color-brand-50, #effbfd); border-color: var(--color-brand-300, #7ad3df); } &:disabled { opacity: .5; cursor: not-allowed; } } }
-    .ie-errors { padding: 10px 12px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 10px; font-size: 12px; color: #991b1b;
+    .ie-count { margin-inline-start: auto; font-size: 12px; font-weight: 600; color: var(--ui-brand-t700); }
+    .ie-tpl { font-size: 12.5px; color: var(--ui-muted); display: flex; align-items: center; gap: 8px;
+      button { padding: 5px 12px; border: 1px solid var(--ui-line); background: var(--ui-surface); border-radius: 8px; font-size: 12px; font-weight: 600; color: var(--color-brand-700, var(--ui-brand-text)); cursor: pointer;
+        &:hover:not(:disabled) { background: var(--color-brand-50, var(--ui-brand-soft)); border-color: var(--color-brand-300, #7ad3df); } &:disabled { opacity: .5; cursor: not-allowed; } } }
+    .ie-errors { padding: 10px 12px; background: var(--ui-red-soft); border: 1px solid var(--ui-red-soft-2); border-radius: 10px; font-size: 12px; color: var(--ui-red-text);
       ul { margin: 6px 0 0; padding-inline-start: 18px; } li { margin: 2px 0; } }
     .ie-import {
       align-self: flex-start; margin-top: 4px; padding: 9px 20px; border-radius: 8px; font-size: 13px; font-weight: 600;
       color: #fff; border: none; cursor: pointer;
       background: var(--color-brand-600, #2691a4); &:hover:not(:disabled) { background: var(--color-brand-700, #207484); }
       &:disabled { opacity: .5; cursor: not-allowed; } }
-    .btn-cancel { padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; background: #fff; border: 1px solid #e5e7eb; color: #475569; cursor: pointer;
-      &:hover { background: #f8fafc; } }
+    .btn-cancel { padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; background: var(--ui-surface); border: 1px solid var(--ui-line); color: var(--ui-text-4); cursor: pointer;
+      &:hover { background: var(--ui-surface-1); } }
   `],
 })
 export class ImportExportModalComponent {

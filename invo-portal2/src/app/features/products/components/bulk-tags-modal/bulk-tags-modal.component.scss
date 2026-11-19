@@ -13,7 +13,7 @@
   gap: 6px;
   font-size: 13px;
   font-weight: 600;
-  color: #334155;
+  color: var(--ui-text-3);
 }
 .btm-create {
   display: block;
@@ -24,10 +24,10 @@
   text-align: start;
   font-size: 13px;
   font-weight: 600;
-  color: #2691a4;
+  color: var(--ui-brand-text);
   cursor: pointer;
 
-  &:hover { background: #f1f9fb; }
+  &:hover { background: var(--ui-x-f1f9fb); }
 }
 
 .btm-picked-header {
@@ -39,7 +39,7 @@
 .btm-picked-count {
   font-size: 12.5px;
   font-weight: 600;
-  color: #64748b;
+  color: var(--ui-muted);
 }
 .btm-picked-actions {
   display: flex;
@@ -52,7 +52,7 @@
   padding: 0;
   font-size: 12.5px;
   font-weight: 600;
-  color: #dc2626;
+  color: var(--ui-red-text);
   cursor: pointer;
 
   &:hover { text-decoration: underline; }
@@ -61,15 +61,15 @@
 .btm-btn {
   padding: 9px 16px;
   border-radius: 8px;
-  border: 1px solid #d0d5dd;
-  background: #fff;
-  color: #334155;
+  border: 1px solid var(--ui-line-strong);
+  background: var(--ui-surface);
+  color: var(--ui-text-3);
   font-size: 13.5px;
   font-weight: 600;
   cursor: pointer;
   transition: background 120ms ease;
 
-  &:hover { background: #f8fafc; }
+  &:hover { background: var(--ui-surface-1); }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 
   &--primary {
@@ -92,10 +92,10 @@
   margin: 0;
   padding: 16px;
   text-align: center;
-  border: 1px dashed #cbd5e1;
+  border: 1px dashed var(--ui-line-strong);
   border-radius: 8px;
   font-size: 13px;
-  color: #64748b;
+  color: var(--ui-muted);
 }
 .btm-row {
   display: flex;
@@ -103,8 +103,8 @@
   gap: 10px;
   padding: 10px 12px;
   border-radius: 8px;
-  background: #f8fafc;
-  border: 1px solid #eef2f6;
+  background: var(--ui-surface-1);
+  border: 1px solid var(--ui-surface-2);
 }
 .btm-row__main {
   display: flex;
@@ -112,11 +112,11 @@
   gap: 2px;
   min-width: 140px;
   font-size: 13px;
-  color: #0f172a;
+  color: var(--ui-text);
 }
 .btm-row__meta {
   font-size: 11.5px;
-  color: #94a3b8;
+  color: var(--ui-faint);
   font-weight: 500;
 }
 .btm-row__tags {
@@ -128,8 +128,8 @@
 .btm-chip {
   padding: 2px 9px;
   border-radius: 999px;
-  background: #e0f2f6;
-  color: #1e6f80;
+  background: var(--ui-x-e0f2f6);
+  color: var(--ui-t-1e6f80);
   font-size: 11.5px;
   font-weight: 600;
 }
@@ -143,8 +143,8 @@
   border-radius: 6px;
   border: none;
   background: none;
-  color: #94a3b8;
+  color: var(--ui-faint);
   cursor: pointer;
 
-  &:hover { background: #fee2e2; color: #dc2626; }
+  &:hover { background: var(--ui-red-soft); color: var(--ui-red-text); }
 }

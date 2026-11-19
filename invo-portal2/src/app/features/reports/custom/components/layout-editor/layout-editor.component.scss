@@ -6,16 +6,16 @@
   flex: 1;
   min-height: 0;
 
-  --bg-secondary: #ffffff;
-  --bg-tertiary: #fbfbfb;
-  --border-color: #e2e8f0;
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #94a3b8;
+  --bg-secondary: var(--ui-surface);
+  --bg-tertiary: var(--ui-x-fbfbfb);
+  --border-color: var(--ui-line);
+  --text-primary: var(--ui-text);
+  --text-secondary: var(--ui-text-4);
+  --text-muted: var(--ui-faint);
   --brand-teal: #00aab3;
   --brand-teal-dark: #00949c;
   --brand-teal-light: rgba(0, 170, 179, 0.1);
-  --danger: #ef4444;
+  --danger: var(--ui-red-text);
   --danger-light: rgba(239, 68, 68, 0.1);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
 }

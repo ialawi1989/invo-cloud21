@@ -56,7 +56,7 @@ $rad-tab-top: 6px;
   font-size: 13px;
   font-family: inherit;
   color: $ink;
-  background: #fff;
+  background: var(--ui-field);
   outline: none;
   width: 124px;
   box-shadow: 0 0 0 3px rgba($teal, 0.12);
@@ -66,7 +66,7 @@ $rad-tab-top: 6px;
   position: absolute;
   top: 100%; left: 0;
   margin-top: 4px;
-  background: #fff;
+  background: var(--ui-surface);
   border: $border-rule;
   border-radius: 8px;
   z-index: 50;
@@ -81,8 +81,8 @@ $rad-tab-top: 6px;
     font-family: inherit; font-size: 13px; font-weight: 500;
     color: $ink-2; text-align: left; cursor: pointer;
     &:hover { background: $bg-surface; color: $ink; }
-    &.danger { color: #b3261e; }
-    &.danger:hover { background: #fdecea; }
+    &.danger { color: var(--ui-t-b3261e); }
+    &.danger:hover { background: var(--ui-x-fdecea); }
   }
 }
 

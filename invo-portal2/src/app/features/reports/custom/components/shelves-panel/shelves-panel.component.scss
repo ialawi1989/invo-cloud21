@@ -14,7 +14,7 @@ $rad-input:  6px;
 :host { display: block; }
 
 .shelves-panel {
-  background: #fff;
+  background: var(--ui-surface);
   flex-shrink: 0;
 }
 
@@ -70,7 +70,7 @@ $rad-input:  6px;
   font-family: inherit; letter-spacing: 0.4px;
   text-transform: uppercase;
   border: none;
-  background: #fff;
+  background: var(--ui-surface);
   color: $ink-3;
   cursor: pointer;
   text-align: center;
@@ -91,7 +91,7 @@ $rad-input:  6px;
   align-content: flex-start; align-items: center;
   border: 1px dashed rgba(0,0,0,0.16);
   border-radius: $rad-input;
-  background: #fff;
+  background: var(--ui-surface);
   transition: background .15s, border-color .15s;
 
   &.drag-over {
@@ -108,7 +108,7 @@ $rad-input:  6px;
   overflow-y: auto;
   gap: 4px;
   &::-webkit-scrollbar { width: 4px; }
-  &::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
+  &::-webkit-scrollbar-thumb { background: var(--ui-x-dddddd); border-radius: 4px; }
 }
 
 .shelf-empty {
@@ -149,15 +149,15 @@ $rad-input:  6px;
 // Type colors
 .shelf-pill.pill-type-text,
 .filter-pill.pill-type-text {
-  background: #EEEDFE; color: #3C3489;
+  background: var(--ui-x-eeedfe); color: var(--ui-t-3c3489);
 }
 .shelf-pill.pill-type-number,
 .filter-pill.pill-type-number {
-  background: #E6F1FB; color: #0C447C;
+  background: var(--ui-x-e6f1fb); color: var(--ui-t-0c447c);
 }
 .shelf-pill.pill-type-date,
 .filter-pill.pill-type-date {
-  background: #FAEEDA; color: #854F0B;
+  background: var(--ui-x-faeeda); color: var(--ui-t-854f0b);
 }
 
 // ─── Group by shelf (narrower, accent-tinted) ───
@@ -185,7 +185,7 @@ $rad-input:  6px;
   display: inline-flex; align-items: center; justify-content: center;
   width: 16px; height: 16px;
   border-radius: 4px;
-  background: rgba(255,255,255,0.7);
+  background: rgb(var(--ui-surface-rgb) / 0.7);
   font-size: 10px; font-weight: 700;
   flex-shrink: 0;
 }
@@ -229,7 +229,7 @@ $rad-input:  6px;
     padding: 5px 8px;
     border: $border-rule; border-radius: $rad-input;
     font-size: 12px; font-family: inherit; color: $ink;
-    background: #fff; outline: none;
+    background: var(--ui-surface); outline: none;
     transition: border-color .14s, box-shadow .14s;
     &:focus { border-color: $teal; box-shadow: 0 0 0 3px rgba($teal, 0.12); }
   }
@@ -247,7 +247,7 @@ $rad-input:  6px;
       height: 28px;
       border: $border-rule;
       border-radius: $rad-input;
-      background: #fff;
+      background: var(--ui-field);
     }
     &.ng-select-focused:not(.ng-select-opened) > .ng-select-container,
     &.ng-select-opened > .ng-select-container {
@@ -276,7 +276,7 @@ $rad-input:  6px;
 
 // ─── Popover ──────────────────────────────────────
 .pill-popover {
-  background: #fff;
+  background: var(--ui-surface);
   border: $border-rule;
   border-radius: $rad-input;
   padding: 10px;
@@ -299,7 +299,7 @@ $rad-input:  6px;
   display: block; margin-top: 3px; padding: 5px 8px;
   font-family: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
   font-size: 12px; color: $ink;
-  background: #f5f5f4; border: $border-rule; border-radius: $rad-input;
+  background: var(--ui-x-f5f5f4); border: $border-rule; border-radius: $rad-input;
   user-select: all; word-break: break-all;
 }
 .popover-input,
@@ -308,7 +308,7 @@ $rad-input:  6px;
   padding: 8px 10px;
   border: $border-rule; border-radius: $rad-input;
   font-size: 13px; font-family: inherit; color: $ink;
-  background: #fff; outline: none;
+  background: var(--ui-surface); outline: none;
   transition: border-color .14s, box-shadow .14s;
   &:focus { border-color: $teal; box-shadow: 0 0 0 3px rgba($teal, 0.12); }
 }

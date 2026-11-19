@@ -85,29 +85,29 @@ interface Row { labelKey: string; amount: number }
   styles: [`
     .psl { padding: 16px 20px; min-width: min(520px, 92vw); display: flex; flex-direction: column; gap: 14px; }
     .psl__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-    .psl__name { margin: 0; font-size: 18px; font-weight: 700; color: #0f172a; }
-    .psl__period { font-size: 13px; color: #64748b; margin-top: 2px; }
-    .psl__chip { font-size: 11px; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: #fef3c7; color: #92400e; }
-    .psl__chip--done { background: #dcfce7; color: #166534; }
-    .psl__draft { margin: 0; padding: 8px 12px; border-radius: 8px; background: #fffbeb; border: 1px solid #fde68a; color: #92400e; font-size: 12.5px; }
-    .psl__block { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; border: 1px solid #e5e7eb; border-radius: 12px; }
-    .psl__title { margin: 0 0 6px; font-size: 12px; text-transform: uppercase; letter-spacing: .03em; color: #64748b; }
-    .psl__row { display: flex; justify-content: space-between; gap: 16px; padding: 5px 0; font-size: 13.5px; color: #1e293b; }
+    .psl__name { margin: 0; font-size: 18px; font-weight: 700; color: var(--ui-text); }
+    .psl__period { font-size: 13px; color: var(--ui-muted); margin-top: 2px; }
+    .psl__chip { font-size: 11px; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: var(--ui-amber-soft); color: var(--ui-amber-text); }
+    .psl__chip--done { background: var(--ui-green-soft); color: var(--ui-green-text); }
+    .psl__draft { margin: 0; padding: 8px 12px; border-radius: 8px; background: var(--ui-amber-soft); border: 1px solid var(--ui-amber-soft-2); color: var(--ui-amber-text); font-size: 12.5px; }
+    .psl__block { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; border: 1px solid var(--ui-line); border-radius: 12px; }
+    .psl__title { margin: 0 0 6px; font-size: 12px; text-transform: uppercase; letter-spacing: .03em; color: var(--ui-muted); }
+    .psl__row { display: flex; justify-content: space-between; gap: 16px; padding: 5px 0; font-size: 13.5px; color: var(--ui-text-2); }
     .psl__row b { font-variant-numeric: tabular-nums; font-weight: 600; }
-    .psl__row--sum { margin-top: 4px; padding-top: 8px; border-top: 1px solid #e5e7eb; font-weight: 700; }
-    .psl__row--muted { color: #94a3b8; }
-    .psl__net { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 14px 16px; border-radius: 12px; background: #f0fdf4; border: 1px solid #bbf7d0; }
-    .psl__net span { font-weight: 600; color: #166534; }
-    .psl__net b { font-size: 22px; color: #166534; font-variant-numeric: tabular-nums; }
-    .psl__neg { color: #b91c1c !important; }
-    .psl__note { margin: 0; font-size: 12.5px; color: #64748b; }
-    .psl-btn { padding: 9px 16px; border-radius: 8px; border: 1px solid #d0d5dd; background: #fff; color: #334155; font-weight: 600; font-size: 13.5px; cursor: pointer; }
-    .psl-btn--primary { border-color: #2691a4; background: #2691a4; color: #fff; }
+    .psl__row--sum { margin-top: 4px; padding-top: 8px; border-top: 1px solid var(--ui-line); font-weight: 700; }
+    .psl__row--muted { color: var(--ui-faint); }
+    .psl__net { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 14px 16px; border-radius: 12px; background: var(--ui-x-f0fdf4); border: 1px solid var(--ui-x-bbf7d0); }
+    .psl__net span { font-weight: 600; color: var(--ui-green-text); }
+    .psl__net b { font-size: 22px; color: var(--ui-green-text); font-variant-numeric: tabular-nums; }
+    .psl__neg { color: var(--ui-red-text) !important; }
+    .psl__note { margin: 0; font-size: 12.5px; color: var(--ui-muted); }
+    .psl-btn { padding: 9px 16px; border-radius: 8px; border: 1px solid var(--ui-line-strong); background: var(--ui-surface); color: var(--ui-text-3); font-weight: 600; font-size: 13.5px; cursor: pointer; }
+    .psl-btn--primary { border-color: #2691a4; background: var(--ui-b-2691a4); color: #fff; }
     /* Print only the payslip: everything else on the page is hidden. */
     @media print {
       body * { visibility: hidden !important; }
       .psl-print, .psl-print * { visibility: visible !important; }
-      .psl-print { position: fixed; inset: 0; background: #fff; padding: 24px; }
+      .psl-print { position: fixed; inset: 0; background: var(--ui-surface); padding: 24px; }
     }
   `],
 })

@@ -22,6 +22,9 @@ import type { DocumentRenderData } from './token-resolve';
 
 export interface PaperFieldConfig {
   id:    string;
+  /** The `transactionalDetailsCustomization` key this field's style is saved under when it differs from `id` (legacy keeps the
+   *  customer / supplier VAT row of invoice, estimate, PO and bill under `vatNumber`). */
+  styleKey?: string;
   label: string;       // translation key OR plain English label
   /** When true, the user can't hide the field — the visibility
    *  checkbox in the per-field editor is shown disabled. Document
@@ -172,6 +175,14 @@ const STANDARD_TOTAL_FIELDS = [
 
 /** Item-table columns surfaced for invoice / estimate / credit-note —
  *  the customer-facing trio share the same column set. */
+/** Columns the legacy builder lists but hides until a template switches them on (`defaultShow: false`). */
+const COL_IMAGE:   TableColumnConfig = { id: 'image',   defaultLabel: 'Image',   defaultShow: false };
+const COL_BARCODE: TableColumnConfig = { id: 'barcode', defaultLabel: 'Barcode', defaultShow: false };
+const insertAfter = (cols: TableColumnConfig[], afterId: string, ...add: TableColumnConfig[]): TableColumnConfig[] => {
+  const at = cols.findIndex((c) => c.id === afterId);
+  return at < 0 ? [...cols, ...add] : [...cols.slice(0, at + 1), ...add, ...cols.slice(at + 1)];
+};
+
 const SALES_COLUMNS: TableColumnConfig[] = [
   TcLocked('order',     '#'),
   Tc('description',     'Description'),
@@ -179,55 +190,74 @@ const SALES_COLUMNS: TableColumnConfig[] = [
   Tc('price',           'Price'),
   Tc('taxPercantage',   'Tax %'),
   Tc('tax',             'Tax'),
-  Tc('discount',        'Discount'),
+  Tc('discount',        'Disc'),
   Tc('amount',          'Amount'),
 ];
+
+/** Invoice / estimate: image after the row number, barcode after the description (legacy `tableColumns`). */
+const SALES_COLUMNS_FULL: TableColumnConfig[] = insertAfter(insertAfter(SALES_COLUMNS, 'order', COL_IMAGE), 'description', COL_BARCODE);
+/** Credit note: barcode after the description. */
+const CREDIT_NOTE_COLUMNS: TableColumnConfig[] = insertAfter(SALES_COLUMNS, 'description', COL_BARCODE);
 
 /** Item-table columns for purchase-order — uses `product` and
  *  `unitCost` / `total` per the legacy filter. */
 const PURCHASE_COLUMNS: TableColumnConfig[] = [
   TcLocked('order',     '#'),
   Tc('product',         'Product'),
+  COL_BARCODE,
+  Tc('uom',             'UOM'),
   Tc('qty',             'Qty'),
-  Tc('uom',             'Unit'),
   Tc('taxPercantage',   'Tax %'),
   Tc('tax',             'Tax'),
   Tc('unitCost',        'Unit Cost'),
-  Tc('total',           'Total'),
+  Tc('total',           'Amount'),
 ];
 
 /** Item-table columns for bill / supplier-credit. */
 const BILL_COLUMNS: TableColumnConfig[] = [
   TcLocked('order',     '#'),
   Tc('description',     'Description'),
-  Tc('uom',             'Unit'),
+  COL_BARCODE,
+  Tc('uom',             'UOM'),
   Tc('qty',             'Qty'),
   Tc('unitCost',        'Unit Cost'),
   Tc('taxPercantage',   'Tax %'),
   Tc('tax',             'Tax'),
-  Tc('discount',        'Discount'),
-  Tc('total',           'Total'),
+  Tc('discount',        'Disc'),
+  Tc('total',           'Amount'),
+];
+
+/** Supplier credit (legacy): description, qty, price, tax %, tax, amount — no unit / discount columns. */
+const SUPPLIER_CREDIT_COLUMNS: TableColumnConfig[] = [
+  TcLocked('order',     '#'),
+  Tc('description',     'Description'),
+  COL_BARCODE,
+  Tc('qty',             'Qty'),
+  Tc('price',           'Price'),
+  Tc('taxPercantage',   'Tax %'),
+  Tc('tax',             'Tax'),
+  Tc('amount',          'Amount'),
 ];
 
 export const PAPER_LAYOUT: Record<DocumentType, PaperLayoutConfig> = {
   invoice: {
     firstColumn: [
       Fr('invNumber',         'Invoice Number'),
-      Fr('customerName',      'Bill To'),
+      Fr('customerName',      'Bill to'),
       F('customerPhone',      'Customer Phone'),
       F('customerAddress',    'Customer Address'),
-      F('customerVatNumber',  'Customer VAT Number'),
+      { id: 'customerVatNumber', styleKey: 'vatNumber', label: 'Customer Vat number' },
       F('salesPerson',        'Sales Person'),
     ],
     secondColumn: [
       Fr('invoiceDate',    'Invoice Date'),
-      F('invoiceDueDate',  'Due Date'),
+      F('invoiceDueDate',  'Invoice Due Date'),
       F('createdDate',     'Created Date'),
       F('refrence',        'Reference'),
       F('service',         'Service'),
     ],
-    tableColumns: SALES_COLUMNS,
-    totalFields:  STANDARD_TOTAL_FIELDS.filter((f) => f !== 'subTotal'),
+    tableColumns: SALES_COLUMNS_FULL,
+    totalFields:  STANDARD_TOTAL_FIELDS,   // legacy: every total row except shipping, Sub Total included
     staticTitle:  'TAX INVOICE',
     // Dynamic title: voided / paid statuses get an explicit suffix so
     // a printed copy can't be mistaken for a live demand for payment.
@@ -265,29 +295,21 @@ export const PAPER_LAYOUT: Record<DocumentType, PaperLayoutConfig> = {
   estimate: {
     firstColumn: [
       Fr('estimateNumber',    'Estimate Number'),
-      Fr('customerName',      'Bill To'),
-      F('customerVatNumber',  'Customer VAT Number'),
+      Fr('customerName',      'Bill to'),
+      F('customerAddress',    'Customer Address'),
+      { id: 'customerVatNumber', styleKey: 'vatNumber', label: 'Customer Vat number' },
       F('salesPerson',        'Sales Person'),
     ],
     secondColumn: [
       Fr('estimateDate',    'Estimate Date'),
-      F('estimateExpDate',  'Expiry Date'),
+      F('estimateExpDate',  'Estimate Expiry Date'),
       F('createdDate',      'Created Date'),
       F('refrence',         'Reference'),
     ],
-    tableColumns: SALES_COLUMNS,
-    totalFields:  STANDARD_TOTAL_FIELDS,
-    staticTitle:  'ESTIMATE',
-    // Dynamic: an expired estimate gets a suffix so it's obvious the
-    // pricing isn't fresh anymore.
-    getDynamicTitle: (data) => {
-      const est = (data['estimate'] as Record<string, unknown>) ?? {};
-      const status = String(est['status'] ?? '').toUpperCase();
-      if (status === 'EXPIRED') return 'ESTIMATE — EXPIRED';
-      if (status === 'ACCEPTED') return 'ESTIMATE — ACCEPTED';
-      if (status === 'REJECTED') return 'ESTIMATE — REJECTED';
-      return 'ESTIMATE';
-    },
+    tableColumns: SALES_COLUMNS_FULL,
+    // Legacy estimate totals: items, tax, total, charge, delivery, discount, rounding — no separate sub-total row.
+    totalFields:  STANDARD_TOTAL_FIELDS.filter((f) => f !== 'subTotal'),
+    staticTitle:  'Estimate',
     dataModel: {
       documentNumberField: 'estimateNumber',
       documentDateField:   'estimateDate',
@@ -299,8 +321,8 @@ export const PAPER_LAYOUT: Record<DocumentType, PaperLayoutConfig> = {
       linePriceField:      'price',
       hasPayments:         false,
       hasCredits:          false,
-      hasTerms:            true,
-      hasCompanyNote:      true,
+      hasTerms:            false,
+      hasCompanyNote:      false,
       hasCustomerNote:     true,
       tableHeaderField:    'estimateTableHeader',
       tableLinesField:     'estimateLines',
@@ -315,21 +337,20 @@ export const PAPER_LAYOUT: Record<DocumentType, PaperLayoutConfig> = {
   'credit-note': {
     firstColumn: [
       Fr('creditNoteNumber',  'Credit Note Number'),
-      Fr('customerName',      'Bill To'),
+      Fr('customerName',      'Bill to'),
       F('customerPhone',      'Customer Phone'),
       F('customerAddress',    'Customer Address'),
-      F('customerVatNumber',  'Customer VAT Number'),
-      F('salesPerson',        'Sales Person'),
+      F('customerVatNumber',  'Customer Vat number'),
+      Fr('originalInvoice',   'Original Invoice'),
     ],
     secondColumn: [
       Fr('creditNoteDate', 'Credit Note Date'),
-      Fr('originalInvoice', 'Original Invoice'),
       F('createdDate',     'Created Date'),
       F('refrence',        'Reference'),
     ],
-    tableColumns: SALES_COLUMNS,
+    tableColumns: CREDIT_NOTE_COLUMNS,
     totalFields:  STANDARD_TOTAL_FIELDS,
-    staticTitle:  'CREDIT NOTE',
+    staticTitle:  'Credit Note',
     dataModel: {
       documentNumberField: 'creditNoteNumber',
       documentDateField:   'creditNoteDate',
@@ -340,16 +361,16 @@ export const PAPER_LAYOUT: Record<DocumentType, PaperLayoutConfig> = {
       linePriceField:      'price',
       hasPayments:         false,
       hasCredits:          true,
-      hasTerms:            true,
-      hasCompanyNote:      true,
-      hasCustomerNote:     true,
+      hasTerms:            false,
+      hasCompanyNote:      false,
+      hasCustomerNote:     false,
       tableHeaderField:    'creditNoteTableHeader',
       tableLinesField:     'creditNoteLines',
       tableVoidedField:    'creditNoteVoidedLines',
       // Credit notes piggyback on the invoice CF scope in the legacy
       // app — the entity scope of its own isn't exposed by the CF
       // service, so we hide the entity-CF section for this type.
-      cfEntityType:        null,
+      cfEntityType:        'creditNote',
       documentDataKey:     'creditNote',
       relatedDocumentField:       'invoiceId',
       relatedDocumentNumberField: 'invoiceNumber',
@@ -358,23 +379,18 @@ export const PAPER_LAYOUT: Record<DocumentType, PaperLayoutConfig> = {
 
   'purchase-order': {
     firstColumn: [
-      Fr('purchaseOrderNumber', 'PO Number'),
-      Fr('supplierName',        'Supplier'),
-      F('supplierPhone',        'Supplier Phone'),
-      F('supplierAddress',      'Supplier Address'),
-      F('supplierVatNumber',    'Supplier VAT'),
-      F('employeeName',         'Employee'),
+      Fr('purchaseOrderNumber', 'Purchase Number'),
+      Fr('supplierName',        'Supplier Name'),
+      { id: 'supplierVatNumber', styleKey: 'vatNumber', label: 'VAT Number' },
     ],
     secondColumn: [
-      Fr('purchaseOrderDate',        'PO Date'),
+      Fr('purchaseOrderDate',        'Issue Date'),
       F('purchaseOrderExpiryDate',   'Expiry Date'),
-      F('expectedDeliveryDate',      'Expected Delivery'),
       F('createdDate',               'Created Date'),
-      F('refrence',                  'Reference'),
     ],
     tableColumns: PURCHASE_COLUMNS,
     totalFields:  ['subTotal', 'taxTotal', 'Total'],
-    staticTitle:  'PURCHASE ORDER',
+    staticTitle:  'Purchase Order',
     dataModel: {
       documentNumberField: 'purchaseOrderNumber',
       documentDateField:   'purchaseOrderDate',
@@ -386,8 +402,8 @@ export const PAPER_LAYOUT: Record<DocumentType, PaperLayoutConfig> = {
       linePriceField:      'unitCost',
       hasPayments:         false,
       hasCredits:          false,
-      hasTerms:            true,
-      hasCompanyNote:      true,
+      hasTerms:            false,
+      hasCompanyNote:      false,
       hasCustomerNote:     false,
       tableHeaderField:    'purchaseTableHeader',
       tableLinesField:     'purchaseLines',
@@ -402,30 +418,18 @@ export const PAPER_LAYOUT: Record<DocumentType, PaperLayoutConfig> = {
   bill: {
     firstColumn: [
       Fr('billNumber',        'Bill Number'),
-      Fr('supplierName',      'Supplier'),
-      F('supplierPhone',      'Supplier Phone'),
-      F('supplierAddress',    'Supplier Address'),
-      F('supplierVatNumber',  'Supplier VAT'),
-      F('employeeName',       'Employee'),
+      Fr('supplierName',      'Supplier Name'),
+      { id: 'supplierVatNumber', styleKey: 'vatNumber', label: 'VAT Number' },
     ],
     secondColumn: [
-      Fr('billDate',        'Bill Date'),
+      Fr('billDate',        'Issue Date'),
       F('billDueDate',      'Due Date'),
-      F('purchaseOrder',    'Purchase Order'),
-      F('vendorBillNumber', 'Vendor Bill #'),
       F('createdDate',      'Created Date'),
       F('refrence',         'Reference'),
     ],
     tableColumns: BILL_COLUMNS,
     totalFields:  ['itemTotal', 'taxTotal', 'discount', 'Total'],
-    staticTitle:  'BILL',
-    getDynamicTitle: (data) => {
-      const bill = (data['bill'] as Record<string, unknown>) ?? {};
-      const status = String(bill['status'] ?? '').toUpperCase();
-      if (status === 'PAID') return 'BILL — PAID';
-      if (status === 'VOIDED' || status === 'CANCELLED') return 'BILL — VOIDED';
-      return 'BILL';
-    },
+    staticTitle:  'Bill',
     dataModel: {
       documentNumberField: 'billNumber',
       documentDateField:   'billDate',
@@ -437,9 +441,9 @@ export const PAPER_LAYOUT: Record<DocumentType, PaperLayoutConfig> = {
       linePriceField:      'unitCost',
       hasPayments:         true,
       hasCredits:          true,
-      hasTerms:            true,
-      hasCompanyNote:      true,
-      hasCustomerNote:     false,
+      hasTerms:            false,
+      hasCompanyNote:      false,
+      hasCustomerNote:     true,
       tableHeaderField:    'billTableHeader',
       tableLinesField:     'billLines',
       tableVoidedField:    'billVoidedLines',
@@ -453,27 +457,25 @@ export const PAPER_LAYOUT: Record<DocumentType, PaperLayoutConfig> = {
   expense: {
     firstColumn: [
       Fr('expenseNumber',    'Expense Number'),
-      F('supplierName',      'Supplier / Payee'),
+      F('customerName',      'Customer'),
+      F('supplierName',      'Supplier Name'),
+      F('employeeName',      'Employees'),
       F('paymentMethodName', 'Payment Method'),
-      F('paidThrough',       'Paid Through'),
-      F('employeeName',      'Employee'),
     ],
     secondColumn: [
       Fr('expenseDate', 'Expense Date'),
       F('createdDate',  'Created Date'),
-      F('refrence',     'Reference'),
     ],
+    // Legacy expense table: the expense account, its amount, tax % / tax and the line total.
     tableColumns: [
-      TcLocked('order',   '#'),
       Tc('expense',       'Expense'),
-      Tc('qty',           'Qty'),
-      Tc('unitCost',      'Unit Cost'),
+      Tc('amount',        'Amount'),
       Tc('taxPercantage', 'Tax %'),
       Tc('tax',           'Tax'),
-      Tc('amount',        'Amount'),
+      Tc('total',         'Total'),
     ],
     totalFields:  ['Total'],
-    staticTitle:  'EXPENSE',
+    staticTitle:  'Expense',
     dataModel: {
       documentNumberField: 'expenseNumber',
       documentDateField:   'expenseDate',
@@ -485,8 +487,8 @@ export const PAPER_LAYOUT: Record<DocumentType, PaperLayoutConfig> = {
       hasPayments:         false,
       hasCredits:          false,
       hasTerms:            false,
-      hasCompanyNote:      true,
-      hasCustomerNote:     false,
+      hasCompanyNote:      false,
+      hasCustomerNote:     true,
       tableHeaderField:    'expenseTableHeader',
       tableLinesField:     'expenseLines',
       tableVoidedField:    'expenseVoidedLines',
@@ -504,17 +506,15 @@ export const PAPER_LAYOUT: Record<DocumentType, PaperLayoutConfig> = {
       F('supplierPhone',         'Supplier Phone'),
       F('supplierAddress',       'Supplier Address'),
       F('supplierVatNumber',     'Supplier VAT'),
-      F('employeeName',          'Employee'),
+      Fr('originalBill',         'Original Bill'),
     ],
     secondColumn: [
       Fr('supplierCreditDate', 'Supplier Credit Date'),
-      Fr('originalBill',       'Original Bill'),
-      F('createdDate',         'Created Date'),
       F('refrence',            'Reference'),
     ],
-    tableColumns: BILL_COLUMNS,
+    tableColumns: SUPPLIER_CREDIT_COLUMNS,
     totalFields:  STANDARD_TOTAL_FIELDS,
-    staticTitle:  'SUPPLIER CREDIT',
+    staticTitle:  'Supplier Credit',
     dataModel: {
       documentNumberField: 'supplierCreditNumber',
       documentDateField:   'supplierCreditDate',
@@ -525,15 +525,15 @@ export const PAPER_LAYOUT: Record<DocumentType, PaperLayoutConfig> = {
       linePriceField:      'unitCost',
       hasPayments:         false,
       hasCredits:          true,
-      hasTerms:            true,
-      hasCompanyNote:      true,
+      hasTerms:            false,
+      hasCompanyNote:      false,
       hasCustomerNote:     false,
       tableHeaderField:    'supplierCreditTableHeader',
       tableLinesField:     'supplierCreditLines',
       tableVoidedField:    'supplierCreditVoidedLines',
       // Supplier credits piggyback on bill in the legacy CF service —
       // no entity scope of its own.
-      cfEntityType:        null,
+      cfEntityType:        'supplierCredit',
       documentDataKey:     'supplierCredit',
       relatedDocumentField:       'billId',
       relatedDocumentNumberField: 'billNumber',
@@ -567,11 +567,11 @@ export const FIELD_TOKEN: Record<string, string> = {
   billDueDate:             '{{invoice.dueDate}}',
   expenseDate:             '{{invoice.date}}',
   supplierCreditDate:      '{{invoice.date}}',
-  createdDate:             '{{invoice.date}}',
+  createdDate:             '{{invoice.createdDate}}',
   // refs
   refrence:                '{{invoice.reference}}',
-  originalInvoice:         '{{invoice.reference}}',
-  originalBill:            '{{invoice.reference}}',
+  originalInvoice:         '{{invoice.original}}',
+  originalBill:            '{{invoice.original}}',
   purchaseOrder:           '{{invoice.reference}}',
   vendorBillNumber:        '{{invoice.reference}}',
   // customer
@@ -590,7 +590,7 @@ export const FIELD_TOKEN: Record<string, string> = {
   employeeName:            '{{invoice.salesRep}}',
   service:                 '{{invoice.service}}',
   // expense
-  paymentMethodName:       'Cash',
+  paymentMethodName:       '{{invoice.paymentMethod}}',
   paidThrough:             'Main Account',
 };
 
@@ -604,9 +604,8 @@ export const FIELD_TOKEN: Record<string, string> = {
 export function getFieldConfig(type: DocumentType, id: string): PaperFieldConfig | null {
   const layout = PAPER_LAYOUT[type];
   if (!layout) return null;
-  return layout.firstColumn.find((f) => f.id === id)
-      ?? layout.secondColumn.find((f) => f.id === id)
-      ?? null;
+  const all = [...layout.firstColumn, ...layout.secondColumn];
+  return all.find((f) => (f.styleKey ?? f.id) === id) ?? all.find((f) => f.id === id) ?? null;
 }
 
 /** Look up a table-column's `TableColumnConfig` for a given doc type.

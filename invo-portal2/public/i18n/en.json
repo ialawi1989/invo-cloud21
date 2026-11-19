@@ -191,7 +191,12 @@
     "UPLOAD_FAILED": "Upload failed",
     "ERROR": "error",
     "ERRORS": "errors",
-    "FORM_ERRORS": { "TITLE": "Fix these fields", "REQUIRED": "Required", "INVALID": "Invalid", "HIDDEN": "{{count}} more not shown (in collapsed or hidden sections)" },
+    "FORM_ERRORS": {
+      "TITLE": "Fix these fields",
+      "REQUIRED": "Required",
+      "INVALID": "Invalid",
+      "HIDDEN": "{{count}} more not shown (in collapsed or hidden sections)"
+    },
     "UNSAVED_TITLE": "Unsaved changes",
     "UNSAVED_HINT": "You have unsaved changes. Leave without saving?",
     "LEAVE": "Leave",
@@ -740,5 +745,104 @@
     "WCAG_AA_LARGE": "AA Large",
     "WCAG_AA": "AA",
     "WCAG_AAA": "AAA"
+  },
+  "DOCUMENT_PAPER": {
+    "FIELD": {
+      "estimate": {
+        "estimateNumber": "Estimate Number",
+        "customerName": "Bill to",
+        "customerAddress": "Customer Address",
+        "customerVatNumber": "Customer Vat number",
+        "salesPerson": "Sales Person",
+        "estimateDate": "Estimate Date",
+        "estimateExpDate": "Estimate Expiry Date",
+        "createdDate": "Created Date",
+        "refrence": "Reference"
+      },
+      "invoice": {
+        "invNumber": "Invoice Number",
+        "customerName": "Bill to",
+        "customerPhone": "Customer Phone",
+        "customerAddress": "Customer Address",
+        "customerVatNumber": "Customer Vat number",
+        "salesPerson": "Sales Person",
+        "invoiceDate": "Invoice Date",
+        "invoiceDueDate": "Invoice Due Date",
+        "createdDate": "Created Date",
+        "refrence": "Reference",
+        "service": "Service"
+      },
+      "purchase-order": {
+        "purchaseNumber": "Purchase Number",
+        "supplierName": "Supplier Name",
+        "supplierVatNumber": "VAT Number",
+        "purchaseDate": "Issue Date",
+        "purchaseOrderExpiryDate": "Expiry Date",
+        "createdDate": "Created Date"
+      },
+      "bill": {
+        "billNumber": "Bill Number",
+        "supplierName": "Supplier Name",
+        "supplierVatNumber": "VAT Number",
+        "billingDate": "Issue Date",
+        "dueDate": "Due Date",
+        "createdDate": "Created Date",
+        "refrence": "Reference"
+      },
+      "expense": {
+        "expenseNumber": "Expense Number",
+        "customerName": "Customer",
+        "supplierName": "Supplier Name",
+        "employeeName": "Employees",
+        "paymentMethodName": "Payment Method",
+        "expenseDate": "Expense Date",
+        "createdDate": "Created Date"
+      }
+    },
+    "TOTAL": {
+      "itemTotal": "Items Total",
+      "taxTotal": "Tax Total",
+      "subTotal": "Sub Total",
+      "discount": "Discount",
+      "charge": "Charge",
+      "delevary": "Delivery charge",
+      "roundingTotal": "Rounding",
+      "Total": "Total"
+    },
+    "PAYMENT": {
+      "payments": "Payment Made",
+      "credit": "Credit Applied",
+      "balance": "Balance"
+    },
+    "MISC": {
+      "ORDER_SUMMARY": "Order summary",
+      "VAT_NUMBER": "Vat number",
+      "BRANCH": "Branch",
+      "ADDRESS": "Branch Address",
+      "PHONE": "Phone",
+      "INCLUSIVE_TAX": "Inclusive Tax",
+      "EXCLUSIVE_TAX": "Exclusive Tax"
+    },
+    "STATUS": {
+      "Draft": "Draft",
+      "Paid": "Paid",
+      "Calculated": "Calculated",
+      "Confirmed": "Confirmed",
+      "Partially Paid": "Partially Paid",
+      "Open": "Open",
+      "Void": "Voided",
+      "Placed": "Placed",
+      "Closed": "Closed",
+      "Rejected": "Rejected",
+      "Overdue": "Overdue",
+      "writeOff": "writeOff",
+      "Pending": "Pending",
+      "Accepted": "Accepted",
+      "Ready": "Ready",
+      "Departure": "Departure",
+      "Arrived": "Arrived",
+      "Completed": "Completed",
+      "merged": "Merged"
+    }
   }
 }

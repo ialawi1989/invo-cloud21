@@ -42,13 +42,13 @@ import { AddAddressModalComponent, AddAddressModalData } from '../../customers/c
   `,
   styles: [`
     :host { display: flex; flex-direction: column; gap: 6px; }
-    .caf__label { font-size: 13px; font-weight: 600; color: #334155; }
-    .caf__label .req { color: #dc2626; }
-    .caf__warn { padding: 8px 12px; border-radius: 8px; background: #fffbeb; border: 1px solid #fde68a; color: #92400e; font-size: 13px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-    .caf__new { display: flex; align-items: center; gap: 8px; width: 100%; padding: 10px 14px; border: 0; background: none; color: #227d8d; font-weight: 500; cursor: pointer; text-align: start; }
-    .caf__new:hover { background: #f1f5f9; }
+    .caf__label { font-size: 13px; font-weight: 600; color: var(--ui-text-3); }
+    .caf__label .req { color: var(--ui-red-text); }
+    .caf__warn { padding: 8px 12px; border-radius: 8px; background: var(--ui-amber-soft); border: 1px solid var(--ui-amber-soft-2); color: var(--ui-amber-text); font-size: 13px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .caf__new { display: flex; align-items: center; gap: 8px; width: 100%; padding: 10px 14px; border: 0; background: none; color: var(--ui-brand-text); font-weight: 500; cursor: pointer; text-align: start; }
+    .caf__new:hover { background: var(--ui-surface-2); }
     .caf__plus { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: #227d8d; color: #fff; font-size: 14px; line-height: 1; }
-    .caf__add { white-space: nowrap; padding: 0; border: 0; background: none; color: #227d8d; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .caf__add { white-space: nowrap; padding: 0; border: 0; background: none; color: var(--ui-brand-text); font-size: 13px; font-weight: 600; cursor: pointer; }
     .caf__add:hover { text-decoration: underline; }
   `],
 })

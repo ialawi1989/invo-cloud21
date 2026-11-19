@@ -2,6 +2,7 @@
 @use 'styles/content-library-design-system';
 @use 'styles/product-detail-badges';
 @use 'styles/print';
+@use 'styles/dark';
 // Guided-tour popover styling. Global because driver.js renders into <body>,
 // but every selector is scoped to our own tour — see the file header.
 @use 'styles/guided-tour';
@@ -24,8 +25,8 @@
   --color-brand-300: #7ad3df;
   --color-brand-400: #43b9c9;
   --color-brand-500: #32acc1;
-  --color-brand-600: #2691a4;
-  --color-brand-700: #207484;
+  --color-brand-600: var(--ui-brand-text);
+  --color-brand-700: var(--ui-brand-text);
   --color-brand-800: #1d5d6b;
   --color-brand-900: #1a4e5a;
   --color-brand-950: #0c343d;
@@ -53,7 +54,7 @@ button:not(:disabled) {
 }
 .list-interactive-cell:hover,
 tr:hover .list-interactive-cell {
-  color: var(--color-brand-700);
+  color: var(--ui-brand-t700);
 }
 
 // ── Global checkbox style ────────────────────────────────────────────────────
@@ -68,8 +69,8 @@ input[type="checkbox"]:not(.no-custom) {
   width: 18px;
   height: 18px;
   border-radius: 5px;
-  border: 1.5px solid #cbd5e1;           // slate-300
-  background: #ffffff;
+  border: 1.5px solid var(--ui-line-strong);           // slate-300
+  background: var(--ui-surface);
   cursor: pointer;
   flex-shrink: 0;
   display: inline-flex;
@@ -133,8 +134,8 @@ html, body {
   height: 100%;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
-  background: #f8fafc;
-  color: #111827;
+  background: var(--ui-surface-1);
+  color: var(--ui-text);
 }
 
 // Comfortable base reading size for body copy in this admin app.
@@ -151,7 +152,7 @@ button { font-family: inherit; }
 // ── Custom scrollbar (thin, subtle, matches the brand) ───────────────────────
 * {
   scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 transparent;
+  scrollbar-color: var(--ui-line-strong) transparent;
 }
 *::-webkit-scrollbar {
   width: 6px;
@@ -161,7 +162,7 @@ button { font-family: inherit; }
   background: transparent;
 }
 *::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: var(--ui-line-strong);
   border-radius: 3px;
 }
 *::-webkit-scrollbar-thumb:hover {
@@ -500,7 +501,7 @@ body:has(.wc) .wc__editor .re__surface {
 // spills off-screen.
 .invo-tooltip {
   position: fixed;
-  background: #111827; color: #fff;
+  background: var(--ui-ink); color: #fff;
   font-size: 12px; font-weight: 500;
   line-height: 1.45;
   max-width: 260px;
@@ -521,13 +522,13 @@ body:has(.wc) .wc__editor .re__surface {
   position: absolute; bottom: 100%;
   left: var(--arrow-left, 50%);
   transform: translateX(-50%);
-  border: 5px solid transparent; border-bottom-color: #111827;
+  border: 5px solid transparent; border-bottom-color: var(--ui-ink);
 }
 
 // Arrow — above element: arrow points down
 .invo-tooltip.invo-tooltip--above::before {
   bottom: auto; top: 100%;
-  border-bottom-color: transparent; border-top-color: #111827;
+  border-bottom-color: transparent; border-top-color: var(--ui-ink);
 }
 
 // ── Button utilities ─────────────────────────────────────────────────
@@ -555,22 +556,22 @@ body:has(.wc) .wc__editor .re__surface {
   &:hover:not(:disabled) { background: var(--color-brand-700, #0e7490); }
 }
 .btn-default {
-  background: #fff;
-  border-color: #e2e8f0;
-  color: #334155;
-  &:hover:not(:disabled) { background: #f8fafc; }
+  background: var(--ui-surface);
+  border-color: var(--ui-line);
+  color: var(--ui-text-3);
+  &:hover:not(:disabled) { background: var(--ui-surface-1); }
 }
 .btn-ghost {
   background: transparent;
-  color: #475569;
-  border-color: #e2e8f0;
-  &:hover:not(:disabled) { background: #f8fafc; }
+  color: var(--ui-text-4);
+  border-color: var(--ui-line);
+  &:hover:not(:disabled) { background: var(--ui-surface-1); }
 }
 .btn-danger-soft {
-  background: #fef2f2;
-  border-color: #fecaca;
-  color: #b91c1c;
-  &:hover:not(:disabled) { background: #fee2e2; border-color: #fca5a5; }
+  background: var(--ui-red-soft);
+  border-color: var(--ui-red-soft-2);
+  color: var(--ui-red-text);
+  &:hover:not(:disabled) { background: var(--ui-red-soft); border-color: #fca5a5; }
 }
 .btn-sm {
   padding: 6px 12px;
@@ -652,9 +653,9 @@ select:disabled,
 select[readonly] {
   // Soft slate fill — clearly distinct from an editable `#fff` input but not
   // alarming. Matches the disabled chrome the checkbox-field rows already use.
-  background-color: #f1f5f9 !important;
-  color: #64748b !important;
-  border-color: #e2e8f0 !important;
+  background-color: var(--ui-surface-2) !important;
+  color: var(--ui-muted) !important;
+  border-color: var(--ui-line) !important;
   cursor: not-allowed;
   // Faded placeholder so it doesn't look like a hint the user can act on.
   &::placeholder { color: #cbd5e1; }
@@ -720,13 +721,13 @@ input[type="checkbox"]:not(.no-custom):disabled:checked {
   padding: 2px 6px;
   border: 0;
   background: none;
-  color: #94a3b8;
+  color: var(--ui-faint);
   line-height: 1;
   cursor: pointer;
   border-radius: 6px;
   transition: transform .18s ease, color .12s, background-color .12s;
 
-  &:hover { color: #475569; background: #f1f5f9; }
+  &:hover { color: var(--ui-text-4); background: var(--ui-surface-2); }
   &--up   { transform: translateY(-50%) rotate(180deg); }
 }
 

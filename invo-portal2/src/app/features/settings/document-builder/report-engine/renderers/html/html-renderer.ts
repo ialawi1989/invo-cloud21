@@ -3,16 +3,18 @@ import {
   TableBlock,
   PAYMENT_COLUMN_CATALOG,
   DEFAULT_PAYMENT_COLUMNS,
+  paymentAmountPipe,
   PaymentColumnDef,
 } from '../../core/types/block.types';
 import { BindingContext } from '../../core/types/binding.types';
-import { ReportTemplate } from '../../core/types/template.types';
+import { MASTER_PAGE_ID, ReportTemplate } from '../../core/types/template.types';
 import { BindingEngine } from '../../core/binding/binding-engine';
 import { PaginationEngine, RenderedPage } from '../../core/layout/pagination';
-import { computePageDimensions } from '../../core/layout/dimensions';
+import { computePageDimensions, computeRepeaterItemHeightMm } from '../../core/layout/dimensions';
 import { Renderer, RenderInput } from '../renderer.interface';
 import { blockStyleToCss, escapeHtml, fontStyleToCss, mergeCss, sanitizeRichText } from './css-utils';
 import { barcodeSvg, qrSvg } from '../../utils/code-svg.utils';
+import { DEFAULT_FONT_STACK, normalizeSeedFontFamily } from '../../utils/fonts.utils';
 
 /**
  * Minimum top gap (mm) reserved when a page has no header — keeps content
@@ -48,7 +50,31 @@ export class HtmlRenderer implements Renderer<string> {
     const { template, data } = input;
     const locale = input.locale ?? template.locale;
     const root = this.binding.createRoot(data, locale, input.vars ?? {});
-    const pages = this.pagination.paginate(template, root);
+    const masterPages = this.pagination.paginate(template, root);
+
+    // Extra pages (see `ReportTemplate.extraPages`) are standalone content
+    // pages appended after the master's flow — e.g. a company's own Terms &
+    // Conditions layout. Each is paginated independently (it can itself span
+    // more than one physical page if its content is long) against a synthetic
+    // template holding just that page's own `body` section, remapped to look
+    // like a master page to `PaginationEngine.findSection` — see
+    // `Section.pageId`. They share the real template's `page`/theme, so the
+    // synthetic object only needs to replace `sections`.
+    const extraRendered = (template.extraPages ?? []).flatMap((extraPage) => {
+      const body = template.sections.find((s) => s.pageId === extraPage.id && s.type === 'body');
+      if (!body) return [];
+      const synthetic: ReportTemplate = { ...template, sections: [{ ...body, pageId: MASTER_PAGE_ID }] };
+      return this.pagination.paginate(synthetic, root);
+    });
+
+    // Re-index across the combined document so page numbers/`isLast` are
+    // correct for bindings like {{pageNumber}}/{{totalPages}}.
+    const pages = [...masterPages, ...extraRendered].map((p, i, arr) => ({
+      ...p,
+      index: i,
+      isFirst: i === 0,
+      isLast: i === arr.length - 1,
+    }));
     const dims = computePageDimensions(template.page);
     const totalPages = pages.length;
 
@@ -57,19 +83,35 @@ export class HtmlRenderer implements Renderer<string> {
       .join('\n');
 
     const customCss = template.theme?.customCss ?? '';
+    // The document-wide family every block left on "Inherit" resolves to —
+    // the same expression the designer canvas uses, so the two agree.
+    const fontFamily = normalizeSeedFontFamily(template.theme?.fontFamily) || DEFAULT_FONT_STACK;
 
     return `<!DOCTYPE html>
 <html lang="${template.language}" dir="${template.direction}">
 <head>
 <meta charset="utf-8" />
 <title>${escapeHtml(template.name)}</title>
+<!-- Roboto (Latin) and Amiri (Arabic), the two families DEFAULT_FONT_STACK
+     names. This document is standalone - saved to disk, mailed, opened outside
+     the app - so it fetches them itself; offline, the stack's generic tail
+     still applies. -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&amp;family=Roboto:ital,wght@0,400;0,500;0,700;1,400;1,700&amp;display=swap" />
 <style>
 @page { size: ${dims.width}mm ${dims.height}mm; margin: 0; }
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; background: #f5f5f5; }
-body { font-family: ${template.theme?.fontFamily ?? 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif'}; }
+body { font-family: ${fontFamily}; }
 .page {
   position: relative;
+  /* Repeated from the body rule on purpose. This document is also inlined
+     into the live app by DesignerPaperComponent, which keeps the page markup
+     but drops the html/body rules — the app's own body font-family carries
+     !important, so it would otherwise decide what every "Inherit" block
+     renders in and the in-app preview would stop matching canvas and PDF. */
+  font-family: ${fontFamily};
   width: ${dims.width}mm;
   height: ${dims.height}mm;
   /* Inside-margin origin: page padding reserves the user-configured page
@@ -85,6 +127,10 @@ body { font-family: ${template.theme?.fontFamily ?? 'system-ui, -apple-system, "
 }
 .page:last-of-type { page-break-after: auto; }
 .block { position: absolute; }
+/* Text-ish blocks keep the newlines their value carries — pdfmake renders a
+   newline as a line break, so the HTML output has to as well, or saved terms
+   copy breaks lines in the PDF but runs together here. */
+.block.r-preline { white-space: pre-line; }
 .section { position: relative; }
 .section-flow > .block { position: relative !important; }
 .r-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
@@ -190,14 +236,17 @@ ${pageHtml}
 
     switch (block.type) {
       case 'text':
-        return `<div class="block" style="${styleCss}">${escapeHtml(this.binding.interpolate(block.text, ctx))}</div>`;
+        return `<div class="block r-preline" style="${styleCss}">${escapeHtml(this.binding.interpolate(block.text, ctx))}</div>`;
 
       case 'rich-text':
-        return `<div class="block" style="${styleCss}">${sanitizeRichText(this.binding.interpolate(block.html, ctx))}</div>`;
+        // `r-preline` as well as `<br>`: the property panel edits this in a
+        // plain textarea, so a user pressing Enter expects a line break there
+        // and not just from markup they typed by hand.
+        return `<div class="block r-preline" style="${styleCss}">${sanitizeRichText(this.binding.interpolate(block.html, ctx))}</div>`;
 
       case 'dynamic-field': {
         const v = this.binding.evaluate(block.expression, ctx);
-        return `<div class="block" style="${styleCss}">${escapeHtml(v === null || v === undefined ? '' : String(v))}</div>`;
+        return `<div class="block r-preline" style="${styleCss}">${escapeHtml(v === null || v === undefined ? '' : String(v))}</div>`;
       }
 
       case 'image': {
@@ -320,7 +369,7 @@ ${pageHtml}
       this.binding.resolveArray(block.dataSource, ctx),
       ctx,
     );
-    const currency = block.currency ?? 'BHD';
+    const amountPipe = paymentAmountPipe(block.currency);
     const ids = block.columns ?? DEFAULT_PAYMENT_COLUMNS;
     // Filter the catalog by selected IDs, preserving the IDs' order — this
     // is the canonical "what columns + in what order" projection used by all
@@ -341,7 +390,7 @@ ${pageHtml}
         const cls = i % 2 === 1 ? 'r-odd' : '';
         const cells = cols
           .map((c) => {
-            const expr = c.isAmount ? `${c.expression} | currency:${currency}` : c.expression;
+            const expr = c.isAmount ? `${c.expression} | ${amountPipe}` : c.expression;
             const v = this.binding.evaluate(expr, rowCtx);
             return `<td style="text-align:${c.align}">${escapeHtml(this.toCellText(v))}</td>`;
           })
@@ -496,6 +545,11 @@ ${pageHtml}
     const classes = ['r-table'];
     if (block.zebra) classes.push('r-zebra');
     if (hasAutoCol) classes.push('r-table-auto');
+    // Grid lines follow the block's own Border width (set 0 → none) rather
+    // than always drawing — undefined (never touched) still defaults to
+    // bordered, matching the canvas (see canvas-block's tableShowBorder).
+    const tableBorderWidth = block.style?.border?.top?.width ?? block.style?.border?.left?.width;
+    if (tableBorderWidth === 0) classes.push('r-no-border');
     // Clip the table wrapper at the top of the page-footer band so a table
     // whose rendered rows grew past their `rowMinHeight` budget can't paint
     // over the footer. The cap is computed by the caller from the page
@@ -536,7 +590,7 @@ ${pageHtml}
     const sliceRows = slice ? slice.rows : this.binding.resolveArray(block.dataSource, ctx);
     const startIndex = slice?.startIndex ?? 0;
     const rows = this.applyRowVisibility(block.rowVisibleWhen, sliceRows, ctx);
-    const itemH = block.itemHeight;
+    const itemH = computeRepeaterItemHeightMm(block);
     const gap = block.itemSpacing ?? 0;
     const direction = block.direction ?? 'vertical';
     const cards = rows
@@ -648,8 +702,12 @@ ${pageHtml}
     let cumulative = startIndex;
     const out: string[] = [];
     for (const [key, bucketRows] of buckets) {
+      // A row whose group-by expression is null/undefined/empty has no real
+      // category to group under — render it as a plain row instead of a
+      // one-item "group" with a blank/undefined header and footer.
+      const hasKey = key !== null && key !== undefined && key !== '';
       const groupCtx = this.binding.withGroup(ctx, key, bucketRows, groupIndex);
-      if (group.showHeader && group.headerExpression) {
+      if (hasKey && group.showHeader && group.headerExpression) {
         out.push(
           `<tr class="r-group-header"><td colspan="${colCount}" style="background:#f3f4f6;font-weight:600;padding:1mm 1.5mm;">${escapeHtml(
             this.binding.interpolate(group.headerExpression, groupCtx),
@@ -658,14 +716,14 @@ ${pageHtml}
       }
       out.push(this.renderFlatRows(block, bucketRows, ctx, cumulative).replace('<tbody>', '').replace('</tbody>', ''));
       cumulative += bucketRows.length;
-      if (group.showFooter && group.footerExpression) {
+      if (hasKey && group.showFooter && group.footerExpression) {
         out.push(
           `<tr class="r-group-footer"><td colspan="${colCount}" style="font-style:italic;padding:1mm 1.5mm;">${escapeHtml(
             this.binding.interpolate(group.footerExpression, groupCtx),
           )}</td></tr>`,
         );
       }
-      groupIndex++;
+      if (hasKey) groupIndex++;
     }
     return `<tbody>${out.join('')}</tbody>`;
   }

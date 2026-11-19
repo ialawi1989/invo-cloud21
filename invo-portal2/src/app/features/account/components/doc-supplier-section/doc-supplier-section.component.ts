@@ -52,8 +52,8 @@ export interface SupplierMini {
     </section>
   `,
   styles: [`
-    .sp-new { display: flex; align-items: center; gap: 8px; width: 100%; padding: 10px 14px; border: 0; background: none; color: #227d8d; font-weight: 500; cursor: pointer; text-align: start; }
-    .sp-new:hover { background: #f1f5f9; }
+    .sp-new { display: flex; align-items: center; gap: 8px; width: 100%; padding: 10px 14px; border: 0; background: none; color: var(--ui-brand-text); font-weight: 500; cursor: pointer; text-align: start; }
+    .sp-new:hover { background: var(--ui-surface-2); }
     .sp-new__plus { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: #227d8d; color: #fff; font-size: 14px; line-height: 1; }
   `],
 })

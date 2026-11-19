@@ -147,7 +147,7 @@ export interface ErrorModalData {
       font-size: 12px;
       font-weight: 600;
       text-transform: uppercase;
-      color: #9ca3af;
+      color: var(--ui-faint);
       margin: 0 0 8px;
       letter-spacing: 0.5px;
     }
@@ -178,33 +178,33 @@ export interface ErrorModalData {
     }
 
     .error-item--validation {
-      background: #fef3c7;
+      background: var(--ui-amber-soft);
       border-left-color: #f59e0b;
-      color: #92400e;
+      color: var(--ui-amber-text);
     }
 
     .error-item--business {
-      background: #fee2e2;
+      background: var(--ui-red-soft);
       border-left-color: #ef4444;
-      color: #7f1d1d;
+      color: var(--ui-t-7f1d1d);
     }
 
     .error-item--auth {
-      background: #fecaca;
+      background: var(--ui-red-soft-2);
       border-left-color: #dc2626;
-      color: #7f1d1d;
+      color: var(--ui-t-7f1d1d);
     }
 
     .error-item--server {
-      background: #dbeafe;
+      background: var(--ui-x-dbeafe);
       border-left-color: #3b82f6;
-      color: #1e3a8a;
+      color: var(--ui-t-1e3a8a);
     }
 
     .error-item--general {
-      background: #f3f4f6;
+      background: var(--ui-surface-2);
       border-left-color: #6b7280;
-      color: #374151;
+      color: var(--ui-text-3);
     }
 
     .error-item--more {

@@ -15,7 +15,7 @@ import { CommonModule } from '@angular/common';
   template: `<span [innerHTML]="rendered()"></span>`,
   styles: [`
     :host ::ng-deep .hashtag {
-      color: var(--color-brand-600, #0e7490);
+      color: var(--ui-brand-t600);
       font-weight: 500;
       text-decoration: none;
       transition: text-decoration 100ms ease;

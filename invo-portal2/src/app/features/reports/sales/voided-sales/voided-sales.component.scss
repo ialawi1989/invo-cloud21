@@ -29,7 +29,7 @@
 @keyframes ls-shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
 .ls-loading { display: flex; flex-direction: column; gap: 16px; }
 .ls-skel {
-  height: 360px; border-radius: 12px; background: linear-gradient(90deg, #eef2f6 0%, #f6f8fa 50%, #eef2f6 100%);
+  height: 360px; border-radius: 12px; background: linear-gradient(90deg, var(--ui-surface-2) 0%, var(--ui-x-f6f8fa) 50%, var(--ui-surface-2) 100%);
   background-size: 200% 100%; animation: ls-shimmer 1.4s ease-in-out infinite;
 }
 .ls-error {
@@ -87,7 +87,7 @@
   thead th { color: var(--rp-muted); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; background: var(--rp-surface-2); }
   .text-end { text-align: end; font-variant-numeric: tabular-nums; }
   .ls-filtered td { background: var(--rp-brand-soft); }
-  .ls-items-total td { background: #f3f4f6; border-top: 2px solid var(--rp-border-strong); }
+  .ls-items-total td { background: var(--ui-surface-2); border-top: 2px solid var(--rp-border-strong); }
 }
 
 /* Space between the table card and its pager. */

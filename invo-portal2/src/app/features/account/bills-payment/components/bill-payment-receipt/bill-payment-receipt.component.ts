@@ -75,26 +75,26 @@ import { BillingPayment } from '../../../models/billing-payment.model';
     </article>
   `,
   styles: [`
-    .pr { background: #fff; border: 1px solid #e4e7ec; border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 18px; max-width: 900px; }
+    .pr { background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 18px; max-width: 900px; }
     .pr__head { display: flex; align-items: center; gap: 14px; }
     .pr__head h2 { margin: 0; font-size: 18px; }
     .pr__logo { height: 48px; object-fit: contain; }
-    .pr__muted { color: #64748b; font-size: 13px; }
-    .pr__title { margin-inline-start: auto; font-size: 20px; font-weight: 700; color: #227d8d; text-transform: uppercase; }
+    .pr__muted { color: var(--ui-muted); font-size: 13px; }
+    .pr__title { margin-inline-start: auto; font-size: 20px; font-weight: 700; color: var(--ui-brand-text); text-transform: uppercase; }
     .pr__grid { display: grid; gap: 16px; grid-template-columns: 1fr; }
     @media (min-width: 720px) { .pr__grid { grid-template-columns: 2fr 1fr; } }
     .pr__facts { margin: 0; display: flex; flex-direction: column; gap: 6px; }
     .pr__facts div { display: flex; justify-content: space-between; gap: 12px; }
-    .pr__facts dt { color: #64748b; } .pr__facts dd { margin: 0; font-weight: 600; text-align: end; }
-    .pr__amount { background: #2691a4; color: #fff; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-align: center; }
+    .pr__facts dt { color: var(--ui-muted); } .pr__facts dd { margin: 0; font-weight: 600; text-align: end; }
+    .pr__amount { background: var(--ui-b-2691a4); color: #fff; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-align: center; }
     .pr__amount strong { font-size: 22px; }
     .pr__sub { margin: 0; font-size: 15px; }
     .pr__wrap { overflow-x: auto; }
     .pr__table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-    .pr__table th { background: #0f172a; color: #fff; text-align: start; padding: 10px 12px; }
-    .pr__table td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
+    .pr__table th { background: var(--ui-ink); color: #fff; text-align: start; padding: 10px 12px; }
+    .pr__table td { padding: 10px 12px; border-bottom: 1px solid var(--ui-surface-2); }
     .end { text-align: end !important; }
-    a { color: #227d8d; }
+    a { color: var(--ui-brand-text); }
   `],
 })
 export class BillPaymentReceiptComponent {

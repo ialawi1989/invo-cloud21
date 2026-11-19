@@ -22,11 +22,11 @@ import { TranslateModule } from '@ngx-translate/core';
     :host { display: block; margin-bottom: 16px; }
     .rn {
       display: flex; align-items: center; gap: 10px; padding: 11px 14px; border-radius: 10px; font-size: 13.5px;
-      background: #fff8e1; border: 1px solid #f5d77a; color: #7a5b00;
+      background: var(--ui-x-fff8e1); border: 1px solid var(--ui-x-f5d77a); color: var(--ui-t-7a5b00);
     }
     .rn svg { flex: none; }
-    .rn-info { background: #eff6ff; border-color: #bfdbfe; color: #1e40af; }
-    .rn-danger { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
+    .rn-info { background: var(--ui-x-eff6ff); border-color: var(--ui-x-bfdbfe); color: var(--ui-t-1e40af); }
+    .rn-danger { background: var(--ui-red-soft); border-color: var(--ui-red-soft-2); color: var(--ui-red-text); }
   `],
 })
 export class ReportNoteComponent {

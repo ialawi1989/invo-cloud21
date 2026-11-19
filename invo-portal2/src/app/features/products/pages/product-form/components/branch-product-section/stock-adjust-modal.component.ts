@@ -76,14 +76,14 @@ export interface StockAdjustResult {
 
     .sa-body { padding: 16px 24px 8px; display: flex; flex-direction: column; gap: 14px; }
     .sa-field { display: flex; flex-direction: column; gap: 6px; }
-    .sa-label { font-size: 12px; font-weight: 600; color: #475569; }
+    .sa-label { font-size: 12px; font-weight: 600; color: var(--ui-text-4); }
 
     .sa-input {
-      width: 100%; padding: 10px 12px; border: 1px solid #d1d5db;
+      width: 100%; padding: 10px 12px; border: 1px solid var(--ui-line-strong);
       border-radius: 8px; font-size: 14px; outline: none;
       transition: border-color .12s, box-shadow .12s;
       &:focus { border-color: #32acc1; box-shadow: 0 0 0 3px rgba(50,172,193,.15); }
-      &--readonly { background: #f8fafc; color: #64748b; cursor: not-allowed; }
+      &--readonly { background: var(--ui-surface-1); color: var(--ui-muted); cursor: not-allowed; }
     }
 
     .sa-delta {
@@ -93,17 +93,17 @@ export interface StockAdjustResult {
       border-radius: 10px;
       font-size: 11px;
       font-weight: 600;
-      background: #dcfce7;
-      color: #166534;
+      background: var(--ui-green-soft);
+      color: var(--ui-green-text);
 
-      &--neg { background: #fef2f2; color: #b91c1c; }
+      &--neg { background: var(--ui-red-soft); color: var(--ui-red-text); }
     }
 
-    .sa-error { font-size: 12px; color: #dc2626; }
+    .sa-error { font-size: 12px; color: var(--ui-red-text); }
 
     .sa-footer {
       display: flex; justify-content: flex-end; gap: 8px;
-      padding: 16px 24px 20px; border-top: 1px solid #f1f5f9;
+      padding: 16px 24px 20px; border-top: 1px solid var(--ui-surface-2);
     }
     .sa-btn {
       display: inline-flex; align-items: center; gap: 8px;
@@ -111,7 +111,7 @@ export interface StockAdjustResult {
       font-weight: 500; cursor: pointer; border: 1px solid transparent;
       &:disabled { opacity: .5; cursor: not-allowed; }
     }
-    .sa-btn--ghost   { background: #fff; border-color: #e5e7eb; color: #374151; }
+    .sa-btn--ghost   { background: var(--ui-surface); border-color: var(--ui-line); color: var(--ui-text-3); }
     .sa-btn--primary { background: #32acc1; color: #fff;
       &:not(:disabled):hover { background: #2a93a6; }
     }

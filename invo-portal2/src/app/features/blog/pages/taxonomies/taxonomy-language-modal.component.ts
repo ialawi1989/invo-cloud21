@@ -54,24 +54,24 @@ export interface TaxonomyLanguageModalData {
   `,
   styles: [`
     .tlm__body { padding: 8px 20px 12px; }
-    .tlm__hint { margin: 0 0 12px; font-size: 13px; color: #64748b; }
+    .tlm__hint { margin: 0 0 12px; font-size: 13px; color: var(--ui-muted); }
     .tlm__opt {
       display: flex; align-items: center; gap: 12px;
-      padding: 12px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px;
-      margin-bottom: 8px; cursor: pointer; font-size: 14px; color: #0f172a;
+      padding: 12px 14px; border: 1.5px solid var(--ui-line); border-radius: 10px;
+      margin-bottom: 8px; cursor: pointer; font-size: 14px; color: var(--ui-text);
       transition: border-color .1s, background .1s;
     }
-    .tlm__opt:hover { border-color: #cbd5e1; }
-    .tlm__opt.is-on { border-color: var(--color-brand-600, #2691a4); background: #f4fafb; }
+    .tlm__opt:hover { border-color: var(--ui-line-strong); }
+    .tlm__opt.is-on { border-color: var(--color-brand-600, #2691a4); background: var(--ui-x-f4fafb); }
     .tlm__opt input { accent-color: var(--color-brand-600, #2691a4); }
     .tlm__flag { font-size: 18px; line-height: 1; }
     .tlm__name { font-weight: 500; }
-    .tlm__add { background: transparent; border: 0; color: var(--color-brand-700, #2691a4); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .tlm__add { background: transparent; border: 0; color: var(--ui-brand-t700); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
     .tlm__add:hover { text-decoration: underline; }
     .tlm__spacer { flex: 1; }
     .tlm__btn { padding: 8px 18px; border-radius: 999px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid transparent; }
-    .tlm__btn--ghost { background: #d4eef3; color: #0e7490; }
-    .tlm__btn--ghost:hover { background: #b9e4ec; }
+    .tlm__btn--ghost { background: var(--ui-x-d4eef3); color: var(--ui-brand-text); }
+    .tlm__btn--ghost:hover { background: var(--ui-x-b9e4ec); }
     .tlm__btn--primary { background: var(--color-brand-600, #2691a4); color: #fff; }
     .tlm__btn--primary:hover:not(:disabled) { background: var(--color-brand-700, #2691a4); }
     .tlm__btn--primary:disabled { opacity: .5; cursor: not-allowed; }

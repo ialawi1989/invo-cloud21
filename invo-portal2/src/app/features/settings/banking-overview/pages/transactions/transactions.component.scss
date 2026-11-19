@@ -8,7 +8,7 @@
   margin: 8px 0 12px;
   font-size: 22px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--ui-text);
   letter-spacing: -0.01em;
 }
 
@@ -26,8 +26,8 @@
 
 .txn-reconcile-btn { margin-inline-start: auto; }
 
-.txn-ref { font-weight: 600; color: var(--color-brand-600, #0891b2); }
-.txn-user { font-size: 12px; color: #64748b; }
+.txn-ref { font-weight: 600; color: var(--ui-brand-t600); }
+.txn-user { font-size: 12px; color: var(--ui-muted); }
 
 .txn-badge {
   display: inline-block;
@@ -36,8 +36,8 @@
   font-size: 11px;
   font-weight: 700;
 }
-.txn-badge--reconciled { background: #dcfce7; color: #15803d; }
-.txn-badge--open { background: #f1f5f9; color: #64748b; }
+.txn-badge--reconciled { background: var(--ui-green-soft); color: var(--ui-green-text); }
+.txn-badge--open { background: var(--ui-surface-2); color: var(--ui-muted); }
 
 .btn {
   display: inline-flex;
@@ -52,7 +52,7 @@
   cursor: pointer;
 }
 .btn-primary {
-  background: #00a8b8;
+  background: var(--ui-b-00a8b8);
   color: #fff;
   border-color: #00a8b8;
 }

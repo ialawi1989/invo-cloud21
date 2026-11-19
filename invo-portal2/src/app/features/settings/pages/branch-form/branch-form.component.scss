@@ -18,7 +18,7 @@
   &__actions { flex-shrink: 0; display: flex; gap: 8px; }
 }
 
-.page-title { font-size: 20px; font-weight: 700; color: #1e293b; margin: 6px 0 0; word-break: break-word; }
+.page-title { font-size: 20px; font-weight: 700; color: var(--ui-text-2); margin: 6px 0 0; word-break: break-word; }
 
 .btn {
   padding: 8px 18px;
@@ -38,8 +38,8 @@
     &:not(:disabled):hover { background: #2a93a6; border-color: #2a93a6; }
   }
   &-ghost {
-    background: #fff; color: #475569; border-color: #e5e7eb;
-    &:hover:not(:disabled) { background: #f8fafc; color: #0f172a; }
+    background: var(--ui-surface); color: var(--ui-text-4); border-color: var(--ui-line);
+    &:hover:not(:disabled) { background: var(--ui-surface-1); color: var(--ui-text); }
     &:disabled { opacity: .5; cursor: not-allowed; }
   }
 }
@@ -52,7 +52,7 @@
 .spinner {
   width: 28px; height: 28px;
   border-radius: 50%;
-  border: 3px solid #e2e8f0; border-top-color: #32acc1;
+  border: 3px solid var(--ui-line); border-top-color: #32acc1;
   animation: bf-spin .8s linear infinite;
   display: inline-block;
   &--lg { width: 32px; height: 32px; }
@@ -63,21 +63,21 @@
 // Subtle drop shadow + uniform 18px body padding mirror the product
 // form so the family of settings forms reads as one consistent style.
 .card {
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
   border-radius: 12px;
   margin-bottom: 16px;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 
   &__head {
     padding: 14px 18px;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--ui-surface-2);
     display: flex;
     flex-direction: column;
     gap: 2px;
   }
-  &__title { margin: 0; font-size: 15px; font-weight: 600; color: #0f172a; }
-  &__sub   { margin: 0; font-size: 12px; color: #64748b; line-height: 1.5; }
+  &__title { margin: 0; font-size: 15px; font-weight: 600; color: var(--ui-text); }
+  &__sub   { margin: 0; font-size: 12px; color: var(--ui-muted); line-height: 1.5; }
   &__body  { padding: 18px; }
 }
 
@@ -101,12 +101,12 @@
 .field-label {
   font-size: 13px;
   font-weight: 500;
-  color: #0f172a;
+  color: var(--ui-text);
   display: inline-flex;
   align-items: center;
   gap: 4px;
 
-  .required { color: #ef4444; font-weight: 700; }
+  .required { color: var(--ui-red-text); font-weight: 700; }
 
   // Variant used when the label has a trailing action (e.g. "Translation"
   // link) — pushes the action to the far end of the row.
@@ -127,12 +127,12 @@
   font: inherit;
   font-size: 12px;
   font-weight: 600;
-  color: var(--color-brand-700);
+  color: var(--ui-brand-t700);
   cursor: pointer;
   transition: color 120ms ease, text-decoration-color 120ms ease;
 
   &:hover {
-    color: var(--color-brand-800, #075985);
+    color: var(--ui-brand-t800);
     text-decoration: underline;
     text-underline-offset: 2px;
   }
@@ -141,27 +141,27 @@
 .field-hint {
   margin: 2px 0 0;
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--ui-faint);
 
   .locked {
     font-style: italic;
-    color: #b91c1c;
+    color: var(--ui-red-text);
   }
 }
 
 .field-error {
   margin: 0;
   font-size: 12px;
-  color: #dc2626;
+  color: var(--ui-red-text);
 }
 
 .input {
   width: 100%;
   padding: 9px 12px;
   font-size: 14px;
-  color: #0f172a;
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  color: var(--ui-text);
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
   border-radius: 8px;
   transition: border-color 120ms ease, box-shadow 120ms ease;
   font-family: inherit;
@@ -178,8 +178,8 @@
   &--time { font-variant-numeric: tabular-nums; max-width: 200px; }
 
   &:disabled {
-    background: #f8fafc;
-    color: #475569;
+    background: var(--ui-surface-1);
+    color: var(--ui-text-4);
     cursor: not-allowed;
   }
 }
@@ -193,11 +193,11 @@
     display: inline-flex;
     align-items: center;
     padding: 0 12px;
-    background: #f1f5f9;
-    color: #475569;
+    background: var(--ui-surface-2);
+    color: var(--ui-text-4);
     font-size: 14px;
     font-weight: 500;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--ui-line);
     border-inline-end: none;
     border-start-start-radius: 8px;
     border-end-start-radius: 8px;
@@ -231,7 +231,7 @@
     width: 38px;
     height: 22px;
     border-radius: 999px;
-    background: #cbd5e1;
+    background: var(--ui-line-strong);
     position: relative;
     flex-shrink: 0;
     transition: background 120ms ease;
@@ -241,7 +241,7 @@
     width: 18px;
     height: 18px;
     border-radius: 50%;
-    background: #fff;
+    background: var(--ui-surface);
     position: absolute;
     top: 2px;
     inset-inline-start: 2px;
@@ -289,36 +289,36 @@
   &__label {
     font-size: 12px;
     font-weight: 600;
-    color: #64748b;
+    color: var(--ui-muted);
     text-transform: uppercase;
     letter-spacing: .3px;
   }
   &__value {
     font-size: 14px;
-    color: #0f172a;
+    color: var(--ui-text);
   }
   &__placeholder {
     font-size: 13px;
-    color: #94a3b8;
+    color: var(--ui-faint);
     font-style: italic;
   }
   &__map {
     border-radius: 10px;
     overflow: hidden;
-    border: 1px solid #e2e8f0;
-    background: #f8fafc;
+    border: 1px solid var(--ui-line);
+    background: var(--ui-surface-1);
 
     iframe { display: block; }
   }
   &__no-coords {
     margin: 0;
     padding: 18px 14px;
-    background: #f8fafc;
-    border: 1px dashed #e2e8f0;
+    background: var(--ui-surface-1);
+    border: 1px dashed var(--ui-line);
     border-radius: 10px;
     text-align: center;
     font-size: 13px;
-    color: #64748b;
+    color: var(--ui-muted);
   }
 }
 
@@ -345,11 +345,11 @@
 .schedule-summary__day {
   display: flex;
   flex-direction: column;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--ui-line);
   border-radius: 10px;
   overflow: hidden;
   min-width: 0;
-  background: #fff;
+  background: var(--ui-surface);
 }
 
 .schedule-summary__name {
@@ -359,15 +359,15 @@
   font-weight: 600;
   // Brand-tinted header — picks up any future tweak to the brand
   // palette in styles.scss automatically.
-  color: var(--color-brand-700);
+  color: var(--ui-brand-t700);
   background: var(--color-brand-100);
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--ui-line);
 }
 
 .schedule-summary__day--closed {
   .schedule-summary__name {
-    color: #64748b;
-    background: #f1f5f9;
+    color: var(--ui-muted);
+    background: var(--ui-surface-2);
   }
 }
 
@@ -380,7 +380,7 @@
   padding: 14px 8px;
   font-size: 13px;
   font-variant-numeric: tabular-nums;
-  color: #0f172a;
+  color: var(--ui-text);
   min-height: 90px;
 }
 
@@ -391,12 +391,12 @@
 }
 
 .schedule-summary__dash {
-  color: #94a3b8;
+  color: var(--ui-faint);
   font-weight: 600;
 }
 
 .schedule-summary__closed {
-  color: #94a3b8;
+  color: var(--ui-faint);
   font-style: italic;
 }
 
@@ -409,8 +409,8 @@
   margin-top: 4px;
   padding: 2px 8px;
   border-radius: 999px;
-  background: #f1f5f9;
-  color: #475569;
+  background: var(--ui-surface-2);
+  color: var(--ui-text-4);
   font-size: 11px;
   font-weight: 600;
 }
@@ -419,7 +419,7 @@
 .card__icon {
   flex: none; width: 32px; height: 32px; border-radius: 8px;
   display: inline-flex; align-items: center; justify-content: center;
-  background: #ecfeff; color: #0e7490;
+  background: var(--ui-brand-soft); color: var(--ui-brand-text);
 }
 .card__head--icon {
   flex-direction: row;

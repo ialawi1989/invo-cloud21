@@ -96,10 +96,10 @@ export const PERIOD_MAX: Record<RecurringPeriodicity, number> = { Monthly: 31, W
     </section>
   `,
   styles: [`
-    .rs-box { background: #eefafa; border: 1px solid #d3eef0; border-radius: 12px; padding: 16px; margin-top: 4px; display: flex; flex-direction: column; gap: 14px; }
+    .rs-box { background: var(--ui-x-eefafa); border: 1px solid var(--ui-x-d3eef0); border-radius: 12px; padding: 16px; margin-top: 4px; display: flex; flex-direction: column; gap: 14px; }
     .rs-every { display: flex; align-items: center; gap: 10px; }
     .rs-every .df-input { flex: 1; min-width: 0; }
-    .rs-every__unit { color: #64748b; font-size: 13px; white-space: nowrap; }
+    .rs-every__unit { color: var(--ui-muted); font-size: 13px; white-space: nowrap; }
   `],
 })
 export class RecurringScheduleCardComponent {

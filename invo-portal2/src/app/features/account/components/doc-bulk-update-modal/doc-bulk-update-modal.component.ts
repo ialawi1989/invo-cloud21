@@ -40,11 +40,11 @@ export type BulkUpdateResult = { account: any } | { discount: DiscountValue };
   `,
   styles: [`
     .bu { padding: 16px 20px; display: flex; flex-direction: column; gap: 8px; }
-    .bu__hint { margin: 0 0 4px; color: #475569; font-size: 13.5px; }
-    .bu__label { font-size: 13px; font-weight: 600; color: #334155; }
+    .bu__hint { margin: 0 0 4px; color: var(--ui-text-4); font-size: 13.5px; }
+    .bu__label { font-size: 13px; font-weight: 600; color: var(--ui-text-3); }
     .bu__discount { max-width: 240px; }
-    .bu__btn { padding: 9px 16px; border-radius: 8px; border: 1px solid #d0d5dd; background: #fff; color: #334155; font-weight: 600; font-size: 13.5px; cursor: pointer; }
-    .bu__btn--primary { border-color: #2691a4; background: #2691a4; color: #fff; }
+    .bu__btn { padding: 9px 16px; border-radius: 8px; border: 1px solid var(--ui-line-strong); background: var(--ui-surface); color: var(--ui-text-3); font-weight: 600; font-size: 13.5px; cursor: pointer; }
+    .bu__btn--primary { border-color: #2691a4; background: var(--ui-b-2691a4); color: #fff; }
     .bu__btn:disabled { opacity: .5; cursor: not-allowed; }
   `],
 })

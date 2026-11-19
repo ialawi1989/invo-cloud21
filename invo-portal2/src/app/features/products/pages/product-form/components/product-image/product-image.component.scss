@@ -4,8 +4,8 @@
 .pf-image-box {
   position: relative;
   aspect-ratio: 1 / 1;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--ui-surface-1);
+  border: 1px solid var(--ui-line);
   border-radius: 10px;
   overflow: hidden;
   display: flex;
@@ -14,7 +14,7 @@
 
   &--empty {
     border-style: dashed;
-    background: #fafbfc;
+    background: var(--ui-surface-1);
   }
 }
 
@@ -25,7 +25,7 @@
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  color: #94a3b8;
+  color: var(--ui-faint);
 
   p { font-size: 13px; margin: 0; }
 }
@@ -45,15 +45,15 @@
     transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
 
     &--primary {
-      background: #d9f2f6;
-      color: #143742;
-      &:hover { background: #c1e9ef; }
+      background: var(--ui-x-d9f2f6);
+      color: var(--ui-t-143742);
+      &:hover { background: var(--ui-x-c1e9ef); }
     }
     &--ghost {
-      background: #fff;
-      color: #64748b;
-      border-color: #e2e8f0;
-      &:hover { background: #f8fafc; color: #dc2626; border-color: #fecaca; }
+      background: var(--ui-surface);
+      color: var(--ui-muted);
+      border-color: var(--ui-line);
+      &:hover { background: var(--ui-surface-1); color: var(--ui-red-text); border-color: var(--ui-red-soft-2); }
     }
   }
 }

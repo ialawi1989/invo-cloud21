@@ -52,20 +52,20 @@ export interface DocRailFilterOption { value: string | null; label: string; }
   styles: [`
     .drf { display: inline-block; min-width: 0; }
     .drf__trigger { display: inline-flex; align-items: center; gap: 6px; border: 0; background: none; padding: 0; cursor: pointer; font: inherit; max-width: 100%; }
-    .drf__label { font-size: 14px; font-weight: 700; color: #0f172a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .drf__chev { color: #64748b; transition: transform .15s ease; flex: 0 0 auto; }
+    .drf__label { font-size: 14px; font-weight: 700; color: var(--ui-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .drf__chev { color: var(--ui-muted); transition: transform .15s ease; flex: 0 0 auto; }
     .drf__chev--open { transform: rotate(180deg); }
-    .drf__panel { background: #fff; border: 1px solid #e4e7ec; border-radius: 10px; box-shadow: 0 10px 30px rgba(15, 23, 42, .12); overflow: hidden; }
-    .drf__search { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid #eef2f6; color: #94a3b8; }
-    .drf__search input { flex: 1; border: 0; outline: none; font: inherit; font-size: 13.5px; color: #0f172a; }
+    .drf__panel { background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: 10px; box-shadow: 0 10px 30px rgba(15, 23, 42, .12); overflow: hidden; }
+    .drf__search { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--ui-surface-2); color: var(--ui-faint); }
+    .drf__search input { flex: 1; border: 0; outline: none; font: inherit; font-size: 13.5px; color: var(--ui-text); background-color: var(--ui-bare-bg); }
     .drf__list { max-height: 320px; overflow-y: auto; padding: 6px 0; }
-    .drf__row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 14px; font-size: 13.5px; color: #227d8d; cursor: pointer;
-      &:hover { background: #f8fafc; }
-      &.is-active { background: #e6f4f6; font-weight: 600; } }
+    .drf__row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 14px; font-size: 13.5px; color: var(--ui-brand-text); cursor: pointer;
+      &:hover { background: var(--ui-surface-1); }
+      &.is-active { background: var(--ui-x-e6f4f6); font-weight: 600; } }
     .drf__star { border: 0; background: none; padding: 2px; color: #cbd5e1; cursor: pointer; display: inline-flex;
-      &:hover { color: #94a3b8; }
+      &:hover { color: var(--ui-faint); }
       &.is-fav { color: #f59e0b; } }
-    .drf__empty { padding: 16px; text-align: center; color: #94a3b8; font-size: 13px; }
+    .drf__empty { padding: 16px; text-align: center; color: var(--ui-faint); font-size: 13px; }
   `],
 })
 export class DocRailFilterComponent {

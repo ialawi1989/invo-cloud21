@@ -10,25 +10,25 @@
   gap: 8px;
   margin-bottom: 20px;
   padding-bottom: 16px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--ui-line);
 
-  &__title { margin: 0; font-size: 24px; font-weight: 700; color: #0f172a; }
+  &__title { margin: 0; font-size: 24px; font-weight: 700; color: var(--ui-text); }
 }
 
 .pf-disabled {
   padding: 14px 16px;
   margin-bottom: 14px;
   border-radius: 10px;
-  background: #fffbeb;
-  border: 1px solid #fde68a;
-  color: #b45309;
+  background: var(--ui-amber-soft);
+  border: 1px solid var(--ui-amber-soft-2);
+  color: var(--ui-amber-text);
   font-size: 13.5px;
   font-weight: 600;
 }
 
 .pf-card {
-  background: #fff;
-  border: 1px solid #e4e7ec;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
   border-radius: 12px;
   padding: 18px 20px;
   margin-bottom: 14px;
@@ -48,19 +48,19 @@
   flex-direction: column;
   gap: 6px;
 
-  > label { font-size: 13px; font-weight: 600; color: #334155; }
+  > label { font-size: 13px; font-weight: 600; color: var(--ui-text-3); }
 }
-.pf-optional { font-weight: 400; color: #94a3b8; }
+.pf-optional { font-weight: 400; color: var(--ui-faint); }
 .pf-input {
   padding: 9px 12px;
-  border: 1px solid #d0d5dd;
+  border: 1px solid var(--ui-line-strong);
   border-radius: 8px;
   font-size: 13.5px;
-  color: #0f172a;
+  color: var(--ui-text);
   font-family: inherit;
 
   &:focus { outline: none; border-color: #2691a4; box-shadow: 0 0 0 3px rgba(38, 145, 164, 0.12); }
-  &:disabled { background: #f8fafc; color: #94a3b8; }
+  &:disabled { background: var(--ui-surface-1); color: var(--ui-faint); }
 }
 .pf-check {
   display: flex;
@@ -69,21 +69,21 @@
   cursor: pointer;
 
   input { margin-top: 3px; width: 16px; height: 16px; accent-color: #2691a4; }
-  span { display: flex; flex-direction: column; gap: 2px; font-size: 13.5px; color: #0f172a; }
-  small { font-size: 12px; color: #64748b; }
+  span { display: flex; flex-direction: column; gap: 2px; font-size: 13.5px; color: var(--ui-text); }
+  small { font-size: 12px; color: var(--ui-muted); }
 }
-.pf-error { margin: 0; font-size: 12px; color: #dc2626; }
+.pf-error { margin: 0; font-size: 12px; color: var(--ui-red-text); }
 .pf-btn {
   padding: 9px 18px;
   border-radius: 8px;
-  border: 1px solid #d0d5dd;
-  background: #fff;
-  color: #334155;
+  border: 1px solid var(--ui-line-strong);
+  background: var(--ui-surface);
+  color: var(--ui-text-3);
   font-size: 13.5px;
   font-weight: 600;
   cursor: pointer;
 
-  &:hover { background: #f8fafc; }
+  &:hover { background: var(--ui-surface-1); }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 
   &--primary {

@@ -1,7 +1,7 @@
 @use '../../_shared-form.scss' as *;
 @include pfCard;
 
-.pf-gallery-count { color: #94a3b8; font-weight: 500; margin-inline-start: 4px; }
+.pf-gallery-count { color: var(--ui-faint); font-weight: 500; margin-inline-start: 4px; }
 
 .pf-btn {
   display: inline-flex;
@@ -14,10 +14,10 @@
   cursor: pointer;
 
   &--outline {
-    background: #fff;
-    color: #0e7490;
-    border: 1px solid #a5f3fc;
-    &:hover { background: #ecfeff; border-color: #67e8f9; }
+    background: var(--ui-surface);
+    color: var(--ui-brand-text);
+    border: 1px solid var(--ui-brand-soft-2);
+    &:hover { background: var(--ui-brand-soft); border-color: var(--ui-x-67e8f9); }
   }
 }
 
@@ -36,8 +36,8 @@
 .pf-gallery-tile {
   position: relative;
   aspect-ratio: 1 / 1;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--ui-surface-1);
+  border: 1px solid var(--ui-line);
   border-radius: 12px;
   overflow: hidden;
   cursor: grab;
@@ -63,7 +63,7 @@
   aspect-ratio: 1 / 1;
 }
 .pf-gallery-tile.cdk-drag-placeholder {
-  background: #e2e8f0;
+  background: var(--ui-line);
   border: 1px dashed #94a3b8;
   // Hide the image + overlay so the placeholder reads as an empty
   // slot the user is about to drop into.
@@ -79,8 +79,8 @@
   top: 10px;
   inset-inline-start: 10px;
   padding: 5px 12px;
-  background: #fff;
-  color: #0f172a;
+  background: var(--ui-surface);
+  color: var(--ui-text);
   font-size: 12px;
   font-weight: 600;
   border-radius: 999px;
@@ -97,7 +97,7 @@
   inset-inline-start: 6px;
   display: inline-flex;
   gap: 1px;
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--ui-surface);
   border-radius: 8px;
   padding: 2px;
   opacity: 0;
@@ -122,7 +122,7 @@
   box-shadow: none;
   background: transparent;
 
-  &:hover:not(:disabled) { background: #e2e8f0; color: #0e7490; transform: none; }
+  &:hover:not(:disabled) { background: var(--ui-line); color: var(--ui-brand-text); transform: none; }
   &:disabled {
     color: #cbd5e1;
     cursor: not-allowed;
@@ -195,17 +195,17 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--ui-surface);
   border: 0;
   border-radius: 999px;
-  color: #0f172a;
+  color: var(--ui-text);
   cursor: pointer;
   font-size: 12px;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.15);
   transition: background 120ms ease, color 120ms ease, transform 120ms ease;
 
-  &:hover { background: #fff; color: #0e7490; transform: scale(1.05); }
-  &--danger:hover { color: #dc2626; }
+  &:hover { background: var(--ui-surface); color: var(--ui-brand-text); transform: scale(1.05); }
+  &--danger:hover { color: var(--ui-red-text); }
 }
 
 // ── "Add a photo" tile ────────────────────────────────────────────────────
@@ -220,21 +220,21 @@
   justify-content: center;
   gap: 8px;
   padding: 16px;
-  background: #eff9fb;
-  border: 1px dashed #a6d8df;
+  background: var(--ui-x-eff9fb);
+  border: 1px dashed var(--ui-x-a6d8df);
   border-radius: 12px;
-  color: #0e7490;
+  color: var(--ui-brand-text);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
 
-  svg { color: #0f172a; opacity: 0.85; }
+  svg { color: var(--ui-text); opacity: 0.85; }
 
   &:hover {
-    background: #d9f2f6;
-    border-color: #67e8f9;
-    color: #0c4a6e;
+    background: var(--ui-x-d9f2f6);
+    border-color: var(--ui-x-67e8f9);
+    color: var(--ui-t-0c4a6e);
     svg { opacity: 1; }
   }
 

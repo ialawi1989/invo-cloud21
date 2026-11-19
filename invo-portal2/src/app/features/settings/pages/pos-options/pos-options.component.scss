@@ -18,11 +18,11 @@
   margin: 8px 0 4px;
   font-size: 22px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--ui-text);
   letter-spacing: -0.01em;
 }
 
-.page-sub { margin: 0; font-size: 14px; color: #64748b; }
+.page-sub { margin: 0; font-size: 14px; color: var(--ui-muted); }
 
 .loading {
   display: flex;
@@ -33,7 +33,7 @@
 .spinner {
   width: 28px; height: 28px;
   border-radius: 50%;
-  border: 3px solid #e2e8f0; border-top-color: var(--color-brand-600);
+  border: 3px solid var(--ui-line); border-top-color: var(--color-brand-600);
   animation: pos-spin .8s linear infinite;
   display: inline-block;
   &--lg { width: 32px; height: 32px; }
@@ -42,22 +42,22 @@
 
 // ── Cards ──────────────────────────────────────────────────────────────
 .card {
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
   border-radius: 12px;
   margin-bottom: 16px;
 
   &__head {
     padding: 16px 20px 14px;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--ui-surface-2);
   }
-  &__title { margin: 0; font-size: 15px; font-weight: 600; color: #0f172a; }
-  &__sub   { margin: 4px 0 0; font-size: 12px; color: #64748b; }
+  &__title { margin: 0; font-size: 15px; font-weight: 600; color: var(--ui-text); }
+  &__sub   { margin: 4px 0 0; font-size: 12px; color: var(--ui-muted); }
   &__body  { padding: 18px 20px; }
 
   &__divider {
     border: none;
-    border-top: 1px solid #f1f5f9;
+    border-top: 1px solid var(--ui-surface-2);
     margin: 18px 0;
   }
 }
@@ -114,7 +114,7 @@
     width: 36px;
     height: 20px;
     border-radius: 999px;
-    background: #cbd5e1;
+    background: var(--ui-line-strong);
     flex-shrink: 0;
     transition: background 120ms ease;
     margin-top: 2px;
@@ -126,7 +126,7 @@
     inset-inline-start: 2px;
     width: 16px;
     height: 16px;
-    background: #fff;
+    background: var(--ui-surface);
     border-radius: 999px;
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.18);
     transition: inset-inline-start 120ms ease;
@@ -156,26 +156,26 @@
 .field-label {
   font-size: 13px;
   font-weight: 600;
-  color: #334155;
+  color: var(--ui-text-3);
 
-  &--inline { font-weight: 500; color: #475569; }
+  &--inline { font-weight: 500; color: var(--ui-text-4); }
 }
 
-.field-hint  { margin: 0; font-size: 12px; color: #94a3b8; line-height: 1.4; }
+.field-hint  { margin: 0; font-size: 12px; color: var(--ui-faint); line-height: 1.4; }
 
 .input {
   width: 100%;
   padding: 8px 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--ui-line);
   border-radius: 8px;
-  background: #fff;
+  background: var(--ui-surface);
   font: inherit;
   font-size: 13px;
-  color: #0f172a;
+  color: var(--ui-text);
   transition: border-color 120ms ease, box-shadow 120ms ease;
 
-  &::placeholder { color: #94a3b8; }
-  &:hover { border-color: #cbd5e1; }
+  &::placeholder { color: var(--ui-faint); }
+  &:hover { border-color: var(--ui-line-strong); }
   &:focus {
     outline: none;
     border-color: var(--color-brand-500);
@@ -207,10 +207,10 @@
   gap: 4px;
   padding: 4px 4px 4px 10px;
   background: var(--color-brand-50);
-  border: 1px solid var(--color-brand-200, #bae6fd);
+  border: 1px solid var(--color-brand-200, var(--ui-sky-soft-2));
   border-radius: 999px;
   font-size: 12px;
-  color: var(--color-brand-800, #075985);
+  color: var(--color-brand-800, var(--ui-t-075985));
 
   &__text { line-height: 1; }
 
@@ -223,18 +223,18 @@
     background: transparent;
     border: none;
     border-radius: 999px;
-    color: var(--color-brand-700);
+    color: var(--ui-brand-t700);
     cursor: pointer;
     transition: background 120ms ease, color 120ms ease;
 
-    &:hover { background: rgba(255, 255, 255, 0.7); color: #be123c; }
+    &:hover { background: rgb(var(--ui-surface-rgb) / 0.7); color: var(--ui-t-be123c); }
   }
 }
 
 .void-empty {
   margin: 10px 0 0;
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--ui-faint);
 }
 
 // ── Buttons ────────────────────────────────────────────────────────────
@@ -256,8 +256,8 @@
     &:disabled { opacity: 0.5; cursor: not-allowed; }
   }
   &-ghost {
-    background: #fff; color: #475569; border-color: #e2e8f0;
-    &:hover:not(:disabled) { background: #f8fafc; color: #0f172a; }
+    background: var(--ui-surface); color: var(--ui-text-4); border-color: var(--ui-line);
+    &:hover:not(:disabled) { background: var(--ui-surface-1); color: var(--ui-text); }
     &:disabled { opacity: 0.5; cursor: not-allowed; }
   }
 }

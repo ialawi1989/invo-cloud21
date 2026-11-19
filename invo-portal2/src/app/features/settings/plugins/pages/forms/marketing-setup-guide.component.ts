@@ -128,30 +128,30 @@ import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.
     </app-plugin-form-shell>
   `,
   styles: [`
-    .gd-h2 { margin: 0 0 4px; font-size: 16px; font-weight: 700; color: #0f172a; }
-    .gd-h3 { margin: 16px 0 8px; font-size: 14px; font-weight: 700; color: #0f172a; }
-    .gd-lead { margin: 0 0 12px; font-size: 13px; color: #64748b; }
+    .gd-h2 { margin: 0 0 4px; font-size: 16px; font-weight: 700; color: var(--ui-text); }
+    .gd-h3 { margin: 16px 0 8px; font-size: 14px; font-weight: 700; color: var(--ui-text); }
+    .gd-lead { margin: 0 0 12px; font-size: 13px; color: var(--ui-muted); }
     .gd-steps { margin-bottom: 12px; }
     .gd-cases td { vertical-align: top; }
     .gd-actions { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 4px 0 12px; }
-    .gd-link { font-size: 13px; font-weight: 600; color: var(--color-brand-700, #2691a4); text-decoration: none; }
+    .gd-link { font-size: 13px; font-weight: 600; color: var(--ui-brand-t700); text-decoration: none; }
     .gd-link:hover { text-decoration: underline; }
     .gd-callout { border-radius: 10px; padding: 12px 14px; margin-bottom: 4px; }
-    .gd-callout--ok { background: #ecfdf5; border: 1px solid #a7f3d0; }
-    .gd-callout--ok p { color: #065f46; }
-    .gd-callout--warn { background: #fffbeb; border: 1px solid #fde68a; }
-    .gd-callout--warn p { color: #92400e; }
+    .gd-callout--ok { background: var(--ui-green-soft); border: 1px solid var(--ui-x-a7f3d0); }
+    .gd-callout--ok p { color: var(--ui-t-065f46); }
+    .gd-callout--warn { background: var(--ui-amber-soft); border: 1px solid var(--ui-amber-soft-2); }
+    .gd-callout--warn p { color: var(--ui-amber-text); }
     .gd-callout p { margin: 0; font-size: 13px; }
-    .gd-way { margin: 14px 0 6px; font-size: 13.5px; font-weight: 600; color: #0f172a; }
+    .gd-way { margin: 14px 0 6px; font-size: 13.5px; font-weight: 600; color: var(--ui-text); }
     .gd-badge {
       display: inline-block; margin-inline-end: 6px; padding: 1px 8px; border-radius: 999px;
       font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em;
-      background: #eef2f6; color: #64748b; vertical-align: 1px;
+      background: var(--ui-surface-2); color: var(--ui-muted); vertical-align: 1px;
     }
-    .gd-badge--rec { background: var(--color-brand-50, #effbfd); color: var(--color-brand-700, #207484); }
+    .gd-badge--rec { background: var(--color-brand-50, var(--ui-brand-soft)); color: var(--ui-brand-t700); }
     .gd-code {
       display: inline-block; margin-top: 2px; padding: 1px 7px; border-radius: 6px;
-      background: #0f172a; color: #e2e8f0; font-family: ui-monospace, Menlo, monospace; font-size: 12px;
+      background: var(--ui-ink); color: #e2e8f0; font-family: ui-monospace, Menlo, monospace; font-size: 12px;
     }
     .gd-cta {
       display: inline-block; margin-top: 4px; padding: 9px 18px; border-radius: 8px;
@@ -159,7 +159,7 @@ import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.
       text-decoration: none;
     }
     .gd-cta:hover { background: var(--color-brand-700, #1f7d8e); }
-    .gd-notes { margin: 0; padding-inline-start: 20px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #334155; }
+    .gd-notes { margin: 0; padding-inline-start: 20px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--ui-text-3); }
   `],
 })
 export class MarketingSetupGuideComponent {

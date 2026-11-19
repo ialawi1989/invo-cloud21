@@ -24,9 +24,9 @@ import { DocAttachment, DocAttachmentsComponent } from '../doc-attachments/doc-a
   `,
   styles: [`
     :host { display: block; min-width: 0; }
-    .dac { background: #fff; border: 1px solid #e4e7ec; border-radius: 12px; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; }
-    .dac__title { display: flex; align-items: center; gap: 12px; margin: 0; font-size: 15px; font-weight: 700; color: #0f172a; }
-    .dac__ico { width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; background: #fef3c7; color: #b45309; }
+    .dac { background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: 12px; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; }
+    .dac__title { display: flex; align-items: center; gap: 12px; margin: 0; font-size: 15px; font-weight: 700; color: var(--ui-text); }
+    .dac__ico { width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; background: var(--ui-amber-soft); color: var(--ui-amber-text); }
   `],
 })
 export class DocAttachmentsCardComponent {

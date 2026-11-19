@@ -93,8 +93,8 @@ import { TooltipDirective } from '@shared/directives/tooltip.directive';
       position: relative;
       display: flex;
       flex-direction: column;
-      background: #fff;
-      border: 1px solid #e2e8f0;
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-line);
       border-radius: 10px;
       overflow: hidden;
     }
@@ -104,8 +104,8 @@ import { TooltipDirective } from '@shared/directives/tooltip.directive';
       align-items: center;
       gap: 2px;
       padding: 6px 8px;
-      background: #f8fafc;
-      border-bottom: 1px solid #e2e8f0;
+      background: var(--ui-surface-1);
+      border-bottom: 1px solid var(--ui-line);
     }
     .rte__btn {
       padding: 4px 8px;
@@ -115,17 +115,17 @@ import { TooltipDirective } from '@shared/directives/tooltip.directive';
       border-radius: 6px;
       font-size: 12px;
       font-weight: 600;
-      color: #475569;
+      color: var(--ui-text-4);
       cursor: pointer;
       transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
     }
-    .rte__btn:hover { background: #fff; border-color: #e2e8f0; color: #0f172a; }
+    .rte__btn:hover { background: var(--ui-surface); border-color: var(--ui-line); color: var(--ui-text); }
     .rte__btn--icon b, .rte__btn--icon i { font-weight: 700; font-style: normal; }
     .rte__btn--icon i { font-style: italic; }
     .rte__sep {
       width: 1px;
       height: 16px;
-      background: #e2e8f0;
+      background: var(--ui-line);
       margin: 0 4px;
     }
     .rte__area {
@@ -133,7 +133,7 @@ import { TooltipDirective } from '@shared/directives/tooltip.directive';
       padding: 16px 18px;
       font-size: 15px;
       line-height: 1.6;
-      color: #0f172a;
+      color: var(--ui-text);
       outline: none;
     }
     .rte.is-rtl .rte__area { direction: rtl; text-align: right; }
@@ -141,32 +141,32 @@ import { TooltipDirective } from '@shared/directives/tooltip.directive';
     .rte__area :where(h3) { font-size: 18px; font-weight: 600; margin: 14px 0 6px; }
     .rte__area :where(blockquote) {
       margin: 12px 0; padding: 8px 14px;
-      border-inline-start: 3px solid #cbd5e1;
-      background: #f8fafc; color: #475569;
+      border-inline-start: 3px solid var(--ui-line-strong);
+      background: var(--ui-surface-1); color: var(--ui-text-4);
     }
     .rte__area :where(code) {
-      background: #f1f5f9; padding: 1px 6px; border-radius: 4px;
+      background: var(--ui-surface-2); padding: 1px 6px; border-radius: 4px;
       font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px;
     }
     .rte__area :where(ul, ol) { padding-inline-start: 24px; }
     .rte__area :where(img) { max-width: 100%; border-radius: 8px; margin: 6px 0; }
-    .rte__area :where(a) { color: #0e7490; text-decoration: underline; }
-    .rte__area :where(hr) { margin: 18px 0; border: 0; border-top: 1px solid #e2e8f0; }
+    .rte__area :where(a) { color: var(--ui-brand-text); text-decoration: underline; }
+    .rte__area :where(hr) { margin: 18px 0; border: 0; border-top: 1px solid var(--ui-line); }
 
     .rte__foot {
       display: flex;
       gap: 8px;
       padding: 6px 12px;
       font-size: 11px;
-      color: #94a3b8;
-      border-top: 1px solid #f1f5f9;
-      background: #fafbfc;
+      color: var(--ui-faint);
+      border-top: 1px solid var(--ui-surface-2);
+      background: var(--ui-surface-1);
     }
 
     .rte__hashtag {
       position: fixed;
-      background: #fff;
-      border: 1px solid #e2e8f0;
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-line);
       border-radius: 8px;
       box-shadow: 0 4px 14px rgba(15,23,42,.08);
       padding: 4px;
@@ -184,15 +184,15 @@ import { TooltipDirective } from '@shared/directives/tooltip.directive';
       border: none;
       border-radius: 6px;
       font-size: 13px;
-      color: #0f172a;
+      color: var(--ui-text);
       cursor: pointer;
     }
-    .rte__hashtagItem:hover { background: #f1f5f9; }
+    .rte__hashtagItem:hover { background: var(--ui-surface-2); }
     .rte__hashtagEmpty {
       display: block;
       padding: 8px 10px;
       font-size: 12px;
-      color: #94a3b8;
+      color: var(--ui-faint);
     }
   `],
 })

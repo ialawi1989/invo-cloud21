@@ -2,7 +2,8 @@
      ContextMenuService. -->
 <app-canvas-context-menu></app-canvas-context-menu>
 
-<div class="canvas" tabindex="0" (keydown)="onKeyDown($event)">
+<div #scrollEl class="canvas" tabindex="0" [class.canvas--panning]="isPanning()"
+     (keydown)="onKeyDown($event)" (mousedown)="onCanvasMouseDown($event)">
 
   <!-- Top ruler -->
   <div class="canvas__ruler-x">
@@ -24,6 +25,13 @@
 
     <!-- Page column. Start-aligned on purpose — see PAGE_PAD_PX. -->
     <div class="canvas__page-col">
+      <!-- The transform doesn't occupy layout space, so this box reserves the
+           scaled footprint for the scroll area; the paper inside is always at
+           its 100% size and is scaled as one piece — same approach as the
+           view page, which scales the whole rendered document. -->
+      <div class="canvas__page-box"
+           [style.width.px]="pageBoxWidthPx()"
+           [style.height.px]="pageBoxHeightPx()">
       <div #pageEl
            class="canvas__page"
            cdkDropList
@@ -31,7 +39,10 @@
            (cdkDropListDropped)="onDrop($event)"
            [style.width.px]="pageWidthPx()"
            [style.height.px]="pageHeightPx()"
+           [style.transform]="'scale(' + zoom() + ')'"
+           [style.--canvas-zoom]="zoom()"
            [style.background-color]="pageBg()"
+           [style.font-family]="pageFontFamily()"
            (mousedown)="onSurfaceMouseDown($event)">
 
         <!-- Margin guide -->
@@ -49,7 +60,7 @@
              [style.transform]="'rotate(' + (wm.rotation ?? -30) + 'deg)'">
           <img *ngIf="wm.image; else wmText" [src]="wm.image" alt="watermark" />
           <ng-template #wmText>
-            <span class="canvas__watermark-text" [style.font-size.pt]="80 * zoom()">{{ wm.text }}</span>
+            <span class="canvas__watermark-text" [style.font-size.pt]="80">{{ wm.text }}</span>
           </ng-template>
         </div>
 
@@ -68,7 +79,7 @@
                [ngClass]="'canvas__band--' + band.variant"
                [style.top.px]="band.topPx"
                [style.height.px]="band.heightPx">
-            <span class="canvas__band-label">{{ band.label }}</span>
+            <span class="canvas__band-label">{{ band.label | translate }}</span>
           </div>
 
           <!-- Optional 5mm grid -->
@@ -83,30 +94,33 @@
                             [yOffsetMm]="item.yOffsetMm"></app-canvas-block>
 
           <!-- Smart alignment guides published by the block being dragged.
-               Positioned in px (mm × pxPerMm × zoom) rather than CSS mm so
-               they stay locked to the blocks at every zoom level. -->
+               Positioned in 100% px (mm × pxPerMm) inside the scaled page,
+               so they stay locked to the blocks at every zoom level. -->
           <ng-container *ngFor="let g of state.alignGuides()">
             <div *ngIf="g.kind === 'v'; else hGuide"
                  class="canvas__guide canvas__guide--v"
-                 [style.left.px]="g.position * pxPerMm() * zoom()"
-                 [style.top.px]="g.from * pxPerMm() * zoom()"
-                 [style.height.px]="(g.to - g.from) * pxPerMm() * zoom()"></div>
+                 [style.left.px]="g.position * pxPerMm()"
+                 [style.top.px]="g.from * pxPerMm()"
+                 [style.height.px]="(g.to - g.from) * pxPerMm()"></div>
             <ng-template #hGuide>
               <div class="canvas__guide canvas__guide--h"
-                   [style.top.px]="g.position * pxPerMm() * zoom()"
-                   [style.left.px]="g.from * pxPerMm() * zoom()"
-                   [style.width.px]="(g.to - g.from) * pxPerMm() * zoom()"></div>
+                   [style.top.px]="g.position * pxPerMm()"
+                   [style.left.px]="g.from * pxPerMm()"
+                   [style.width.px]="(g.to - g.from) * pxPerMm()"></div>
             </ng-template>
           </ng-container>
         </div>
 
-        <!-- Marquee -->
+        <!-- Marquee. Tracked in screen px against the page's on-screen rect,
+             but drawn inside the page, which the transform has already
+             scaled — so divide the factor back out or it lands twice. -->
         <div class="canvas__marquee"
              *ngIf="marquee() as m"
-             [style.left.px]="m.x"
-             [style.top.px]="m.y"
-             [style.width.px]="m.w"
-             [style.height.px]="m.h"></div>
+             [style.left.px]="m.x / zoom()"
+             [style.top.px]="m.y / zoom()"
+             [style.width.px]="m.w / zoom()"
+             [style.height.px]="m.h / zoom()"></div>
+      </div>
       </div>
     </div>
   </div>

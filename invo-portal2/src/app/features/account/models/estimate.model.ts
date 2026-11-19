@@ -17,6 +17,8 @@ export class Estimate extends Invoice {
   estimateExpDate: Date | string = (() => { const d = new Date(); d.setMonth(d.getMonth() + 1); return ymd(d); })();
   invoiceId = '';
   isInvoice = false;
+  /** The tax total the backend returns for an estimate (kept as a field so ParseJson doesn't drop it). */
+  estimateTaxTotal = 0;
 
   constructor() {
     super();

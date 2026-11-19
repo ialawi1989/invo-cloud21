@@ -20,9 +20,9 @@ import { TranslateModule } from '@ngx-translate/core';
   styles: [`
     :host { display: block; }
     .sp { position: relative; }
-    .sp__canvas { width: 100%; height: 220px; background: #fff; border: 1px dashed #94a3b8; border-radius: 12px; touch-action: none; cursor: crosshair; display: block; }
-    .sp__clear { position: absolute; top: 8px; inset-inline-end: 8px; height: 30px; padding: 0 12px; border-radius: 999px; border: 1px solid #e2e8f0; background: #fff; color: #475569; font-size: 12px; cursor: pointer; }
-    .sp__clear:hover { background: #f8fafc; }
+    .sp__canvas { width: 100%; height: 220px; background: var(--ui-surface); border: 1px dashed #94a3b8; border-radius: 12px; touch-action: none; cursor: crosshair; display: block; }
+    .sp__clear { position: absolute; top: 8px; inset-inline-end: 8px; height: 30px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--ui-line); background: var(--ui-surface); color: var(--ui-text-4); font-size: 12px; cursor: pointer; }
+    .sp__clear:hover { background: var(--ui-surface-1); }
   `],
 })
 export class SignaturePadComponent {

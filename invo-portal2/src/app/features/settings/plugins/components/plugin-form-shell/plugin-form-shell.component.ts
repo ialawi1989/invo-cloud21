@@ -75,10 +75,10 @@ import { LoadingOverlayComponent } from '@shared/components/spinner/loading-over
     .pf-header__row { display: flex; align-items: center; gap: 14px; margin-top: 8px; }
     .pf-header__logo {
       width: 48px; height: 48px; border-radius: 10px; object-fit: contain;
-      background: #f8fafc; border: 1px solid #f1f5f9; flex-shrink: 0;
+      background: var(--ui-surface-1); border: 1px solid var(--ui-surface-2); flex-shrink: 0;
     }
-    .pf-title { margin: 0 0 2px; font-size: 22px; font-weight: 700; color: #0f172a; }
-    .pf-intro { margin: 0; font-size: 14px; color: #64748b; max-width: 60ch; }
+    .pf-title { margin: 0 0 2px; font-size: 22px; font-weight: 700; color: var(--ui-text); }
+    .pf-intro { margin: 0; font-size: 14px; color: var(--ui-muted); max-width: 60ch; }
   `],
 })
 export class PluginFormShellComponent {

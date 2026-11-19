@@ -29,6 +29,27 @@ import {
  * `template` JSONB column. The `parseTemplate()` / `serializeTemplate()`
  * helpers handle the conversion in both directions.
  */
+/**
+ * The API's `type` column uses a different vocabulary from the route slugs (`credit-note` is stored as `creditNote`, ...) —
+ * the same map the legacy `DOCUMENT_TEMPLATE_TYPE` is. Every call to the template endpoints goes through it, and every
+ * `type` the server returns goes back through `fromApiType`, so existing rows are found and new ones are written as legacy does.
+ */
+const API_TYPE: Record<DocumentType, string> = {
+  'invoice': 'invoice',
+  'estimate': 'estimate',
+  'credit-note': 'creditNote',
+  'purchase-order': 'purchaseOrder',
+  'bill': 'bill',
+  'expense': 'expense',
+  'supplier-credit': 'supplierCredit',
+};
+const toApiType = (t: DocumentType): string => API_TYPE[t] ?? t;
+const fromApiType = (v: unknown, fallback: DocumentType): DocumentType => {
+  const s = String(v ?? '');
+  const hit = (Object.keys(API_TYPE) as DocumentType[]).find((k) => API_TYPE[k] === s || k === s);
+  return hit ?? fallback;
+};
+
 @Injectable({ providedIn: 'root' })
 export class DocumentBuilderService {
   private api = inject(ApiService);
@@ -42,7 +63,7 @@ export class DocumentBuilderService {
     opts: { page?: number; limit?: number; search?: string } = {},
   ): Promise<DocumentTemplateSummary[]> {
     const body = {
-      type,
+      type: toApiType(type),
       page:   opts.page  ?? 1,
       limit:  opts.limit ?? 100,
       search: opts.search ?? '',
@@ -58,7 +79,7 @@ export class DocumentBuilderService {
       // frontend's friendlier names (`name` / `documentType`) so
       // existing code doesn't have to change.
       name:         String(t?.templateName ?? t?.name ?? ''),
-      documentType: ((t?.type ?? t?.documentType) as DocumentType) ?? type,
+      documentType: fromApiType(t?.type ?? t?.documentType, type),
       renderMode:   (t?.renderMode === 'designer' ? 'designer' : 'classic') as RenderMode,
       isDefault:    !!t?.isDefault,
       updatedDate:  t?.updatedDate ? String(t.updatedDate) : undefined,
@@ -81,7 +102,7 @@ export class DocumentBuilderService {
       ...(raw.template && typeof raw.template === 'object' ? raw.template : {}),
       id:           raw.id,
       templateName: raw.templateName ?? '',
-      documentType: raw.type ?? type,
+      documentType: fromApiType(raw.type, type),
       renderMode:   raw.renderMode ?? 'classic',
       isDefault:    !!raw.isDefault,
     };
@@ -95,7 +116,7 @@ export class DocumentBuilderService {
     const blob = serializeTemplate(t);
     const body = {
       id:           t.id || undefined,
-      type:         t.documentType,
+      type:         toApiType(t.documentType),
       templateName: t.templateName,
       renderMode:   t.renderMode,
       template:     blob,
@@ -130,7 +151,7 @@ export class DocumentBuilderService {
    *  enforces "exactly one default per type" at the schema level). */
   async setDefault(id: string, type: DocumentType): Promise<boolean> {
     await this.api.request<any>(
-      this.api.post(`company/document-templates/${id}/default`, { type }),
+      this.api.post(`company/document-templates/${id}/default`, { type: toApiType(type) }),
     );
     return true;
   }
@@ -140,7 +161,7 @@ export class DocumentBuilderService {
    *  canonical layout. Returns null when no default is set yet. */
   async getDefault(type: DocumentType): Promise<DocumentTemplate | null> {
     const res = await this.api.request<any>(
-      this.api.get(`company/document-templates/default/${type}`),
+      this.api.get(`company/document-templates/default/${toApiType(type)}`),
     );
     const raw = res?.data ?? res;
     if (!raw || typeof raw !== 'object') return null;
@@ -148,7 +169,7 @@ export class DocumentBuilderService {
       ...(raw.template && typeof raw.template === 'object' ? raw.template : {}),
       id:           raw.id,
       templateName: raw.templateName ?? '',
-      documentType: raw.type ?? type,
+      documentType: fromApiType(raw.type, type),
       renderMode:   raw.renderMode ?? 'classic',
       isDefault:    !!raw.isDefault,
     };

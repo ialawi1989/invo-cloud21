@@ -41,6 +41,10 @@ export interface PageSetup {
   };
 }
 
+/** `Section.pageId` value (or its default, when omitted) for the master page —
+ *  the document's original, only page before extra pages existed. */
+export const MASTER_PAGE_ID = 'master';
+
 /** A logical region on the page. */
 export type SectionType =
   | 'page-header' // repeats every page
@@ -55,6 +59,28 @@ export interface Section {
   height?: number; // mm — auto if omitted (body uses remaining)
   blocks: Block[];
   style?: BlockStyle;
+  /**
+   * Which logical page this section belongs to. Omitted (or `'master'`)
+   * means the master page — today's only page, and the default for every
+   * template saved before extra pages existed. A value matching an entry in
+   * `ReportTemplate.extraPages` scopes this section to that standalone page
+   * instead (see `ExtraPage`).
+   */
+  pageId?: string;
+}
+
+/**
+ * A standalone extra page appended after the master page's flow — e.g. a
+ * company's own Terms & Conditions layout. Only metadata lives here; its
+ * content is the `Section`(s) in `ReportTemplate.sections` whose `pageId`
+ * matches `id`. Extra pages share the master's `PageSetup` (paper size,
+ * orientation, margins, background) and have no header/footer bands of
+ * their own — they're independent content pages, not part of the repeating
+ * header/footer flow.
+ */
+export interface ExtraPage {
+  id: string;
+  name: string;
 }
 
 /** A reusable component (header, footer, table preset, address card). */
@@ -115,4 +141,6 @@ export interface ReportTemplate {
   components?: ReusableComponent[];
   /** Sample data attached to template for live preview. */
   sampleData?: Record<string, unknown>;
+  /** Standalone pages appended after the master page's flow. See `ExtraPage`. */
+  extraPages?: ExtraPage[];
 }

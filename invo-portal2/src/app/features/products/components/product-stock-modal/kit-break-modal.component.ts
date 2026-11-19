@@ -55,25 +55,25 @@ export interface KitBreakModalData {
   styles: [`
     .body { padding: 18px 24px 8px; display: flex; flex-direction: column; gap: 14px; }
     .row  { display: flex; flex-direction: column; gap: 6px; }
-    .label { font-size: 13px; font-weight: 600; color: #0f172a; }
+    .label { font-size: 13px; font-weight: 600; color: var(--ui-text); }
     .input {
-      width: 100%; padding: 9px 12px; border: 1px solid #e2e8f0; border-radius: 8px;
-      font-size: 14px; color: #0f172a; background: #fff;
+      width: 100%; padding: 9px 12px; border: 1px solid var(--ui-line); border-radius: 8px;
+      font-size: 14px; color: var(--ui-text); background: var(--ui-field);
     }
     .input:focus { outline: none; border-color: #32acc1; box-shadow: 0 0 0 3px rgba(50,172,193,.18); }
-    .input--readonly { background: #f8fafc; color: #475569; }
+    .input--readonly { background: var(--ui-surface-1); color: var(--ui-text-4); }
     .state--error {
-      padding: 10px 12px; background: #fef2f2; border: 1px solid #fecaca;
-      color: #991b1b; border-radius: 8px; font-size: 12px;
+      padding: 10px 12px; background: var(--ui-red-soft); border: 1px solid var(--ui-red-soft-2);
+      color: var(--ui-red-text); border-radius: 8px; font-size: 12px;
     }
     .btn {
       padding: 8px 16px; border-radius: 8px;
-      border: 1px solid #e2e8f0; background: #fff;
-      font-size: 13px; font-weight: 600; color: #475569;
+      border: 1px solid var(--ui-line); background: var(--ui-surface);
+      font-size: 13px; font-weight: 600; color: var(--ui-text-4);
       cursor: pointer; transition: background .12s;
     }
-    .btn:hover:not(:disabled) { background: #f8fafc; }
-    .btn--primary { background: #32acc1; border-color: #32acc1; color: #fff; }
+    .btn:hover:not(:disabled) { background: var(--ui-surface-1); }
+    .btn--primary { background: var(--ui-b-32acc1); border-color: #32acc1; color: #fff; }
     .btn--primary:hover:not(:disabled) { background: #2b95a8; border-color: #2b95a8; }
     .btn:disabled { opacity: .5; cursor: not-allowed; }
   `],

@@ -10,22 +10,33 @@ import {
   input,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import {
   Block,
   PAYMENT_COLUMN_CATALOG,
   DEFAULT_PAYMENT_COLUMNS,
   PaymentColumnDef,
+  paymentAmountPipe,
   TableColumn,
 } from '../../core/types/block.types';
 import { BindingContext } from '../../core/types/binding.types';
 import { AlignGuide, DesignerStateService } from '../../services/designer-state.service';
 import { ContextMenuService } from '../../services/context-menu.service';
-import { mmToPx } from '../../core/layout/dimensions';
+import { HistoryService } from '../../services/history.service';
+import { BindingEngine } from '../../core/binding/binding-engine';
+import { CANVAS_PREVIEW_ROW_CAP, mmToPx } from '../../core/layout/dimensions';
 import { blockStyleToCss } from '../../renderers/html/css-utils';
 import { barcodeSvg, qrSvg } from '../../utils/code-svg.utils';
+import { MASTER_PAGE_ID } from '../../core/types/template.types';
 
 type ResizeHandle = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w';
+
+/** One rendered entry in a table body preview — a data row, or a group
+ *  header/footer row inserted between buckets. */
+type TablePreviewEntry =
+  | { kind: 'row'; row: unknown; index: number }
+  | { kind: 'header' | 'footer'; text: string };
 
 /** 96 dpi conversion factor, hoisted so the hot drag path doesn't recompute it. */
 const PX_PER_MM = mmToPx(1);
@@ -36,10 +47,6 @@ const SNAP_THRESHOLD_MM = 1.5;
 /** Design grid. 0.5mm suits invoice work; fine enough to look deliberate,
  *  coarse enough that dragging lands on round numbers. */
 const SNAP_GRID_MM = 0.5;
-
-/** Rows of sample data rendered inside table/payments previews. The export
- *  renderer paginates properly; the canvas only needs enough to show layout. */
-const PREVIEW_ROW_CAP = 15;
 
 /**
  * One block on the design surface: a live preview of its content plus the
@@ -56,7 +63,7 @@ const PREVIEW_ROW_CAP = 15;
   // Self-import so the 'repeater' branch can render nested
   // <app-canvas-block> per child. forwardRef is required because the class
   // symbol isn't bound yet when the decorator metadata is built.
-  imports: [CommonModule, forwardRef(() => CanvasBlockComponent)],
+  imports: [CommonModule, TranslateModule, forwardRef(() => CanvasBlockComponent)],
   templateUrl: './canvas-block.component.html',
   styleUrls: ['./canvas-block.component.scss'],
 })
@@ -85,6 +92,7 @@ export class CanvasBlockComponent implements OnDestroy {
   readonly parentYOffsetMm = input<number>(0);
 
   private readonly state = inject(DesignerStateService);
+  private readonly history = inject(HistoryService);
   private readonly contextMenu = inject(ContextMenuService);
   private readonly sanitizer = inject(DomSanitizer);
 
@@ -160,6 +168,25 @@ export class CanvasBlockComponent implements OnDestroy {
   readonly expressionText = computed(() => {
     const b = this.block();
     return b.type === 'dynamic-field' ? this.safeEvaluateCell(b.expression) : '';
+  });
+
+  /** Resolved image src, mirroring the HTML renderer: an explicit `binding`
+   *  wins, otherwise `source` is interpolated (it may be a literal URL, a
+   *  data-URL, or carry {{…}} placeholders). Empty means "show the
+   *  placeholder tile" — an unbound or unresolvable image. */
+  readonly imageSrc = computed<string>(() => {
+    const b = this.block();
+    if (b.type !== 'image') return '';
+    const src = (b.binding ? this.safeEvaluateCell(b.binding) : this.safeInterpolate(b.source ?? '')).trim();
+    // Both safe* helpers echo the un-evaluated source when parsing fails.
+    // Feeding that to <img> yields a broken-image icon; the tile is clearer.
+    if (!src || src.startsWith('⚠') || src.includes('{{')) return '';
+    return src;
+  });
+
+  readonly imageFit = computed<string>(() => {
+    const b = this.block();
+    return b.type === 'image' ? b.fit ?? 'contain' : 'contain';
   });
 
   readonly lineColor = computed(() => {
@@ -288,6 +315,16 @@ export class CanvasBlockComponent implements OnDestroy {
     return b.type === 'table' && b.columns.some((c) => c.width.kind === 'auto');
   });
 
+  /** Grid lines follow the block's own Border width (set 0 → none) rather
+   *  than always drawing — undefined (never touched) still defaults to
+   *  bordered, matching every table's look before this control did anything. */
+  readonly tableShowBorder = computed<boolean>(() => {
+    const b = this.block();
+    if (b.type !== 'table') return true;
+    const width = b.style?.border?.top?.width ?? b.style?.border?.left?.width;
+    return width !== 0;
+  });
+
   readonly tableRowMinHeight = computed<number>(() => {
     const b = this.block();
     return b.type === 'table' ? b.rowMinHeight ?? 8 : 8;
@@ -310,9 +347,106 @@ export class CanvasBlockComponent implements OnDestroy {
   readonly tableRows = computed<unknown[]>(() => this.previewRows('table'));
   readonly paymentsRows = computed<unknown[]>(() => this.previewRows('payments'));
 
-  readonly paymentsCurrency = computed<string>(() => {
+  readonly showTableFooter = computed<boolean>(() => {
     const b = this.block();
-    return b.type === 'payments' ? b.currency ?? 'BHD' : 'BHD';
+    return b.type === 'table' && !!b.showFooter;
+  });
+
+  /** One formatted string per table column for the aggregate footer row —
+   *  mirrors the `foot` block in the HTML renderer so the canvas preview
+   *  shows the same sums/averages/etc. the export produces, instead of no
+   *  footer row at all. Aggregates over the FULL data source (not the
+   *  capped preview rows), same as the export, so the number is real. */
+  readonly tableFooterCells = computed<string[]>(() => {
+    const b = this.block();
+    if (b.type !== 'table' || !b.showFooter) return [];
+    let allRows: unknown[];
+    try {
+      allRows = this.bindingEngine().resolveArray(b.dataSource, this.ctx());
+    } catch {
+      return b.columns.map(() => '');
+    }
+    return b.columns.map((c) => {
+      const f = c.footer;
+      if (!f) return '';
+      try {
+        const value = f.kind === 'custom' && f.expression
+          ? this.bindingEngine().evaluate(f.expression, this.ctx())
+          : this.bindingEngine().aggregate(
+              f.kind === 'custom' ? 'sum' : f.kind,
+              allRows,
+              f.expression ?? c.expression,
+              this.ctx(),
+            );
+        const formatted = f.format
+          ? this.bindingEngine().evaluate(`x | ${f.format}`, {
+              ...this.ctx(),
+              vars: { ...this.ctx().vars, x: value },
+            } as BindingContext)
+          : value;
+        return formatted === null || formatted === undefined ? '' : String(formatted);
+      } catch {
+        return '';
+      }
+    });
+  });
+
+  /** True when the table has grouping configured — drives whether the
+   *  canvas renders grouped entries (with header/footer rows) instead of a
+   *  flat row list. Mirrors the HTML/PDF renderers so the design-time
+   *  preview shows the same row count and height they'll produce, letting
+   *  the user spot and fix overlaps with blocks below at design time. */
+  readonly hasTableGrouping = computed<boolean>(() => {
+    const b = this.block();
+    return b.type === 'table' && !!b.groups?.length;
+  });
+
+  /** Flattened list of what actually renders in the table body: plain rows
+   *  when there's no grouping, or header/row/footer entries per bucket when
+   *  there is — same shape `renderGroupedRows` produces in the HTML
+   *  renderer, just projected for the template instead of emitted as HTML. */
+  readonly tablePreviewEntries = computed<TablePreviewEntry[]>(() => {
+    const b = this.block();
+    if (b.type !== 'table') return [];
+    const rows = this.tableRows();
+    const group = b.groups?.[0];
+    if (!group) return rows.map((row, index) => ({ kind: 'row', row, index }));
+
+    const buckets = new Map<unknown, unknown[]>();
+    rows.forEach((row, i) => {
+      const rowCtx = this.bindingEngine().withRow(this.ctx(), row as Record<string, unknown>, i);
+      const key = this.bindingEngine().evaluate(group.by, rowCtx);
+      if (!buckets.has(key)) buckets.set(key, []);
+      buckets.get(key)!.push(row);
+    });
+
+    const out: TablePreviewEntry[] = [];
+    let cumulative = 0;
+    let groupIndex = 0;
+    for (const [key, bucketRows] of buckets) {
+      // A row whose group-by expression is null/undefined/empty has no real
+      // category to group under — render it as a plain row instead of a
+      // one-item "group" with a blank/undefined header and footer.
+      const hasKey = key !== null && key !== undefined && key !== '';
+      const groupCtx = this.bindingEngine().withGroup(this.ctx(), key, bucketRows, groupIndex);
+      if (hasKey && group.showHeader && group.headerExpression) {
+        out.push({ kind: 'header', text: this.safeInterpolateCtx(group.headerExpression, groupCtx) });
+      }
+      bucketRows.forEach((row, i) => out.push({ kind: 'row', row, index: cumulative + i }));
+      cumulative += bucketRows.length;
+      if (hasKey && group.showFooter && group.footerExpression) {
+        out.push({ kind: 'footer', text: this.safeInterpolateCtx(group.footerExpression, groupCtx) });
+      }
+      if (hasKey) groupIndex++;
+    }
+    return out;
+  });
+
+  /** Money pipe for the payments Amount column — the same one the exporters
+   *  append, so the canvas shows the format the document will print with. */
+  readonly paymentsAmountPipe = computed<string>(() => {
+    const b = this.block();
+    return paymentAmountPipe(b.type === 'payments' ? b.currency : undefined);
   });
 
   readonly paymentsCols = computed<readonly PaymentColumnDef[]>(() => {
@@ -339,6 +473,17 @@ export class CanvasBlockComponent implements OnDestroy {
     const b = this.block();
     return b.type === 'repeater' ? b.items : [];
   });
+
+  /** Track by child id so a drag/resize on one card child doesn't tear down
+   *  and rebuild its `app-canvas-block` mid-gesture — see `trackBlock` in
+   *  canvas.component.ts for why: `patchBlock` gives the dragged child a new
+   *  object reference on every pointermove tick, and without a stable track
+   *  key the default identity diff destroys/recreates that child's component
+   *  instance, which tears down the `window` pointermove/pointerup listeners
+   *  driving the drag and silently ends it after the first frame. */
+  trackChild(_: number, child: Block): string {
+    return child.id;
+  }
 
   /** Row count from the repeater's data source — drives the "card · N rows"
    *  badge so the user can sanity-check the binding at a glance. */
@@ -383,7 +528,7 @@ export class CanvasBlockComponent implements OnDestroy {
   /** Payments cell, with the catalog's currency formatting applied to the
    *  Amount column so the preview matches the export. */
   evalPaymentCell(col: PaymentColumnDef, row: unknown, rowIndex: number): string {
-    const expr = col.isAmount ? `${col.expression} | currency:${this.paymentsCurrency()}` : col.expression;
+    const expr = col.isAmount ? `${col.expression} | ${this.paymentsAmountPipe()}` : col.expression;
     try {
       const rowCtx = this.bindingEngine().withRow(this.ctx(), row as Record<string, unknown>, rowIndex);
       const v = this.bindingEngine().evaluateCell(expr, rowCtx);
@@ -423,17 +568,38 @@ export class CanvasBlockComponent implements OnDestroy {
   @HostBinding('class.is-locked') get lockedClass(): boolean {
     return this.locked();
   }
+  // Only 'table' sizes itself naturally in normal document flow — a
+  // repeater's cards are absolutely positioned (matching the export, which
+  // computes their wrapper height explicitly from row count) and would
+  // collapse to ~0 height without an explicit style, same for most other
+  // block types. Table is the one type where omitting the height and
+  // letting the browser size it to content is actually safe.
+  @HostBinding('class.is-auto-height') get autoHeightClass(): boolean {
+    return this.block().type === 'table' && !!this.block().size.autoHeight;
+  }
+  // Laid out at 100% inside the page, which carries the zoom as a transform
+  // — so the block's type, padding and borders scale with its box instead
+  // of keeping their 100% size while the box grows. `zoom()` is still an
+  // input: pointer deltas arrive in screen px and the drag/resize handlers
+  // divide by it to get millimetres.
   @HostBinding('style.left.px') get leftPx(): number {
-    return this.block().position.x * PX_PER_MM * this.zoom();
+    return this.block().position.x * PX_PER_MM;
   }
   @HostBinding('style.top.px') get topPx(): number {
-    return (this.block().position.y + this.yOffsetMm()) * PX_PER_MM * this.zoom();
+    return (this.block().position.y + this.yOffsetMm()) * PX_PER_MM;
   }
   @HostBinding('style.width.px') get widthPx(): number {
-    return this.block().size.width * PX_PER_MM * this.zoom();
+    return this.block().size.width * PX_PER_MM;
   }
-  @HostBinding('style.height.px') get heightPx(): number {
-    return this.block().size.height * PX_PER_MM * this.zoom();
+  // An autoHeight table renders at its natural content height in the
+  // HTML/PDF export — `size.height` is only a design-time hint there, not a
+  // clamp. Pinning the canvas host to that stored height would clip content
+  // shorter than the export actually produces (e.g. a table dragged shorter
+  // than its row count), showing an overlap or cutoff that isn't real.
+  // Omitting the style lets the host size to its content, same as the
+  // export. See `autoHeightClass` for why this is table-only.
+  @HostBinding('style.height.px') get heightPx(): number | null {
+    return this.autoHeightClass ? null : this.block().size.height * PX_PER_MM;
   }
   @HostBinding('style.z-index') get zIndex(): number {
     return this.block().zIndex ?? 1;
@@ -444,6 +610,12 @@ export class CanvasBlockComponent implements OnDestroy {
   private dragRaf: number | null = null;
   private dragStart: { px: number; py: number; bx: number; by: number; bw: number; bh: number } | null = null;
   private resizeHandle: ResizeHandle | null = null;
+
+  /** Starting positions of every other selected block, captured at drag
+   *  start when this block is being dragged as part of a multi-selection —
+   *  so the whole selection translates by the same delta instead of only
+   *  the block under the pointer. Null outside a group drag. */
+  private _groupStart: Map<string, { x: number; y: number }> | null = null;
 
   /** Right-click selects the block under the cursor (so the menu acts on it
    *  even if it wasn't already selected) and opens the canvas menu. Locked
@@ -461,7 +633,6 @@ export class CanvasBlockComponent implements OnDestroy {
 
   @HostListener('pointerdown', ['$event'])
   onPointerDown(ev: PointerEvent): void {
-    if (this.locked()) return;
     // Resize handles have their own handler; let it claim the gesture.
     if ((ev.target as HTMLElement).classList.contains('resize-handle')) return;
     ev.stopPropagation();
@@ -470,6 +641,11 @@ export class CanvasBlockComponent implements OnDestroy {
     if (!this.selected() || additive) {
       this.state.select(this.block().id, additive);
     }
+
+    // A locked block still selects — the lock is about moving and resizing,
+    // and refusing selection outright left no way to inspect its properties
+    // or reach the Unlock action from the panel.
+    if (this.locked()) return;
 
     const b = this.block();
     this.dragStart = {
@@ -480,6 +656,23 @@ export class CanvasBlockComponent implements OnDestroy {
       bw: b.size.width,
       bh: b.size.height,
     };
+
+    // Dragging a block that's part of a multi-selection moves the whole
+    // selection together — record every other selected block's starting
+    // position so the same delta can be applied to each on move.
+    const selectedIds = this.state.selectedIds();
+    if (selectedIds.size > 1 && selectedIds.has(b.id)) {
+      this._groupStart = new Map();
+      for (const id of selectedIds) {
+        const found = this.state.findBlock(id);
+        if (found) this._groupStart.set(id, { x: found.block.position.x, y: found.block.position.y });
+      }
+    } else {
+      this._groupStart = null;
+    }
+
+    // One undo step for the whole drag, not one per animation frame.
+    this.history.beginBatch();
     (ev.target as HTMLElement).setPointerCapture(ev.pointerId);
     window.addEventListener('pointermove', this.onPointerMove);
     window.addEventListener('pointerup', this.onPointerUp);
@@ -498,6 +691,7 @@ export class CanvasBlockComponent implements OnDestroy {
       bh: b.size.height,
     };
     this.resizeHandle = handle;
+    this.history.beginBatch();
     (ev.target as HTMLElement).setPointerCapture(ev.pointerId);
     window.addEventListener('pointermove', this.onPointerMove);
     window.addEventListener('pointerup', this.onPointerUp);
@@ -523,17 +717,34 @@ export class CanvasBlockComponent implements OnDestroy {
 
       const b = this.block();
       const snapped = this.snapWithGuides(start.bx + dxMm, start.by + dyMm, b.size.width, b.size.height, b.id);
-      this.state.patchBlock(b.id, (cur) => ({ ...cur, position: { x: snapped.x, y: snapped.y } }));
+
+      if (this._groupStart) {
+        // Snap only the dragged block; the rest of the group follows by the
+        // same resulting delta so the selection keeps its relative layout.
+        const deltaX = snapped.x - start.bx;
+        const deltaY = snapped.y - start.by;
+        for (const [id, pos] of this._groupStart) {
+          this.state.patchBlock(id, (cur) =>
+            cur.locked ? cur : { ...cur, position: { x: pos.x + deltaX, y: pos.y + deltaY } },
+          );
+        }
+      } else {
+        this.state.patchBlock(b.id, (cur) => ({ ...cur, position: { x: snapped.x, y: snapped.y } }));
+      }
     });
   };
 
   private onPointerUp = (): void => {
     this.dragStart = null;
     this.resizeHandle = null;
+    this._groupStart = null;
     if (this.dragRaf) cancelAnimationFrame(this.dragRaf);
     this.dragRaf = null;
     // Guides are a drag-only affordance.
     this.state.setAlignGuides([]);
+    // Lands the gesture's end state as the single undo step. A click that
+    // never moved wrote nothing, so this records nothing.
+    this.history.endBatch();
     window.removeEventListener('pointermove', this.onPointerMove);
     window.removeEventListener('pointerup', this.onPointerUp);
   };
@@ -747,7 +958,12 @@ export class CanvasBlockComponent implements OnDestroy {
       };
     }
 
+    // Scoped to the active page (see `Section.pageId`) — a block on an
+    // invisible extra page must not produce snap guides on the canvas
+    // currently showing the master (or another extra page).
+    const activePage = this.state.activePageId();
     for (const sec of tpl?.sections ?? []) {
+      if ((sec.pageId ?? MASTER_PAGE_ID) !== activePage) continue;
       for (const b of sec.blocks) {
         if (b.id === excludeId) continue;
         neighbours.push({ x: b.position.x, y: b.position.y, w: b.size.width, h: b.size.height });
@@ -785,7 +1001,7 @@ export class CanvasBlockComponent implements OnDestroy {
     const b = this.block();
     if (b.type !== kind) return [];
     try {
-      return this.bindingEngine().resolveArray(b.dataSource, this.ctx()).slice(0, PREVIEW_ROW_CAP);
+      return this.bindingEngine().resolveArray(b.dataSource, this.ctx()).slice(0, CANVAS_PREVIEW_ROW_CAP);
     } catch {
       return [];
     }
@@ -795,6 +1011,18 @@ export class CanvasBlockComponent implements OnDestroy {
     if (!template) return '';
     try {
       return this.bindingEngine().interpolate(template, this.ctx());
+    } catch {
+      return template;
+    }
+  }
+
+  /** Like `safeInterpolate`, but against an explicit context — used for
+   *  group header/footer expressions, which evaluate against the group's
+   *  own scope (`{{group.key}}` etc.) rather than the block's root context. */
+  private safeInterpolateCtx(template: string, ctx: BindingContext): string {
+    if (!template) return '';
+    try {
+      return this.bindingEngine().interpolate(template, ctx);
     } catch {
       return template;
     }
@@ -814,6 +1042,10 @@ export class CanvasBlockComponent implements OnDestroy {
 
   ngOnDestroy(): void {
     if (this.dragRaf) cancelAnimationFrame(this.dragRaf);
+    this._groupStart = null;
+    // Torn down mid-drag (block deleted, template switched): close the batch
+    // so history doesn't stay suspended for every later edit.
+    this.history.endBatch();
     window.removeEventListener('pointermove', this.onPointerMove);
     window.removeEventListener('pointerup', this.onPointerUp);
   }

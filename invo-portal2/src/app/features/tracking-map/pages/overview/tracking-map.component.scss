@@ -5,7 +5,7 @@
   display: block;
   height: 100%;
   font-family: inherit;
-  color: #1a1d29;
+  color: var(--ui-text-2);
 }
 
 .tracking-map {
@@ -14,7 +14,7 @@
   gap: 16px;
   height: 100%;
   padding: 16px;
-  background: #f7f8fa;
+  background: var(--ui-x-f7f8fa);
   box-sizing: border-box;
 }
 
@@ -23,8 +23,8 @@
   flex-direction: column;
   gap: 12px;
   min-height: 0;
-  background: #fff;
-  border: 1px solid #e4e7ec;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
   border-radius: 14px;
   padding: 16px;
 }
@@ -39,7 +39,7 @@
   p {
     margin: 2px 0 0;
     font-size: 12.5px;
-    color: #6b7280;
+    color: var(--ui-muted);
   }
 }
 
@@ -62,15 +62,15 @@
   justify-content: center;
   width: 26px;
   height: 26px;
-  border: 1px solid #e4e7ec;
+  border: 1px solid var(--ui-line);
   border-radius: 8px;
-  background: #fff;
-  color: #64748b;
+  background: var(--ui-surface);
+  color: var(--ui-muted);
   cursor: pointer;
   transition: background 120ms ease, color 120ms ease, transform 300ms ease;
 }
 
-.refresh-btn:hover { background: #f1f5f9; color: #2691a4; }
+.refresh-btn:hover { background: var(--ui-surface-2); color: var(--ui-brand-text); }
 .refresh-btn:active svg { transform: rotate(180deg); }
 .refresh-btn svg { transition: transform 300ms ease; }
 
@@ -84,12 +84,12 @@
   letter-spacing: 0.03em;
   padding: 3px 9px;
   border-radius: 999px;
-  background: #f1f5f9;
-  color: #94a3b8;
+  background: var(--ui-surface-2);
+  color: var(--ui-faint);
 }
 
 .live-badge.is-live {
-  background: #dcfce7;
+  background: var(--ui-green-soft);
   color: #16a34a;
 }
 

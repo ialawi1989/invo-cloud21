@@ -2,11 +2,14 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   input,
+  signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { resolveLocalizedName } from '@shared/utils/localized-name';
 import { CompanyService } from '@core/auth/company.service';
 
 import {
@@ -17,11 +20,16 @@ import {
   TextStyle,
   TableColumn,
   DOC_TYPE_TRANSACTIONAL_FIELDS,
+  DEFAULT_TEXT_STYLE,
   paperHeightCm,
   paperWidthCm,
 } from '@features/settings/document-builder/services/document-template.types';
 import { resolveTokens, readArray, type DocumentRenderData } from './token-resolve';
-import { PAPER_LAYOUT, FIELD_TOKEN, type PaperFieldConfig } from './paper-config';
+import { PAPER_LAYOUT, FIELD_TOKEN, type PaperFieldConfig, type TableColumnConfig } from './paper-config';
+import { MynumberPipe } from '@core/pipes/mynumber.pipe';
+import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
+import { CustomFieldsService } from '@features/settings/services/custom-fields.service';
+import type { CustomField } from '@features/settings/models/custom-field.types';
 
 /** A transactional field — `id` is the field name (e.g. `customerName`),
  *  `style` is the configured TextStyle, `value` is the resolved string
@@ -39,6 +47,8 @@ interface TransactionalField {
  *  document data. The renderer treats branch and entity CFs the same
  *  way; they only differ in where they're slotted into the layout. */
 interface CustomFieldRow {
+  /** No saved style: legacy draws a bare `name: value` (branch fields) or nothing (entity / customer fields). */
+  bare?: boolean;
   abbr:  string;
   name:  string;
   label: string;
@@ -161,6 +171,85 @@ const FIELD_VALUE_MAP: Record<string, { token: string; label: string }> = {
 })
 export class DocumentPaperComponent {
   private companies = inject(CompanyService);
+  /** Table-cell numbers print as the legacy `mynumber` pipe does: the company's decimals, more only when the value has them. */
+  private readonly numPipe = new MynumberPipe();
+  private readonly curPipe = new MycurrencyPipe();
+  private readonly i18n = inject(TranslateService);
+  /** Barcode / product-field badge: its own colour, background and font (an unset colour keeps the badge's default green). */
+  badgeLook(s: TextStyle | null | undefined): Record<string, string | null> {
+    if (!s) return {};
+    return { ...this.font(s), color: s.color || null, 'background-color': s.backgroundColor || null };
+  }
+  /** Legacy text style: font size (pt), weight, style and decoration only. A missing size inherits the paper's text size. */
+  font(s: TextStyle | null | undefined): Record<string, string | null> {
+    if (!s) return {};
+    const size = Number(s.size);
+    return {
+      'font-size':       size > 0 ? `${size}pt` : null,
+      'font-weight':     s.bold ? 'bold' : 'normal',
+      'font-style':      s.italic ? 'italic' : 'normal',
+      'text-decoration': s.underline ? 'underline' : 'none',
+    };
+  }
+  /** `font()` plus the style's colour on the same element. */
+  fontColor(s: TextStyle | null | undefined): Record<string, string | null> {
+    return s ? { ...this.font(s), color: s.color || null } : {};
+  }
+  /** The default colour legacy gives a field's label and value when the template has none. */
+  readonly defaultInk = 'rgb(73, 80, 87)';
+  /** The service row: `Service: x | Section: y | Table: z`, each part's label in bold. */
+  serviceParts(value: string): Array<{ label: string; value: string }> {
+    return String(value || '').split(' | ').filter(Boolean).map((p) => {
+      const at = p.indexOf(': ');
+      return at < 0 ? { label: '', value: p } : { label: p.slice(0, at + 1), value: p.slice(at + 2) };
+    });
+  }
+  /** Legacy shows the tax-type line only when the document says whether its prices include tax. */
+  hasTaxType = computed<boolean>(() => (this.data()['invoice'] as Record<string, unknown> | undefined)?.['isInclusiveTax'] !== undefined);
+
+  /** A default label in the active language from the legacy translation keys (`DOCUMENT_PAPER.*`); the English fallback when a key has no text. */
+  tr(key: string, fallback: string): string {
+    const v = this.i18n.instant(key);
+    return v && v !== key ? String(v) : fallback;
+  }
+
+  /** A line's product name in the active language (legacy `localizedName`), falling back to the stored name. */
+  lineName(ln: Record<string, unknown>): string {
+    return resolveLocalizedName({ name: ln['desc'], translation: ln['translation'] as never }, this.i18n.currentLang || this.i18n.defaultLang || 'en') || String(ln['desc'] ?? '');
+  }
+  /** A money amount in the company's currency and decimals (legacy `mycurrency`), not a fixed 'BHD' with 3 places. */
+  money(v: unknown): string { return this.curPipe.transform(v); }
+  /** A plain number as the legacy `mynumber` pipe prints it (company decimals, more only when the value has them). */
+  num(v: unknown): string { return this.numPipe.transform(v); }
+  private readonly cfService = inject(CustomFieldsService);
+  /** The company's product custom fields: each is a table column `cf_<id>` (legacy `getProductCustomFieldColumns`). */
+  protected readonly productCfs = signal<CustomField[]>([]);
+  /** The company's branch / entity custom-field definitions: they drive which rows print (legacy lists every active field). */
+  protected readonly branchCfs = signal<CustomField[]>([]);
+  protected readonly entityCfs = signal<CustomField[]>([]);
+  /** The customer's custom-field definitions (customer-facing documents only) — they share the entity fields' style list and columns. */
+  protected readonly customerCfs = signal<CustomField[]>([]);
+  constructor() {
+    void this.cfService.getByType('branch')
+      .then((list) => this.branchCfs.set(list.filter((f) => !f.isDeleted && !!f.id)))
+      .catch(() => this.branchCfs.set([]));
+    effect(() => {
+      const dm = PAPER_LAYOUT[this.template().documentType]?.dataModel;
+      const key = dm?.cfEntityType;
+      if (dm?.entityType === 'customer') {
+        void this.cfService.getByType('customer')
+          .then((list) => this.customerCfs.set(list.filter((f) => !f.isDeleted && !!f.id)))
+          .catch(() => this.customerCfs.set([]));
+      } else this.customerCfs.set([]);
+      if (!key) { this.entityCfs.set([]); return; }
+      void this.cfService.getByType(key)
+        .then((list) => this.entityCfs.set(list.filter((f) => !f.isDeleted && !!f.id)))
+        .catch(() => this.entityCfs.set([]));
+    });
+    void this.cfService.getByType('product')
+      .then((list) => this.productCfs.set(list.filter((f) => !f.isDeleted && !!f.id)))
+      .catch(() => this.productCfs.set([]));
+  }
 
   template = input.required<DocumentTemplate>();
   data     = input.required<DocumentRenderData>();
@@ -193,6 +282,9 @@ export class DocumentPaperComponent {
         address: company.address || sampleCompany['address'] || '',
         phone:   company.phone   || sampleCompany['phone']   || '',
         logo:    realLogo        || sampleCompany['logo']    || '',
+        // The company's invoice-options note and terms (Settings > Invoice options), printed in the footer as legacy does.
+        note:    (this.companies.settings() as any)?.invoiceOptions?.note ?? sampleCompany['note'] ?? '',
+        terms:   (this.companies.settings() as any)?.invoiceOptions?.term ?? sampleCompany['terms'] ?? '',
       },
     };
   });
@@ -319,9 +411,17 @@ export class DocumentPaperComponent {
 
   /** Terms & Conditions renders as a second page box (single-paper Classic only — paginated
    *  print-preview keeps its existing per-page behaviour regardless of this setting). */
+  /** The page margins the template saved (legacy: the card's padding), cm. */
+  classicPadding = computed<string | null>(() => {
+    const m = this.template().margins;
+    if (!m || this.renderMode() !== 'classic' || this.printPreview()) return null;
+    const v = (x: unknown) => (x == null || x === '' || isNaN(Number(x)) ? '0.635' : String(x));
+    return `${v(m.top)}cm ${v(m.right)}cm ${v(m.bottom)}cm ${v(m.left)}cm`;
+  });
+
   showTermsAsSeparatePage = computed<boolean>(() =>
     this.renderMode() === 'classic' && !this.printPreview()
-    && this.template().footerCustomization.term.show
+    && this.showTerms()
     && this.template().footerCustomization.termAsSeparatePage,
   );
 
@@ -360,6 +460,8 @@ export class DocumentPaperComponent {
   titleLabel = computed<string>(() => {
     const layout = PAPER_LAYOUT[this.template().documentType];
     if (!layout) return 'DOCUMENT';
+    const own = this.template().headerCustomization.title?.label;
+    if (own && own.trim()) return own;
     const dynamic = layout.getDynamicTitle?.(this.mergedData());
     if (dynamic && dynamic.trim()) return dynamic;
     return layout.staticTitle;
@@ -380,7 +482,7 @@ export class DocumentPaperComponent {
     const list = line['subItems'];
     if (!Array.isArray(list)) return [];
     return list.map((s: any) => ({
-      name: String(s?.name ?? ''),
+      name: this.lineName({ desc: s?.name, translation: s?.translation }),
       options: Array.isArray(s?.options) ? s.options.map((o: any) => String(o?.name ?? '')).filter(Boolean) : [],
     }));
   }
@@ -391,7 +493,8 @@ export class DocumentPaperComponent {
   textStyle(t: { size?: string | number; color?: string; bold?: boolean; italic?: boolean; underline?: boolean; alignment?: string; backgroundColor?: string } | undefined | null) {
     if (!t) return {};
     return {
-      'font-size':        (Number(t.size) || 10) + 'pt',
+      // a style with no size of its own takes the template's text size (legacy: the paper's base `textSize`), not a fixed 10pt
+      'font-size':        (Number(t.size) || Number(this.template().textSize) || 10) + 'pt',
       'color':            t.color || 'inherit',
       'font-weight':      t.bold      ? '700'       : '400',
       'font-style':       t.italic    ? 'italic'    : 'normal',
@@ -418,11 +521,12 @@ export class DocumentPaperComponent {
    *  direction — a hidden field stays hidden regardless of state. */
   private buildField(cfg: PaperFieldConfig): TransactionalField | null {
     const t = this.template();
-    const style = t.transactionalDetailsCustomization[cfg.id] as TextStyle | undefined;
+    const style = t.transactionalDetailsCustomization[cfg.styleKey ?? cfg.id] as TextStyle | undefined;
     if (!style || typeof style !== 'object' || !('show' in style)) return null;
     if (!style.show) return null;
     if (cfg.showCondition && !cfg.showCondition(this.mergedData())) return null;
-    const label = (style.label && style.label.trim()) || cfg.label;
+    // the service row carries its own bold labels (Service / Section / Table), so it has no outer label
+    const label = cfg.id === 'service' ? '' : ((style.label && style.label.trim()) || this.tr(`DOCUMENT_PAPER.FIELD.${t.documentType}.${cfg.id}`, cfg.label));
     const token = FIELD_TOKEN[cfg.id];
     const value = token ? this.r(token) : '';
     // Legacy `shouldShowField`: on a real document a field with no value is not printed (Reference, Sales Person, Customer VAT…).
@@ -456,35 +560,49 @@ export class DocumentPaperComponent {
   // resolves its value from `customFieldValues.<scope>[<abbr>]` on
   // the data object — when absent, the field's own name is shown in
   // brackets as a placeholder so the preview stays informative.
-  branchCustomFieldRows = computed<CustomFieldRow[]>(() => {
-    const list = this.template().headerCustomization.customFields ?? [];
-    return list
-      .filter((e) => e.style.show !== false)
-      .filter((e) => this.builderMode() || this.cfValueFor('branch', e.abbr) !== '')
-      .map((e) => this.buildCustomFieldRow('branch', e));
-  });
+  branchCustomFieldRows = computed<CustomFieldRow[]>(() =>
+    this.customFieldRows('branch', this.branchCfs(), this.template().headerCustomization.customFields ?? []));
 
   entityCustomFieldRows = computed<CustomFieldRow[]>(() => {
-    const list = this.template().transactionalDetailsCustomization.customFields ?? [];
-    return list
-      .filter((e) => e.style.show !== false)
-      .filter((e) => this.builderMode() || this.cfValueFor('entity', e.abbr) !== '')
-      .map((e) => this.buildCustomFieldRow('entity', e));
+    const entries = this.template().transactionalDetailsCustomization.customFields ?? [];
+    // entity then customer fields, one shared style list (legacy `customFieldsDisplay`)
+    return [
+      ...this.customFieldRows('entity', this.entityCfs(), entries),
+      ...this.customFieldRows('customer', this.customerCfs(), entries),
+    ];
   });
 
-  private buildCustomFieldRow(scope: 'branch' | 'entity', e: { abbr: string; name: string; style: TextStyle }): CustomFieldRow {
-    return {
-      abbr:  e.abbr,
-      name:  e.name,
-      style: e.style,
-      label: (e.style.label && e.style.label.trim()) || e.name,
-      value: this.cfValueFor(scope, e.abbr) || `[${e.name}]`,
-    };
+  /** Entity custom fields sit in the first or second column of the details block by their saved `position` (legacy). */
+  entityCfFirstColumn  = computed<CustomFieldRow[]>(() => this.entityCustomFieldRows().filter((r) => r.style.position !== 'secondColumn'));
+  entityCfSecondColumn = computed<CustomFieldRow[]>(() => this.entityCustomFieldRows().filter((r) => r.style.position === 'secondColumn'));
+
+  /** Legacy lists every active custom field of the scope: its saved style (keyed by the field ID) when there is one, the default
+   *  style otherwise. On a real document a field with no value is skipped; in the builder it shows `<name> Value`. */
+  private customFieldRows(scope: 'branch' | 'entity' | 'customer', defs: CustomField[], entries: Array<{ abbr: string; name: string; style: TextStyle }>): CustomFieldRow[] {
+    const byId = new Map(entries.map((e) => [e.abbr, e]));
+    const source = defs.length
+      ? defs.map((d) => ({ id: d.id, name: d.name, entry: byId.get(d.id) }))
+      : entries.map((e) => ({ id: e.abbr, name: e.name, entry: e }));
+    const rows: CustomFieldRow[] = [];
+    for (const s of source) {
+      if (scope !== 'branch' && !s.entry) continue;
+      const style = s.entry?.style ?? DEFAULT_TEXT_STYLE({ size: 12 });
+      if (style.show === false) continue;
+      const raw = this.cfValueFor(scope, s.id);
+      if (!this.builderMode() && raw === '') continue;
+      rows.push({
+        abbr: s.id, name: s.name, style, bare: !s.entry,
+        // legacy prints the field's own name: the template's label / showLabel apply to the built-in fields only
+        label: s.name,
+        value: raw || `${s.name} Value`,
+      });
+    }
+    return rows;
   }
 
-  private cfValueFor(scope: 'branch' | 'entity', abbr: string): string {
+  private cfValueFor(scope: 'branch' | 'entity' | 'customer', abbr: string): string {
     const map = this.mergedData()['customFieldValues'] as
-      { branch?: Record<string, unknown>; entity?: Record<string, unknown> } | undefined;
+      { branch?: Record<string, unknown>; entity?: Record<string, unknown>; customer?: Record<string, unknown> } | undefined;
     const v = map?.[scope]?.[abbr];
     if (v === null || v === undefined) return '';
     return String(v);
@@ -505,16 +623,29 @@ export class DocumentPaperComponent {
     const tc   = t.tableCustomization;
     const data = this.mergedData();
     const out: PaperTableColumn[] = [];
-    for (const cfg of layout.tableColumns) {
+    const cfColumns: TableColumnConfig[] = this.productCfs().map((f) => ({ id: 'cf_' + f.id, defaultLabel: f.name, defaultShow: false }));
+    for (const cfg of [...layout.tableColumns, ...cfColumns]) {
       const col = tc[cfg.id] as TableColumn | undefined;
-      if (col && col.show === false) continue;
+      // legacy `shouldShowColumn`: a saved entry decides; with none, the column's `defaultShow` does (Image / Barcode / custom fields: hidden)
+      if (col ? col.show === false : cfg.defaultShow === false) continue;
       if (cfg.hideCondition && cfg.hideCondition(data)) continue;
+      // legacy `hideCondition: 'allowBillOfEntry'` on the tax columns
+      if ((cfg.id === 'tax' || cfg.id === 'taxPercantage') && (data['invoice'] as Record<string, unknown> | undefined)?.['allowBillOfEntry'] === true) continue;
       if (cfg.showCondition && !cfg.showCondition(data)) continue;
       out.push({
         id:    cfg.id,
         label: col?.label || cfg.defaultLabel || cfg.id,
         width: col?.width || 0,
       });
+    }
+    // The order the client saved in the legacy builder (`columnOrder`); columns it doesn't list keep their place at the end.
+    const order = t.columnOrder ?? [];
+    if (order.length) {
+      const byId = new Map(out.map((c) => [c.id, c]));
+      const ordered = order.map((id) => byId.get(id)).filter((c): c is PaperTableColumn => !!c);
+      const seen = new Set(ordered.map((c) => c.id));
+      out.forEach((c) => { if (!seen.has(c.id)) ordered.push(c); });
+      return ordered;
     }
     return out;
   });
@@ -523,7 +654,16 @@ export class DocumentPaperComponent {
   cellFor(line: Record<string, unknown>, colId: string): string {
     const get = (k: string) => line[k];
     const num = (v: unknown): string =>
-      typeof v === 'number' ? v.toFixed(3) : (v == null ? '' : String(v));
+      (typeof v === 'number' || (typeof v === 'string' && v.trim() !== '' && !isNaN(Number(v))))
+        ? this.numPipe.transform(v)
+        : (v == null ? '' : String(v));
+    if (colId.startsWith('cf_')) {
+      const id = colId.slice(3);
+      const v = (line['customFields'] as Record<string, unknown> | undefined)?.[id];
+      if (v != null && v !== '') return String(v);
+      // the builder's preview has no real product: show the field's name as a sample, like legacy
+      return this.builderMode() ? `${this.productCfs().find((f) => f.id === id)?.name ?? ''} Value` : '';
+    }
     switch (colId) {
       case 'order':         return '';   // populated by the row index in the template
       case 'description':   return String(get('desc') ?? '');
@@ -532,7 +672,7 @@ export class DocumentPaperComponent {
       case 'uom':           return String(get('uom') ?? '');
       case 'unitCost':      return num(get('price'));
       case 'price':         return num(get('price'));
-      case 'taxPercantage': return String(get('taxRate') ?? '10') + ' %';
+      case 'taxPercantage': return String(get('taxRate') ?? '') + ' %';
       case 'tax':           return num(get('tax'));
       case 'discount':      return num(get('discount'));
       case 'amount':        return num(get('total'));
@@ -553,11 +693,11 @@ export class DocumentPaperComponent {
     const candidates: Array<{ id: keyof typeof tt; defaultLabel: string; sourceKey: string }> = [
       { id: 'itemTotal',     defaultLabel: 'Items Total',  sourceKey: 'subtotal'   },
       { id: 'taxTotal',      defaultLabel: 'Tax Total',    sourceKey: 'vat'        },
+      { id: 'subTotal',      defaultLabel: 'Sub Total',    sourceKey: 'subTotal'   },
       { id: 'discount',      defaultLabel: 'Discount',     sourceKey: 'discount'   },
       { id: 'charge',        defaultLabel: 'Charge',       sourceKey: 'charge'     },
       { id: 'delevary',      defaultLabel: 'Delivery',     sourceKey: 'delivery'   },
       { id: 'roundingTotal', defaultLabel: 'Rounding',     sourceKey: 'rounding'   },
-      { id: 'subTotal',      defaultLabel: 'Subtotal',     sourceKey: 'subtotal'   },
       { id: 'Total',         defaultLabel: 'Total',        sourceKey: 'grandTotal' },
     ];
     const out: PaperTotalRow[] = [];
@@ -568,13 +708,36 @@ export class DocumentPaperComponent {
       if (allow.size > 0 && !allow.has(String(c.id))) continue;
       const style = tt[c.id] as TextStyle;
       if (!style || !style.show) continue;
-      let label = (style.label && style.label.trim()) || c.defaultLabel;
+      let label = (style.label && style.label.trim()) || this.tr(`DOCUMENT_PAPER.TOTAL.${c.id}`, c.defaultLabel);
       // An empty row is not printed on a real document (legacy `value != null && value !== 0`).
-      const raw = totals[c.sourceKey];
+      const raw = totals[c.sourceKey] ?? (c.id === 'subTotal' ? totals['subtotal'] : undefined);
       if (!this.builderMode() && (raw == null || Number(raw) === 0)) continue;
       // An inclusive-tax invoice shows its items total, tax and discount with the tax in them.
       if (this.isInclusiveTax() && this.template().documentType === 'invoice' && ['itemTotal', 'taxTotal', 'discount'].includes(String(c.id))) label += ' (inc)';
-      out.push({ id: String(c.id), label, value: 'BHD ' + num(raw), style });
+      out.push({ id: String(c.id), label, value: this.money(raw), style });
+    }
+    // Legacy reorders the rows at render time: the discount sits before or after the tax by `applyDiscountBeforeTax`, and an
+    // invoice's charge sits before the tax row for `chargeBeforeTax`, right after it otherwise.
+    const doc = (this.data()['invoice'] as Record<string, unknown> | undefined) ?? {};
+    const move = (id: string, at: (list: PaperTotalRow[]) => number): void => {
+      const from = out.findIndex((r) => r.id === id);
+      if (from < 0) return;
+      const [row] = out.splice(from, 1);
+      const to = at(out);
+      out.splice(to < 0 ? from : to, 0, row);
+    };
+    const idx = (id: string) => (list: PaperTotalRow[]) => list.findIndex((r) => r.id === id);
+    const taxAt = out.findIndex((r) => r.id === 'taxTotal');
+    const discAt = out.findIndex((r) => r.id === 'discount');
+    if (taxAt >= 0 && discAt >= 0) {
+      if (doc['applyDiscountBeforeTax'] === true) { if (discAt > taxAt) move('discount', idx('taxTotal')); }
+      else if (taxAt > discAt) move('taxTotal', idx('discount'));
+    }
+    if (this.template().documentType === 'invoice' && out.some((r) => r.id === 'charge') && out.some((r) => r.id === 'taxTotal')) {
+      move('charge', (list) => {
+        const t = list.findIndex((r) => r.id === 'taxTotal');
+        return doc['chargeType'] === 'chargeBeforeTax' ? t : t + 1;
+      });
     }
     return out;
   });
@@ -583,8 +746,6 @@ export class DocumentPaperComponent {
     const pt = this.template().totalSectionCustomization.paymentTable;
     if (!pt.show) return [];
     const totals = (this.data()['totals'] as Record<string, unknown>) ?? {};
-    const num = (v: unknown): string =>
-      typeof v === 'number' ? v.toFixed(3) : '0.000';
     const candidates: Array<{ id: keyof typeof pt; defaultLabel: string; sourceKey: string }> = [
       { id: 'payments',       defaultLabel: 'Payment Made',  sourceKey: 'paid'    },
       { id: 'paymentMethods', defaultLabel: 'Payment Methods', sourceKey: 'paymentMethods' },
@@ -596,9 +757,11 @@ export class DocumentPaperComponent {
       // Legacy prints one row per actual payment (rendered from `paymentEntries()`), never a summary "Payment Methods" line.
       if (c.id === 'paymentMethods') continue;
       const style = pt[c.id] as TextStyle;
-      if (!style || !style.show) continue;
-      const label = (style.label && style.label.trim()) || c.defaultLabel;
-      out.push({ id: String(c.id), label, value: 'BHD ' + num(totals[c.sourceKey]), style });
+      // legacy `shouldShowPaymentField`: shown unless the template says show === false
+      if (!style || style.show === false) continue;
+      const label = (style.label && style.label.trim()) || this.tr(`DOCUMENT_PAPER.PAYMENT.${c.id}`, c.defaultLabel);
+      const raw = totals[c.sourceKey];
+      out.push({ id: String(c.id), label, value: this.money(c.id === 'balance' ? Math.max(0, Number(raw) || 0) : raw), style });
     }
     return out;
   });
@@ -776,6 +939,12 @@ export class DocumentPaperComponent {
     }
   }
 
+  /** The ribbon text in the active language (legacy `status-ribbon` maps the status to its GENERAL.* key). */
+  statusText(): string {
+    const s = this.documentStatus();
+    return this.tr(`DOCUMENT_PAPER.STATUS.${s}`, s);
+  }
+
   documentStatus = computed<string>(() =>
     String((this.data()['invoice'] as Record<string, unknown> | undefined)?.['status'] ?? ''),
   );
@@ -803,6 +972,18 @@ export class DocumentPaperComponent {
    *  and the company note. Maps to `data.note` in legacy. */
   customerNote = computed<string>(() =>
     String((this.data()['invoice'] as Record<string, unknown> | undefined)?.['customerNote'] ?? ''),
+  );
+
+  /** What this document type carries (legacy `config.dataModel.hasTerms / hasCompanyNote / hasCustomerNote`):
+   *  an estimate, credit note, PO … print no company note or terms, a credit note no customer note. */
+  private readonly docModel = computed(() => PAPER_LAYOUT[this.template().documentType]?.dataModel);
+  supportsTerms        = computed<boolean>(() => this.docModel()?.hasTerms ?? false);
+  supportsCompanyNote  = computed<boolean>(() => this.docModel()?.hasCompanyNote ?? false);
+  supportsCustomerNote = computed<boolean>(() => this.docModel()?.hasCustomerNote ?? false);
+  /** The Terms block prints when the type supports it and the company has terms (always in the builder's preview). */
+  showTerms = computed<boolean>(() =>
+    this.supportsTerms() && this.template().footerCustomization.term.show
+    && (this.builderMode() || !!this.r('{{company.terms}}')),
   );
 
   /** Customer signature — image URL surfaced in the right-half card
@@ -834,8 +1015,17 @@ export class DocumentPaperComponent {
 
   /** Whether the payments-block has anything to render — used to
    *  decide if the orange box appears at all. */
+  /** Legacy `paymentMethods.show !== false`: whether the per-payment rows print. */
+  paymentMethodsOn = computed<boolean>(() => {
+    const pm = this.template().totalSectionCustomization.paymentTable.paymentMethods as TextStyle | undefined;
+    return pm?.show !== false;
+  });
+  paymentMethodsStyle = computed<TextStyle | null>(() => (this.template().totalSectionCustomization.paymentTable.paymentMethods as TextStyle | undefined) ?? null);
+
   hasPayments = computed<boolean>(() =>
-    this.visiblePaymentRows().length > 0 || this.paymentEntries().length > 0,
+    // legacy `hasPaymentTable`: only the types that carry payments (invoice, bill) print the box — never an estimate
+    (this.docModel()?.hasPayments ?? false)
+    && (this.visiblePaymentRows().length > 0 || (this.paymentMethodsOn() && this.paymentEntries().length > 0)),
   );
 
   /** Rows for a Designer-mode Payments block (`el.bindTo`, defaults 'invoicePayments') — the same
@@ -862,6 +1052,45 @@ export class DocumentPaperComponent {
     method: 'Method', reference: 'Reference', date: 'Date', amount: 'Amount', status: 'Status', rate: 'Rate',
   };
 
+  /** The table-lines style (`invoicLines`, `estimateLines`, ...) — legacy puts its size on the row, colour and background on the cells. */
+  linesStyle = computed<TextStyle | null>(() => {
+    const f = PAPER_LAYOUT[this.template().documentType]?.dataModel?.tableLinesField;
+    return f ? ((this.template().transactionalDetailsCustomization[f] as TextStyle | undefined) ?? null) : null;
+  });
+  /** The voided-lines style; voided rows print only when its `show` is on (legacy `shouldShowVoidedLines`). */
+  voidedStyle = computed<TextStyle | null>(() => {
+    const f = PAPER_LAYOUT[this.template().documentType]?.dataModel?.tableVoidedField;
+    const s = f ? ((this.template().transactionalDetailsCustomization[f] as TextStyle | undefined) ?? null) : null;
+    return s && s.show ? s : null;
+  });
+  /** Legacy shows a customer note whenever the type supports it and the note has text (always in the builder). */
+  showCustomerNote = computed<boolean>(() => this.supportsCustomerNote() && (this.builderMode() || !!this.customerNote()));
+
+  /** The product custom-field badges under a line's name (legacy `getLineCustomFieldBadges`): `name: value` for each field the
+   *  template enabled in `lineCustomFieldIds`, styled with the shared `productCustomFieldBadge`; off unless that style's `show` is on. */
+  badgeStyle = computed<TextStyle | null>(() => {
+    const s = (this.template().transactionalDetailsCustomization as unknown as Record<string, unknown>)['productCustomFieldBadge'] as TextStyle | undefined;
+    return s && s.show ? s : null;
+  });
+  lineCfBadges(ln: Record<string, unknown>): Array<{ name: string; value: string }> {
+    if (!this.badgeStyle()) return [];
+    const ids = (this.template().transactionalDetailsCustomization as unknown as Record<string, unknown>)['lineCustomFieldIds'];
+    if (!Array.isArray(ids) || !ids.length) return [];
+    const values = (ln['customFields'] as Record<string, unknown> | undefined) ?? {};
+    const out: Array<{ name: string; value: string }> = [];
+    for (const id of ids as string[]) {
+      const def = this.productCfs().find((f) => f.id === id);
+      if (!def) continue;
+      const v = values[id];
+      if (v === null || v === undefined || v === '') {
+        if (this.builderMode()) out.push({ name: def.name, value: `${def.name} Value` });
+        continue;
+      }
+      out.push({ name: def.name, value: String(v) });
+    }
+    return out;
+  }
+
   /** Voided lines for a given main line — used by the items-table to
    *  render strike-through rows under each item. */
   voidedFor(line: Record<string, unknown>): Array<Record<string, unknown>> {
@@ -872,7 +1101,7 @@ export class DocumentPaperComponent {
   /** Right-aligned columns. Description / Product / UoM align left;
    *  every other column reads as a number, so right-align reads better. */
   isRightAlignedColumn(id: string): boolean {
-    return id !== 'description' && id !== 'product' && id !== 'uom';
+    return id === 'amount' || id === 'total' || id === 'unitCost';
   }
 
   /** Read a TextStyle off `transactionalDetailsCustomization` by id —

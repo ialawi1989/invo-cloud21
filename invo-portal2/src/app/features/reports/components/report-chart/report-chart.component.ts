@@ -48,8 +48,8 @@ import { ReportChartConfig } from '../../models/report.model';
   styles: [`
     :host { display: block; margin-bottom: 16px; }
     .rc-card {
-      background: #fff;
-      border: 1px solid #e2e8f0;
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-line);
       border-radius: 12px;
       padding: 12px 14px 4px;
     }

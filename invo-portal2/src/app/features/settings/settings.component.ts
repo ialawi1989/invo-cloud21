@@ -175,17 +175,17 @@ function levenshtein(a: string, b: string, budget: number): number {
     .settings-page { max-width: 1100px; }
 
     .page-header { margin-bottom: 20px; }
-    .page-title  { font-size: 22px; font-weight: 700; color: #1e293b; margin: 0 0 4px; }
-    .page-sub    { font-size: 14px; color: #64748b; margin: 0; }
+    .page-title  { font-size: 22px; font-weight: 700; color: var(--ui-text-2); margin: 0 0 4px; }
+    .page-sub    { font-size: 14px; color: var(--ui-muted); margin: 0; }
 
     .toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; flex-wrap: wrap; }
     .toolbar .search-bar { flex: 1 1 280px; margin-bottom: 0; }
 
     .search-bar {
       display: flex; align-items: center; gap: 10px;
-      padding: 10px 16px; background: #fff;
-      border: 1px solid #e2e8f0; border-radius: 10px;
-      margin-bottom: 8px; color: #94a3b8;
+      padding: 10px 16px; background: var(--ui-surface);
+      border: 1px solid var(--ui-line); border-radius: 10px;
+      margin-bottom: 8px; color: var(--ui-faint);
       transition: border-color 120ms ease, box-shadow 120ms ease;
     }
     .search-bar:focus-within {
@@ -200,19 +200,19 @@ function levenshtein(a: string, b: string, budget: number): number {
       border: 0;
       padding: 4px;
       border-radius: 6px;
-      color: #94a3b8;
+      color: var(--ui-faint);
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       transition: background 120ms ease, color 120ms ease;
     }
-    .search-bar__clear:hover { background: #f1f5f9; color: #0f172a; }
+    .search-bar__clear:hover { background: var(--ui-surface-2); color: var(--ui-text); }
 
     .search-input {
       border: none; outline: none; font-size: 16px;
-      color: #1e293b; background: transparent; width: 100%;
-      &::placeholder { color: #94a3b8; }
+      color: var(--ui-text-2); background: transparent; width: 100%;
+      &::placeholder { color: var(--ui-faint); }
     }
 
     /* "Did you mean …" — gray prefix + bold italic brand-coloured
@@ -220,14 +220,14 @@ function levenshtein(a: string, b: string, budget: number): number {
     .search-hint {
       margin: 0 0 24px;
       font-size: 14px;
-      color: #64748b;
+      color: var(--ui-muted);
       display: flex;
       align-items: center;
       gap: 4px;
       flex-wrap: wrap;
     }
-    .search-hint__prefix { color: #64748b; }
-    .search-hint__q      { color: #64748b; }
+    .search-hint__prefix { color: var(--ui-muted); }
+    .search-hint__q      { color: var(--ui-muted); }
     .search-hint__link {
       appearance: none;
       background: transparent;
@@ -236,14 +236,14 @@ function levenshtein(a: string, b: string, budget: number): number {
       font: inherit;
       font-style: italic;
       font-weight: 700;
-      color: var(--color-brand-700, #0e7490);
+      color: var(--ui-brand-t700);
       cursor: pointer;
       text-decoration: underline;
       text-underline-offset: 3px;
       text-decoration-thickness: 1.5px;
       transition: color 120ms ease;
     }
-    .search-hint__link:hover { color: var(--color-brand-800, #155e75); }
+    .search-hint__link:hover { color: var(--ui-brand-t800); }
 
     .groups-grid {
       display: grid;
@@ -252,38 +252,38 @@ function levenshtein(a: string, b: string, budget: number): number {
     }
 
     .group-card {
-      background: #fff; border-radius: 14px;
-      border: 1px solid #e2e8f0; overflow: hidden;
+      background: var(--ui-surface); border-radius: 14px;
+      border: 1px solid var(--ui-line); overflow: hidden;
     }
     .group-header {
       display: flex; align-items: center; gap: 10px;
-      padding: 16px 18px 12px; border-bottom: 1px solid #f1f5f9;
+      padding: 16px 18px 12px; border-bottom: 1px solid var(--ui-surface-2);
     }
     .group-icon {
       width: 36px; height: 36px; border-radius: 9px; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
     }
-    .group-title { font-size: 14px; font-weight: 600; color: #1e293b; margin: 0; }
+    .group-title { font-size: 14px; font-weight: 600; color: var(--ui-text-2); margin: 0; }
 
     .group-items { padding: 4px 0 8px; }
 
     /* List view */
     .groups-list { display: flex; flex-direction: column; gap: 28px; margin-top: 16px; }
     .list-group__head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-    .list-group__title { font-size: 17px; font-weight: 600; color: #0f172a; margin: 0; }
+    .list-group__title { font-size: 17px; font-weight: 600; color: var(--ui-text); margin: 0; }
     .list-group__card {
-      background: #fff; border-radius: 14px; padding: 6px 0;
+      background: var(--ui-surface); border-radius: 14px; padding: 6px 0;
       box-shadow: 0 1px 3px rgba(15, 23, 42, .06), 0 4px 14px rgba(15, 23, 42, .04);
     }
     .list-group__card .setting-item { padding: 14px 22px; }
-    .list-group__card .item-label { font-size: 14px; color: #0f172a; }
-    .list-group__card .item-desc  { font-size: 13px; color: #64748b; white-space: normal; }
+    .list-group__card .item-label { font-size: 14px; color: var(--ui-text); }
+    .list-group__card .item-desc  { font-size: 13px; color: var(--ui-muted); white-space: normal; }
     :host-context([dir='rtl']) .chev { transform: scaleX(-1); }
     .setting-item {
       display: flex; align-items: center; gap: 12px;
       padding: 11px 18px; text-decoration: none;
       transition: background .15s; cursor: pointer;
-      &:hover { background: #f8fafc; }
+      &:hover { background: var(--ui-surface-1); }
       &:hover svg { stroke: #32acc1; }
     }
     .setting-item--btn {
@@ -293,10 +293,10 @@ function levenshtein(a: string, b: string, budget: number): number {
     .item-text { flex: 1; min-width: 0; }
     .item-label {
       display: block; font-size: 13px; font-weight: 500;
-      color: #374151; margin-bottom: 2px;
+      color: var(--ui-text-3); margin-bottom: 2px;
     }
     .item-desc {
-      display: block; font-size: 12px; color: #94a3b8;
+      display: block; font-size: 12px; color: var(--ui-faint);
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
   `]

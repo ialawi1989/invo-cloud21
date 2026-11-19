@@ -38,8 +38,8 @@ $mono: 'IBM Plex Mono', monospace;
   width: 100%;
   min-height: 220px;
 }
-.kpi-value { font-size: 36px; font-weight: 600; color: #1f2328; }
-.kpi-label { font-size: 12px; color: #6b7682; }
+.kpi-value { font-size: 36px; font-weight: 600; color: var(--ui-t-1f2328); }
+.kpi-label { font-size: 12px; color: var(--ui-t-6b7682); }
 
 // Table and other content wrappers should also be able to grow.
 // The detailed .table-wrap rules (always-visible scrollbar etc.) live in
@@ -56,21 +56,21 @@ $mono: 'IBM Plex Mono', monospace;
 }
 .chart-unsupported-icon {
   width: 40px; height: 40px; border-radius: 50%;
-  background: #FAEEDA; color: #854F0B;
+  background: var(--ui-x-faeeda); color: var(--ui-t-854f0b);
   display: inline-flex; align-items: center; justify-content: center;
   margin-bottom: 4px;
 }
 .chart-unsupported-title {
-  font-size: 14px; font-weight: 500; color: #1f2328;
+  font-size: 14px; font-weight: 500; color: var(--ui-t-1f2328);
 }
 .chart-unsupported-sub {
-  font-size: 12px; color: #475260;
+  font-size: 12px; color: var(--ui-t-475260);
   max-width: 420px; line-height: 1.55; font-weight: 400;
 }
 .chart-unsupported-hint {
   font-size: 11px; color: #6b7682;
   margin-top: 2px;
-  strong { color: #1f2328; font-weight: 500; }
+  strong { color: var(--ui-t-1f2328); font-weight: 500; }
 }
 
 // Empty state (Sales Target teal palette)
@@ -91,10 +91,10 @@ $teal-dark-empty: #008f97;
   box-shadow: 0 4px 12px rgba(0, 170, 179, 0.25);
 }
 .empty-title {
-  font-size: 17px; font-weight: 700; color: #111827;
+  font-size: 17px; font-weight: 700; color: var(--ui-text);
 }
 .empty-sub {
-  font-size: 14px; color: #6b7280;
+  font-size: 14px; color: var(--ui-muted);
   max-width: 400px; line-height: 1.55; font-weight: 400;
 }
 .empty-actions {
@@ -114,9 +114,9 @@ $teal-dark-empty: #008f97;
     &:hover { background: $teal-dark-empty; }
   }
   &--outline {
-    background: #fff; color: #111827;
+    background: var(--ui-surface); color: var(--ui-text);
     border-color: rgba(0,0,0,0.10);
-    &:hover { background: #f1f5f9; }
+    &:hover { background: var(--ui-surface-2); }
   }
 }
 
@@ -140,14 +140,14 @@ $teal-dark-empty: #008f97;
   overflow-y: hidden;
   position: relative;
   &::-webkit-scrollbar { height: 4px; }
-  &::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
+  &::-webkit-scrollbar-thumb { background: var(--ui-x-dddddd); border-radius: 4px; }
 }
 .grid-lines {
   position: absolute; top: 0; left: 0; right: 0; bottom: 24px;
   display: flex; flex-direction: column; justify-content: space-between;
   pointer-events: none; z-index: 0;
 }
-.grid-line { height: 1px; background: #f0f0f0; }
+.grid-line { height: 1px; background: var(--ui-x-f0f0f0); }
 // Chart area = everything above the labels
 .vbar-chart-area {
   flex: 1 1 0;        // height: 0 + flex-grow makes this a "definite" height for % children
@@ -202,13 +202,13 @@ $teal-dark-empty: #008f97;
   display: flex; flex-direction: column; gap: 4px; width: 100%;
   max-height: 100%; overflow-y: auto;
   &::-webkit-scrollbar { width: 4px; }
-  &::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
+  &::-webkit-scrollbar-thumb { background: var(--ui-x-dddddd); border-radius: 4px; }
 }
 .hbar-row {
   display: flex; align-items: center; gap: 8px; flex-shrink: 0;
 }
 .hbar-label {
-  font-size: 10px; color: #666; min-width: 90px; max-width: 120px; text-align: right;
+  font-size: 10px; color: var(--ui-t-666666); min-width: 90px; max-width: 120px; text-align: right;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-shrink: 0;
 }
 .hbar-bars { flex: 1; display: flex; gap: 2px; height: 22px; }
@@ -232,12 +232,12 @@ $teal-dark-empty: #008f97;
   display: flex; align-items: center; gap: 6px; font-size: 11px;
 }
 .legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
-.legend-label { color: #333; }
+.legend-label { color: var(--ui-text-2); }
 .legend-val { color: #999; font-family: $mono; font-size: 10px; margin-left: auto; padding-left: 8px; }
 
 // KPI
 .kpi-wrap { text-align: center; padding: 36px 20px; }
-.kpi-value { font-size: 46px; font-weight: 700; color: #333; letter-spacing: -0.02em; }
+.kpi-value { font-size: 46px; font-weight: 700; color: var(--ui-text-2); letter-spacing: -0.02em; }
 .kpi-label { font-size: 12px; color: #999; margin-top: 4px; }
 .kpi-trend { margin-top: 12px; font-size: 12px; display: flex; align-items: center; gap: 6px; justify-content: center; }
 .kpi-up { color: $accent; font-weight: 600; }
@@ -260,14 +260,14 @@ $teal-dark-empty: #008f97;
 .table-toolbar {
   display: flex; align-items: center; gap: 8px;
   padding: 6px 4px; flex-shrink: 0;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--ui-x-f0f0f0);
 }
 .table-tool-btn {
   display: inline-flex; align-items: center; gap: 5px;
-  padding: 5px 12px; border: 1px solid #e0e0e0; border-radius: 5px;
-  background: #fff; font-size: 11px; font-weight: 500; font-family: inherit;
+  padding: 5px 12px; border: 1px solid var(--ui-x-e0e0e0); border-radius: 5px;
+  background: var(--ui-surface); font-size: 11px; font-weight: 500; font-family: inherit;
   color: #555; cursor: pointer; transition: all 0.12s;
-  &:hover { border-color: $accent; color: $accent; background: #f0fafa; }
+  &:hover { border-color: $accent; color: $accent; background: var(--ui-x-f0fafa); }
   svg { flex-shrink: 0; }
 }
 .table-wrap {
@@ -281,13 +281,13 @@ $teal-dark-empty: #008f97;
   scrollbar-width: thin;
   scrollbar-color: #b8b8b8 #f1f1f1;
   &::-webkit-scrollbar { width: 10px; height: 10px; }
-  &::-webkit-scrollbar-track { background: #f1f1f1; }
+  &::-webkit-scrollbar-track { background: var(--ui-x-f1f1f1); }
   &::-webkit-scrollbar-thumb {
     background: #c0c0c0; border-radius: 5px;
-    border: 2px solid #f1f1f1;
+    border: 2px solid var(--ui-x-f1f1f1);
     &:hover { background: #999; }
   }
-  &::-webkit-scrollbar-corner { background: #f1f1f1; }
+  &::-webkit-scrollbar-corner { background: var(--ui-x-f1f1f1); }
 }
 // `width: max-content` lets the table grow as wide as its cells need
 // (cells are `white-space: nowrap`) — that's what makes `.table-wrap`'s
@@ -302,53 +302,53 @@ table {
 }
 // A field added since the last run: it has no data yet.
 th.pending-col {
-  background: #fff8e6; color: #8a5a00; cursor: default;
-  border-bottom-color: #f0d9a0;
+  background: var(--ui-x-fff8e6); color: var(--ui-t-8a5a00); cursor: default;
+  border-bottom-color: var(--ui-x-f0d9a0);
 }
 .pending-note {
   display: block; margin-top: 2px;
   font-size: 9.5px; font-weight: 500; text-transform: none; letter-spacing: 0;
 }
-td.pending-cell { background: #fffbf0; color: #c9b27a; text-align: center; }
-.pending-hint { margin: 14px 12px; font-size: 12.5px; color: #8a5a00; }
+td.pending-cell { background: var(--ui-x-fffbf0); color: #c9b27a; text-align: center; }
+.pending-hint { margin: 14px 12px; font-size: 12.5px; color: var(--ui-t-8a5a00); }
 
 th {
   padding: 8px 12px; text-align: left; font-size: 10px; font-weight: 600;
   text-transform: uppercase; letter-spacing: .04em; color: #666;
-  background: #fafafa; border-bottom: 2px solid #eee; white-space: nowrap;
+  background: var(--ui-x-fafafa); border-bottom: 2px solid var(--ui-x-eeeeee); white-space: nowrap;
   position: sticky; top: 0; z-index: 1;
   cursor: pointer; user-select: none;
   border-right: 2px solid transparent;
   transition: border-color 0.12s, background 0.12s;
   &.num { text-align: right; }
-  &.sorted { color: $accent; background: #f0fafa; }
+  &.sorted { color: $accent; background: var(--ui-x-f0fafa); }
   &.drag-over-col {
     border-right-color: $accent;
-    background: #e8f5f7;
+    background: var(--ui-x-e8f5f7);
   }
 }
 .sort-icon { width: 10px; height: 10px;
   font-size: 8px; margin-left: 3px; color: $accent;
 }
 td {
-  padding: 7px 12px; font-size: 12px; border-bottom: 1px solid #f0f0f0;
+  padding: 7px 12px; font-size: 12px; border-bottom: 1px solid var(--ui-x-f0f0f0);
   white-space: nowrap; max-width: 300px; overflow: hidden; text-overflow: ellipsis;
 }
-.num { font-family: $mono; text-align: right; color: #333; }
+.num { font-family: $mono; text-align: right; color: var(--ui-text-2); }
 .dim-cell { font-weight: 500; }
-.total-col { background: #fafafa; font-weight: 600; color: #333; }
-.total-row { background: #f5f5f5; td { border-top: 2px solid #ddd; } }
+.total-col { background: var(--ui-x-fafafa); font-weight: 600; color: var(--ui-text-2); }
+.total-row { background: var(--ui-x-f5f5f5); td { border-top: 2px solid var(--ui-x-dddddd); } }
 .accent { color: $accent; }
-tbody tr:hover { background: #f8fbff; }
+tbody tr:hover { background: var(--ui-x-f8fbff); }
 
 // ─── Grouped table: group header + subtotal rows ───
 // Group name — one cell merged (rowspan) over the group's rows, centred.
 .group-name-cell {
   vertical-align: middle;
   font-weight: 600;
-  color: #1a1a18;
-  background: #f8f8f7;
-  border-right: 1px solid #e5e7eb;
+  color: var(--ui-t-1a1a18);
+  background: var(--ui-x-f8f8f7);
+  border-right: 1px solid var(--ui-line);
   white-space: nowrap;
 }
 // Per-group total row.
@@ -364,10 +364,10 @@ tbody tr:hover { background: #f8fbff; }
 .legend {
   display: flex; gap: 14px; margin-top: 12px; padding: 8px 12px;
   justify-content: center; flex-wrap: wrap;
-  background: #fafafa; border-radius: 6px; border: 1px solid #f0f0f0;
+  background: var(--ui-x-fafafa); border-radius: 6px; border: 1px solid var(--ui-x-f0f0f0);
 }
 .legend-item-inline {
-  display: flex; align-items: center; gap: 5px; font-size: 11px; color: #555;
+  display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--ui-t-555555);
   font-weight: 500;
 }
 .legend-dot {

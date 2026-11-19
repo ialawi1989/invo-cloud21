@@ -1,6 +1,7 @@
 import { Injectable, computed, signal } from '@angular/core';
 import { Block, BlockType } from '../core/types/block.types';
-import { Orientation, PageMargins, PageSetup, PaperSize, ReportTemplate, Section, TenantTheme } from '../core/types/template.types';
+import { ExtraPage, MASTER_PAGE_ID, Orientation, PageMargins, PageSetup, PaperSize, ReportTemplate, Section, TenantTheme } from '../core/types/template.types';
+import { BlockStyle, BorderStyle, ConditionalStyle } from '../core/types/style.types';
 import { FilterMap } from '../core/types/binding.types';
 import { BindingEngine } from '../core/binding/binding-engine';
 import { blockRegistry } from '../core/registry/block-registry';
@@ -32,6 +33,9 @@ export class DesignerStateService {
   private readonly _template = signal<ReportTemplate | null>(null);
   private readonly _selectedIds = signal<Set<string>>(new Set());
   private readonly _activeSectionId = signal<string | null>(null);
+  /** Which logical page the canvas/toolbox currently edit — `MASTER_PAGE_ID`
+   *  or an id from `template.extraPages`. See `Section.pageId`. */
+  private readonly _activePageId = signal<string>(MASTER_PAGE_ID);
   private readonly _zoom = signal(1);
   /** Host-provided custom filters merged with the built-ins. Plug-in
    *  consumers pass these via `<invo-report-designer [extraFilters]>` —
@@ -47,7 +51,11 @@ export class DesignerStateService {
   readonly selectedIds = this._selectedIds.asReadonly();
   readonly zoom = this._zoom.asReadonly();
   readonly activeSectionId = this._activeSectionId.asReadonly();
+  readonly activePageId = this._activePageId.asReadonly();
   readonly alignGuides = this._alignGuides.asReadonly();
+
+  /** `template.extraPages`, or `[]` when there are none yet. */
+  readonly extraPages = computed<ExtraPage[]>(() => this._template()?.extraPages ?? []);
 
   /** Replace the visible alignment guides — the dragger calls this on
    *  every move, then `setAlignGuides([])` on pointerup. Pulled out as a
@@ -84,7 +92,12 @@ export class DesignerStateService {
     const t = this._template();
     const id = this._activeSectionId();
     if (!t) return null;
-    return t.sections.find((s) => s.id === id) ?? t.sections.find((s) => s.type === 'body') ?? null;
+    const page = this._activePageId();
+    return (
+      t.sections.find((s) => s.id === id) ??
+      t.sections.find((s) => (s.pageId ?? MASTER_PAGE_ID) === page && s.type === 'body') ??
+      null
+    );
   });
 
   readonly selectedBlocks = computed<Block[]>(() => {
@@ -125,13 +138,73 @@ export class DesignerStateService {
     this.pageSnapshots.clear();
     this.lastResize = null;
     this._template.set(template);
-    const body = template.sections.find((s) => s.type === 'body') ?? template.sections[0];
+    this._activePageId.set(MASTER_PAGE_ID);
+    const masterSections = template.sections.filter((s) => (s.pageId ?? MASTER_PAGE_ID) === MASTER_PAGE_ID);
+    const body = masterSections.find((s) => s.type === 'body') ?? masterSections[0];
     this._activeSectionId.set(body?.id ?? null);
     this._selectedIds.set(new Set());
   }
 
   setZoom(z: number): void {
     this._zoom.set(Math.max(0.25, Math.min(3, z)));
+  }
+
+  // ─── Pages ──────────────────────────────────────────────────
+
+  /** Switch the canvas/toolbox to a different logical page — `MASTER_PAGE_ID`
+   *  or an id from `template.extraPages`. Mirrors `setActiveSection`'s reset
+   *  of selection, and re-picks that page's body as the active section. */
+  setActivePage(pageId: string): void {
+    const t = this._template();
+    if (!t) return;
+    this._activePageId.set(pageId);
+    const body = t.sections.find((s) => (s.pageId ?? MASTER_PAGE_ID) === pageId && s.type === 'body');
+    this._activeSectionId.set(body?.id ?? null);
+    this._selectedIds.set(new Set());
+  }
+
+  /** Append a new standalone page (e.g. a company's own Terms & Conditions
+   *  layout) and switch to it. It starts with one empty `body` section and
+   *  shares the master's paper size/margins/background — see `ExtraPage`. */
+  addPage(name?: string): void {
+    const t = this._template();
+    if (!t) return;
+    const pageId = `page_${Math.random().toString(36).slice(2, 10)}`;
+    const extraPages = t.extraPages ?? [];
+    const displayName = name?.trim() || `Page ${extraPages.length + 2}`;
+    const bodySection: Section = { id: `sec_${Math.random().toString(36).slice(2, 10)}`, type: 'body', pageId, blocks: [] };
+    this._template.set({
+      ...t,
+      extraPages: [...extraPages, { id: pageId, name: displayName }],
+      sections: [...t.sections, bodySection],
+    });
+    this.setActivePage(pageId);
+  }
+
+  /** Rename an extra page. No-op for the master page or an unknown id. */
+  renamePage(pageId: string, name: string): void {
+    const t = this._template();
+    if (!t || !t.extraPages?.some((p) => p.id === pageId)) return;
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    this._template.set({
+      ...t,
+      extraPages: t.extraPages.map((p) => (p.id === pageId ? { ...p, name: trimmed } : p)),
+    });
+  }
+
+  /** Remove an extra page and all of its sections/blocks. Switches back to
+   *  the master page if the removed one was active. No-op for the master
+   *  page itself. */
+  removePage(pageId: string): void {
+    const t = this._template();
+    if (!t || pageId === MASTER_PAGE_ID) return;
+    this._template.set({
+      ...t,
+      extraPages: (t.extraPages ?? []).filter((p) => p.id !== pageId),
+      sections: t.sections.filter((s) => (s.pageId ?? MASTER_PAGE_ID) !== pageId),
+    });
+    if (this._activePageId() === pageId) this.setActivePage(MASTER_PAGE_ID);
   }
 
   setActiveSection(id: string): void {
@@ -245,23 +318,26 @@ export class DesignerStateService {
 
   // ─── Theme ────────────────────────────────────────────────────
 
-  /** Patch a single theme color slot. Doesn't touch any blocks — use
-   *  `applyThemePreset` if you want existing on-theme blocks to recolor too. */
-  setThemeColor(
-    key:
-      | 'primaryColor'
-      | 'onPrimaryColor'
-      | 'secondaryColor'
-      | 'accentColor'
-      | 'textColor'
-      | 'mutedColor'
-      | 'surfaceColor',
-    color: string | undefined,
-  ): void {
+  /** Patch a single theme color slot and recolor the design with it — see
+   *  `applyThemePreset`, which this delegates to. */
+  setThemeColor(key: ThemeColorKey, color: string | undefined): void {
+    this.applyThemePreset({ [key]: color });
+  }
+
+  /**
+   * The document-wide font family — what every block left on "Inherit"
+   * renders in, on the canvas, in the HTML export and in the PDF.
+   *
+   * Stored on the theme rather than pushed onto each block so switching it
+   * later still reaches blocks that were never given a family of their own.
+   * An empty value clears the slot, which drops the template back to
+   * DEFAULT_FONT_STACK at every render site.
+   */
+  setThemeFontFamily(family: string | undefined): void {
     const t = this._template();
     if (!t) return;
-    const merged: TenantTheme = { ...(t.theme ?? { id: 'theme' }), [key]: color };
-    this._template.set({ ...t, theme: merged });
+    const theme = { ...(t.theme ?? ({ id: 'theme' } as TenantTheme)), fontFamily: family || undefined };
+    this._template.set({ ...t, theme });
   }
 
   /**
@@ -279,6 +355,42 @@ export class DesignerStateService {
    * fields (line.color, rectangle.fill, divider.color, table.zebraColor,
    * payments.zebraColor, table column header/cell styles) are all remapped.
    */
+  applyThemePreset(patch: Partial<Record<ThemeColorKey, string | undefined>>): void {
+    const t = this._template();
+    if (!t) return;
+
+    const before = t.theme ?? ({ id: 'theme' } as TenantTheme);
+    const after: TenantTheme = { ...before, ...patch };
+
+    // old hex → new hex, for the slots that actually changed. Keyed
+    // lower-case because authored colors vary in case.
+    const remap = new Map<string, string>();
+    for (const key of THEME_COLOR_KEYS) {
+      const from = before[key];
+      const to = after[key];
+      if (from && to && from.toLowerCase() !== to.toLowerCase()) {
+        remap.set(from.toLowerCase(), to);
+      }
+    }
+
+    if (remap.size === 0) {
+      this._template.set({ ...t, theme: after });
+      return;
+    }
+
+    const swap = (c: string | undefined): string | undefined =>
+      c ? remap.get(c.toLowerCase()) ?? c : c;
+
+    this._template.set({
+      ...t,
+      theme: after,
+      page: { ...t.page, background: swap(t.page.background) },
+      sections: t.sections.map((section) => ({
+        ...section,
+        blocks: section.blocks.map((b) => recolorBlock(b, swap)),
+      })),
+    });
+  }
 
   /** Patch a single side of the page margins, preserving the others. */
   setPageMargin(side: keyof PageMargins, value: number): void {
@@ -350,10 +462,11 @@ export class DesignerStateService {
   addBlock(type: BlockType, x?: number, y?: number, sectionId?: string): Block | null {
     const t = this._template();
     if (!t) return null;
+    const page = this._activePageId();
     const target =
       (sectionId && t.sections.find((s) => s.id === sectionId)) ||
       this.activeSection() ||
-      t.sections.find((s) => s.type === 'body') ||
+      t.sections.find((s) => (s.pageId ?? MASTER_PAGE_ID) === page && s.type === 'body') ||
       t.sections[0];
     if (!target) return null;
     const def = blockRegistry.require(type);
@@ -375,6 +488,7 @@ export class DesignerStateService {
     const def = blockRegistry.require(type);
     const id = `b_${Math.random().toString(36).slice(2, 10)}`;
     const child = def.factory(id);
+    applyRowScopedDefaults(child);
     if (x !== undefined) child.position.x = x;
     if (y !== undefined) child.position.y = y;
     this.patchBlock<Block>(parentId, (p) => {
@@ -501,4 +615,107 @@ export class DesignerStateService {
   restore(snapshot: ReportTemplate): void {
     this._template.set(snapshot);
   }
+}
+
+// ─── Row-scoped defaults ────────────────────────────────────────
+
+/**
+ * Retarget a block's default binding when it's dropped into a card list.
+ *
+ * Registry factories produce page-scoped defaults — an Image block binds
+ * `{{companyLogo}}`. Inside a repeater the block renders once per row, so
+ * dropping one in would repeat the company logo on every card; the row's own
+ * image is what the user is reaching for.
+ */
+function applyRowScopedDefaults(block: Block): void {
+  if (block.type === 'image') {
+    block.source = '{{row.mediaUrl}}';
+  }
+}
+
+// ─── Theme recoloring ───────────────────────────────────────────
+
+/** The theme slots that hold a color. `id`, fonts, logo and customCss are
+ *  excluded — they are not part of the remap table. */
+const THEME_COLOR_KEYS = [
+  'primaryColor',
+  'onPrimaryColor',
+  'secondaryColor',
+  'accentColor',
+  'textColor',
+  'mutedColor',
+  'surfaceColor',
+] as const;
+
+export type ThemeColorKey = (typeof THEME_COLOR_KEYS)[number];
+
+/** Maps an old color to its replacement, or returns it unchanged. */
+type Swap = (color: string | undefined) => string | undefined;
+
+function recolorStyle(style: BlockStyle | undefined, swap: Swap): BlockStyle | undefined {
+  if (!style) return style;
+  const out: BlockStyle = { ...style };
+
+  if (style.font?.color) out.font = { ...style.font, color: swap(style.font.color) };
+  if (style.background) out.background = swap(style.background);
+
+  if (style.border) {
+    const border: BorderStyle = { ...style.border };
+    for (const side of ['top', 'right', 'bottom', 'left'] as const) {
+      const s = style.border[side];
+      if (s) border[side] = { ...s, color: swap(s.color) ?? s.color };
+    }
+    out.border = border;
+  }
+
+  return out;
+}
+
+function recolorConditional(
+  styles: ConditionalStyle[] | undefined,
+  swap: Swap,
+): ConditionalStyle[] | undefined {
+  if (!styles) return styles;
+  return styles.map((c) => ({ ...c, style: recolorStyle(c.style, swap) ?? c.style }));
+}
+
+/** Remap every color a block can carry: the shared BlockStyle, its
+ *  conditional styles, and the type-specific color fields. Recurses into
+ *  repeater children and table columns. */
+function recolorBlock(block: Block, swap: Swap): Block {
+  const out = { ...block } as Block;
+  out.style = recolorStyle(block.style, swap);
+  out.conditionalStyles = recolorConditional(block.conditionalStyles, swap);
+
+  switch (out.type) {
+    case 'line':
+      out.color = swap(out.color) ?? out.color;
+      break;
+    case 'rectangle':
+      out.fill = swap(out.fill);
+      break;
+    case 'divider':
+      out.color = swap(out.color);
+      break;
+    case 'table':
+      out.zebraColor = swap(out.zebraColor);
+      out.columns = out.columns.map((c) => ({
+        ...c,
+        headerStyle: recolorStyle(c.headerStyle, swap),
+        cellStyle: recolorStyle(c.cellStyle, swap),
+        conditionalStyles: recolorConditional(c.conditionalStyles, swap),
+      }));
+      break;
+    case 'payments':
+      out.zebraColor = swap(out.zebraColor);
+      break;
+    case 'repeater':
+      out.items = out.items.map((c) => recolorBlock(c, swap));
+      break;
+    default:
+      // Every other type carries color only through `style`.
+      break;
+  }
+
+  return out;
 }

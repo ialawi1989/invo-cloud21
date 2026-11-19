@@ -72,26 +72,26 @@ export interface BulkPick { product: any; qty: number; }
   styles: [`
     .bi { display: grid; grid-template-columns: 1fr 1fr; min-width: min(920px, 92vw); height: calc(min(780px, 100vh - 48px) - 62px); }
     @media (max-width: 720px) { .bi { grid-template-columns: 1fr; height: auto; } }
-    .bi__left { border-inline-end: 1px solid #e5e7eb; display: flex; flex-direction: column; min-height: 0; background: #f8fafc; }
+    .bi__left { border-inline-end: 1px solid var(--ui-line); display: flex; flex-direction: column; min-height: 0; background: var(--ui-surface-1); }
     .bi__search { margin: 12px; border: 1px solid #2691a4; border-radius: 8px; padding: 9px 12px; font: inherit; }
     .bi__list { list-style: none; margin: 0; padding: 0; overflow-y: auto; flex: 1; }
     .bi__list li { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; cursor: pointer; }
-    .bi__list li:hover { background: #eef2f6; } .bi__list li.on { background: #e6f4f6; }
-    .bi__name { color: #227d8d; font-weight: 500; } .bi__rate { font-size: 12.5px; color: #227d8d; }
-    .bi__check { width: 22px; height: 22px; border-radius: 50%; background: #cbd5e1; color: #fff; display: grid; place-items: center; font-size: 13px; }
+    .bi__list li:hover { background: var(--ui-surface-2); } .bi__list li.on { background: var(--ui-x-e6f4f6); }
+    .bi__name { color: var(--ui-brand-text); font-weight: 500; } .bi__rate { font-size: 12.5px; color: var(--ui-brand-text); }
+    .bi__check { width: 22px; height: 22px; border-radius: 50%; background: var(--ui-line-strong); color: #fff; display: grid; place-items: center; font-size: 13px; }
     .on .bi__check { background: #227d8d; }
-    .bi__empty { color: #94a3b8; cursor: default !important; justify-content: center !important; }
+    .bi__empty { color: var(--ui-faint); cursor: default !important; justify-content: center !important; }
     .bi__right { display: flex; flex-direction: column; min-height: 0; }
-    .bi__head { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-bottom: 1px solid #e5e7eb; h3 { margin: 0; font-size: 20px; } }
-    .bi__count { display: inline-block; margin-inline-start: 8px; border: 1px solid #cbd5e1; border-radius: 999px; padding: 0 12px; font-size: 14px; }
+    .bi__head { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-bottom: 1px solid var(--ui-line); h3 { margin: 0; font-size: 20px; } }
+    .bi__count { display: inline-block; margin-inline-start: 8px; border: 1px solid var(--ui-line-strong); border-radius: 999px; padding: 0 12px; font-size: 14px; }
     .bi__picked { flex: 1; overflow-y: auto; padding: 8px 16px; }
-    .bi__row { display: grid; grid-template-columns: 1fr 150px 28px; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
-    .bi__qty { border: 1px solid #d0d5dd; border-radius: 6px; padding: 6px 8px; text-align: end; }
-    .bi__x { border: 0; background: none; color: #dc2626; cursor: pointer; }
-    .bi__hint { height: 100%; display: grid; place-items: center; text-align: center; color: #334155; padding: 24px; }
-    .bi__foot { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid #e5e7eb; }
-    .bi__btn { padding: 8px 16px; border-radius: 6px; border: 1px solid #d0d5dd; background: #f3f4f6; cursor: pointer; font-weight: 500; }
-    .bi__btn--primary { background: #2691a4; border-color: #2691a4; color: #fff; }
+    .bi__row { display: grid; grid-template-columns: 1fr 150px 28px; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--ui-surface-2); }
+    .bi__qty { border: 1px solid var(--ui-line-strong); border-radius: 6px; padding: 6px 8px; text-align: end; }
+    .bi__x { border: 0; background: none; color: var(--ui-red-text); cursor: pointer; }
+    .bi__hint { height: 100%; display: grid; place-items: center; text-align: center; color: var(--ui-text-3); padding: 24px; }
+    .bi__foot { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--ui-line); }
+    .bi__btn { padding: 8px 16px; border-radius: 6px; border: 1px solid var(--ui-line-strong); background: var(--ui-surface-2); cursor: pointer; font-weight: 500; }
+    .bi__btn--primary { background: var(--ui-b-2691a4); border-color: #2691a4; color: #fff; }
     .bi__btn:disabled { opacity: .5; cursor: not-allowed; }
   `],
 })

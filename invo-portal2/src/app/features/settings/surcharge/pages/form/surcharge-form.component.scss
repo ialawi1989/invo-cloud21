@@ -6,23 +6,23 @@
 }
 
 .page-header { display: flex; flex-direction: column; gap: 4px; }
-.page-title  { margin: 0; font-size: 22px; font-weight: 700; color: #0f172a; }
+.page-title  { margin: 0; font-size: 22px; font-weight: 700; color: var(--ui-text); }
 
 .card {
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
   border-radius: 12px;
   overflow: hidden;
 
   &__head {
     padding: 14px 16px;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--ui-surface-2);
   }
   &__title {
     margin: 0;
     font-size: 14px;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--ui-text);
   }
   &__body {
     padding: 16px;
@@ -37,31 +37,31 @@
   flex-direction: column;
   gap: 6px;
 
-  &__label { font-size: 12px; font-weight: 600; color: #475569; }
-  &__hint  { font-size: 11px; color: #94a3b8; }
-  &__err   { font-size: 11px; color: #b91c1c; font-weight: 600; }
+  &__label { font-size: 12px; font-weight: 600; color: var(--ui-text-4); }
+  &__hint  { font-size: 11px; color: var(--ui-faint); }
+  &__err   { font-size: 11px; color: var(--ui-red-text); font-weight: 600; }
 
   &__input {
     appearance: none;
     width: 100%;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--ui-line);
     border-radius: 8px;
     padding: 9px 12px;
     font-size: 13px;
-    color: #0f172a;
-    background: #fff;
+    color: var(--ui-text);
+    background: var(--ui-surface);
     transition: border-color 100ms ease, box-shadow 100ms ease;
 
     &:focus {
       outline: 0;
       border-color: var(--color-brand-400, #7dd3fc);
-      box-shadow: 0 0 0 2px var(--color-brand-100, #e0f2fe);
+      box-shadow: 0 0 0 2px var(--color-brand-100, var(--ui-sky-soft));
     }
-    &::placeholder { color: #94a3b8; }
+    &::placeholder { color: var(--ui-faint); }
 
     &--err {
-      border-color: #fecaca;
-      &:focus { box-shadow: 0 0 0 2px #fee2e2; }
+      border-color: var(--ui-red-soft-2);
+      &:focus { box-shadow: 0 0 0 2px var(--ui-red-soft); }
     }
   }
 }
@@ -92,16 +92,15 @@
   align-items: center;
   gap: 8px;
   padding: 10px 20px;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(8px);
-  border-top: 1px solid #e2e8f0;
+  background: var(--ui-footer-bg);
+  border-top: 1px solid var(--ui-line);
 }
 
 .spinner {
   width: 14px;
   height: 14px;
   border: 2px solid rgba(255, 255, 255, 0.4);
-  border-top-color: #fff;
+  border-top-color: var(--ui-surface);
   border-radius: 50%;
   animation: srf-spin 0.7s linear infinite;
 }
