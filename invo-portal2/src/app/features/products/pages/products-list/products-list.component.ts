@@ -48,6 +48,7 @@ import {
 } from '@shared/components/logs-drawer/logs-drawer.component';
 
 import { TooltipDirective } from '@shared/directives/tooltip.directive';
+import { ADD_NEW_ICONS, MORE_ACTIONS_ICONS, MenuIconDef, showMenuIcons } from './products-list-menu-icons';
 @Component({
   selector: 'app-products-list',
   standalone: true,
@@ -126,19 +127,21 @@ export class ProductsListComponent implements OnInit {
   /** Map an `ActionConfig` (used by the list-page contract) onto
    *  the shared dropdown's `DropdownMenuBtnItem` shape. Carries
    *  `color: 'danger'` through as the danger flag. */
-  private toMenuItem(a: ActionConfig): DropdownMenuBtnItem {
+  private toMenuItem(a: ActionConfig, icons?: Record<string, MenuIconDef>): DropdownMenuBtnItem {
+    const icon = icons?.[a.id];
     return {
       label:    a.label,
       click:    () => a.handler?.(),
       disabled: typeof a.disabled === 'function' ? a.disabled() : !!a.disabled,
       danger:   a.color === 'danger',
+      ...(icon ? { leadingIcon: icon.path, leadingIconFlipRtl: !!icon.flipRtl } : {}),
     };
   }
 
   /** "+ Add New" menu items — one row per product type the user
    *  has permission to create. */
   addNewMenuItems(): DropdownMenuBtnItem[] {
-    const items = this.addNewActions.map(a => this.toMenuItem(a));
+    const items = this.addNewActions.map(a => this.toMenuItem(a, showMenuIcons.addNew ? ADD_NEW_ICONS : undefined));
     // Gift vouchers only appear once the company has enabled them (legacy gate).
     if (this.vouchersEnabled()) {
       items.push({
@@ -146,6 +149,7 @@ export class ProductsListComponent implements OnInit {
         click: () => this.addNewProduct('voucher'),
         disabled: false,
         danger: false,
+        ...(showMenuIcons.addNew ? { leadingIcon: ADD_NEW_ICONS['add-voucher'].path } : {}),
       });
     }
     return items;
@@ -155,10 +159,11 @@ export class ProductsListComponent implements OnInit {
    *  a "BULK OPERATIONS" header + the bulk action group. The
    *  divider/header only render when both groups are non-empty. */
   moreMenuItems(): DropdownMenuBtnItem[] {
-    const out: DropdownMenuBtnItem[] = this.moreActions.map(a => this.toMenuItem(a));
+    const icons = showMenuIcons.moreActions ? MORE_ACTIONS_ICONS : undefined;
+    const out: DropdownMenuBtnItem[] = this.moreActions.map(a => this.toMenuItem(a, icons));
     if (this.bulkOperationActions.length > 0) {
       this.bulkOperationActions.forEach((a, i) => {
-        const it = this.toMenuItem(a);
+        const it = this.toMenuItem(a, icons);
         if (i === 0 && this.moreActions.length > 0) {
           it.separator = true;
           it.header    = 'MENU.SUB.BULK_OPERATIONS';
@@ -274,7 +279,7 @@ export class ProductsListComponent implements OnInit {
         label: this.lang.instant('PRODUCTS.FIELDS.NAME'),
         headerLabel: this.lang.instant('PRODUCTS.FIELDS.NAME'),
         sortable: true,
-        width: '250px',
+        width: '300px',
         customTemplate: true,
         locked: true,
         primary: true,

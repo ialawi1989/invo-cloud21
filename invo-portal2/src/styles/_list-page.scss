@@ -98,7 +98,15 @@
   gap: 8px;
 }
 :root[data-density='compact'] .lp-namecell > :first-child { flex: 0 1 auto; min-width: 0; }
-:root[data-density='compact'] .lp-namecell > .app-product-badge { flex: 0 0 auto; align-self: center; }
+// The chip keeps its text (>= 12px) but may shorten an unusually long code, so the name always keeps room.
+:root[data-density='compact'] .lp-namecell > .app-product-badge {
+  display: block;
+  flex: 0 1 auto;
+  align-self: center;
+  max-width: 38%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 // Tree / flexible first column: the cell content comes from the page's own template (outside <app-list-page>'s
 // scoped styles), so the shrink-chain that lets a long name end in an ellipsis is declared here.

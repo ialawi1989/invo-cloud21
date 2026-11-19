@@ -773,7 +773,7 @@ import {
     .lp-tbtn--card { flex: 0 0 auto; width: 28px; height: 28px; }
 
     .lp-pill {
-      flex: 0 0 auto; font-size: 12px; line-height: 1.4; padding: 1px 8px; border-radius: 999px; white-space: nowrap;
+      flex: 0 1 auto; min-width: 0; max-width: 34%; overflow: hidden; text-overflow: ellipsis; font-size: 12px; line-height: 1.4; padding: 1px 8px; border-radius: 999px; white-space: nowrap;
       color: var(--ui-muted); border: 1px solid var(--ui-line-strong);
     }
     /* Connector: an L from the parent's slot down to this row (logical borders + radius, so it mirrors). */
@@ -2841,6 +2841,8 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
     const w = this.columnWidths()[col.key];
     if (w != null) {
       const px = `${w}px`;
+      // [flexFirstColumn]: a saved / dragged width of the first column is its minimum; it still takes the slack.
+      if (this.flexFirstColumn && this.displayColumns()[0]?.key === col.key) return { 'min-width': px };
       return { width: px, 'min-width': px, 'max-width': px };
     }
     return col.width ? { 'min-width': col.width } : {};
