@@ -46,7 +46,10 @@ import {
   SortChangeEvent,
   FilterChangeEvent,
   PageChangeEvent,
-  MobileCardConfig
+  MobileCardConfig,
+  ListTreeConfig,
+  ListRowNode,
+  TreeNodeState
 } from '../interfaces/list-page.types';
 
 // Directives
@@ -66,6 +69,7 @@ import { ModalService } from '../../../modal/modal.service';
 import { ConfirmModalComponent, ConfirmModalData } from '../../../modal/demo/confirm-modal.component';
 import { CustomizeColumnsModalComponent, CustomizeColumnsData } from './customize-columns-modal.component';
 import { PaginationComponent } from '../../pagination';
+import { pageInfoFromResponse, resolvePage } from '../utils/page-info';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../breadcrumbs';
 import { ListPreferencesService } from '../../../../core/layout/services/list-preferences.service';
 import { ListColumnPref } from '../../../../core/layout/services/employee-options.service';
@@ -716,6 +720,63 @@ import {
 
     .lp-foot { padding: 10px var(--lp-pad-x); border-top: 1px solid var(--ui-line); background: var(--ui-surface); }
 
+
+    /* ── Row tree ───────────────────────────────────────────────────────────────
+       Every logical property, so indentation, connector, bar and chevron mirror in RTL. 24px per level; the
+       structure also reads without colour (indent + connector). */
+    .lp-tn { position: relative; display: flex; align-items: center; gap: 4px; min-width: 0; padding-inline-start: calc(min(var(--lp-level, 0), 3) * 24px); }
+    .lp-tn__body { flex: 1 1 auto; min-width: 0; overflow: hidden; }
+    .lp-tn__body .lp-grow { min-width: 0; flex-wrap: nowrap; }
+    .lp-tn__body .lp-grow > * { min-width: 0; }
+    .lp-tslot { flex: 0 0 20px; width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; }
+    .lp-tbtn {
+      position: relative; display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px;
+      color: var(--ui-muted); background: transparent; border-radius: 6px; cursor: pointer; transition: background-color 150ms ease, color 150ms ease;
+    }
+    .lp-tbtn:hover { background: var(--ui-hover); color: var(--ui-text); }
+    .lp-tbtn:focus-visible { outline: 2px solid var(--lp-focus); outline-offset: 1px; }
+    .lp-tbtn svg { width: 14px; height: 14px; transition: transform 150ms ease; }
+    .lp-tbtn.is-open svg { transform: rotate(90deg); }
+    :host-context([dir="rtl"]) .lp-tbtn svg { transform: scaleX(-1); }
+    :host-context([dir="rtl"]) .lp-tbtn.is-open svg { transform: scaleX(-1) rotate(90deg); }
+    @media (pointer: coarse) { .lp-tbtn::before { content: ''; position: absolute; inset: -12px; } }
+    .lp-tbtn--card { flex: 0 0 auto; width: 28px; height: 28px; }
+
+    .lp-pill {
+      flex: 0 0 auto; font-size: 12px; line-height: 1.4; padding: 1px 8px; border-radius: 999px; white-space: nowrap;
+      color: var(--ui-muted); border: 1px solid var(--ui-line-strong);
+    }
+    /* Connector: an L from the parent's slot down to this row (logical borders + radius, so it mirrors). */
+    .lp-conn {
+      position: absolute; pointer-events: none;
+      inset-inline-start: calc((min(var(--lp-level, 1), 3) - 1) * 24px + 9px);
+      top: calc(-1 * var(--lp-row-py)); width: 14px; height: calc(50% + var(--lp-row-py));
+      border-inline-start: 1.5px solid var(--ui-line-strong); border-bottom: 1.5px solid var(--ui-line-strong); border-end-start-radius: 6px;
+    }
+
+    /* Tree tint steps up per level (about 6 / 11 / 16%); opaque (mixed with the surface) so sticky cells stay solid. */
+    .list-page-container tr.lp-intree[data-level="0"] { --lp-tint: color-mix(in srgb, var(--lp-accent) 6%, var(--ui-surface)); }
+    .list-page-container tr.lp-intree[data-level="1"] { --lp-tint: color-mix(in srgb, var(--lp-accent) 11%, var(--ui-surface)); }
+    .list-page-container tr.lp-intree[data-level="2"],
+    .list-page-container tr.lp-intree[data-level="3"] { --lp-tint: color-mix(in srgb, var(--lp-accent) 16%, var(--ui-surface)); }
+    .list-page-container tr.lp-intree > td { background-color: var(--lp-tint); }
+    .list-page-container tr.lp-intree.list-row:hover > td { background-color: color-mix(in srgb, var(--lp-accent) 18%, var(--ui-surface)); }
+    /* One 2px accent bar on the inline-start edge of the whole tree. */
+    .list-page-container tr.lp-intree > td:first-child { position: relative; }
+    .list-page-container tr.lp-intree > td:first-child.sticky { position: sticky; }
+    .list-page-container tr.lp-intree > td:first-child::before {
+      content: ''; position: absolute; inset-block: 0; inset-inline-start: 0; width: 2px; background: var(--lp-accent); pointer-events: none;
+    }
+    .list-page-container tr.lp-tr:focus-visible { outline: 2px solid var(--lp-focus); outline-offset: -2px; }
+
+    .list-page-container tr.lp-node-row > td { padding-block: 4px !important; white-space: normal; }
+    .lp-tn--status { gap: 8px; min-height: 28px; }
+    .lp-node-msg { font-size: 13px; color: var(--ui-muted); }
+    .lp-skel--bar { display: inline-block; height: 12px; border-radius: 6px; }
+    .lp-mnode { display: flex; align-items: center; gap: 8px; min-height: 40px; padding-block: 6px; padding-inline-end: 14px; border-bottom: 1px solid var(--ui-surface-2); background: color-mix(in srgb, var(--lp-accent) 8%, var(--ui-surface)); }
+    .lp-mcard.lp-intree { background-color: color-mix(in srgb, var(--lp-accent) 8%, var(--ui-surface)); }
+    @media (prefers-reduced-motion: reduce) { .lp-tbtn, .lp-tbtn svg { transition: none; } }
+
     /* Motion: opacity + transform only, 150-200ms; exits are instant (faster than enters) and never block state. */
     .lp-enter { animation: lp-in 160ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
     @keyframes lp-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
@@ -980,8 +1041,8 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
 
   // Data
   data = signal<T[]>([]);
-  totalCount = signal<number>(0);
-  pageCount = signal<number>(1);
+  /** What the last response said about paging (read through `pageInfoFromResponse`, resolved by `pageInfo`). */
+  private readonly responseInfo = signal<{ total?: number; hasNext?: boolean; pageCount?: number }>({});
 
   // UI State
   isLoading = signal(false);
@@ -1606,6 +1667,9 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
     // Cancel previous request
     this.dataSubscription?.unsubscribe();
 
+    // Any reload (refresh, page, search, filter, sort) invalidates the tree caches and collapses every node.
+    this.resetTree();
+
     this.isLoading.set(true);
 
     const params: ListQueryParams = {
@@ -1640,10 +1704,8 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
         tap((response: ListResponse<T>) => {
           this.data.set(response.list);
           this.pruneOpenDetails(response.list);
-          this.pageCount.set(response.pageCount);
-          if (response.count !== undefined) {
-            this.totalCount.set(response.count);
-          }
+          const pi = pageInfoFromResponse(response, params.page, params.limit);
+          this.responseInfo.set({ total: pi.total, hasNext: pi.hasNext, pageCount: pi.pageCount });
           if (scopeChanged) this.pruneSelection(response.list);
           this.isLoading.set(false);
           this.announceTick.update(n => n + 1);
@@ -1660,6 +1722,7 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
           this.isLoading.set(false);
           this.data.set([]);
           if (scopeChanged) this.pruneSelection([]);
+          this.responseInfo.set({ total: 0, hasNext: false });
           this.announceTick.update(n => n + 1);
           return of({ list: [], pageCount: 0 });
         })
@@ -1694,6 +1757,255 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
     this.loadData();
   }
 
+
+  // ══════════════════════════════════════════════════════════════
+  // ROW TREE (opt-in via [tree]): lazy children, per-node paging, cache, keyboard
+  // ══════════════════════════════════════════════════════════════
+
+  /** Turns the tree on. Without it the list renders exactly as before (flat rows, legacy `childrenKey` rows). */
+  @Input() tree?: ListTreeConfig<T>;
+
+  private hostRef = inject(ElementRef<HTMLElement>);
+
+  /** Path keys (`rootId>childId>…`) of the expanded nodes. */
+  readonly treeExpanded = signal<Set<string>>(new Set());
+  /** Children state per (search + filter + sort + node id). Collapse / re-expand reuses it. */
+  readonly treeStates = signal<Map<string, TreeNodeState<T>>>(new Map());
+  /** Path keys that expanded to nothing: their chevron and pill go away until the next refresh. */
+  readonly treeNoChildren = signal<Set<string>>(new Set());
+  /** Polite announcement for expand / collapse / "more loaded". */
+  readonly treeAnnouncement = signal('');
+  private treeReq = 0;
+
+  private readonly treeScope = computed(() =>
+    JSON.stringify([this.searchTerm(), this.activeFilters(), this.sortBy() ?? null]));
+
+  private readonly treeUnsupportedActive = computed(() => {
+    const keys = this.tree?.unsupportedFilterKeys ?? [];
+    const f = this.activeFilters();
+    return keys.some(k => { const v = f[k]; return Array.isArray(v) ? v.length > 0 : v != null && v !== ''; });
+  });
+
+  private treeCacheKey(id: string): string { return this.treeScope() + '|' + id; }
+
+  /** Drops every tree cache and collapses all nodes (refresh, page / search / filter / sort change). */
+  resetTree(): void {
+    this.treeReq++;
+    this.treeExpanded.set(new Set());
+    this.treeStates.set(new Map());
+    this.treeNoChildren.set(new Set());
+    this.treeAnnouncement.set('');
+  }
+
+  /** The rows the table renders: the plain data rows, or — in tree mode — roots with their loaded descendants. */
+  readonly rowNodes = computed<ListRowNode<T>[]>(() => {
+    const data = this.data();
+    const tree = this.tree;
+    if (!tree) {
+      return data.map((row, i) => ({
+        key: String(this.trackByFn(i, row)), kind: 'row' as const, row, level: 0, parentKey: null,
+        setSize: data.length, posInSet: i + 1, expandable: false, expanded: false, inTree: false,
+      }));
+    }
+    const out: ListRowNode<T>[] = [];
+    const expanded = this.treeExpanded();
+    const states = this.treeStates();
+    const noKids = this.treeNoChildren();
+    const maxLevels = tree.maxLevels ?? 3;
+    const showNotice = this.treeUnsupportedActive();
+
+    const walk = (rows: T[], level: number, parentKey: string | null, parentRow: T | null, inTree: boolean): void => {
+      rows.forEach((row, i) => {
+        const id = String((row as any)[this.idField]);
+        const key = parentKey ? `${parentKey}>${id}` : id;
+        const expandable = level < maxLevels - 1 && tree.canExpand(row, level) && !noKids.has(key);
+        // A node that expanded to nothing loses its chevron (not expandable) but keeps its "No children" line.
+        const isOpen = (expandable || noKids.has(key)) && expanded.has(key);
+        const st = isOpen ? states.get(this.treeCacheKey(id)) : undefined;
+        const hasRows = !!st && st.status === 'ready' && st.rows.length > 0;
+        out.push({
+          key, kind: 'row', row, level, parentKey, setSize: rows.length, posInSet: i + 1,
+          expandable, expanded: isOpen, inTree: inTree || (isOpen && hasRows),
+          loading: isOpen && (!st || st.status === 'loading'),
+        });
+        if (!isOpen) return;
+        const childLevel = level + 1;
+        const base = { level: childLevel, parentKey: key, parentRow: row, setSize: 0, posInSet: 0, expandable: false, expanded: false, inTree: true } as const;
+        if (!st || st.status === 'loading') {
+          for (let s = 0; s < 3; s++) out.push({ ...base, key: `${key}#skel${s}`, kind: 'skeleton', skel: s });
+        } else if (st.status === 'error') {
+          out.push({ ...base, key: `${key}#error`, kind: 'error' });
+        } else if (st.rows.length === 0) {
+          out.push({ ...base, key: `${key}#empty`, kind: 'empty' });
+        } else {
+          if (showNotice) out.push({ ...base, key: `${key}#notice`, kind: 'notice' });
+          walk(st.rows, childLevel, key, row, true);
+          if (st.hasNext) {
+            out.push({
+              ...base, key: `${key}#more`, kind: 'more', shown: st.fetched, total: st.total,
+              remaining: st.total !== undefined ? Math.min(tree.pageSize ?? 15, st.total - st.fetched) : undefined,
+              loadingMore: st.loadingMore, moreError: st.moreError,
+            });
+          }
+        }
+      });
+    };
+    walk(data, 0, null, null, false);
+    return out;
+  });
+
+  /** Pill next to a row's name. Nothing before the children are known for deeper rows. */
+  pillText(node: ListRowNode<T>): string {
+    const tree = this.tree;
+    if (!tree || node.kind !== 'row' || !node.expandable || !node.row) return '';
+    const st = this.treeStates().get(this.treeCacheKey(String((node.row as any)[this.idField])));
+    const count = st && st.status === 'ready' && st.total !== undefined ? st.total : null;
+    if (node.level > 0 && count === null) return '';
+    return tree.pillLabel(node.row, count);
+  }
+
+  toggleTreeNode(node: ListRowNode<T>, ev?: Event): void {
+    ev?.stopPropagation();
+    if (!this.tree || node.kind !== 'row' || !node.expandable || !node.row) return;
+    const set = new Set(this.treeExpanded());
+    const id = String((node.row as any)[this.idField]);
+    if (set.has(node.key)) {
+      set.delete(node.key);
+      this.treeExpanded.set(set);
+      // Collapsing cancels a load still in flight (its late result is ignored).
+      const ck = this.treeCacheKey(id);
+      const st = this.treeStates().get(ck);
+      if (st && st.status === 'loading') {
+        const m = new Map(this.treeStates());
+        m.delete(ck);
+        this.treeStates.set(m);
+      }
+      this.treeAnnouncement.set(this.translate.instant('COMMON.LP_TREE_ANN_COLLAPSED', { name: this.nodeName(node.row) }));
+    } else {
+      set.add(node.key);
+      this.treeExpanded.set(set);
+      void this.loadTreeNode(node, false);
+    }
+  }
+
+  retryTreeNode(node: ListRowNode<T>): void {
+    const parent = node.parentRow;
+    if (!parent) return;
+    const parentNode = this.rowNodes().find(n => n.key === node.parentKey);
+    if (parentNode) void this.loadTreeNode(parentNode, node.kind === 'more');
+  }
+
+  loadMoreTree(node: ListRowNode<T>): void { this.retryTreeNode(node); }
+
+  private nodeName(row: T): string { return String((row as any)?.name ?? (row as any)?.[this.idField] ?? ''); }
+
+  private async loadTreeNode(node: ListRowNode<T>, more: boolean): Promise<void> {
+    const tree = this.tree;
+    const row = node.row;
+    if (!tree || !row) return;
+    const id = String((row as any)[this.idField]);
+    const ck = this.treeCacheKey(id);
+    const existing = this.treeStates().get(ck);
+    const setState = (s: TreeNodeState<T>) => { const m = new Map(this.treeStates()); m.set(ck, s); this.treeStates.set(m); };
+
+    if (!more && existing && existing.status === 'ready') {
+      this.treeAnnouncement.set(this.translate.instant('COMMON.LP_TREE_ANN_EXPANDED', { name: this.nodeName(row), label: tree.pillLabel(row, existing.total ?? null) }));
+      return;
+    }
+    if (more && (!existing || !existing.hasNext || existing.loadingMore)) return;
+
+    const reqId = ++this.treeReq;
+    const page = more ? existing!.page + 1 : 1;                 // page >= 1, never past the last page
+    const limit = tree.pageSize ?? 15;
+    if (more) setState({ ...existing!, loadingMore: true, moreError: false, reqId });
+    else setState({ status: 'loading', rows: [], fetched: 0, hasNext: false, page: 1, loadingMore: false, moreError: false, reqId });
+
+    try {
+      const res = await tree.loadChildren(row, {
+        page, limit,
+        searchTerm: this.searchTerm() || undefined,
+        sortBy: this.sortBy(),
+        filter: this.activeFilters(),
+      });
+      // Collapsed, refreshed or re-filtered meanwhile: this result no longer belongs anywhere.
+      if (this.treeStates().get(ck)?.reqId !== reqId) return;
+
+      const raw = res.list ?? [];
+      const pg = resolvePage(
+        { page, limit, total: res.total === undefined || res.total === null ? undefined : Number(res.total), hasNext: res.hasNext },
+        raw.length);
+      const total = pg.total ?? undefined;
+      const ancestors = node.key.split('>');
+      const kept = raw.filter(r => {
+        const rid = String((r as any)[this.idField]);
+        if (ancestors.includes(rid)) { console.warn('[list-page] tree cycle skipped:', rid, 'under', node.key); return false; }
+        return true;
+      });
+
+      if (!more && raw.length === 0) {
+        const nk = new Set(this.treeNoChildren());
+        nk.add(node.key);
+        this.treeNoChildren.set(nk);
+        setState({ status: 'ready', rows: [], fetched: 0, total: 0, hasNext: false, page: 1, loadingMore: false, moreError: false, reqId });
+        this.treeAnnouncement.set(this.translate.instant('COMMON.LP_TREE_ANN_EMPTY', { name: this.nodeName(row) }));
+        return;
+      }
+      setState({
+        status: 'ready',
+        rows: more ? [...existing!.rows, ...kept] : kept,
+        fetched: (more ? existing!.fetched : 0) + raw.length,
+        total, hasNext: pg.hasNext, page, loadingMore: false, moreError: false, reqId,
+      });
+      if (more) {
+        this.treeAnnouncement.set(this.translate.instant('COMMON.LP_TREE_ANN_MORE', { count: kept.length }));
+        if (kept.length) this.focusTreeNode(`${node.key}>${String((kept[0] as any)[this.idField])}`);
+      } else {
+        this.treeAnnouncement.set(this.translate.instant('COMMON.LP_TREE_ANN_EXPANDED', { name: this.nodeName(row), label: tree.pillLabel(row, total ?? null) }));
+      }
+    } catch (e) {
+      console.error('[list-page] tree load failed', e);
+      if (this.treeStates().get(ck)?.reqId !== reqId) return;
+      if (more) setState({ ...existing!, loadingMore: false, moreError: true, reqId });
+      else setState({ status: 'error', rows: [], fetched: 0, hasNext: false, page: 1, loadingMore: false, moreError: false, reqId });
+    }
+  }
+
+  /** Moves focus to a rendered tree row (after "Show more", or to a parent with Left Arrow). */
+  focusTreeNode(key: string): void {
+    setTimeout(() => {
+      const el = (this.hostRef.nativeElement as HTMLElement).querySelector<HTMLElement>(`[data-node-key="${CSS.escape(key)}"]`);
+      (el?.querySelector<HTMLElement>('.lp-tbtn') ?? el)?.focus();
+    });
+  }
+
+  /** Treegrid keys: Right expands, Left collapses (or moves to the parent). Enter / Space use the chevron button. */
+  onTreeKeydown(ev: KeyboardEvent, node: ListRowNode<T>): void {
+    if (!this.tree || node.kind !== 'row') return;
+    const t = ev.target as HTMLElement;
+    if (t.closest('input:not([type="checkbox"]), textarea, select, [contenteditable="true"]')) return;
+    const rtl = getComputedStyle(this.hostRef.nativeElement).direction === 'rtl';
+    const expandKey = rtl ? 'ArrowLeft' : 'ArrowRight';
+    const collapseKey = rtl ? 'ArrowRight' : 'ArrowLeft';
+    if (ev.key === expandKey && node.expandable && !node.expanded) {
+      this.toggleTreeNode(node);
+      ev.preventDefault();
+    } else if (ev.key === collapseKey) {
+      if (node.expandable && node.expanded) this.toggleTreeNode(node);
+      else if (node.parentKey) this.focusTreeNode(node.parentKey);
+      else return;
+      ev.preventDefault();
+    }
+  }
+
+  /** Accessible name of a "Show N more" button. */
+  moreAria(node: ListRowNode<T>): string {
+    const parent = this.rowNodes().find(n => n.key === node.parentKey);
+    const name = parent?.row ? this.nodeName(parent.row) : '';
+    return node.remaining !== undefined
+      ? this.translate.instant('COMMON.LP_TREE_SHOW_MORE_ARIA', { count: node.remaining, name })
+      : this.translate.instant('COMMON.LP_TREE_SHOW_MORE_ARIA_PLAIN', { name });
+  }
+
   // ══════════════════════════════════════════════════════════════
   // TOOLBAR (redesign): filter bar, sort menu, quick views, announcements
   // ══════════════════════════════════════════════════════════════
@@ -1708,16 +2020,23 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
     const tick = this.announceTick();
     if (this.isLoading() || tick === 0) return '';
     const shown = this.data().length;
-    const total = this.totalCount() || shown;
+    const pg = this.pageInfo();
     const text = shown === 0
       ? this.translate.instant('COMMON.LP_NO_RESULTS_ANNOUNCE')
-      : this.translate.instant('COMMON.LP_RESULTS_ANNOUNCE', { shown, total, noun: this.resultsNoun }).trim();
+      : pg.totalKnown
+        ? this.translate.instant('COMMON.LP_RESULTS_ANNOUNCE', { shown, total: pg.total, noun: this.resultsNoun }).trim()
+        : this.translate.instant('COMMON.LP_RESULTS_ANNOUNCE_NOTOTAL', { shown, noun: this.resultsNoun }).trim();
     // A zero-width suffix on alternate loads makes screen readers announce identical consecutive messages.
     return tick % 2 ? text : text + '​';
   });
 
   /** Resolves a filter chip's text; handed to the filter bar. */
   readonly filterTextFn = (key: string): string => this.getFilterDisplayValue(key);
+
+  /** Paging facts for the footer, the header pill and the announcements: the only reader of the response's paging fields. */
+  readonly pageInfo = computed(() => resolvePage(
+    { page: this.currentPage(), limit: this.pageSize(), ...this.responseInfo() },
+    this.data().length));
 
   /** Total shown in the header pill, grouped ("10,581"). */
   fmtCount(n: number): string { return n.toLocaleString('en-US'); }
@@ -2030,7 +2349,9 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
   // ══════════════════════════════════════════════════════════════
 
   goToPage(page: number): void {
-    if (page < 1 || page > this.pageCount()) return;
+    const pg = this.pageInfo();
+    if (page < 1 || (pg.pageCount !== null && page > pg.pageCount)) return;
+    if (pg.pageCount === null && page > this.currentPage() && !pg.hasNext) return;
 
     this.currentPage.set(page);
     this.loadData();
@@ -2597,7 +2918,7 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
 
   getVisiblePages(): (number | string)[] {
     const current = this.currentPage();
-    const total = this.pageCount();
+    const total = this.pageInfo().pageCount ?? 1;
     const delta = 2;
 
     const range: number[] = [];  // ✅ Changed to number[]

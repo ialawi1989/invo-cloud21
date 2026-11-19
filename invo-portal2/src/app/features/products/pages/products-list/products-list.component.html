@@ -11,7 +11,7 @@
   [bulkActions]="bulkActions"
   [selectable]="true"
   [fitContent]="true"
-  [expandedRowIds]="expandedProductIds"
+  [tree]="treeConfig"
   [emptyState]="emptyState"
   [entityType]="'product'"
   [loadCustomFieldsFn]="loadCustomFieldsFn"
@@ -63,19 +63,6 @@
        because word shapes disappear. -->
   <ng-template listCellTemplate="name" let-row>
     <div class="flex items-start gap-2">
-      @if (row.type === 'matrix') {
-        <button
-          type="button"
-          (click)="toggleProductExpansion(row, $event)"
-          class="p-1 rounded hover:bg-slate-100 transition-colors flex-shrink-0"
-          [appTooltip]="expandedProductIds().has(row.id) ? ('PRODUCTS.ACTIONS.COLLAPSE' | translate) : ('PRODUCTS.ACTIONS.EXPAND' | translate)">
-          <svg class="w-4 h-4 text-slate-500 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-            [class.rotate-90]="expandedProductIds().has(row.id)">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-          </svg>
-        </button>
-      }
-
       <!-- Thumbnail — rendered only when the `image` column is toggled on. -->
       @if (isColumnVisible('image')) {
         @if (row.image) {
@@ -165,9 +152,13 @@
        at/below the reorder level (default threshold 5 when the product has
        no explicit reorderLevel). -->
   <ng-template listCellTemplate="qty" let-row>
+    @if (row.type === 'matrix') {
+      <!-- A matrix row's own qty is one variant's, not a total: show a dash until the backend provides a real total. -->
+      <span class="inline-flex px-2 py-1 text-sm text-slate-500" [appTooltip]="'PRODUCTS.TREE.SEE_VARIANTS' | translate">&#8212;</span>
+    } @else {
     @let qty = row.qty ?? row.inventorySummary?.qtySum ?? 0;
     <span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-sm font-medium list-interactive-cell tabular-nums"
-      [appTooltip]="qty === 0 ? ('PRODUCTS.STOCK.OUT_OF_STOCK' | translate) : ''"
+      [appTooltip]="stockTip(row, qty === 0)"
       [class.bg-red-50]="qty === 0"
       [class.text-red-700]="qty === 0"
       [class.bg-amber-50]="qty > 0 && qty <= (row.reorderLevel ?? 5)"
@@ -180,6 +171,16 @@
       }
       {{ qty }}
     </span>
+    }
+  </ng-template>
+
+  <!-- Stock value: each row's own figure (never a roll-up). Matrix rows show a dash, like Qty. -->
+  <ng-template listCellTemplate="stockValue" let-row>
+    @if (row.type === 'matrix') {
+      <span class="text-slate-500" [appTooltip]="'PRODUCTS.TREE.SEE_VARIANTS' | translate">&#8212;</span>
+    } @else {
+      <span class="tabular-nums" [appTooltip]="stockTip(row)">{{ (row.stockValue ?? row.inventorySummary?.stockValue ?? 0) | mycurrency }}</span>
+    }
   </ng-template>
 
   <!-- Custom Type Badge -->

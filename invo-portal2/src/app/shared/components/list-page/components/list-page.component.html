@@ -11,8 +11,8 @@
       }
       <div class="lp-head__title-row">
         <h1 class="lp-title">{{ pageTitle }}</h1>
-        @if (totalCount() > 0) {
-          <span class="lp-count" dir="ltr" [attr.aria-label]="'COMMON.LP_TOTAL_COUNT' | translate:{ count: totalCount() }">{{ fmtCount(totalCount()) }}</span>
+        @if (pageInfo().totalKnown && pageInfo().total! > 0) {
+          <span class="lp-count" dir="ltr" [attr.aria-label]="'COMMON.LP_TOTAL_COUNT' | translate:{ count: pageInfo().total }">{{ fmtCount(pageInfo().total!) }}</span>
         }
       </div>
       @if (pageSubtitle) {
@@ -38,6 +38,7 @@
 
   <!-- Screen-reader result count: one atomic polite message after every filter / sort / page change. -->
   <div class="sr-only" role="status" aria-live="polite" aria-atomic="true">{{ announcement() }}</div>
+  <div class="sr-only" role="status" aria-live="polite" aria-atomic="true">{{ treeAnnouncement() }}</div>
 
   <!-- ══════════════════════════════════════════════════════════════ -->
   <!-- ONE CARD: toolbar, filter bar, table, footer                   -->
@@ -268,7 +269,7 @@
 
       <!-- Table Data -->
       @else {
-      <table class="w-full">
+      <table class="w-full" [attr.role]="tree ? 'treegrid' : null" [attr.aria-label]="tree ? pageTitle : null">
         <thead class="bg-white border-b border-slate-200">
           <tr>
             <!-- Selection Checkbox -->
@@ -330,13 +331,25 @@
         </thead>
 
         <tbody class="bg-white divide-y divide-slate-100">
-          @for (row of data(); track trackByFn($index, row)) {
+          @for (node of rowNodes(); track node.key) {
+          @if (node.kind === 'row') {
+          @let row = node.row!;
           <tr [class]="
                     'group transition-colors ' +
                     (expandedRowIds().has($any(row)[idField]) && $any(row)[childrenKey]?.length
                       ? 'list-row-expanded bg-brand-50/60 border-s-4 border-s-brand-500 cursor-default'
                       : 'list-row hover:bg-slate-50 cursor-pointer') + ' ' +
                     getRowClass(row)"
+              [class.lp-tr]="!!tree" [class.lp-intree]="node.inTree"
+              [attr.data-level]="tree ? node.level : null"
+              [attr.data-node-key]="tree ? node.key : null"
+              [attr.aria-level]="tree ? node.level + 1 : null"
+              [attr.aria-posinset]="tree ? node.posInSet : null"
+              [attr.aria-setsize]="tree ? node.setSize : null"
+              [attr.aria-expanded]="tree && node.expandable ? !!node.expanded : null"
+              [attr.aria-busy]="tree && node.loading ? 'true' : null"
+              [attr.tabindex]="tree ? -1 : null"
+              (keydown)="onTreeKeydown($event, node)"
               (click)="
                 (expandedRowIds().has($any(row)[idField]) && $any(row)[childrenKey]?.length)
                   ? $event.stopPropagation()
@@ -376,20 +389,27 @@
               [style]="colStyle(column)"
               (click)="onRowClick(row, column, $event); $event.stopPropagation()">
 
-              <!-- Grouped columns (multiple columns sharing a label) → stacked rows
-                   of inline-joined items inside one cell. -->
-              @if (column.groupedRows) {
-                @for (groupRow of column.groupedRows; track $index; let firstRow = $first) {
-                  <div class="lp-grow flex flex-wrap items-center gap-x-2" [class.justify-end]="column.align === 'end'">
-                    @for (item of groupRow; track item.key) {
-                      <ng-container [ngTemplateOutlet]="cellContent"
-                        [ngTemplateOutletContext]="{ row: row, col: item }"></ng-container>
-                    }
-                  </div>
-                }
+              @if (tree && colIdx === 0) {
+              <!-- Tree cell: fixed 20px toggle slot (chevron or empty placeholder) so names align across levels. -->
+              <div class="lp-tn" [style.--lp-level]="node.level">
+                @if (node.level > 0) { <span class="lp-conn" aria-hidden="true"></span> }
+                <span class="lp-tslot">
+                  @if (node.expandable) {
+                  <button type="button" class="lp-tbtn" [class.is-open]="node.expanded"
+                    [attr.aria-expanded]="!!node.expanded"
+                    [attr.aria-label]="(node.expanded ? 'COMMON.LP_TREE_COLLAPSE' : 'COMMON.LP_TREE_EXPAND') | translate"
+                    (click)="toggleTreeNode(node, $event)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+                  </button>
+                  }
+                </span>
+                <div class="lp-tn__body">
+                  <ng-container [ngTemplateOutlet]="cellBody" [ngTemplateOutletContext]="{ column: column, row: row }"/>
+                </div>
+                @if (pillText(node); as pill) { <span class="lp-pill">{{ pill }}</span> }
+              </div>
               } @else {
-                <ng-container [ngTemplateOutlet]="cellContent"
-                  [ngTemplateOutletContext]="{ row: row, col: column }"></ng-container>
+                <ng-container [ngTemplateOutlet]="cellBody" [ngTemplateOutletContext]="{ column: column, row: row }"/>
               }
             </td>
             }
@@ -509,6 +529,48 @@
             </tr>
             }
           }
+          } @else {
+          <!-- Tree status line: loading skeleton, error + retry, empty, filter notice, or "Show N more". -->
+          <tr class="lp-node-row lp-intree" [attr.data-level]="node.level" [attr.data-node-key]="node.key"
+            [attr.aria-level]="node.level + 1" [attr.aria-busy]="node.kind === 'skeleton' ? 'true' : null">
+            <td [attr.colspan]="detailColspan()">
+              <div class="lp-tn lp-tn--status" [style.--lp-level]="node.level">
+                <span class="lp-conn" aria-hidden="true"></span>
+                <span class="lp-tslot"></span>
+                @switch (node.kind) {
+                  @case ('skeleton') {
+                    <span class="lp-skel lp-skel--bar" [style.width.px]="140 + (node.skel ?? 0) * 40"></span>
+                    <span class="sr-only">{{ 'COMMON.LP_LOADING_ANNOUNCE' | translate }}</span>
+                  }
+                  @case ('error') {
+                    <span class="lp-node-msg">{{ 'COMMON.LP_TREE_LOAD_ERROR' | translate }}</span>
+                    <button type="button" class="lp-btn" (click)="retryTreeNode(node)">{{ 'COMMON.LP_TREE_RETRY' | translate }}</button>
+                  }
+                  @case ('empty') {
+                    <span class="lp-node-msg">{{ 'COMMON.LP_TREE_NO_CHILDREN' | translate }}</span>
+                  }
+                  @case ('notice') {
+                    <span class="lp-node-msg">{{ 'COMMON.LP_TREE_FILTERS_NOTICE' | translate }}</span>
+                  }
+                  @case ('more') {
+                    @if (node.moreError) {
+                      <span class="lp-node-msg">{{ 'COMMON.LP_TREE_LOAD_ERROR' | translate }}</span>
+                      <button type="button" class="lp-btn" (click)="loadMoreTree(node)">{{ 'COMMON.LP_TREE_RETRY' | translate }}</button>
+                    } @else {
+                      <button type="button" class="lp-btn" [disabled]="node.loadingMore" [attr.aria-busy]="node.loadingMore"
+                        [attr.aria-label]="moreAria(node)" (click)="loadMoreTree(node)">
+                        {{ (node.remaining !== undefined ? 'COMMON.LP_TREE_SHOW_MORE' : 'COMMON.LP_TREE_SHOW_MORE_PLAIN') | translate:{ count: node.remaining } }}
+                      </button>
+                      @if (node.total !== undefined) {
+                        <span class="lp-node-msg">{{ 'COMMON.LP_TREE_SHOWN' | translate:{ shown: node.shown, total: node.total } }}</span>
+                      }
+                    }
+                  }
+                }
+              </div>
+            </td>
+          </tr>
+          }
           }
         </tbody>
       </table>
@@ -568,8 +630,18 @@
         </div>
       } @else {
         <div class="lp-mcards">
-          @for (row of data(); track trackByFn($index, row)) {
-            <div class="lp-mcard" (click)="onRowClick(row, undefined, $event)">
+          @for (node of rowNodes(); track node.key) {
+            @if (node.kind === 'row') {
+            @let row = node.row!;
+            <div class="lp-mcard" [class.lp-intree]="node.inTree" [attr.data-level]="tree ? node.level : null"
+              [style.padding-inline-start.px]="14 + (tree ? node.level * 16 : 0)"
+              (click)="onRowClick(row, undefined, $event)">
+              @if (tree && node.expandable) {
+                <button type="button" class="lp-tbtn lp-tbtn--card" [class.is-open]="node.expanded"
+                  [attr.aria-expanded]="!!node.expanded"
+                  [attr.aria-label]="(node.expanded ? 'COMMON.LP_TREE_COLLAPSE' : 'COMMON.LP_TREE_EXPAND') | translate"
+                  (click)="toggleTreeNode(node, $event)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg></button>
+              }
               <!-- Disclosure chevron -->
               @if (getRowDetailTemplate()) {
                 <button type="button" class="lp-mcard__chevron"
@@ -629,6 +701,27 @@
                 <ng-container [ngTemplateOutlet]="$any(getRowDetailTemplate())"
                   [ngTemplateOutletContext]="{ $implicit: row, row: row }"/>
               </div>
+            }
+            } @else {
+            <div class="lp-mnode lp-intree" [style.padding-inline-start.px]="14 + node.level * 16">
+              @switch (node.kind) {
+                @case ('skeleton') { <span class="lp-skel lp-skel--bar" [style.width.px]="120 + (node.skel ?? 0) * 40"></span> }
+                @case ('error') {
+                  <span class="lp-node-msg">{{ 'COMMON.LP_TREE_LOAD_ERROR' | translate }}</span>
+                  <button type="button" class="lp-btn" (click)="retryTreeNode(node)">{{ 'COMMON.LP_TREE_RETRY' | translate }}</button>
+                }
+                @case ('empty') { <span class="lp-node-msg">{{ 'COMMON.LP_TREE_NO_CHILDREN' | translate }}</span> }
+                @case ('notice') { <span class="lp-node-msg">{{ 'COMMON.LP_TREE_FILTERS_NOTICE' | translate }}</span> }
+                @case ('more') {
+                  <button type="button" class="lp-btn" [disabled]="node.loadingMore" [attr.aria-label]="moreAria(node)" (click)="loadMoreTree(node)">
+                    {{ (node.remaining !== undefined ? 'COMMON.LP_TREE_SHOW_MORE' : 'COMMON.LP_TREE_SHOW_MORE_PLAIN') | translate:{ count: node.remaining } }}
+                  </button>
+                  @if (node.total !== undefined) {
+                    <span class="lp-node-msg">{{ 'COMMON.LP_TREE_SHOWN' | translate:{ shown: node.shown, total: node.total } }}</span>
+                  }
+                }
+              }
+            </div>
             }
           }
         </div>
@@ -830,10 +923,12 @@
       <app-pagination
         [page]="currentPage()"
         [pageSize]="pageSize()"
-        [count]="totalCount()"
-        [pageCount]="pageCount()"
+        [count]="pageInfo().total"
+        [pageCount]="pageInfo().totalKnown ? null : pageInfo().pageCount"
+        [hasNext]="pageInfo().hasNext"
+        [rowsOnPage]="data().length"
         [disabled]="isLoading()"
-        [showFirstLast]="true"
+        [showFirstLast]="pageInfo().totalKnown"
         (pageChange)="goToPage($event)"
         (pageSizeChange)="setPageSize($event)" />
     </div>
@@ -848,6 +943,21 @@
 <!-- rendering logic (custom template / badge / link / plain value)  -->
 <!-- lives in one place.                                             -->
 <!-- ══════════════════════════════════════════════════════════════ -->
+<ng-template #cellBody let-column="column" let-row="row">
+  <!-- Grouped columns (multiple columns sharing a label) -> stacked rows of inline-joined items inside one cell. -->
+  @if (column.groupedRows) {
+    @for (groupRow of column.groupedRows; track $index; let firstRow = $first) {
+      <div class="lp-grow flex flex-wrap items-center gap-x-2" [class.justify-end]="column.align === 'end'">
+        @for (item of groupRow; track item.key) {
+          <ng-container [ngTemplateOutlet]="cellContent" [ngTemplateOutletContext]="{ row: row, col: item }"></ng-container>
+        }
+      </div>
+    }
+  } @else {
+    <ng-container [ngTemplateOutlet]="cellContent" [ngTemplateOutletContext]="{ row: row, col: column }"></ng-container>
+  }
+</ng-template>
+
 <ng-template #cellContent let-row="row" let-col="col">
   <!-- Custom Template -->
   @if (col.customTemplate && getCellTemplate()(col.key)) {

@@ -130,8 +130,10 @@ export interface ListQueryParams {
  */
 export interface ListResponse<T = any> {
   list: T[];
-  pageCount: number;
+  pageCount?: number;
   count?: number;
+  /** When the API says whether another page exists (no total needed). */
+  hasNext?: boolean;
 }
 
 /**
@@ -404,4 +406,75 @@ export interface FilterChangeEvent {
 export interface PageChangeEvent {
   page: number;
   pageSize: number;
+}
+
+/**
+ * Lazy row tree (opt-in via `[tree]` on <app-list-page>).
+ *
+ * Roots come from the normal list; a row's children are fetched only when it is expanded (never prefetched),
+ * one page at a time, with the list's current search / filter / sort. Every row keeps its own checkbox and
+ * its own numbers: the list never sums or cascades anything across levels.
+ */
+export interface ListTreeLoadParams {
+  page: number;
+  limit: number;
+  searchTerm?: string;
+  sortBy?: { sortValue: string; sortDirection: 'asc' | 'desc' };
+  filter: FilterState;
+}
+
+export interface ListTreeConfig<T = any> {
+  /** Total levels rendered, root included. Default 3 (root, child, grandchild). */
+  maxLevels?: number;
+  /** Children fetched per page. Default 15. */
+  pageSize?: number;
+  /** Whether a row at `level` (0 = root) may expand. The list also stops at `maxLevels`. */
+  canExpand: (row: T, level: number) => boolean;
+  /** Loads one page of `parent`'s children. `total` (when known) is the number of children matching, not the page length;
+   *  `hasNext` (when the API gives it) says whether another page exists. */
+  loadChildren: (parent: T, params: ListTreeLoadParams) => Promise<{ list: T[]; total?: number; hasNext?: boolean }>;
+  /** Pill text next to the name: `count` is null until the node's children have loaded. Return '' for none. */
+  pillLabel: (row: T, count: number | null) => string;
+  /** Filter keys the children endpoint ignores: while one is active, expanded groups show a notice. */
+  unsupportedFilterKeys?: string[];
+}
+
+/** Children of one tree node (per search + filter + sort), as loaded so far. */
+export interface TreeNodeState<T = any> {
+  status: 'loading' | 'ready' | 'error';
+  rows: T[];
+  /** Raw rows fetched across pages (cycle-skipped rows included), compared with `total` for "Show more". */
+  fetched: number;
+  /** Undefined when the API does not say how many children there are. */
+  total?: number;
+  /** Whether another page exists (API flag, else derived from the total, else from the page being full). */
+  hasNext: boolean;
+  page: number;
+  loadingMore: boolean;
+  moreError: boolean;
+  reqId: number;
+}
+
+/** One rendered line of the table: a data row, or a status line of a tree group. */
+export interface ListRowNode<T = any> {
+  key: string;
+  kind: 'row' | 'skeleton' | 'error' | 'empty' | 'more' | 'notice';
+  row?: T;
+  parentRow?: T | null;
+  level: number;
+  parentKey: string | null;
+  setSize: number;
+  posInSet: number;
+  expandable: boolean;
+  expanded: boolean;
+  /** Part of an expanded tree (drives the accent bar and tint). */
+  inTree: boolean;
+  loading?: boolean;
+  skel?: number;
+  shown?: number;
+  /** Undefined when unknown: the group then shows just "Show more". */
+  total?: number;
+  remaining?: number;
+  loadingMore?: boolean;
+  moreError?: boolean;
 }

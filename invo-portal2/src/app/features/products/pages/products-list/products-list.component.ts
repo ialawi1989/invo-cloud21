@@ -17,6 +17,7 @@ import {
   ActionConfig,
   BulkActionConfig,
   ListQueryParams,
+  ListTreeConfig,
   MobileCardConfig
 } from '@shared/components/list-page/interfaces/list-page.types';
 
@@ -101,7 +102,6 @@ export class ProductsListComponent implements OnInit {
     !!this.listPage?.visibleColumns().includes(key);
 
   // UI state
-  expandedProductIds = signal<Set<string>>(new Set());
   openMenuRowId = signal<string | null>(null);
 
   // Split header actions
@@ -362,8 +362,7 @@ export class ProductsListComponent implements OnInit {
         // Not sortable: stockValue is a computed aggregate (qty × cost) the
         // backend can't ORDER BY — sorting it returns "Unknown sort column".
         sortable: false,
-        pipe: 'currency' as const,
-        pipeArgs: { currency: 'BHD' },
+        customTemplate: true,
         width: '150px',
         align: 'end' as const,
         order: 8,
@@ -706,6 +705,57 @@ export class ProductsListComponent implements OnInit {
     };
   }
 
+  // ─── Product tree (children load lazily, one expanded node at a time) ───────────────────
+  /** Which sort keys `product/productChildsList` can ORDER BY; anything else falls back to its default order. */
+  private static readonly CHILD_SORT_KEYS = new Set(['name', 'barcode', 'unitCost', 'defaultPrice', 'type', 'createdAt', 'categoryName', 'departmentName']);
+
+  /** The ONE place the pill wording lives: product type -> i18n key under PRODUCTS.TREE (`<KEY>` plain, `<KEY>_N` with a count). */
+  private static readonly PILL_KEYS: Record<string, string> = { matrix: 'VARIANTS', inventory: 'UNITS' };
+
+  treeConfig: ListTreeConfig<any> = {
+    maxLevels: 3,
+    pageSize: 15,
+    // Roots: the API's isParent, or a matrix group (its isParent is normally null). Children (level 2): only inventory
+    // rows, because the response can't say whether a child has children. Grandchildren are never expandable.
+    canExpand: (row, level) =>
+      level === 0 ? row.isParent === true || row.type === 'matrix'
+      : level === 1 ? row.type === 'inventory'
+      : false,
+    loadChildren: async (parent, p) => {
+      const f = this.transformFilters(p.filter || {});
+      const sortOk = !!p.sortBy && ProductsListComponent.CHILD_SORT_KEYS.has(p.sortBy.sortValue);
+      const res = await this.productsService.productChildsList({
+        id: parent.id,
+        page: Math.max(1, p.page),
+        limit: p.limit,
+        searchTerm: p.searchTerm || '',
+        // Omitted (not {}) when unsupported: the endpoint then uses its default order.
+        sortBy: sortOk ? { sortValue: p.sortBy!.sortValue, sortDirection: p.sortBy!.sortDirection } : undefined,
+        // Only these three filters are honoured for children (brands, tags and ids are ignored by the endpoint).
+        filter: { departments: f.departments, categories: f.categories, type: f.type },
+      });
+      return { list: res.list, total: res.count === undefined || res.count === null ? undefined : Number(res.count) };
+    },
+    pillLabel: (row, count) => {
+      const key = ProductsListComponent.PILL_KEYS[row.type] ?? ProductsListComponent.PILL_KEYS['inventory'];
+      if (count === null) return this.lang.instant('PRODUCTS.TREE.' + key);
+      return this.lang.instant('PRODUCTS.TREE.' + key + (count === 1 ? '_ONE' : '_N'), { count });
+    },
+    unsupportedFilterKeys: ['brandId', 'tags'],
+  };
+
+  /** Tooltip on a Qty / Stock value number: Inventory parents show their OWN stock; nothing is ever summed. */
+  stockTip(row: any, outOfStock = false): string {
+    const own = row.isParent === true && row.type !== 'matrix' ? this.lang.instant('PRODUCTS.TREE.OWN_STOCK') : '';
+    const out = outOfStock ? this.lang.instant('PRODUCTS.STOCK.OUT_OF_STOCK') : '';
+    return [own, out].filter(Boolean).join(' · ');
+  }
+
+  /** True when a product may own children (deleting it leaves them behind). */
+  private ownsChildren(row: any): boolean {
+    return row?.isParent === true || row?.type === 'matrix';
+  }
+
   // Data Source
   loadProducts = async (params: ListQueryParams) => {
     const response = await this.productsService.getProductList({
@@ -866,7 +916,8 @@ export class ProductsListComponent implements OnInit {
         data: {
           title: this.lang.instant('COMMON.ACTIONS.DELETE'),
           message: this.lang.instant('PRODUCTS.MESSAGES.CONFIRM_DELETE', { name: row.name }),
-          note: this.lang.instant('PRODUCTS.MESSAGES.DELETE_STOCK_WARNING'),
+          note: this.lang.instant('PRODUCTS.MESSAGES.DELETE_STOCK_WARNING')
+            + (this.ownsChildren(row) ? ' ' + this.lang.instant('PRODUCTS.TREE.DELETE_PARENT_NOTE') : ''),
           confirm: this.lang.instant('COMMON.ACTIONS.DELETE'),
           danger: true,
         },
@@ -883,36 +934,6 @@ export class ProductsListComponent implements OnInit {
   copyProduct(row: any, event: Event): void {
     event.stopPropagation();
     console.log('Copy product:', row.id);
-  }
-
-  async toggleProductExpansion(product: any, event: Event): Promise<void> {
-    event.stopPropagation();
-
-    const expanded = this.expandedProductIds();
-    const newExpanded = new Set(expanded);
-
-    if (expanded.has(product.id)) {
-      newExpanded.delete(product.id);
-    } else {
-      newExpanded.add(product.id);
-      await this.loadChildProducts(product);
-    }
-
-    this.expandedProductIds.set(newExpanded);
-  }
-
-  private async loadChildProducts(product: any): Promise<void> {
-    const children = await this.productsService.productChildsList({
-      page: 1,
-      limit: 15,
-      searchTerm: '',
-      sortBy: {},
-      filter: {},
-      id: product.id
-    });
-
-    product.children = children.list;
-    product.childrenCount = children.count;
   }
 
   async bulkAssignTax(rows: any[]): Promise<void> {
@@ -940,7 +961,8 @@ export class ProductsListComponent implements OnInit {
         data: {
           title: this.lang.instant('PRODUCTS.ACTIONS.DELETE_SELECTED'),
           message: this.lang.instant('PRODUCTS.MESSAGES.CONFIRM_DELETE_SELECTED'),
-          note: this.lang.instant('PRODUCTS.MESSAGES.DELETE_STOCK_WARNING_BULK'),
+          note: this.lang.instant('PRODUCTS.MESSAGES.DELETE_STOCK_WARNING_BULK')
+            + (rows.some(r => this.ownsChildren(r)) ? ' ' + this.lang.instant('PRODUCTS.TREE.DELETE_PARENT_NOTE') : ''),
           confirm: this.lang.instant('COMMON.ACTIONS.DELETE'),
           danger: true,
         },

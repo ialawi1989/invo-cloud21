@@ -1528,6 +1528,17 @@
       "BRANCH": "Branch",
       "QTY_LABEL": "Qty"
     },
+    "TREE": {
+      "VARIANTS": "Variants",
+      "UNITS": "Units",
+      "VARIANTS_N": "{{count}} variants",
+      "UNITS_N": "{{count}} units",
+      "VARIANTS_ONE": "1 variant",
+      "UNITS_ONE": "1 unit",
+      "SEE_VARIANTS": "See variants",
+      "OWN_STOCK": "Own stock",
+      "DELETE_PARENT_NOTE": "Some selected products have children. Deleting a product does not delete its children: they will remain."
+    },
     "STOCK": {
       "TITLE": "Stock breakdown",
       "OUT_OF_STOCK": "Out of stock",

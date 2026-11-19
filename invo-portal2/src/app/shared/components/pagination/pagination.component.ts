@@ -103,6 +103,12 @@ export class PaginationComponent {
   /** Override the compact label. Tokens: `{page}`. */
   compactFormat = input<string>('Page {page}');
 
+  /** Rows on the current page. With no total, the info text then reads "Showing 1–15" (no "of N"). */
+  rowsOnPage = input<number | null>(null);
+
+  /** Info format when the total is unknown but `rowsOnPage` is given. Tokens: `{start}`, `{end}`. */
+  rangeFormat = input<string>('Showing {start}–{end}');
+
   // ── Outputs ────────────────────────────────────────────────────────────────
   pageChange     = output<number>();
   pageSizeChange = output<number>();
@@ -165,9 +171,17 @@ export class PaginationComponent {
     return Math.min(naive, c);
   });
 
+  /** "Page N" label shown next to Previous / Next when there are no numbered pages. */
+  pageLabel = computed<string>(() => this.compactFormat().replace('{page}', String(this.page())));
+
   /** Resolved info text. */
   infoText = computed<string>(() => {
     if (!this.hasTotal()) {
+      const rows = this.rowsOnPage();
+      if (rows !== null && rows > 0) {
+        const start = (this.page() - 1) * this.pageSize() + 1;
+        return this.rangeFormat().replace('{start}', String(start)).replace('{end}', String(start + rows - 1));
+      }
       return this.compactFormat().replace('{page}', String(this.page()));
     }
     return this.infoFormat()
