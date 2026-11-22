@@ -1,7 +1,7 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { AfterViewInit, Component, ElementRef, HostListener, OnInit, computed, inject, signal } from '@angular/core';
+import { CommonModule, TitleCasePipe } from '@angular/common';
 import { Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { MODAL_DATA, MODAL_REF } from '../../../../shared/modal/modal.tokens';
 import { ModalRef } from '../../../../shared/modal/modal.service';
 import { DatePipe } from '@angular/common';
@@ -10,6 +10,9 @@ import { environment } from '../../../../../environments/environment';
 import { PrivilegeService } from '../../../../core/auth/privileges/privilege.service';
 import { ProductsService, BranchSummary, ProductActivity } from '../../services/products.service';
 import { getTransactionRoute } from '../../../../shared/utils/linked-types';
+import { TooltipDirective } from '../../../../shared/directives/tooltip.directive';
+import { productTypeKey } from '../../utils/product-labels';
+import { ProductChildrenComponent } from './product-children/product-children.component';
 import { SalesStatsComponent }           from './sales-widgets/sales-stats.component';
 import { SalesLast30DaysComponent }      from './sales-widgets/sales-last-30-days.component';
 import { SalesLast12MonthComponent }     from './sales-widgets/sales-last-12-month.component';
@@ -25,6 +28,16 @@ export interface ProductDetailDrawerData {
   /** The raw row that was clicked, if the caller wants to hand over more
    *  context than just an id (name/barcode/etc). */
   row?: any;
+  /** Previous / Next navigation over the products currently loaded in the list. */
+  nav?: ProductDrawerNav;
+}
+
+/** What the list hands the drawer so it can step through the rows the list is showing, without closing. */
+export interface ProductDrawerNav {
+  /** The rows currently visible in the list, in list order. Read inside a computed, so it stays current. */
+  rows: () => any[];
+  /** The drawer moved to another product: the list highlights that row and scrolls it into view. */
+  activated: (row: any) => void;
 }
 
 interface TabOption {
@@ -53,7 +66,10 @@ interface TabOption {
     SalesStatsComponent, SalesLast30DaysComponent, SalesLast12MonthComponent,
     SalesByServiceComponent, SalesTransactionsComponent,
     PurchaseHistoryComponent, ProductMovementComponent,
+    TitleCasePipe, TooltipDirective, ProductChildrenComponent,
   ],
+  providers: [MycurrencyPipe],
+  host: { tabindex: '-1' },
   template: `
     @if (loading()) {
       <!-- ═══ Top-level skeleton (product GET in flight) ═══ -->
@@ -120,9 +136,31 @@ interface TabOption {
           }
         </div>
         <div class="head-text">
-          <h3 class="head-title">{{ product().name }}</h3>
-          <span class="type-badge">{{ product().type }}</span>
+          <h3 class="head-title">{{ product().name | titlecase }}</h3>
+          <span class="type-badge">{{ typeLabel() }}</span>
         </div>
+        @if (data.nav) {
+          <!-- Previous / Next: vertical chevrons follow LIST order (top to bottom) in both directions, so they never
+               flip under RTL; the pair's own order flows with the header's direction. -->
+          <div class="nav-btns" role="group" [attr.aria-label]="'PRODUCTS.DRAWER.NAVIGATE' | translate">
+            <button type="button" class="icon-btn"
+              [disabled]="!hasPrev()"
+              [appTooltip]="'PRODUCTS.DRAWER.PREVIOUS' | translate"
+              [attr.aria-label]="'PRODUCTS.DRAWER.PREVIOUS' | translate"
+              aria-keyshortcuts="Alt+ArrowUp"
+              (click)="go(-1)">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>
+            </button>
+            <button type="button" class="icon-btn"
+              [disabled]="!hasNext()"
+              [appTooltip]="'PRODUCTS.DRAWER.NEXT' | translate"
+              [attr.aria-label]="'PRODUCTS.DRAWER.NEXT' | translate"
+              aria-keyshortcuts="Alt+ArrowDown"
+              (click)="go(1)">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+        }
         <button type="button" class="btn btn--ghost" (click)="onEdit()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16">
             <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
@@ -148,7 +186,14 @@ interface TabOption {
       }
 
       <!-- ═══ Body ═══ -->
-      <div class="drawer-body">
+      @if (navError()) {
+        <div class="nav-error" role="alert">
+          <span>{{ navError() }}</span>
+          <button type="button" class="link-btn" (click)="retryNav()">{{ 'COMMON.LP_RETRY' | translate }}</button>
+        </div>
+      }
+      <div class="drawer-body" [class.drawer-body--busy]="switching()" [attr.aria-busy]="switching()">
+        @for (pid of [product().id]; track pid) {
         @switch (selectedTab()) {
           @case ('productOverview') {
             <!-- Overview: Basic info + Branch Stock -->
@@ -276,6 +321,14 @@ interface TabOption {
               </div>
             </div>
 
+            <!-- Units / Variants: children of a parent product or a matrix. Loaded lazily; never summed into the numbers above. -->
+            @if (hasChildren()) {
+              <app-product-children
+                [parentId]="product().id"
+                [parentType]="product().type"
+                (opened)="openChild($event)" />
+            }
+
             <!-- Branch Stock -->
             @if (showBranchStock()) {
               <div class="card">
@@ -361,11 +414,13 @@ interface TabOption {
             </div>
           }
         }
+        }
       </div>
     }
   `,
   styles: [`
     :host {
+      outline: none;
       display: flex;
       flex-direction: column;
       flex: 1 1 auto;
@@ -428,6 +483,24 @@ interface TabOption {
       box-shadow: 0 1px 3px rgba(0, 0, 0, .06);
     }
     .btn svg { color: var(--ui-muted); }
+
+    .nav-btns { display: inline-flex; gap: 4px; flex-shrink: 0; }
+    .icon-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 32px; height: 32px; padding: 0; border-radius: 8px;
+      border: 1px solid var(--ui-line); background: var(--ui-surface); color: var(--ui-muted);
+      cursor: pointer; transition: background .15s, color .15s, border-color .15s;
+    }
+    .icon-btn:hover:not(:disabled) { background: var(--ui-surface-1); color: var(--ui-text); border-color: var(--ui-line-strong); }
+    .icon-btn:focus-visible { outline: 2px solid var(--ui-brand-text); outline-offset: 1px; }
+    .icon-btn:disabled { opacity: .45; cursor: default; }
+
+    .nav-error {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 8px 24px; font-size: 13px; color: var(--ui-red-text); background: var(--ui-red-soft);
+    }
+    .link-btn { border: 0; background: transparent; color: var(--ui-brand-text); font-weight: 600; cursor: pointer; text-decoration: underline; font-size: 13px; }
+    .drawer-body--busy { opacity: .55; pointer-events: none; transition: opacity .12s; }
 
     /* ── Tabs ──────────────────────────────────────────────── */
     .tabs {
@@ -645,12 +718,25 @@ interface TabOption {
     :host-context([dir="rtl"]) .info-row dd { text-align: left; }
   `],
 })
-export class ProductDetailDrawerComponent implements OnInit {
+export class ProductDetailDrawerComponent implements OnInit, AfterViewInit {
   data = inject<ProductDetailDrawerData>(MODAL_DATA);
   ref  = inject<ModalRef>(MODAL_REF);
   private svc    = inject(ProductsService);
   private privs  = inject(PrivilegeService);
   private router = inject(Router);
+  private translate = inject(TranslateService);
+  private pricePipe = inject(MycurrencyPipe);
+  private host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private titleCase = new TitleCasePipe();
+
+  /** The product on screen. Starts as the clicked one and moves with Previous / Next or a child row. */
+  currentId  = signal<string>(this.data.productId);
+  /** The list row for the current product (it carries `isParent`, which the single-product GET does not). */
+  currentRow = signal<any | null>(this.data.row ?? null);
+  /** True while another product loads after the first one (the old content stays, dimmed). */
+  switching  = signal(false);
+  navError   = signal<string | null>(null);
+  private loadSeq = 0;
 
   // ─── Primary state ─────────────────────────────────────────
   loading  = signal(true);
@@ -739,34 +825,117 @@ export class ProductDetailDrawerComponent implements OnInit {
         rows.push({ label, value: String(value) });
       }
     };
-    push('Name',        p.name);
-    push('Type',        p.type);
+    push('Name',        typeof p.name === 'string' ? this.titleCase.transform(p.name) : p.name);   // same casing as the list
+    push('Type',        p.type ? this.typeLabelOf(p.type) : p.type);
     push('UOM',         p.UOM);
     push('Barcode',     p.barcode);
     push('SKU',         p.sku);
     push('Brand',       p.brandName);
     push('Department',  p.departmentName);
     push('Category',    p.categoryName);
-    // Price left to caller-side formatting via `mycurrency` if needed; for
-    // the basic-info strip we include it as the pre-formatted default price.
+    // Money goes through `mycurrency` like the list's money columns (company symbol + decimals, e.g. "BHD 10.000").
     if (p.defaultPrice !== undefined && p.defaultPrice !== null) {
-      push('Price', p.defaultPrice);
+      push('Price', this.pricePipe.transform(p.defaultPrice));
     }
     push('Description', p.description?.trim?.() ?? p.description);
     return rows;
   });
 
+  // ─── Children (Units / Variants) ───────────────────────────
+  /** A parent product (the list row's `isParent`) or a matrix owns children. Own stock is never summed with theirs. */
+  hasChildren = computed(() => {
+    const p = this.product();
+    if (!p) return false;
+    return p.type === 'matrix' || this.currentRow()?.isParent === true;
+  });
+
+  /** Same capitalised, translated label the list's type chip shows. */
+  typeLabel = computed(() => {
+    const t = this.product()?.type;
+    return t ? this.typeLabelOf(t) : '';
+  });
+  private typeLabelOf(type: string): string {
+    const key = 'PRODUCTS.TYPES.' + productTypeKey(type);
+    const v = this.translate.instant(key);
+    return v === key ? type : v;
+  }
+
+  // ─── Previous / Next over the list's loaded rows ────────────
+  private navRows  = computed<any[]>(() => this.data.nav?.rows() ?? []);
+  private navIndex = computed(() => {
+    const id = this.currentId();
+    return this.navRows().findIndex(r => (r?.id ?? r?._id) === id);
+  });
+  hasPrev = computed(() => this.navIndex() > 0);
+  hasNext = computed(() => { const i = this.navIndex(); return i >= 0 && i < this.navRows().length - 1; });
+
+  /** Step to the previous (-1) or next (+1) product in the list, without closing the drawer. */
+  go(delta: -1 | 1): void {
+    const i = this.navIndex();
+    const row = i < 0 ? undefined : this.navRows()[i + delta];
+    const id = row?.id ?? row?._id;
+    if (!id) return;
+    this.show(id, row);
+    // The button just used may now be disabled (end of the loaded page): keep keyboard focus inside the drawer.
+    setTimeout(() => {
+      const a = document.activeElement as HTMLElement | null;
+      if (!a || a === document.body || (a as HTMLButtonElement).disabled) this.host.nativeElement.focus({ preventScroll: true });
+    });
+  }
+
+  /** A child row in the Units / Variants section: opens in this drawer like any product. */
+  openChild(row: any): void {
+    const id = row?.id ?? row?._id;
+    if (id) this.show(id, row);
+  }
+
+  retryNav(): void { void this.fetch(this.currentId(), false); }
+
+  private show(id: string, row: any): void {
+    this.currentId.set(id);
+    this.currentRow.set(row ?? null);
+    this.navError.set(null);
+    this.data.nav?.activated(row);
+    void this.fetch(id, false);
+  }
+
+  /** Alt+ArrowUp / Alt+ArrowDown while the drawer has focus. Not while typing in a field (Alt+Arrow moves the caret on macOS). */
+  @HostListener('keydown', ['$event'])
+  onKeydown(e: KeyboardEvent): void {
+    if (!this.data.nav || !e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || e.defaultPrevented) return;
+    if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+    const t = e.target as HTMLElement | null;
+    if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+    e.preventDefault();
+    this.go(e.key === 'ArrowUp' ? -1 : 1);
+  }
+
   // ─── Lifecycle ─────────────────────────────────────────────
   async ngOnInit(): Promise<void> {
+    await this.fetch(this.data.productId, true);
+  }
+
+  ngAfterViewInit(): void {
+    // Give the drawer focus so Alt+Arrow works straight away (only when it has Previous / Next to offer).
+    if (this.data.nav) this.host.nativeElement.focus({ preventScroll: true });
+  }
+
+  /** Loads one product and its stock + activity. Only the newest request may write state (rapid Previous / Next). */
+  private async fetch(id: string, initial: boolean): Promise<void> {
+    const seq = ++this.loadSeq;
+    if (!initial) this.switching.set(true);
     try {
-      const p = await this.svc.getProduct(this.data.productId);
-      if (!p) {
-        this.error.set('Product not found.');
-        this.loading.set(false);
-        return;
-      }
+      const p = await this.svc.getProduct(id);
+      if (seq !== this.loadSeq) return;
+      if (!p) throw new Error('Product not found.');
+
+      // Nothing from the previous product may linger under the new one.
+      this.branchSummary.set([]);
+      this.activity.set(null);
+      this.imgError.set(false);
       this.product.set(p);
       this.loading.set(false);
+      this.switching.set(false);
 
       // Fire branch-stock + activity loads in parallel. They're independent
       // and the header/basic-info block is already on screen.
@@ -775,8 +944,14 @@ export class ProductDetailDrawerComponent implements OnInit {
       }
       this.loadActivity(p.id);
     } catch (e: any) {
-      this.error.set(e?.message ?? 'Failed to load product.');
-      this.loading.set(false);
+      if (seq !== this.loadSeq) return;
+      if (initial) {
+        this.error.set(e?.message ?? 'Failed to load product.');
+        this.loading.set(false);
+      } else {
+        this.navError.set(e?.message ?? 'Failed to load product.');
+        this.switching.set(false);
+      }
     }
   }
 
@@ -784,11 +959,11 @@ export class ProductDetailDrawerComponent implements OnInit {
     this.stockLoading.set(true);
     try {
       const rows = await this.svc.getProductAvailability(productId);
-      this.branchSummary.set(rows);
+      if (this.product()?.id === productId) this.branchSummary.set(rows);
     } catch (e) {
       console.error('[product-detail-drawer] branch stock failed', e);
     } finally {
-      this.stockLoading.set(false);
+      if (this.product()?.id === productId) this.stockLoading.set(false);
     }
   }
 
@@ -796,11 +971,11 @@ export class ProductDetailDrawerComponent implements OnInit {
     this.activityLoading.set(true);
     try {
       const data = await this.svc.getProductActivity(productId);
-      this.activity.set(data);
+      if (this.product()?.id === productId) this.activity.set(data);
     } catch (e) {
       console.error('[product-detail-drawer] activity failed', e);
     } finally {
-      this.activityLoading.set(false);
+      if (this.product()?.id === productId) this.activityLoading.set(false);
     }
   }
 

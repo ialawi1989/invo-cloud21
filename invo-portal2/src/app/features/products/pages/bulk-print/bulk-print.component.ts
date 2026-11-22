@@ -21,6 +21,7 @@ import { LoadingOverlayComponent } from '@shared/components/spinner/loading-over
 import { BranchConnectionService } from '@core/layout/services/branch.service';
 
 import { BillsService } from '../../../account/bills/services/bills.service';
+import { PurchaseOrdersService } from '../../../account/purchase-orders/services/purchase-orders.service';
 import { ProductsService } from '../../services/products.service';
 import {
   PickProductModalComponent,
@@ -97,6 +98,7 @@ export class BulkPrintComponent {
   private products  = inject(ProductsService);
   private modal     = inject(ModalService);
   private bills     = inject(BillsService);
+  private purchaseOrders = inject(PurchaseOrdersService);
   private route     = inject(ActivatedRoute);
 
   constructor() {
@@ -189,6 +191,9 @@ export class BulkPrintComponent {
       // Opened from a bill's "Label print": start with that bill's items and quantities.
       const billId = this.route.snapshot.queryParamMap.get('billId');
       if (billId) await this.applyBill(billId);
+      // Opened from a purchase order's "Label print": same, from the order's lines.
+      const purchaseOrderId = this.route.snapshot.queryParamMap.get('purchaseOrderId');
+      if (purchaseOrderId && !billId) await this.applyBill(purchaseOrderId, 'purchase-order');
     } finally {
       this.loading.set(false);
     }
@@ -412,9 +417,9 @@ export class BulkPrintComponent {
    * per product with the quantity billed as the number of labels and the bill's unit cost. Lines without a product
    * (notes) are skipped; a product on several lines gets their quantities added up.
    */
-  private async applyBill(billId: string): Promise<void> {
+  private async applyBill(docId: string, kind: 'bill' | 'purchase-order' = 'bill'): Promise<void> {
     try {
-      const bill: any = await this.bills.getBill(billId);
+      const bill: any = kind === 'bill' ? await this.bills.getBill(docId) : await this.purchaseOrders.getPurchaseOrder(docId);
       if (bill.branchId) this.selectedBranchId.set(bill.branchId);
       const lines: any[] = (bill.lines ?? []).filter((l: any) => !l.isDeleted && (l.productId || l.selectedItem?.id));
       const barcodes = [...new Set(lines.map(l => l.barcode || l.selectedItem?.barcode).filter(Boolean))] as string[];
@@ -433,7 +438,7 @@ export class BulkPrintComponent {
       this.rows.set(rows);
       if (rows.length) this.activeRowId.set(rows[0].id);
     } catch (err) {
-      console.error('[bulk-print] could not load the bill', err);
+      console.error('[bulk-print] could not load the source document', err);
     }
   }
 

@@ -12,6 +12,7 @@ import {
   ListRowActionsDirective,
   ListMobileThumbDirective,
   ListMobileTitleDirective,
+  ListGalleryCardDirective,
 } from '@shared/components/list-page/directives/list-template.directives';
 import {
   TableColumn,
@@ -20,7 +21,8 @@ import {
   BulkActionConfig,
   ListQueryParams,
   ListTreeConfig,
-  MobileCardConfig
+  MobileCardConfig,
+  GalleryViewConfig
 } from '@shared/components/list-page/interfaces/list-page.types';
 
 import { ProductsService } from '../../services/products.service';
@@ -35,7 +37,9 @@ import { PickTaxModalComponent } from '@shared/components/pick-tax-modal/pick-ta
 import { ApiService } from '@core/http/api.service';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 import { getProductTypeBadgeStyle } from '../../utils/product-type-badge';
-import { ProductDetailDrawerComponent, ProductDetailDrawerData } from '../../components/product-detail-drawer/product-detail-drawer.component';
+import { ProductDetailDrawerComponent, ProductDetailDrawerData, ProductDrawerNav } from '../../components/product-detail-drawer/product-detail-drawer.component';
+import { productTypeKey, treePillKey } from '../../utils/product-labels';
+import { ProductGalleryCardComponent } from '../../components/product-gallery-card/product-gallery-card.component';
 import { ProductStockModalComponent, ProductStockModalData } from '../../components/product-stock-modal/product-stock-modal.component';
 import { BulkTagsModalComponent } from '../../components/bulk-tags-modal/bulk-tags-modal.component';
 import {
@@ -71,6 +75,8 @@ const TAX_COL_W = cellW(9);    // "VAT 15.5%"
     ListRowActionsDirective,
     ListMobileThumbDirective,
     ListMobileTitleDirective,
+    ListGalleryCardDirective,
+    ProductGalleryCardComponent,
     DropdownMenuBtnComponent,
     MycurrencyPipe
   ],
@@ -128,6 +134,9 @@ export class ProductsListComponent implements OnInit {
    *  department right-aligned as the secondary. Card tap → detail
    *  drawer; the "⋯" trigger reuses the same overflow menu as the
    *  table via the shared listRowActions template. */
+  /** Products-only gallery: the image is always requested while it is open (the API's own `image` column = the thumbnail URL). */
+  galleryView: GalleryViewConfig = { imageKey: 'image' };
+
   mobileCardConfig: MobileCardConfig = {
     showThumbnail: true,
     metricKeys: ['qty', 'defaultPrice'],
@@ -723,8 +732,7 @@ export class ProductsListComponent implements OnInit {
   }
 
   // ─── Product tree (children load lazily, one expanded node at a time) ───────────────────
-  /** The ONE place the pill wording lives: product type -> i18n key under PRODUCTS.TREE (`<KEY>` plain, `<KEY>_N` with a count). */
-  private static readonly PILL_KEYS: Record<string, string> = { matrix: 'VARIANTS', inventory: 'UNITS' };
+  // The pill wording (product type -> PRODUCTS.TREE key) lives in utils/product-labels.ts, shared with the details drawer.
 
   treeConfig: ListTreeConfig<any> = {
     maxLevels: 3,
@@ -740,7 +748,7 @@ export class ProductsListComponent implements OnInit {
       return { list: res.list, total: res.count === undefined || res.count === null ? undefined : Number(res.count), hasNext: res.hasNext };
     },
     pillLabel: (row, count) => {
-      const key = ProductsListComponent.PILL_KEYS[row.type] ?? ProductsListComponent.PILL_KEYS['inventory'];
+      const key = treePillKey(row.type);
       if (count === null) return this.lang.instant('PRODUCTS.TREE.' + key);
       return this.lang.instant('PRODUCTS.TREE.' + key + (count === 1 ? '_ONE' : '_N'), { count });
     },
@@ -779,7 +787,7 @@ export class ProductsListComponent implements OnInit {
     this.productsService.getProductCount(buildCountBody(params as RootListInput) as any, signal);
 
   getTypeKey(type: string): string {
-    return type.replace(/([A-Z])/g, '_$1').toUpperCase();
+    return productTypeKey(type);
   }
 
   /** Per-product-type chip palette — delegates to the shared util
@@ -824,14 +832,47 @@ export class ProductsListComponent implements OnInit {
     );
   }
 
-  private openProductDrawer(row: any): void {
+  // ─── Details drawer: highlighted row + Previous / Next over the loaded rows ───────────────
+  /** Id of the product open in the drawer; its row is highlighted (and stays so while Previous / Next moves it). */
+  activeProductId = signal<string | null>(null);
+
+  /** `[rowClass]` for the list: the row of the product open in the drawer. */
+  rowClassFn = (row: any): string => {
+    const id = this.activeProductId();
+    return id !== null && (row?.id ?? row?._id) === id ? 'lp-row--active' : '';
+  };
+
+  /** The rows the list is showing right now, in order: roots and any expanded children, no placeholder rows. */
+  private visibleRows(): any[] {
+    return (this.listPage?.rowNodes() ?? []).filter(n => n.kind === 'row' && n.row).map(n => n.row);
+  }
+
+  private revealRow(row: any): void {
+    const id = row?.id ?? row?._id;
+    if (id === undefined || id === null) return;
+    this.activeProductId.set(id);
+    // Wait for the highlight class to land, then bring the row into view (nearest: no jump when it's already visible).
+    setTimeout(() => {
+      const node = (this.listPage?.rowNodes() ?? []).find(n => n.kind === 'row' && (n.row as any)?.id === id);
+      if (!node) return;
+      const el = Array.from(document.querySelectorAll<HTMLElement>('tr[data-node-key]')).find(e => e.dataset['nodeKey'] === node.key);
+      el?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    });
+  }
+
+  openProductDrawer(row: any): void {
     if (!row) return;
     // Parent rows carry `id`; child rows (matrix variants loaded lazily) may
     // carry `id` or `_id` depending on the API shape.
     const productId = row.id ?? row._id;
     if (!productId) return;
 
-    this.modalService.open<ProductDetailDrawerComponent, ProductDetailDrawerData, void>(
+    const nav: ProductDrawerNav = {
+      rows: () => this.visibleRows(),
+      activated: (r) => this.revealRow(r),
+    };
+    this.activeProductId.set(productId);
+    const ref = this.modalService.open<ProductDetailDrawerComponent, ProductDetailDrawerData, void>(
       ProductDetailDrawerComponent,
       {
         drawer: true,
@@ -842,9 +883,11 @@ export class ProductsListComponent implements OnInit {
           productId,
           isChild: !!row.parentId || !!row.parent_id,
           row,
+          nav,
         },
       }
     );
+    void ref.afterClosed().then(() => this.activeProductId.set(null));
   }
 
   // Outside-click closing for the Add-new and More-menu dropdowns

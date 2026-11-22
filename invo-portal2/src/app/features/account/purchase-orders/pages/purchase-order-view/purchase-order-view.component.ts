@@ -138,4 +138,12 @@ export class PurchaseOrderViewComponent extends DocumentViewBase {
   }
 
   actionItems(po: PurchaseOrder): DropdownMenuBtnItem[] { return this.actions.menu(po, this.id, () => this.goToList()); }
+
+  /** "Label print": opens the label printing page with this order's items and quantities. */
+  override printItems(): DropdownMenuBtnItem[] {
+    return [
+      ...super.printItems(),
+      { label: this.t('PURCHASE_ORDERS.VIEW.LABEL_PRINT'), click: () => void this.router.navigate(['/products/bulk-print'], { queryParams: { purchaseOrderId: this.id } }), disabled: false, danger: false },
+    ];
+  }
 }

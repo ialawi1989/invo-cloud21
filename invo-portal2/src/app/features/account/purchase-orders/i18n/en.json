@@ -64,6 +64,7 @@
       "EXPIRY_DATE": "Expiry date"
     },
     "VIEW": {
+      "LABEL_PRINT": "Label print",
       "VIEW_PURCHASE_ORDER": "View Purchase Order",
       "CONFIRM_DELETE": "Delete this purchase order? This cannot be undone.",
       "CONVERTED_TO_BILL": "A bill was made from this purchase order"

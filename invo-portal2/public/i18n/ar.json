@@ -340,6 +340,8 @@
     "BOARD_EMPTY_COLUMN": "لا يوجد شيء هنا",
     "TODAY": "اليوم",
     "GRID_VIEW": "عرض البطاقات",
+    "GALLERY_VIEW": "المعرض",
+    "GALLERY_ALWAYS_SHOWN": "يظهر دائماً في المعرض",
     "NO_ITEMS_TITLE": "لم يتم العثور على عناصر",
     "NO_ITEMS_MESSAGE": "حاول تعديل الفلاتر أو مصطلح البحث",
     "SELECT_PLACEHOLDER": "اختر...",

@@ -1526,7 +1526,10 @@
       "STATUS": "Status",
       "TOTAL": "Total",
       "BRANCH": "Branch",
-      "QTY_LABEL": "Qty"
+      "QTY_LABEL": "Qty",
+      "NAVIGATE": "Browse products",
+      "PREVIOUS": "Previous product",
+      "NEXT": "Next product"
     },
     "TREE": {
       "VARIANTS": "Variants",

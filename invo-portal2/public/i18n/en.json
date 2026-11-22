@@ -336,6 +336,8 @@
     "NEW_LINE": "New line",
     "TABLE_VIEW": "Table view",
     "GRID_VIEW": "Grid view",
+    "GALLERY_VIEW": "Gallery",
+    "GALLERY_ALWAYS_SHOWN": "Always shown in gallery",
     "VIEW_BOARD": "Status board",
     "VIEW_CALENDAR": "Calendar",
     "BOARD_EMPTY_COLUMN": "Nothing here",

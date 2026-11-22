@@ -64,6 +64,7 @@
       "EXPIRY_DATE": "تاريخ الانتهاء"
     },
     "VIEW": {
+      "LABEL_PRINT": "طباعة الملصقات",
       "VIEW_PURCHASE_ORDER": "عرض أمر الشراء",
       "CONFIRM_DELETE": "حذف أمر الشراء هذا؟ لا يمكن التراجع.",
       "CONVERTED_TO_BILL": "تم إنشاء فاتورة من أمر الشراء هذا"

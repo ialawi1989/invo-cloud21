@@ -153,7 +153,12 @@
             (click)="setViewMode('table')" [appTooltip]="'COMMON.TABLE_VIEW' | translate" [attr.aria-label]="'COMMON.TABLE_VIEW' | translate">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
           </button>
-          @if (showGridView) {
+          @if (galleryView) {
+          <button type="button" class="lp-seg__btn" [class.is-on]="viewMode() === 'gallery'" [attr.aria-pressed]="viewMode() === 'gallery'"
+            (click)="setViewMode('gallery')" [appTooltip]="'COMMON.GALLERY_VIEW' | translate" [attr.aria-label]="'COMMON.GALLERY_VIEW' | translate">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+          </button>
+          } @else if (showGridView) {
           <button type="button" class="lp-seg__btn" [class.is-on]="viewMode() === 'grid'" [attr.aria-pressed]="viewMode() === 'grid'"
             (click)="setViewMode('grid')" [appTooltip]="'COMMON.GRID_VIEW' | translate" [attr.aria-label]="'COMMON.GRID_VIEW' | translate">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
@@ -748,6 +753,44 @@
             }
           }
         </div>
+      }
+    }
+
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <!-- GALLERY VIEW (opt-in: [galleryView] + a listGalleryCard template) -->
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    @if (viewMode() === 'gallery' && galleryView && !useMobileCards()) {
+      @if (isLoading()) {
+      <div class="lp-gallery" aria-hidden="true">
+        @for (r of gallerySkeletonRows(); track r) {
+        <div class="lp-gallery__skel">
+          <div class="lp-gallery__skel-img"></div>
+          <div class="lp-gallery__skel-line" style="inline-size: 80%"></div>
+          <div class="lp-gallery__skel-line" style="inline-size: 45%"></div>
+          <div class="lp-gallery__skel-line" style="inline-size: 60%"></div>
+        </div>
+        }
+      </div>
+      } @else if (data().length === 0) {
+      <app-empty-state class="py-10" [icon]="$any(emptyState.icon || 'box')" [title]="emptyState.title" [body]="emptyState.message || ''">
+        @if (emptyState.actionLabel && emptyState.actionHandler) {
+        <button (click)="emptyState.actionHandler!()"
+          class="px-6 py-3 bg-gradient-to-r from-brand-500 to-brand-700 text-white rounded-lg font-medium shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
+          {{ emptyState.actionLabel }}
+        </button>
+        }
+      </app-empty-state>
+      } @else {
+      <div class="lp-gallery" role="list">
+        @for (row of data(); track trackByFn($index, row)) {
+          <div role="listitem" class="lp-gallery__cell">
+            @if (getGalleryCardTemplate(); as tpl) {
+              <ng-container [ngTemplateOutlet]="tpl"
+                [ngTemplateOutletContext]="{ $implicit: row, selected: isRowSelected(row), selectable: selectable }"></ng-container>
+            }
+          </div>
+        }
+      </div>
       }
     }
 

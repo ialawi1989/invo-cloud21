@@ -49,7 +49,8 @@ import {
   MobileCardConfig,
   ListTreeConfig,
   ListRowNode,
-  TreeNodeState
+  TreeNodeState,
+  GalleryViewConfig
 } from '../interfaces/list-page.types';
 
 // Directives
@@ -60,6 +61,7 @@ import {
   ListMobileThumbDirective,
   ListMobileTitleDirective,
   ListMobileChipDirective,
+  ListGalleryCardDirective,
   ListRowDetailDirective
 } from '../directives/list-template.directives';
 
@@ -123,6 +125,7 @@ import {
     ListMobileThumbDirective,
     ListMobileTitleDirective,
     ListMobileChipDirective,
+    ListGalleryCardDirective,
     FilterModalComponent,
     PaginationComponent,
     BreadcrumbsComponent,
@@ -195,6 +198,9 @@ import {
     tr.list-row:hover { --lp-row-bg: var(--ui-x-f4fbfb); }
     tr.list-row-expanded { --lp-row-bg: var(--ui-x-ecfafd); }
     tr.list-child-row { --lp-row-bg: var(--ui-x-f5fdfd); }
+    /* The row a screen has open elsewhere (e.g. a details drawer), set through [rowClass]. A tint, never an edge stripe. */
+    tr.lp-row--active, tr.lp-row--active:hover { --lp-row-bg: var(--ui-selected); }
+    tr.lp-row--active > td { background-color: var(--lp-row-bg); }
     tr.list-child-row:hover { --lp-row-bg: var(--ui-x-ecfafd); }
     tr.lp-intree { --lp-row-bg: var(--lp-tint); }
     tr.lp-intree.list-row:hover { --lp-row-bg: color-mix(in srgb, var(--lp-accent) 18%, var(--ui-surface)); }
@@ -356,7 +362,7 @@ import {
     /* Toolbar + pagination keep their height; only the active body view flexes.
        The body view differs per breakpoint/mode: .relative (desktop table),
        .lp-mcards (mobile cards), or .grid (grid view). */
-    .lp-fullbleed .list-card > :not(.relative):not(.lp-mcards):not(.grid):not([listCustomView]) {
+    .lp-fullbleed .list-card > :not(.relative):not(.lp-mcards):not(.grid):not(.lp-gallery):not([listCustomView]) {
       flex: 0 0 auto;
     }
     /* Consumer-provided custom views (e.g. the Chart-of-Accounts tree) also
@@ -373,7 +379,8 @@ import {
     }
     .lp-fullbleed .list-card > .relative,
     .lp-fullbleed .list-card > .lp-mcards,
-    .lp-fullbleed .list-card > .grid {
+    .lp-fullbleed .list-card > .grid,
+    .lp-fullbleed .list-card > .lp-gallery {
       flex: 1 1 auto;
       min-height: 0;
     }
@@ -384,7 +391,8 @@ import {
     /* The table host scrolls itself; the card/grid views need their own
        vertical scroll (the table's #scrollHost already has overflow-y). */
     .lp-fullbleed .list-card > .lp-mcards,
-    .lp-fullbleed .list-card > .grid {
+    .lp-fullbleed .list-card > .grid,
+    .lp-fullbleed .list-card > .lp-gallery {
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
     }
@@ -436,7 +444,8 @@ import {
     .lp-fullbleed.lp-fit .list-card { flex: 0 1 auto; }
     .lp-fullbleed.lp-fit .list-card > .relative,
     .lp-fullbleed.lp-fit .list-card > .lp-mcards,
-    .lp-fullbleed.lp-fit .list-card > .grid { flex: 0 1 auto; min-height: 0; }
+    .lp-fullbleed.lp-fit .list-card > .grid,
+    .lp-fullbleed.lp-fit .list-card > .lp-gallery { flex: 0 1 auto; min-height: 0; }
     .lp-fullbleed.lp-fit .overflow-x-auto { flex: 0 1 auto; }
 
     /* ── Column resize handle ───────────────────────────────────────────────
@@ -761,6 +770,29 @@ import {
     .lp-bulk__actions { display: flex; flex: 1 1 auto; flex-wrap: wrap; align-items: center; gap: var(--lp-gap); }
 
     .lp-foot { padding: var(--lp-foot-py) var(--lp-pad-x); border-top: 1px solid var(--ui-line); background: var(--ui-surface); }
+    /* ── Gallery view (opt-in): auto-fill grid, card height follows its content ─────────────────────────────
+       Comfortable 12px gap/padding, 180px min column; Compact 8px / 150px. 2 columns at narrow widths. */
+    .lp-gallery {
+      --lp-gal-gap: 12px;
+      --lp-gal-min: 180px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(var(--lp-gal-min), 1fr));
+      align-items: start;
+      align-content: start;
+      gap: var(--lp-gal-gap);
+      padding: var(--lp-gal-gap);
+      min-inline-size: 0;
+    }
+    :host-context([data-density="compact"]) .lp-gallery { --lp-gal-gap: 8px; --lp-gal-min: 150px; }
+    @media (max-width: 420px) { .lp-gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    .lp-gallery__cell { min-inline-size: 0; }
+    .lp-gallery__skel { border: 1px solid var(--ui-line); border-radius: 12px; background: var(--ui-surface); overflow: hidden; padding-block-end: 10px; }
+    .lp-gallery__skel-img { aspect-ratio: 4 / 3; background: var(--ui-surface-2); }
+    :host-context([data-density="compact"]) .lp-gallery__skel-img { aspect-ratio: 3 / 2; }
+    .lp-gallery__skel-line { block-size: 10px; margin: 10px 12px 0; border-radius: 4px; background: var(--ui-surface-2); }
+    .lp-gallery__skel-img, .lp-gallery__skel-line { animation: lp-gal-pulse 1.4s ease-in-out infinite; }
+    @keyframes lp-gal-pulse { 50% { opacity: .55; } }
+    @media (prefers-reduced-motion: reduce) { .lp-gallery__skel-img, .lp-gallery__skel-line { animation: none; } }
 
 
     /* ── Row tree ───────────────────────────────────────────────────────────────
@@ -1026,7 +1058,48 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
   @Input() mobileExtraViews = false;
 
   /** Mobile "list" button: back to the grid / cards body. */
-  showMobileList(): void { this.setViewMode('grid'); }
+  showMobileList(): void {
+    if (this.viewMode() === 'grid') return;
+    this.viewMode.set('grid');
+    this.viewModeChange.emit('grid');
+  }
+
+  /**
+   * Opt-in image-first gallery (Products). When set, the second toggle button is "Gallery" instead of "Grid", a
+   * requested `'grid'` view maps to `'gallery'`, and while the gallery is on the list requests `imageKey` on top of
+   * the user's own columns (never written back to their saved selection). Other pages leave this unset.
+   */
+  @Input() galleryView?: GalleryViewConfig;
+
+  /** Skeleton cards while the gallery loads: one page's worth, capped so a 100-row page doesn't paint 100 placeholders. */
+  gallerySkeletonRows = computed(() => Array.from({ length: Math.min(this.pageSize() || 12, 12) }, (_, i) => i));
+
+  /** The card template the page supplied for the gallery body. */
+  getGalleryCardTemplate = computed(() => this.galleryCardTemplates?.first?.template);
+
+  /** `'grid'` is what a page without a gallery calls its card view; with one, the same request means the gallery. */
+  normalizeViewMode(mode: string): string {
+    return mode === 'grid' && !!this.galleryView && !this.isMobile() ? 'gallery' : mode;
+  }
+
+  /** API columns for the current view: the user's own, plus the gallery's image key while the gallery is open. */
+  private apiColumnsFor(mode: string): string[] {
+    const cols = ColumnHelper.getApiColumnKeys(this.columns);
+    const img = this.galleryView?.imageKey;
+    return mode === 'gallery' && img && !cols.includes(img) ? [...cols, img] : cols;
+  }
+
+  /** Columns the rows on screen (or the request in flight) were asked for; null before the first load or after a failed one. */
+  private _loadedApiColumns: Set<string> | null = null;
+
+  /** Reload only when the rows on screen lack a field the (new) view needs — never in a loop: this is called from
+   *  user actions only, and a reload always records a superset of what the view needs. */
+  private reloadIfViewNeedsMore(): void {
+    if (!this.galleryView) return;
+    const loaded = this._loadedApiColumns;
+    if (loaded && this.apiColumnsFor(this.viewMode()).every(c => loaded.has(c))) return;
+    this.loadData();
+  }
 
   /** Fires whenever the active view mode changes — including the
    *  built-in 'table' / 'grid' modes. Useful for parents that need
@@ -1094,6 +1167,7 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
   @ContentChildren(ListMobileTitleDirective) mobileTitleTemplates!: QueryList<ListMobileTitleDirective>;
   @ContentChildren(ListMobileChipDirective) mobileChipTemplates!: QueryList<ListMobileChipDirective>;
   @ContentChildren(ListRowDetailDirective) rowDetailTemplates!: QueryList<ListRowDetailDirective>;
+  @ContentChildren(ListGalleryCardDirective) galleryCardTemplates!: QueryList<ListGalleryCardDirective>;
 
   // ══════════════════════════════════════════════════════════════
   // STATE SIGNALS
@@ -1766,6 +1840,8 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
       // (table by default) instead of staying stuck on grid.
       this.viewMode.set(this.preMobileViewMode || 'table');
       this.preMobileViewMode = null;
+      // The phone body was loaded without the gallery's image; fetch it only if the restored view needs it.
+      if (this._loadedApiColumns) this.reloadIfViewNeedsMore();
     }
     // Keep the no-padding shell in sync with the effective (desktop-only)
     // full-bleed as the viewport crosses the mobile breakpoint.
@@ -1824,9 +1900,11 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
       // doesn't silently drop search hits against non-existent
       // fields. Tracking-side `visibleColumns()` still includes them
       // so the table renders them locally.
-      columns: ColumnHelper.getApiColumnKeys(this.columns),
+      // The gallery adds its image key on top (see apiColumnsFor); the saved selection is untouched.
+      columns: this.apiColumnsFor(this.viewMode()),
       signal: this.listAbort.signal,
     };
+    this._loadedApiColumns = new Set(params.columns);
 
     // "Scope" excludes page/limit/sort — those operate on the same dataset
     // and should preserve selection across reloads. Search + filters change
@@ -1869,6 +1947,7 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
           console.error('ListPageComponent: Error loading data', error);
           recordListMetric({ kind: 'list', page: this.pageTitle, mode: metricMode, ms: performance.now() - listT0, ok: false });
           this.isLoading.set(false);
+          this._loadedApiColumns = null;   // nothing usable on screen: the next view switch must fetch
           this.data.set([]);
           if (scopeChanged) this.pruneSelection([]);
           this.responseInfo.set({ total: 0, hasNext: false });
@@ -2922,11 +3001,20 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
       allColsSnapshot: allCols.map(c => ({ key: c.key, visible: c.visible, isCustomField: c.isCustomField })),
       savedPrefs: this._savedPrefs,
     });
+    // The gallery always shows the image: its field reads checked and locked here, but what the user saved is
+    // remembered and written back on apply, so the stored selection never changes because of the view.
+    const galleryKey = this.viewMode() === 'gallery' ? this.galleryView?.imageKey : undefined;
+    const userImageVisible = galleryKey
+      ? (useFallback ? allCols.find(c => c.key === galleryKey)?.visible !== false : visibleKeys.includes(galleryKey))
+      : false;
     const columnsWithState = allCols.map(col => ({
       ...col,
       visible: col.isCustomField
         ? (col.visible === true)
         : useFallback ? (col.visible !== false) : visibleKeys.includes(col.key),
+      ...(galleryKey && col.key === galleryKey
+        ? { visible: true, locked: true, lockedHint: 'COMMON.GALLERY_ALWAYS_SHOWN' }
+        : {}),
     }));
 
     const ref = this.modalService.open<CustomizeColumnsModalComponent, CustomizeColumnsData, TableColumn[]>(
@@ -2941,6 +3029,14 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
       }
     );
     ref.afterClosed().then(result => {
+      if (result && galleryKey) {
+        // Undo the display-only lock: restore the user's own Image choice (and drop the temporary hint).
+        result = result.map(c => {
+          if (c.key !== galleryKey) return c;
+          const { lockedHint, ...rest } = c;
+          return { ...rest, visible: userImageVisible, locked: allCols.find(a => a.key === galleryKey)?.locked };
+        });
+      }
       if (result) {
         this.columns = result;
         this.visibleColumns.set(ColumnHelper.getColumnKeys(result));
@@ -3069,9 +3165,11 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
     if (this.isMobile() && mode === 'table') {
       return;
     }
+    mode = this.normalizeViewMode(mode);
     if (this.viewMode() === mode) return;
     this.viewMode.set(mode);
     this.viewModeChange.emit(mode);
+    this.reloadIfViewNeedsMore();
   }
 
   /** True when the active view mode is one of the built-in
@@ -3079,7 +3177,7 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
    *  (e.g. 'tree') so the parent's projected content takes over. */
   isBuiltInView = computed<boolean>(() => {
     const m = this.viewMode();
-    return m === 'table' || m === 'grid';
+    return m === 'table' || m === 'grid' || m === 'gallery';
   });
 
   // ══════════════════════════════════════════════════════════════

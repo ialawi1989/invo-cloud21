@@ -88,3 +88,13 @@ export class ListRowDetailDirective {
 export class ListMobileChipDirective {
   constructor(public template: TemplateRef<any>) {}
 }
+
+/**
+ * Gallery card slot (opt-in via `[galleryView]` on <app-list-page>). Renders ONE card per row in the gallery body.
+ * Context: `$implicit` = row, `selected` = whether the row is in the page's selection, `selectable` = the page allows it.
+ * Usage: <ng-template listGalleryCard let-row let-selected="selected"> … </ng-template>
+ */
+@Directive({ selector: '[listGalleryCard]', standalone: true })
+export class ListGalleryCardDirective {
+  constructor(public template: TemplateRef<any>) {}
+}

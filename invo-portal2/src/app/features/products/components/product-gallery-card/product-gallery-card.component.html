@@ -1,0 +1,58 @@
+<div class="pgc__media">
+  @if (imageState() === 'none' || imageState() === 'error') {
+    <div class="pgc__ph" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+    </div>
+  } @else {
+    @if (imageState() === 'loading') { <div class="pgc__skel" aria-hidden="true"></div> }
+    <img class="pgc__img" [class.is-loaded]="imageState() === 'loaded'" [src]="imageUrl()" [alt]="displayName()"
+      loading="lazy" decoding="async" (load)="onImageLoad()" (error)="onImageError()" />
+  }
+
+  <!-- Overlay controls: they sit on a semi-opaque surface and never let a click reach the card. -->
+  @if (selectable()) {
+    <label class="pgc__ctl pgc__check" (click)="stop($event)">
+      <input type="checkbox" [checked]="selected()" (change)="onSelect($event)" (keydown.enter)="stop($event)"
+        [attr.aria-label]="displayName()" />
+    </label>
+  }
+  @if (menuTemplate(); as tpl) {
+    <div class="pgc__ctl pgc__menu" (click)="stop($event)" (keydown.enter)="stop($event)">
+      <ng-container [ngTemplateOutlet]="tpl" [ngTemplateOutletContext]="{ $implicit: row() }"></ng-container>
+    </div>
+  }
+  @if (isParent()) {
+    <span class="pgc__pill">{{ pillLabel() }}</span>
+  }
+</div>
+
+<div class="pgc__body">
+  <div class="pgc__name" [appTooltip]="displayName()">{{ displayName() }}</div>
+
+  @if (code(); as c) {
+    <div class="pgc__code"><span class="app-product-badge" [class.app-product-badge--sku]="c.kind === 'sku'" [class.app-product-badge--barcode]="c.kind === 'barcode'">{{ c.text }}</span></div>
+  }
+  @if (taxonomy()) {
+    <div class="pgc__tax" [appTooltip]="taxonomy()">{{ taxonomy() }}</div>
+  }
+
+  @if (hasPrice() || showStock()) {
+    <div class="pgc__row">
+      @if (hasPrice()) { <span class="pgc__price">{{ row().defaultPrice | mycurrency }}</span> } @else { <span></span> }
+      @if (showStock()) {
+        @if (isMatrix()) {
+          <span class="pgc__qty pgc__qty--none" [appTooltip]="'PRODUCTS.TREE.SEE_VARIANTS' | translate">&#8212;</span>
+        } @else {
+          <span class="pgc__qty" [class.pgc__qty--out]="stockTier() === 'out'" [class.pgc__qty--low]="stockTier() === 'low'"
+            [attr.role]="stockTier() === 'out' ? 'img' : null"
+            [attr.aria-label]="stockTier() === 'out' ? ('PRODUCTS.STOCK.OUT_OF_STOCK' | translate) : null">
+            @if (stockTier() === 'out') {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.5"/></svg>
+            }
+            {{ qty() }}
+          </span>
+        }
+      }
+    </div>
+  }
+</div>

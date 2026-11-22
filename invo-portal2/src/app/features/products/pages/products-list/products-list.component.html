@@ -18,7 +18,9 @@
   [entityType]="'product'"
   [loadCustomFieldsFn]="loadCustomFieldsFn"
   [mobileCardConfig]="mobileCardConfig"
+  [galleryView]="galleryView"
   [resultsNoun]="('PRODUCTS.TITLE' | translate).toLocaleLowerCase()"
+  [rowClass]="rowClassFn"
   (rowClicked)="onRowClick($event)">
 
   <!-- ═══ Header Action Buttons ═══ -->
@@ -216,12 +218,21 @@
         </button>
       }
 
+      <ng-container [ngTemplateOutlet]="rowMenu" [ngTemplateOutletContext]="{ $implicit: row }"></ng-container>
+    </div>
+  </ng-template>
+
+  <!-- Row overflow menu (⋯) — ONE template shared by the table's actions column and the gallery card, so the two
+       can never drift apart. `gallery` only changes the accessible name ("More actions"). -->
+  <ng-template #rowMenu let-row let-gallery="gallery">
+    <div class="inline-flex items-center">
       <!-- Overflow menu (⋯) — circular floating button, always visible -->
       <button type="button"
         cdkOverlayOrigin
         #menuOrigin="cdkOverlayOrigin"
         (click)="toggleRowMenu(row, $event)"
-        [attr.aria-label]="'COMMON.ACTIONS.MORE' | translate"
+        [attr.aria-label]="(gallery ? 'COMMON.MORE_ACTIONS' : 'COMMON.ACTIONS.MORE') | translate"
+        [appTooltip]="gallery ? ('COMMON.MORE_ACTIONS' | translate) : ''"
         class="lp-row-btn">
         <svg fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
           <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
@@ -281,6 +292,20 @@
         </div>
       </ng-template>
     </div>
+  </ng-template>
+
+  <!-- ═══ Gallery view (desktop): image-first cards. Selection, open and the kebab are the list's own. ═══ -->
+  <ng-template listGalleryCard let-row let-selected="selected" let-selectable="selectable">
+    <app-product-gallery-card
+      [row]="row"
+      [selected]="selected"
+      [selectable]="selectable"
+      [menuTemplate]="galleryMenu"
+      (open)="openProductDrawer($event)"
+      (selectToggle)="listPage?.toggleRowSelection($event)" />
+  </ng-template>
+  <ng-template #galleryMenu let-row>
+    <ng-container [ngTemplateOutlet]="rowMenu" [ngTemplateOutletContext]="{ $implicit: row, gallery: true }"></ng-container>
   </ng-template>
 
   <!-- ═══ Compact mobile cards (< 768px) ═══

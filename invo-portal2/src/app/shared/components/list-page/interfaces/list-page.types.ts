@@ -36,6 +36,10 @@ export interface TableColumn<T = any> {
    */
   noApi?: boolean;
 
+  /** i18n key of the tooltip on the lock icon in Manage Fields when a page locks this column only temporarily
+   *  (e.g. the gallery view forces the image on). */
+  lockedHint?: string;
+
   // Clickable navigation config
   clickable?: {
     enabled: boolean;
@@ -479,4 +483,9 @@ export interface ListRowNode<T = any> {
   remaining?: number;
   loadingMore?: boolean;
   moreError?: boolean;
+}
+
+/** Opt-in image-first gallery view. `imageKey` is the API column the view always requests, on top of the user's own. */
+export interface GalleryViewConfig {
+  imageKey: string;
 }
