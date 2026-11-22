@@ -328,6 +328,10 @@ export function reportsSecurity() {
         name: "Short Over Report",
         securityType: "cloud",
       }),
+      "ShortOverSummaryReport": new PrivilegeSetting({
+        name: "Short Over Summary Report",
+        securityType: "cloud",
+      }),
       "CustomerAgingReport": new PrivilegeSetting({
         name: "Customer Aging Report",
         securityType: "cloud",

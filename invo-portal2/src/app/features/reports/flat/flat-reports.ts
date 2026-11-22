@@ -401,6 +401,14 @@ export const FLAT_REPORTS: Record<string, FlatReportConfig> = {
       { key: 'expected', tone: 'blue', type: 'currency', end: true, total: true }, { key: 'shortOver', tone: 'teal', type: 'profit', end: true, total: true },
     ],
   },
+  // one row per tender over the period (the backend groups): { tender, countAmount, expected, shortOver }
+  'short-over-summary-report': {
+    route: 'shortOverSummary', paged: false,
+    columns: [
+      { key: 'tender', tone: 'amber' }, { key: 'countAmount', tone: 'blue', type: 'currency', end: true, total: true },
+      { key: 'expected', tone: 'blue', type: 'currency', end: true, total: true }, { key: 'shortOver', tone: 'teal', type: 'profit', end: true, total: true },
+    ],
+  },
   'driver-report': {
     route: 'getDriverReport', paged: true,
     columns: [
