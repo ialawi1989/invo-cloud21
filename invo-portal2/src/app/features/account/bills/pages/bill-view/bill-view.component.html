@@ -41,7 +41,7 @@
     <app-doc-view-attachments beforePaper type="bill" [docId]="id" [attachments]="b.attachment"/>
 
     <div tabs id="bill-additional-details">
-      <app-doc-additional-details [config]="additionalDetails()"/>
+      <app-doc-additional-details [config]="additionalDetails()" [refreshKey]="doc()"/>
     </div>
   </app-doc-view-shell>
 }

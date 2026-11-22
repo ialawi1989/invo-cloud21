@@ -56,7 +56,7 @@
 
     @if (!isMerged(inv)) {
       <div tabs id="invoice-additional-details">
-        <app-doc-additional-details [config]="additionalDetails()"/>
+        <app-doc-additional-details [config]="additionalDetails()" [refreshKey]="doc()"/>
       </div>
     }
 

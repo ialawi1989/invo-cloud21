@@ -1,6 +1,6 @@
 import { StatusBadgeComponent } from '@shared/components/status-badge/status-badge.component';
 import '../../account-i18n';
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, inject, input, signal } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, effect, inject, input, signal, untracked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -199,6 +199,8 @@ export class DocAdditionalDetailsComponent implements AfterViewInit, OnDestroy {
   readonly TAB_LABEL_KEY = TAB_LABEL_KEY;
 
   config = input.required<DocAdditionalDetailsConfig>();
+  /** Pass the loaded document: when it changes (apply credit, delete payment ...) the tabs already opened are loaded again. */
+  refreshKey = input<unknown>(null);
 
   active = signal<DocAdditionalDetailsTabKey>('journal');
   loading = signal(false);
@@ -233,6 +235,18 @@ export class DocAdditionalDetailsComponent implements AfterViewInit, OnDestroy {
     }
     return items;
   }
+
+  private firstKey = true;
+  private refreshOnKeyChange = effect(() => {
+    this.refreshKey();
+    if (this.firstKey) { this.firstKey = false; return; }
+    untracked(() => {
+      const opened = [...this.loadedTabs];
+      this.loadedTabs.clear();
+      this.movementLoaded = false;
+      for (const t of opened) void this.load(t);
+    });
+  });
 
   private loadedTabs = new Set<DocAdditionalDetailsTabKey>();
   private movementLoaded = false;
