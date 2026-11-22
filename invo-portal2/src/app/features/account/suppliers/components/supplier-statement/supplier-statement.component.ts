@@ -80,7 +80,7 @@ const num = (v: unknown): number => {
                 }
               </td>
               <td class="end" [class.cs-neg]="num(row.amount) < 0" [class.cs-pos]="num(row.amount) >= 0">{{ row.amount | mycurrency }}</td>
-              <td class="end" [class.cs-neg]="num(row.payment) < 0" [class.cs-pos]="num(row.payment) >= 0">{{ -num(row.payment) | mycurrency }}</td>
+              <td class="end" [class.cs-neg]="num(row.payment) > 0" [class.cs-pos]="num(row.payment) <= 0">@if (num(row.payment) > 0) {({{ num(row.payment) | mycurrency }})} @else {{{ -num(row.payment) | mycurrency }}}</td>
               <td class="end" [class.cs-neg]="num(row.Balance) < 0" [class.cs-pos]="num(row.Balance) >= 0">{{ row.Balance | mycurrency }}</td>
             </tr>
           } @empty {
@@ -91,7 +91,7 @@ const num = (v: unknown): number => {
           <tr>
             <td colspan="3"><b>{{ 'SUPPLIERS.STATEMENT.TOTAL' | translate }}</b></td>
             <td class="end"><b>{{ totals().amount | mycurrency }}</b></td>
-            <td class="end"><b>{{ -totals().payment | mycurrency }}</b></td>
+            <td class="end"><b>@if (totals().payment > 0) {({{ totals().payment | mycurrency }})} @else {{{ -totals().payment | mycurrency }}}</b></td>
             <td class="end"><b>{{ totals().amount + totals().payment | mycurrency }}</b></td>
           </tr>
         </tfoot>
