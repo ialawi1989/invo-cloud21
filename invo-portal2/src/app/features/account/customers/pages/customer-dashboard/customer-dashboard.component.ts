@@ -433,9 +433,14 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
 
   /** Print / PDF / Excel of the statement currently on screen — same params (and flat body) as legacy. */
   printStatement(): void { void this.reports.printFlat('customerstatment', this.statementParams()); }
+  /** Export file name: `<customer name>-statement`. */
+  private statementFileName(): string | undefined {
+    const name = this.customer()?.name?.trim();
+    return name ? `${name}-statement` : undefined;
+  }
   statementExportMenu = (): DropdownMenuBtnItem[] => [
-    { label: 'PDF', click: () => void this.reports.exportFlat('customerstatment', 'pdf', this.statementParams(), 'customer-statement'), disabled: false, danger: false },
-    { label: 'Excel', click: () => void this.reports.exportFlat('customerstatment', 'xlsx', this.statementParams(), 'customer-statement'), disabled: false, danger: false },
+    { label: 'PDF', click: () => void this.reports.exportFlat('customerstatment', 'pdf', this.statementParams(), 'customer-statement', this.statementFileName()), disabled: false, danger: false },
+    { label: 'Excel', click: () => void this.reports.exportFlat('customerstatment', 'xlsx', this.statementParams(), 'customer-statement', this.statementFileName()), disabled: false, danger: false },
   ];
 
   private statementParams() {

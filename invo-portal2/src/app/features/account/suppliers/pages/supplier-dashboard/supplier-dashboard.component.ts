@@ -462,9 +462,14 @@ export class SupplierDashboardComponent implements OnInit, OnDestroy {
 
   // The statement endpoints read their params from the top level of the body (not under `filter`), like legacy.
   printStatement(): void { void this.reports.printFlat('supplierstatment', this.statementParams()); }
+  /** Export file name: `<supplier name>-statement`. */
+  private statementFileName(): string | undefined {
+    const name = this.supplier()?.name?.trim();
+    return name ? `${name}-statement` : undefined;
+  }
   statementExportMenu = (): DropdownMenuBtnItem[] => [
-    { label: 'PDF', click: () => void this.reports.exportFlat('supplierstatment', 'pdf', this.statementParams(), 'supplier-statement'), disabled: false, danger: false },
-    { label: 'Excel', click: () => void this.reports.exportFlat('supplierstatment', 'xlsx', this.statementParams(), 'supplier-statement'), disabled: false, danger: false },
+    { label: 'PDF', click: () => void this.reports.exportFlat('supplierstatment', 'pdf', this.statementParams(), 'supplier-statement', this.statementFileName()), disabled: false, danger: false },
+    { label: 'Excel', click: () => void this.reports.exportFlat('supplierstatment', 'xlsx', this.statementParams(), 'supplier-statement', this.statementFileName()), disabled: false, danger: false },
   ];
 
   branchLabel = (b: BranchOpt) => b?.label ?? '';

@@ -97,9 +97,10 @@ export class ReportsService {
    * `exportXLSX` / `exportPDF`, e.g. `customerstatment`) — unlike {@link exportPath}, which wraps them in
    * `{ filter }`. PDFs also send the UI language so the server can render right-to-left.
    */
-  async exportFlat(path: string, type: 'pdf' | 'xlsx', params: Record<string, any>, fileBase = path): Promise<void> {
+  async exportFlat(path: string, type: 'pdf' | 'xlsx', params: Record<string, any>, fileBase = path, fileName?: string): Promise<void> {
     const { blob, filename } = await this.requestFlat(path, type, params, fileBase);
-    if (blob) downloadBlob(blob, filename);
+    // `fileName` (no extension) beats the server's generated name, e.g. `Acme-statement.pdf`
+    if (blob) downloadBlob(blob, fileName ? `${fileName.replace(/[\\/:*?"<>|]+/g, ' ').trim()}.${type}` : filename);
   }
 
   /** Same request as {@link exportFlat} for a PDF, but opens the print dialog instead of downloading. */
