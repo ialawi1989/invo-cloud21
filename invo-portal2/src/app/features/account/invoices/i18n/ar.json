@@ -272,6 +272,7 @@
       "AMOUNT_TO_CREDIT": "المبلغ المراد تطبيقه",
       "INVOICE_BALANCE_DUE": "المتبقي على الفاتورة",
       "APPLY_CREDITS": "تطبيق الأرصدة",
+      "APPLY_FULL": "تطبيق كامل",
       "NO_CREDITS": "لا توجد أرصدة متاحة"
     },
     "PAYMENT": {

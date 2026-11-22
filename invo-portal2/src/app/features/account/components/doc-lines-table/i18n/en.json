@@ -60,6 +60,7 @@
     "BARCODE": "Barcode",
     "COL_QTY": "Qty",
     "COL_PRICE": "Price",
+    "BELOW_COST": "Below cost",
     "COL_DISCOUNT": "Discount",
     "COL_TAX": "Tax",
     "COL_AMOUNT": "Amount",

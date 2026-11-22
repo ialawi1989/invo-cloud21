@@ -42,7 +42,10 @@ interface AppliedCredit {
   template: `
     <app-modal-header [title]="('INVOICES.CREDIT.APPLY_CREDITS_FOR' | translate) + ' (' + data.invoiceNumber + ')'"/>
     <div class="ac__body">
-      <div class="ac__balance"><b>{{ 'INVOICES.CREDIT.INVOICE_BALANCE' | translate }}:</b> {{ data.balance | mycurrency }}</div>
+      <div class="ac__balance">
+        <button type="button" class="ac__btn ac__btn--sm" [disabled]="!credits().length" (click)="applyFull()">{{ 'INVOICES.CREDIT.APPLY_FULL' | translate }}</button>
+        <span><b>{{ 'INVOICES.CREDIT.INVOICE_BALANCE' | translate }}:</b> {{ data.balance | mycurrency }}</span>
+      </div>
 
       <table class="ac__table">
         <thead>
@@ -77,7 +80,8 @@ interface AppliedCredit {
   `,
   styles: [`
     .ac__body { padding: 16px 20px; min-width: 560px; max-width: 100%; display: flex; flex-direction: column; gap: 14px; }
-    .ac__balance { text-align: end; }
+    .ac__balance { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .ac__btn--sm { padding: 6px 14px; font-size: 12.5px; }
     .ac__table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
     .ac__table th { text-align: start; background: var(--ui-surface-1); color: var(--ui-muted); font-size: 12px; text-transform: uppercase; padding: 10px 12px; }
     .ac__table td { padding: 8px 12px; border-top: 1px solid var(--ui-surface-2); }
@@ -123,6 +127,17 @@ export class ApplyCreditModalComponent implements OnInit {
     if (others + amount > this.data.balance) amount = Math.max(0, MathUtils.sub(this.data.balance, others));
     if (amount > credit.credit) amount = credit.credit;
     credit.amount = amount;
+    this.credits.update(l => [...l]);
+  }
+
+  /** "Apply full": spends the credits in order until the invoice's balance is covered. */
+  applyFull(): void {
+    let left = this.data.balance;
+    for (const c of this.credits()) {
+      const amount = Math.max(0, Math.min(Number(c.credit) || 0, left));
+      c.amount = amount;
+      left = MathUtils.sub(left, amount);
+    }
     this.credits.update(l => [...l]);
   }
 

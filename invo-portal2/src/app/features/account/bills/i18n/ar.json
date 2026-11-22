@@ -95,13 +95,14 @@
     },
     "APPLY": {
       "TITLE": "تطبيق الأرصدة",
-      "BILL_BALANCE": "رصيد الفاتورة",
+      "BILL_BALANCE": "رصيد فاتورة الشراء",
       "CREDIT": "الرصيد",
       "AVAILABLE": "المتاح",
       "AMOUNT_TO_CREDIT": "المبلغ المطبق",
       "BALANCE_DUE": "الرصيد المستحق",
       "NO_CREDITS": "لا يوجد رصيد متاح للمورد",
-      "APPLY": "تطبيق"
+      "APPLY": "تطبيق",
+      "APPLY_FULL": "تطبيق كامل"
     },
     "SPLIT": {
       "SERIALS_TITLE": "الأرقام التسلسلية",

@@ -101,7 +101,8 @@
       "AMOUNT_TO_CREDIT": "Amount to credit",
       "BALANCE_DUE": "Balance due",
       "NO_CREDITS": "The supplier has no credit available",
-      "APPLY": "Apply"
+      "APPLY": "Apply",
+      "APPLY_FULL": "Apply full"
     },
     "SPLIT": {
       "SERIALS_TITLE": "Serial numbers",

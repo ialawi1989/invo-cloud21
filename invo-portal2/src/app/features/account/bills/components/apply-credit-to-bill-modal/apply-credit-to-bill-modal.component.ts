@@ -43,7 +43,10 @@ interface CreditRow {
   template: `
     <app-modal-header [title]="('BILLS.APPLY.TITLE' | translate) + ' (' + data.billNumber + ')'"/>
     <div class="ac__body">
-      <div class="ac__balance"><b>{{ 'BILLS.APPLY.BILL_BALANCE' | translate }}:</b> {{ data.balance | mycurrency }}</div>
+      <div class="ac__balance">
+        <button type="button" class="ac__btn ac__btn--sm" [disabled]="!rows().length" (click)="applyFull()">{{ 'BILLS.APPLY.APPLY_FULL' | translate }}</button>
+        <span><b>{{ 'BILLS.APPLY.BILL_BALANCE' | translate }}:</b> {{ data.balance | mycurrency }}</span>
+      </div>
       <table class="ac__table">
         <thead>
           <tr>
@@ -76,7 +79,8 @@ interface CreditRow {
   `,
   styles: [`
     .ac__body { padding: 16px 20px; min-width: 560px; max-width: 100%; display: flex; flex-direction: column; gap: 14px; }
-    .ac__balance { text-align: end; }
+    .ac__balance { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .ac__btn--sm { padding: 6px 14px; font-size: 12.5px; }
     .ac__table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
     .ac__table th { text-align: start; background: var(--ui-surface-1); color: var(--ui-muted); font-size: 12px; text-transform: uppercase; padding: 10px 12px; }
     .ac__table td { padding: 8px 12px; border-top: 1px solid var(--ui-surface-2); }
@@ -115,6 +119,17 @@ export class ApplyCreditToBillModalComponent implements OnInit {
     if (others + amount > this.data.balance) amount = Math.max(0, MathUtils.sub(this.data.balance, others));
     if (amount > row.credit) amount = row.credit;
     row.amount = amount;
+    this.rows.update(l => [...l]);
+  }
+
+  /** "Apply full": spends the credits in order until the bill's balance is covered. */
+  applyFull(): void {
+    let left = this.data.balance;
+    for (const r of this.rows()) {
+      const amount = Math.max(0, Math.min(r.credit, left));
+      r.amount = amount;
+      left = MathUtils.sub(left, amount);
+    }
     this.rows.update(l => [...l]);
   }
 

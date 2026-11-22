@@ -60,6 +60,7 @@
     "BARCODE": "الباركود",
     "COL_QTY": "الكمية",
     "COL_PRICE": "السعر",
+    "BELOW_COST": "أقل من التكلفة",
     "COL_DISCOUNT": "الخصم",
     "COL_TAX": "الضريبة",
     "COL_AMOUNT": "المبلغ",

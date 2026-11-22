@@ -213,6 +213,7 @@ input[type=checkbox], input[type=radio] { accent-color: #2691a4; }
 
 .dl__txt { width: 100%; box-sizing: border-box; background: var(--ui-surface); border: 1px solid var(--ui-line-strong); border-radius: 8px; padding: 8px 10px; font: inherit; height: 38px; }
 .dl__hint { display: block; margin-top: 2px; font-size: 11px; color: var(--ui-muted); text-align: end; }
+.dl__hint--warn { color: var(--ui-warning, #b45309); font-weight: 600; }
 
 // Icon badge on the card title, as on the other form cards.
 .dl__title { display: flex; align-items: center; gap: 12px; }

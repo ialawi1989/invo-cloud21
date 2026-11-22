@@ -1096,6 +1096,8 @@ export class InvoiceLine {
       } else if (key == 'selectedItem') {
         const _selectedItem = new SelectedItem();
         _selectedItem.ParseJson(json[key]);
+        // the saved line may not carry the product cost: 0 = unknown (the class default of 1 would make the below-cost warning fire)
+        if (json[key]?.unitCost == null) _selectedItem.unitCost = 0;
         this[key] = _selectedItem;
       } else if (key == 'taxes') {
         const taxes: TaxLineModel[] = [];

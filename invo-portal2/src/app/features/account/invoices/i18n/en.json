@@ -272,6 +272,7 @@
       "AMOUNT_TO_CREDIT": "Amount to credit",
       "INVOICE_BALANCE_DUE": "Invoice balance due",
       "APPLY_CREDITS": "Apply credits",
+      "APPLY_FULL": "Apply full",
       "NO_CREDITS": "No credits available"
     },
     "PAYMENT": {

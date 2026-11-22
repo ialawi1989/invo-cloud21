@@ -150,7 +150,7 @@
                     @case ('money') {
                       <input class="dl__num" [class.dl__num--err]="err[c.key]" type="text" inputmode="decimal" autocomplete="off" [disabled]="cellDisabled(line, c)"
                         [value]="value(line, c) ?? ''" (blur)="commitMoney(line, c, $event)" (keydown.enter)="commitMoney(line, c, $event)"/>
-                      @if (c.hint?.(line); as h) { <small class="dl__hint">{{ h | translate }}</small> }
+                      @if (c.hint?.(line); as h) { <small class="dl__hint" [class.dl__hint--warn]="h === 'DOC_LINES.BELOW_COST'">{{ h | translate }}</small> }
                     }
                     @case ('text') {
                       <input class="dl__txt" type="text" autocomplete="off" [disabled]="cellDisabled(line, c)" [ngModel]="value(line, c) ?? ''" (ngModelChange)="onText(line, c, $event)"/>

@@ -15,6 +15,7 @@ export function invoiceLinesConfig(
     ...salesLinesConfig(invoice, lookups, {
     canAdjustPrice: opts.canAdjustPrice,
     barcodeType: 'invoice',
+    warnBelowCost: true,
     subItems: true,
     canRemove: (line, ctx) => {
       if (!opts.canVoid() || line.isVoided) return false;
