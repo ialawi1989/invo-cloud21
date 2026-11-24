@@ -200,7 +200,9 @@ export class PickProductModalComponent implements OnInit, AfterViewInit, OnDestr
       // `translation` is included so the row name can be localized —
       // omitting it from an explicit columns list makes the backend drop
       // the field entirely (it's not part of the reduced default set).
-      columns: ['name', 'translation', 'image', 'barcode', 'SKU', 'UOM', 'unitCost', 'defaultPrice', 'type', 'category', 'categoryId', 'tags'],
+      // categoryName + departmentName must be selected: the backend only joins those tables for selected columns, and
+      // the search term also matches them (without the joins every search fails with 'missing FROM-clause entry').
+      columns: ['name', 'translation', 'image', 'barcode', 'SKU', 'UOM', 'unitCost', 'defaultPrice', 'type', 'categoryName', 'departmentName', 'categoryId', 'tags'],
     });
     return { list: (res.list ?? []).map((r: any) => this.mapRow(r)), count: res.count ?? 0 };
   }
