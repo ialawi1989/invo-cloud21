@@ -3,6 +3,7 @@
 @use 'styles/product-detail-badges';
 @use 'styles/print';
 @use 'styles/dark';
+@use 'styles/mdi-icons';
 @use 'styles/list-page';
 // Guided-tour popover styling. Global because driver.js renders into <body>,
 // but every selector is scoped to our own tour — see the file header.

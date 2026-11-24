@@ -64,13 +64,15 @@
         </div>
         <div class="dis__field">
           <label>{{ 'DOCUMENT_BUILDER.DESIGNER.FORMAT' | translate }}</label>
-          <select [ngModel]="e.format || ''" (ngModelChange)="patch({ format: $event })">
-            <option value="">— {{ 'DOCUMENT_BUILDER.DESIGNER.FORMAT_NONE' | translate }} —</option>
-            <option value="currency">Currency (3dp)</option>
-            <option value="int">Integer</option>
-            <option value="upper">UPPERCASE</option>
-            <option value="lower">lowercase</option>
-          </select>
+          <app-search-dropdown
+            [items]="FORMAT_OPTS"
+            [displayWith]="optLabel"
+            [compareWith]="optCompare"
+            [toValue]="optValue"
+            [clearable]="false"
+            [searchable]="false"
+            [value]="e.format || ''"
+            (valueChange)="patch({ format: $any($event).value })"></app-search-dropdown>
         </div>
       }
 
@@ -105,12 +107,15 @@
       <h3 class="dis__section">{{ 'DOCUMENT_BUILDER.DESIGNER.SHAPE' | translate }}</h3>
       <div class="dis__field">
         <label>{{ 'DOCUMENT_BUILDER.DESIGNER.SHAPE_KIND' | translate }}</label>
-        <select [ngModel]="e.shapeKind || 'rect'" (ngModelChange)="patch({ shapeKind: $event })">
-          <option value="rect">Rectangle</option>
-          <option value="circle">Circle</option>
-          <option value="hline">Horizontal line</option>
-          <option value="vline">Vertical line</option>
-        </select>
+        <app-search-dropdown
+            [items]="SHAPE_OPTS"
+            [displayWith]="optLabel"
+            [compareWith]="optCompare"
+            [toValue]="optValue"
+            [clearable]="false"
+            [searchable]="false"
+            [value]="e.shapeKind || 'rect'"
+            (valueChange)="patch({ shapeKind: $any($event).value })"></app-search-dropdown>
       </div>
       <div class="dis__row dis__row--gap">
         <div class="dis__field">
@@ -257,10 +262,15 @@
       </div>
       <div class="dis__field">
         <label>{{ 'DOCUMENT_BUILDER.DESIGNER.DIRECTION' | translate }}</label>
-        <select [ngModel]="e.direction || 'vertical'" (ngModelChange)="patch({ direction: $event })">
-          <option value="vertical">Vertical</option>
-          <option value="horizontal">Horizontal</option>
-        </select>
+        <app-search-dropdown
+            [items]="DIRECTION_OPTS"
+            [displayWith]="optLabel"
+            [compareWith]="optCompare"
+            [toValue]="optValue"
+            [clearable]="false"
+            [searchable]="false"
+            [value]="e.direction || 'vertical'"
+            (valueChange)="patch({ direction: $any($event).value })"></app-search-dropdown>
       </div>
 
       <h3 class="dis__section">{{ 'DOCUMENT_BUILDER.DESIGNER.CARD_CONTENT' | translate }}</h3>

@@ -18,16 +18,13 @@
 
       <div class="pp__modal-import">
         <label class="pp__label">{{ 'DOCUMENT_BUILDER.IMPORT_LINES_FROM_INVOICE' | translate }}</label>
-        <ng-select class="pp__grow" [placeholder]="'DOCUMENT_BUILDER.SEARCH_INVOICES' | translate" [clearable]="true"
-                   [items]="invoiceOptions()" bindLabel="invoiceNumber" bindValue="id"
-                   [loading]="loadingInvoices()"
-                   (open)="loadInvoiceOptionsIfEmpty()" [searchFn]="onInvoiceSearch"
-                   (scrollToEnd)="onInvoiceScroll()"
-                   (change)="importInvoiceLines($event)">
-          <ng-template ng-option-tmp let-item="item">
-            {{ item.invoiceNumber }} — {{ item.customerName }}
-          </ng-template>
-        </ng-select>
+        <app-search-dropdown class="pp__grow"
+                   [placeholder]="'DOCUMENT_BUILDER.SEARCH_INVOICES' | translate"
+                   [loadFn]="loadInvoicePage"
+                   [displayWith]="invoiceLabel"
+                   [compareWith]="invoiceCompare"
+                   [clearable]="false"
+                   (valueChange)="importInvoiceLines($any($event)?.id)"></app-search-dropdown>
         <span class="pp__modal-import-spinner" *ngIf="importingInvoiceLines()">
           <i class="mdi mdi-loading mdi-spin"></i>
         </span>
@@ -118,25 +115,19 @@
              `group` so the PDF-safe pair is visibly separate — only those two
              survive a PDF export; see fonts.utils.ts. -->
         <label class="pp__field">{{ 'DOCUMENT_BUILDER.FONT_FAMILY' | translate }}
-          <ng-select class="pp__ng-select"
+          <app-search-dropdown class="pp__dd"
                      [items]="fontOptions()"
-                     bindValue="value"
-                     bindLabel="label"
-                     groupBy="group"
+                     [displayWith]="fontLabel"
+                     [compareWith]="fontCompare"
+                     [groupBy]="fontGroup"
                      [clearable]="false"
-                     [searchable]="true"
-                     [appendTo]="'body'"
                      [placeholder]="'DOCUMENT_BUILDER.INHERIT' | translate"
-                     [ngModel]="b.style?.font?.family ?? ''"
-                     (ngModelChange)="setFont(b, 'family', $event)">
-            <ng-template ng-optgroup-tmp let-item="item">{{ item.group }}</ng-template>
-            <ng-template ng-option-tmp let-item="item">
+                     [value]="b.style?.font?.family ?? ''"
+                     (valueChange)="setFont(b, 'family', $any($event)?.value ?? '')">
+            <ng-template #item let-item>
               <span [style.font-family]="item.value">{{ item.label }}</span>
             </ng-template>
-            <ng-template ng-label-tmp let-item="item">
-              <span [style.font-family]="item.value">{{ item.label }}</span>
-            </ng-template>
-          </ng-select>
+          </app-search-dropdown>
         </label>
         <p class="pp__hint" *ngIf="!fontIsPdfSafe()">
           {{ 'DOCUMENT_BUILDER.FONT_PDF_FALLBACK_HINT' | translate }}
@@ -199,9 +190,12 @@
                    [ngModel]="borderWidth()" (ngModelChange)="setUniformBorder(b, 'width', $event)" />
           </label>
           <label class="pp__field">{{ 'DOCUMENT_BUILDER.STYLE' | translate }}
-            <select class="pp__input" [ngModel]="borderStyleVal()" (ngModelChange)="setUniformBorder(b, 'style', $event)">
-              <option *ngFor="let s of BORDER_STYLES" [value]="s">{{ s }}</option>
-            </select>
+            <app-search-dropdown class="pp__dd"
+                     [items]="$any(BORDER_STYLES)"
+                     [clearable]="false"
+                     [searchable]="false"
+                     [value]="borderStyleVal()"
+                     (valueChange)="setUniformBorder(b, 'style', $any($event))"></app-search-dropdown>
           </label>
         </div>
         <designer-color-picker [label]="'DOCUMENT_BUILDER.BORDER_COLOR' | translate"
@@ -374,11 +368,12 @@
                      [ngModel]="$any(b).pageBreak ?? true" (ngModelChange)="patchTyped(b, { pageBreak: $event })" /> {{ 'DOCUMENT_BUILDER.PAGE_BREAK' | translate }}
             </label>
             <label class="pp__check">Direction
-              <select class="pp__input pp__input--inline"
-                      [ngModel]="$any(b).direction ?? 'vertical'" (ngModelChange)="patchTyped(b, { direction: $event })">
-                <option value="vertical">vertical</option>
-                <option value="horizontal">horizontal</option>
-              </select>
+              <app-search-dropdown class="pp__dd"
+                     [items]="['vertical', 'horizontal']"
+                     [clearable]="false"
+                     [searchable]="false"
+                     [value]="$any(b).direction ?? 'vertical'"
+                     (valueChange)="patchTyped(b, { direction: $any($event) })"></app-search-dropdown>
             </label>
           </div>
 
@@ -641,9 +636,12 @@
       <fieldset class="pp__group" *ngIf="hasGroup('barcode') && b.type === 'barcode'">
         <legend class="pp__legend">{{ 'DOCUMENT_BUILDER.BARCODE' | translate }}</legend>
         <label class="pp__field">{{ 'DOCUMENT_BUILDER.SYMBOLOGY' | translate }}
-          <select class="pp__input" [ngModel]="$any(b).symbology" (ngModelChange)="patchTyped(b, { symbology: $event })">
-            <option *ngFor="let s of BARCODE_SYMBOLOGIES" [value]="s">{{ s }}</option>
-          </select>
+          <app-search-dropdown class="pp__dd"
+                     [items]="$any(BARCODE_SYMBOLOGIES)"
+                     [clearable]="false"
+                     [searchable]="false"
+                     [value]="$any(b).symbology"
+                     (valueChange)="patchTyped(b, { symbology: $any($event) })"></app-search-dropdown>
         </label>
         <label class="pp__check">
           <input type="checkbox" class="field-checkbox"
@@ -743,13 +741,12 @@
         <legend class="pp__legend">{{ 'DOCUMENT_BUILDER.PAPER' | translate }}</legend>
 
         <label class="pp__field">{{ 'DOCUMENT_BUILDER.CUSTOM_SIZE' | translate }}
-          <ng-select class="pp__ng-select"
+          <app-search-dropdown class="pp__dd"
                      [items]="PAPER_SIZES"
                      [clearable]="false"
                      [searchable]="false"
-                     [appendTo]="'body'"
-                     [ngModel]="t.page.size"
-                     (ngModelChange)="onPaperSize($event)"></ng-select>
+                     [value]="t.page.size"
+                     (valueChange)="onPaperSize($any($event))"></app-search-dropdown>
         </label>
 
         <div class="pp__grid-2" *ngIf="t.page.size === 'Custom'">
@@ -802,25 +799,19 @@
              in — canvas, HTML export and PDF alike — so it is the one place to
              change the whole document's typeface. -->
         <label class="pp__field">{{ 'DOCUMENT_BUILDER.DOCUMENT_FONT' | translate }}
-          <ng-select class="pp__ng-select"
+          <app-search-dropdown class="pp__dd"
                      [items]="themeFontOptions()"
-                     bindValue="value"
-                     bindLabel="label"
-                     groupBy="group"
+                     [displayWith]="fontLabel"
+                     [compareWith]="fontCompare"
+                     [groupBy]="fontGroup"
                      [clearable]="false"
-                     [searchable]="true"
-                     [appendTo]="'body'"
-                     placeholder="Default (Roboto, Amiri)"
-                     [ngModel]="themeFontFamily()"
-                     (ngModelChange)="state.setThemeFontFamily($event)">
-            <ng-template ng-optgroup-tmp let-item="item">{{ item.group }}</ng-template>
-            <ng-template ng-option-tmp let-item="item">
+                     [placeholder]="'Default (Roboto, Amiri)'"
+                     [value]="themeFontFamily()"
+                     (valueChange)="state.setThemeFontFamily($any($event)?.value ?? '')">
+            <ng-template #item let-item>
               <span [style.font-family]="item.value">{{ item.label }}</span>
             </ng-template>
-            <ng-template ng-label-tmp let-item="item">
-              <span [style.font-family]="item.value">{{ item.label }}</span>
-            </ng-template>
-          </ng-select>
+          </app-search-dropdown>
         </label>
         <p class="pp__hint">
           Blocks set to “Inherit” follow this. Only Roboto and Amiri are embedded in the PDF export —
@@ -884,7 +875,7 @@
       </fieldset>
 
       <fieldset class="pp__group">
-        <legend class="pp__legend">{{ 'DOCUMENT_BUILDER.HEADER_FOOTER' | translate }}</legend>
+        <legend class="pp__legend">{{ 'DOCUMENT_BUILDER.HEADER_FOOTER.TITLE' | translate }}</legend>
         <div class="pp__grid-2">
           <label class="pp__field">{{ 'DOCUMENT_BUILDER.HEADER_HEIGHT_MM' | translate }}
             <input class="pp__input" type="number" min="0" step="1"

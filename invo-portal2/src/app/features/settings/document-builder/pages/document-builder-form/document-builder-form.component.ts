@@ -14,6 +14,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { SearchDropdownComponent } from '../../../../../shared/components/dropdown/search-dropdown.component';
 
 import { withTranslations } from '@core/i18n/with-translations';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
@@ -179,6 +180,7 @@ function sanitizeNaN(node: unknown, path = 'docDefinition'): void {
     DesignerInspectorComponent,
     DocumentPaperComponent,
     DropdownMenuBtnComponent,
+    SearchDropdownComponent,
     FreeDesignerComponent,
     CdkDropList,
     CdkDrag,
@@ -189,6 +191,22 @@ function sanitizeNaN(node: unknown, path = 'docDefinition'): void {
   styleUrl: './document-builder-form.component.scss',
 })
 export class DocumentBuilderFormComponent implements OnInit, CanLeaveComponent {
+  // Position pickers (app-search-dropdown items carry an i18n key).
+  readonly POSITION_OPTS_NO_BODY = [
+    { value: 'header', key: 'DOCUMENT_BUILDER.OTHER.POS_HEADER' },
+    { value: 'meta', key: 'DOCUMENT_BUILDER.OTHER.POS_META' },
+    { value: 'footer', key: 'DOCUMENT_BUILDER.OTHER.POS_FOOTER' },
+  ];
+  readonly POSITION_OPTS = [
+    { value: 'header', key: 'DOCUMENT_BUILDER.OTHER.POS_HEADER' },
+    { value: 'meta', key: 'DOCUMENT_BUILDER.OTHER.POS_META' },
+    { value: 'body', key: 'DOCUMENT_BUILDER.OTHER.POS_BODY' },
+    { value: 'footer', key: 'DOCUMENT_BUILDER.OTHER.POS_FOOTER' },
+  ];
+  posLabel = (o: any): string => (o?.key ? this.translate.instant(o.key) : '');
+  posValue = (o: any): any => o?.value;
+  posCompare = (a: any, b: any): boolean => (a?.value ?? a) === (b?.value ?? b);
+
   private service    = inject(DocumentBuilderService);
   private companyService = inject(CompanyService);
   private translate  = inject(TranslateService);

@@ -10,6 +10,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
+import { SearchDropdownComponent } from '../../../../../../../shared/components/dropdown/search-dropdown.component';
 import { ColorPickerComponent } from '@shared/components/color-picker/color-picker.component';
 import { TooltipDirective } from '@shared/directives/tooltip.directive';
 
@@ -34,12 +35,33 @@ import { DesignerElement } from '../../../../services/document-template.types';
 @Component({
   selector: 'app-designer-inspector',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, ColorPickerComponent, TooltipDirective],
+  imports: [CommonModule, FormsModule, TranslateModule, SearchDropdownComponent, ColorPickerComponent, TooltipDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './designer-inspector.component.html',
   styleUrl: './designer-inspector.component.scss',
 })
 export class DesignerInspectorComponent {
+  readonly FORMAT_OPTS = [
+    { value: '', label: '—' },
+    { value: 'currency', label: 'Currency (3dp)' },
+    { value: 'int', label: 'Integer' },
+    { value: 'upper', label: 'UPPERCASE' },
+    { value: 'lower', label: 'lowercase' },
+  ];
+  readonly SHAPE_OPTS = [
+    { value: 'rect', label: 'Rectangle' },
+    { value: 'circle', label: 'Circle' },
+    { value: 'hline', label: 'Horizontal line' },
+    { value: 'vline', label: 'Vertical line' },
+  ];
+  readonly DIRECTION_OPTS = [
+    { value: 'vertical', label: 'Vertical' },
+    { value: 'horizontal', label: 'Horizontal' },
+  ];
+  optLabel = (o: any): string => o?.label ?? '';
+  optValue = (o: any): any => o?.value;
+  optCompare = (a: any, b: any): boolean => (a?.value ?? a) === (b?.value ?? b);
+
   selected = input<DesignerElement | null>(null);
   /** Z-order index — populated by the parent so the inspector can
    *  show "1 / N" without holding a reference to the full list. */

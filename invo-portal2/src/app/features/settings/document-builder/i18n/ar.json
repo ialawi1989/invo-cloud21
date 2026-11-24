@@ -181,6 +181,7 @@
       "TEXT_SIZE": "حجم النص الافتراضي (pt)"
     },
     "HEADER_FOOTER": {
+      "TITLE": "الترويسة والتذييل",
       "HEADER": "الرأس",
       "FOOTER": "التذييل",
       "SHOW_HEADER": "إظهار الرأس",

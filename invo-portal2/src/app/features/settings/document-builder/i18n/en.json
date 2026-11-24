@@ -181,6 +181,7 @@
       "TEXT_SIZE": "Default text size (pt)"
     },
     "HEADER_FOOTER": {
+      "TITLE": "Header & footer",
       "HEADER": "Header",
       "FOOTER": "Footer",
       "SHOW_HEADER": "Show header",

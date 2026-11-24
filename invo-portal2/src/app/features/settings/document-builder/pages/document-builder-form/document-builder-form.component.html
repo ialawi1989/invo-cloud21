@@ -1354,13 +1354,15 @@
                       </div>
                       <div>
                         <label class="dbf-field__sublabel">{{ 'DOCUMENT_BUILDER.OTHER.POSITION' | translate }}</label>
-                        <select class="dbf-input"
-                                [ngModel]="f.position"
-                                (ngModelChange)="updateAdditionalField(i, { position: $event })">
-                          <option value="header">{{ 'DOCUMENT_BUILDER.OTHER.POS_HEADER' | translate }}</option>
-                          <option value="meta">{{ 'DOCUMENT_BUILDER.OTHER.POS_META' | translate }}</option>
-                          <option value="footer">{{ 'DOCUMENT_BUILDER.OTHER.POS_FOOTER' | translate }}</option>
-                        </select>
+                        <app-search-dropdown
+                                [items]="POSITION_OPTS_NO_BODY"
+                                [displayWith]="posLabel"
+                                [compareWith]="posCompare"
+                                [toValue]="posValue"
+                                [clearable]="false"
+                                [searchable]="false"
+                                [value]="f.position"
+                                (valueChange)="updateAdditionalField(i, { position: $any($event).value })"></app-search-dropdown>
                       </div>
                     </div>
                     <div class="dbf-add__value">
@@ -1412,14 +1414,15 @@
                   <div class="dbf-elem">
                     <div class="dbf-elem__row">
                       <span class="dbf-elem__type">{{ c.type }}</span>
-                      <select class="dbf-input dbf-elem__pos"
-                              [ngModel]="c.position"
-                              (ngModelChange)="updateCustomElement(c.id, { position: $event })">
-                        <option value="header">{{ 'DOCUMENT_BUILDER.OTHER.POS_HEADER' | translate }}</option>
-                        <option value="meta">{{ 'DOCUMENT_BUILDER.OTHER.POS_META' | translate }}</option>
-                        <option value="body">{{ 'DOCUMENT_BUILDER.OTHER.POS_BODY' | translate }}</option>
-                        <option value="footer">{{ 'DOCUMENT_BUILDER.OTHER.POS_FOOTER' | translate }}</option>
-                      </select>
+                      <app-search-dropdown class="dbf-elem__pos"
+                              [items]="POSITION_OPTS"
+                              [displayWith]="posLabel"
+                              [compareWith]="posCompare"
+                              [toValue]="posValue"
+                              [clearable]="false"
+                              [searchable]="false"
+                              [value]="c.position"
+                              (valueChange)="updateCustomElement(c.id, { position: $any($event).value })"></app-search-dropdown>
                       <button type="button" class="dbf-add__remove"
                               (click)="removeCustomElement(c.id)"
                               [appTooltip]="'COMMON.DELETE' | translate">×</button>

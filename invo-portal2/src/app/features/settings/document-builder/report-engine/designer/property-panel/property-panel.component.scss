@@ -194,34 +194,12 @@
     }
   }
 
-  // ng-select styled to sit flush with the plain inputs around it. Only the
-  // closed control is restyled here — the dropdown is appended to body (the
-  // panel scroller would clip it) and so keeps the app's global ng-select
-  // theme.
-  &__ng-select {
+  // <app-search-dropdown> sits flush under its label like the plain inputs.
+  // Its panel is attached to body, so the panel scroller never clips it.
+  &__dd {
     display: block;
     margin-top: 6px;
     font-size: $d-font;
-
-    ::ng-deep .ng-select-container {
-      min-height: $d-control-height;
-      height: $d-control-height;
-      padding: 0 6px;
-      color: $d-text;
-      background: $d-white;
-      border: 1px solid $d-border-input;
-      border-radius: $d-radius-sm;
-      transition: border-color $d-transition, box-shadow $d-transition;
-    }
-
-    &:hover ::ng-deep .ng-select-container {
-      border-color: $d-text-muted;
-    }
-
-    &::ng-deep.ng-select-focused .ng-select-container {
-      border-color: $d-primary;
-      box-shadow: 0 0 0 3px rgba($d-primary, 0.1);
-    }
   }
 
   textarea.pp__input {

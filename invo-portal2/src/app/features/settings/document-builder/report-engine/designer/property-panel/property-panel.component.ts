@@ -26,7 +26,8 @@ import { BindingDialogComponent } from '../binding-dialog/binding-dialog.compone
 import { DesignerColorPickerComponent } from '../style-controls/designer-color-picker.component';
 import { AlignmentButtonsComponent } from '../style-controls/alignment-buttons.component';
 import { FontStyleButtonsComponent } from '../style-controls/font-style-buttons.component';
-import { NgSelectModule } from '@ng-select/ng-select';
+import { SearchDropdownComponent } from '../../../../../../shared/components/dropdown/search-dropdown.component';
+import { DropdownLoadParams } from '../../../../../../shared/components/dropdown/search-dropdown.types';
 import { InvoicesService } from '@features/account/invoices/services/invoices.service';
 
 type VisibleEval = { kind: 'ok'; truthy: boolean; display: string } | { kind: 'error'; message: string };
@@ -69,7 +70,7 @@ function dropFontKey<K extends keyof NonNullable<BlockStyle['font']>>(
   selector: 'app-designer-property-panel',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TooltipDirective, CommonModule, FormsModule, NgSelectModule, BindingDialogComponent, DesignerColorPickerComponent, AlignmentButtonsComponent, FontStyleButtonsComponent, TranslateModule],
+  imports: [TooltipDirective, CommonModule, FormsModule, SearchDropdownComponent, BindingDialogComponent, DesignerColorPickerComponent, AlignmentButtonsComponent, FontStyleButtonsComponent, TranslateModule],
   templateUrl: './property-panel.component.html',
   styleUrls: ['./property-panel.component.scss'],
 })
@@ -270,54 +271,25 @@ export class PropertyPanelComponent {
 
   // ─── Sample data: import lines from a real invoice ──────────────
 
-  readonly invoiceOptions = signal<any[]>([]);
-  readonly loadingInvoices = signal(false);
   readonly importingInvoiceLines = signal(false);
-  private _invoicePage = 1;
-  private _invoiceSearchTerm = '';
-  private _invoiceSearchTimer: any;
-  private static readonly _invoicePageLimit = 20;
-
-  /** Called once when the modal opens — `[ngValue]` bindings only see loaded
-   *  items, so an empty select would look broken until the user typed a search. */
-  loadInvoiceOptionsIfEmpty(): void {
-    if (this.invoiceOptions().length === 0) this.loadInvoiceOptions();
-  }
-
-  private async loadInvoiceOptions(): Promise<void> {
-    this.loadingInvoices.set(true);
-    try {
-      const res = await this._invoicesService.getInvoiceList({
-        page: this._invoicePage,
-        limit: PropertyPanelComponent._invoicePageLimit,
-        searchTerm: this._invoiceSearchTerm,
-      });
-      const list = res?.list ?? [];
-      this.invoiceOptions.update((cur) => (this._invoicePage === 1 ? list : [...cur, ...list]));
-    } finally {
-      this.loadingInvoices.set(false);
-    }
-  }
-
-  /** Arrow property, not a method — ng-select invokes `searchFn` itself, so
-   *  a regular method would lose `this` when called that way. Always
-   *  returns true: the real filtering happens server-side via the debounced
-   *  reload below, not client-side against `invoiceOptions`. */
-  onInvoiceSearch = (term: string): boolean => {
-    clearTimeout(this._invoiceSearchTimer);
-    this._invoiceSearchTimer = setTimeout(() => {
-      this._invoiceSearchTerm = term;
-      this._invoicePage = 1;
-      this.loadInvoiceOptions();
-    }, 400);
-    return true;
+  /** Page loader for the invoice picker (server-side search + paging). */
+  loadInvoicePage = async (p: DropdownLoadParams): Promise<{ items: any[]; hasMore: boolean }> => {
+    const res = await this._invoicesService.getInvoiceList({
+      page: p.page,
+      limit: p.pageSize,
+      searchTerm: p.search,
+    });
+    const items = (res?.list ?? []) as any[];
+    return { items, hasMore: items.length >= p.pageSize };
   };
+  invoiceLabel = (i: any): string =>
+    i?.invoiceNumber ? `${i.invoiceNumber}${i.customerName ? ' — ' + i.customerName : ''}` : '';
+  invoiceCompare = (a: any, b: any): boolean => (a?.id ?? a) === (b?.id ?? b);
 
-  onInvoiceScroll(): void {
-    if (this.loadingInvoices()) return;
-    this._invoicePage += 1;
-    this.loadInvoiceOptions();
-  }
+  // Font pickers: items are FontOption, value is the CSS stack string.
+  fontLabel = (o: any): string => o?.label ?? '';
+  fontGroup = (o: any): string => o?.group ?? '';
+  fontCompare = (a: any, b: any): boolean => (a?.value ?? a) === (b?.value ?? b);
 
   /** Fetches the picked invoice and splices its real `lines` into the draft
    *  — everything else in the draft (header fields, other arrays) is left
