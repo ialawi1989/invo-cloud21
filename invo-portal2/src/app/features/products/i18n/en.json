@@ -817,6 +817,8 @@
       "IMPORT_BARCODE_COUNT": "barcode(s) ready to import",
       "IMPORT_ACTION": "Import",
       "CHILD_OF": "Child of",
+      "SELECT_BRANCH_FIRST": "Select a branch first.",
+      "SELECT_TEMPLATE_FIRST": "Select a label template first.",
       "CHOOSE_CHILDREN": "Choose children",
       "CHOOSE_CHILDREN_TITLE": "Choose children",
       "CHOOSE_CHILDREN_NONE": "No children found for this product.",

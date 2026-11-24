@@ -817,6 +817,8 @@
       "IMPORT_BARCODE_COUNT": "باركود جاهز للاستيراد",
       "IMPORT_ACTION": "استيراد",
       "CHILD_OF": "فرعي من",
+      "SELECT_BRANCH_FIRST": "اختر الفرع أولاً.",
+      "SELECT_TEMPLATE_FIRST": "اختر قالب الملصق أولاً.",
       "CHOOSE_CHILDREN": "اختيار الأبناء",
       "CHOOSE_CHILDREN_TITLE": "اختيار الأبناء",
       "CHOOSE_CHILDREN_NONE": "لا توجد منتجات فرعية لهذا المنتج.",

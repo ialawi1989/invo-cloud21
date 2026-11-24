@@ -423,3 +423,10 @@
   }
   &.bp-list__row--last::before { bottom: 50%; }
 }
+
+.bp-required { color: var(--ui-red-text); }
+
+// Required field still empty: red border on the dropdown trigger.
+.bp-field--invalid app-search-dropdown button {
+  border-color: var(--ui-red-text);
+}

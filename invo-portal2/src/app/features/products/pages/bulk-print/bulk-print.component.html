@@ -11,8 +11,8 @@
       <div class="bp-card">
         <div class="bp-card__body">
           <div class="bp-row">
-            <label class="bp-field">
-              <span>{{ 'PRODUCTS.BULK_PRINT.BRANCH' | translate }}</span>
+            <label class="bp-field" [class.bp-field--invalid]="!selectedBranchId()">
+              <span>{{ 'PRODUCTS.BULK_PRINT.BRANCH' | translate }} <span class="bp-required" aria-hidden="true">*</span></span>
               <app-search-dropdown
                 [items]="branchItems()"
                 [displayWith]="display"
@@ -23,8 +23,8 @@
                 [value]="selectedBranchItem()"
                 (valueChange)="onBranchChange($any($event))"/>
             </label>
-            <label class="bp-field">
-              <span>{{ 'PRODUCTS.BULK_PRINT.TEMPLATE' | translate }}</span>
+            <label class="bp-field" [class.bp-field--invalid]="!selectedTemplateId()">
+              <span>{{ 'PRODUCTS.BULK_PRINT.TEMPLATE' | translate }} <span class="bp-required" aria-hidden="true">*</span></span>
               <app-search-dropdown
                 [items]="templateItems()"
                 [displayWith]="display"
@@ -117,7 +117,9 @@
         <div class="bp-card__body bp-card__body--list">
           @if (rows().length === 0) {
             <div class="bp-empty">
-              <p>{{ 'PRODUCTS.BULK_PRINT.EMPTY_HINT' | translate }}</p>
+              <p>{{ (selectedBranchId() && selectedTemplateId()
+                  ? 'PRODUCTS.BULK_PRINT.EMPTY_HINT'
+                  : (!selectedBranchId() ? 'PRODUCTS.BULK_PRINT.SELECT_BRANCH_FIRST' : 'PRODUCTS.BULK_PRINT.SELECT_TEMPLATE_FIRST')) | translate }}</p>
               <button type="button" class="btn btn-default"
                 [disabled]="!selectedTemplateId() || !selectedBranchId()"
                 (click)="pickProducts()">
