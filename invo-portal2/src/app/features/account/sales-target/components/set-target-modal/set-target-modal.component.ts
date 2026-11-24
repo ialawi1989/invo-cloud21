@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -30,19 +30,22 @@ export interface SetTargetData {
 export interface SetTargetResult { target: SavedTarget; anchor: PeriodAnchor; }
 
 type SplitMode = 'equal' | 'pct' | 'amt' | 'auto';
+/** The two measures a target is split by: total sales (step 3) and net sales (step 4). */
+export type SplitKind = 'total' | 'net';
 interface BranchOpt { id: string; name: string; }
 interface ModeOpt { value: 'overwrite' | 'skip'; label: string; }
 
 /**
- * "Set Sales Target" (legacy `SetTargetModalComponent`): three steps - the period, the company target (with an optional
- * "copy forward" to the next periods) and the split between branches, which has to add up to the company target. Saving
+ * "Set Sales Target" (legacy `SetTargetModalComponent`): the period, the company target (with an optional
+ * "copy forward" to the next periods), the split of the total target between branches and - when a net target was
+ * entered - the same split for the net target. Each split has to add up to its company target. Saving
  * a period that already has a target updates it. Everything goes in one `salesTarget/saveSalesTarget` call.
  */
 @Component({
   selector: 'app-set-target-modal',
   standalone: true,
   imports: [
-    CommonModule, FormsModule, TranslateModule, MycurrencyPipe, ModalHeaderComponent, ModalFooterComponent,
+    CommonModule, NgTemplateOutlet, FormsModule, TranslateModule, MycurrencyPipe, ModalHeaderComponent, ModalFooterComponent,
     PeriodAnchorComponent, SegmentedToggleComponent, SearchDropdownComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -74,6 +77,8 @@ export class SetTargetModalComponent implements OnInit {
   splitMode = signal<SplitMode>('equal');
   branches = signal<BranchOpt[]>([]);
   amounts = signal<Record<string, number>>({});
+  splitModeNet = signal<SplitMode>('equal');
+  amountsNet = signal<Record<string, number>>({});
 
   readonly splitOptions: SegmentedToggleOption<SplitMode>[] = [
     { value: 'equal', label: 'SALES_TARGET.MODAL.SPLIT_EQUAL' },
@@ -90,7 +95,15 @@ export class SetTargetModalComponent implements OnInit {
   range = computed(() => periodRange(this.anchor()));
   total = computed(() => parseFloat(this.totalTarget()) || 0);
   branchSum = computed(() => round3(Object.values(this.amounts()).reduce((s, v) => s + (Number(v) || 0), 0)));
-  mismatch = computed(() => this.branches().length > 0 && this.total() > 0 && Math.abs(this.branchSum() - this.total()) > 0.0005);
+  mismatch = computed(() => this.mismatchOf('total'));
+  net = computed(() => parseFloat(this.netTarget()) || 0);
+  /** The net step only exists when a net target was entered. */
+  hasNet = computed(() => this.net() > 0);
+  branchSumNet = computed(() => round3(Object.values(this.amountsNet()).reduce((s, v) => s + (Number(v) || 0), 0)));
+  mismatchNet = computed(() => this.mismatchOf('net'));
+  readonly kinds: SplitKind[] = ['total', 'net'];
+  lastStep = computed(() => (this.hasNet() ? 4 : 3));
+  stepList = computed(() => (this.hasNet() ? [1, 2, 3, 4] : [1, 2, 3]));
   periodText = computed(() => {
     const a = this.anchor();
     if (a.period === 'monthly') return new Date(a.year, a.month - 1, 1).toLocaleString(this.lang.current(), { month: 'long', year: 'numeric' });
@@ -119,74 +132,115 @@ export class SetTargetModalComponent implements OnInit {
     } catch { /* the split step stays empty */ }
 
     const amounts: Record<string, number> = Object.fromEntries(list.map(b => [b.id, 0]));
+    const amountsNet: Record<string, number> = { ...amounts };
     const t = this.data.editTarget;
     if (t) {
       try {
         const stored = await this.service.getBranches(t.id, periodPayload(anchorOfTarget(t)));
         for (const r of stored?.rows ?? []) {
           if (!(r.branchId in amounts)) list.push({ id: r.branchId, name: r.branchName });
-          amounts[r.branchId] = Number(r.targetAmt) || 0;
+          // Pre-fill with the saved per-branch targets so they can be edited.
+          amounts[r.branchId] = Number(r.totalSaleInfo?.targetAmt) || 0;
+          amountsNet[r.branchId] = Number(r.netSalesInfo?.targetAmt) || 0;
         }
+        // Keep the saved amounts: "equal" must not overwrite them on entering the split steps (a saved 0 stays 0).
+        this.splitMode.set('amt');
+        this.splitModeNet.set('amt');
       } catch { /* the amounts just start at 0 */ }
     }
     this.branches.set(list);
     this.amounts.set(amounts);
+    this.amountsNet.set(amountsNet);
   }
 
-  // ── fields ──────────────────────────────────────────────────────────
+  // ── split (shared by the total step and the net step) ───────────────
+  targetOf(kind: SplitKind): number { return kind === 'net' ? this.net() : this.total(); }
+  amountsOf(kind: SplitKind): Record<string, number> { return kind === 'net' ? this.amountsNet() : this.amounts(); }
+  modeOf(kind: SplitKind): SplitMode { return kind === 'net' ? this.splitModeNet() : this.splitMode(); }
+  sumOf(kind: SplitKind): number { return kind === 'net' ? this.branchSumNet() : this.branchSum(); }
+  private setAmounts(kind: SplitKind, next: Record<string, number>): void {
+    if (kind === 'net') this.amountsNet.set(next); else this.amounts.set(next);
+  }
+  mismatchOf(kind: SplitKind): boolean {
+    const target = this.targetOf(kind);
+    return this.branches().length > 0 && target > 0 && Math.abs(this.sumOf(kind) - target) > 0.0005;
+  }
+
   onTotal(v: string): void {
     this.totalTarget.set(v);
-    if (this.splitMode() === 'equal' || this.splitMode() === 'auto') this.splitEqual();
+    if (this.splitMode() === 'equal' || this.splitMode() === 'auto') this.splitEqual('total');
   }
 
-  setSplit(mode: SplitMode): void {
-    this.splitMode.set(mode);
-    if (mode === 'equal' || mode === 'auto') this.splitEqual();
+  onNet(v: string): void {
+    this.netTarget.set(v);
+    if (this.splitModeNet() === 'equal' || this.splitModeNet() === 'auto') this.splitEqual('net');
   }
 
-  /** The company target shared out equally; the last branch takes the rounding remainder. */
-  splitEqual(): void {
+  setSplit(mode: SplitMode, kind: SplitKind = 'total'): void {
+    if (kind === 'net') this.splitModeNet.set(mode); else this.splitMode.set(mode);
+    if (mode === 'equal' || mode === 'auto') this.splitEqual(kind);
+  }
+
+  /** The target shared out equally; the last branch takes the rounding remainder. */
+  splitEqual(kind: SplitKind = 'total'): void {
     const ids = this.branches().map(b => b.id);
     if (!ids.length) return;
-    const base = Math.floor((this.total() / ids.length) * 1000) / 1000;
+    const target = this.targetOf(kind);
+    const base = Math.floor((target / ids.length) * 1000) / 1000;
     const next: Record<string, number> = {};
-    ids.forEach((id, i) => { next[id] = i === ids.length - 1 ? round3(this.total() - base * (ids.length - 1)) : base; });
-    this.amounts.set(next);
+    ids.forEach((id, i) => { next[id] = i === ids.length - 1 ? round3(target - base * (ids.length - 1)) : base; });
+    this.setAmounts(kind, next);
   }
 
-  setAmount(id: string, v: string): void { this.amounts.update(a => ({ ...a, [id]: parseFloat(v) || 0 })); }
-
-  setPct(id: string, v: string): void { this.amounts.update(a => ({ ...a, [id]: round3(this.total() * ((parseFloat(v) || 0) / 100)) })); }
-
-  pctOf(id: string): string {
-    return this.total() ? (((this.amounts()[id] || 0) / this.total()) * 100).toFixed(1) : '0';
+  setAmount(id: string, v: string, kind: SplitKind = 'total'): void {
+    this.setAmounts(kind, { ...this.amountsOf(kind), [id]: parseFloat(v) || 0 });
   }
 
-  barPct(id: string): number { return this.total() ? Math.min(100, ((this.amounts()[id] || 0) / this.total()) * 100) : 0; }
+  setPct(id: string, v: string, kind: SplitKind = 'total'): void {
+    this.setAmounts(kind, { ...this.amountsOf(kind), [id]: round3(this.targetOf(kind) * ((parseFloat(v) || 0) / 100)) });
+  }
+
+  pctOf(id: string, kind: SplitKind = 'total'): string {
+    const t = this.targetOf(kind);
+    return t ? (((this.amountsOf(kind)[id] || 0) / t) * 100).toFixed(1) : '0';
+  }
+
+  barPct(id: string, kind: SplitKind = 'total'): number {
+    const t = this.targetOf(kind);
+    return t ? Math.min(100, ((this.amountsOf(kind)[id] || 0) / t) * 100) : 0;
+  }
 
   /** Scales the branch amounts proportionally so they add up to the company target. */
-  fixSum(): void {
-    const cur = this.branchSum() || 1;
+  fixSum(kind: SplitKind = 'total'): void {
+    const cur = this.sumOf(kind) || 1;
+    const target = this.targetOf(kind);
+    const src = this.amountsOf(kind);
     const ids = this.branches().map(b => b.id);
     const next: Record<string, number> = {};
     let used = 0;
     ids.forEach((id, i) => {
-      next[id] = i === ids.length - 1 ? round3(this.total() - used) : round3(((this.amounts()[id] || 0) / cur) * this.total());
+      next[id] = i === ids.length - 1 ? round3(target - used) : round3(((src[id] || 0) / cur) * target);
       used += next[id];
     });
-    this.amounts.set(next);
+    this.setAmounts(kind, next);
   }
 
   // ── steps ───────────────────────────────────────────────────────────
   goto(s: number): void {
-    if (s === 3) {
+    if (s >= 3) {
       if (!(this.total() > 0) || this.branchesLoading()) return;
-      if (this.splitMode() === 'equal' || this.splitMode() === 'auto') this.splitEqual();
+    }
+    if (s === 3 && (this.splitMode() === 'equal' || this.splitMode() === 'auto')) this.splitEqual('total');
+    if (s === 4) {
+      if (!this.hasNet() || this.mismatch()) return; // the total split has to be valid first
+      if (this.splitModeNet() === 'equal' || this.splitModeNet() === 'auto') this.splitEqual('net');
     }
     this.step.set(s);
   }
 
-  get canSave(): boolean { return this.total() > 0 && !this.mismatch() && !this.saving(); }
+  get canSave(): boolean {
+    return this.total() > 0 && !this.mismatch() && !(this.hasNet() && this.mismatchNet()) && !this.saving();
+  }
 
   async save(): Promise<void> {
     if (!this.canSave) return;
@@ -195,9 +249,10 @@ export class SetTargetModalComponent implements OnInit {
     try {
       const a = this.anchor();
       const { dateFrom, dateTo, workingDays } = periodRange(a);
+      const net = this.amountsNet();
       const branches = Object.entries(this.amounts())
-        .filter(([, amt]) => amt > 0)
-        .map(([branchId, amt]) => ({ branchId, totalSalesTarget: amt, netSalesTarget: 0 }));
+        .map(([branchId, amt]) => ({ branchId, totalSalesTarget: amt, netSalesTarget: this.hasNet() ? (net[branchId] ?? 0) : 0 }))
+        .filter(b => b.totalSalesTarget > 0 || b.netSalesTarget > 0);
 
       const saved = await this.service.save({
         period: a.period, dateFrom, dateTo, workingDays,

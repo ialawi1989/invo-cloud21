@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { LanguageService } from '@core/i18n/language.service';
+import { CompanyService } from '@core/auth/company.service';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { DropdownMenuBtnComponent, DropdownMenuBtnItem } from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
 import { ListPageComponent } from '@shared/components/list-page/components/list-page.component';
@@ -12,6 +13,7 @@ import { ListQueryParams, TableColumn } from '@shared/components/list-page/inter
 import { SegmentedToggleComponent, SegmentedToggleOption } from '@shared/components/segmented-toggle/segmented-toggle.component';
 
 import { translate } from '../../../models/common.model';
+import { PROMOTIONS_COUPONS, PROMOTIONS_POINTS, PROMOTIONS_STAMP_CARDS } from '../../../promotions-feature-flags';
 import { CampaignsStatues, PromotionsCampaign } from '../../../models/campaigns.model';
 import { PageInfo, SortInfo } from '../../../services/promotions-api.service';
 import { CampaignsService } from '../../../services/campaigns.service';
@@ -44,6 +46,7 @@ export class CampaignsListComponent implements OnInit {
   private router = inject(Router);
   private lang = inject(LanguageService);
   private privileges = inject(PrivilegeService);
+  private company = inject(CompanyService);
 
   @ViewChild(ListPageComponent) private listPage?: ListPageComponent<any>;
 
@@ -84,13 +87,22 @@ export class CampaignsListComponent implements OnInit {
       { label: t(K + 'CAMPAIGNS_TITLE') },
     ];
     const item = (label: string, kind: CampaignKind): DropdownMenuBtnItem => ({ label, click: () => this.add(kind) });
+    const hasPoints = this.company.hasFeature(PROMOTIONS_POINTS);
+    const hasCoupons = this.company.hasFeature(PROMOTIONS_COUPONS);
+    const hasStamps = this.company.hasFeature(PROMOTIONS_STAMP_CARDS);
+    // Only the campaign types whose feature the plan holds (legacy 95d2eb76c).
     this.addItems = [
-      item(t(K + 'SPEND_X_GET_Y_POINTS'), 'spend-points'),
-      item(t(K + 'BUY_X_GET_Y_POINTS'), 'buy-points'),
-      item(t(K + 'SPEND_X_GET_COUPON'), 'spend-coupon'),
-      item(t(K + 'BUY_X_GET_COUPON'), 'buy-coupon'),
-      item(t('PROMOTIONS.COUPONS.STAMP_CARDS'), 'stamp-card'),
+      ...(hasPoints ? [
+        item(t(K + 'SPEND_X_GET_Y_POINTS'), 'spend-points'),
+        item(t(K + 'BUY_X_GET_Y_POINTS'), 'buy-points'),
+      ] : []),
+      ...(hasCoupons ? [
+        item(t(K + 'SPEND_X_GET_COUPON'), 'spend-coupon'),
+        item(t(K + 'BUY_X_GET_COUPON'), 'buy-coupon'),
+      ] : []),
+      ...(hasStamps ? [item(t('PROMOTIONS.COUPONS.STAMP_CARDS'), 'stamp-card')] : []),
     ];
+
   }
 
   loadCampaigns = async (params: ListQueryParams) => {

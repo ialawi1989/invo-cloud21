@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -36,7 +36,7 @@ import { TranslatedStringInputComponent } from '../../../components/translated-s
   templateUrl: './voucher-form.component.html',
   styleUrl: './voucher-form.component.scss',
 })
-export class VoucherFormComponent implements OnInit, CanLeaveComponent {
+export class VoucherFormComponent implements OnInit, OnDestroy, CanLeaveComponent {
   private service = inject(VouchersService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
@@ -131,6 +131,49 @@ export class VoucherFormComponent implements OnInit, CanLeaveComponent {
     this.patch({ initialVoucher: Number(Number(value).toFixed(this.afterDecimal())) });
   }
 
+  // ── manual code (legacy 47bdcb676) ────────────────────────────────
+  codeExists = signal(false);
+  checkingCode = signal(false);
+  private codeTimer?: ReturnType<typeof setTimeout>;
+  private codeCheckId = 0;
+
+  hasCode = computed(() => !!this.voucher()?.code?.trim());
+  /** With a count above 1 the code is generated automatically. */
+  isMultipleVouchers = computed(() => !this.hasCode() && Number(this.count()) > 1);
+
+  /** A custom code identifies exactly one voucher, so entering one forces the count back to 1. */
+  onCodeChange(code: string): void {
+    this.patch({ code: (code ?? '').trim() });
+    if (this.hasCode()) this.count.set(1);
+    this.scheduleCodeCheck();
+  }
+
+  async generateCode(): Promise<void> {
+    const code = await this.service.generateVoucherCode();
+    if (code) this.onCodeChange(code);
+  }
+
+  private scheduleCodeCheck(): void {
+    clearTimeout(this.codeTimer);
+    const id = ++this.codeCheckId;
+    this.codeExists.set(false);
+    this.checkingCode.set(this.hasCode());
+    if (!this.hasCode()) return;
+    const code = this.voucher()!.code;
+    this.codeTimer = setTimeout(async () => {
+      let exists = false;
+      try { exists = await this.service.isVoucherCodeExists(code); } catch { /* server still rejects duplicates on save */ }
+      if (id !== this.codeCheckId) return;
+      this.codeExists.set(exists);
+      this.checkingCode.set(false);
+    }, 400);
+  }
+
+  ngOnDestroy(): void {
+    clearTimeout(this.codeTimer);
+    this.codeCheckId++;
+  }
+
   // ── customer ──────────────────────────────────────────────────────
   onCustomer(c?: CustomerMini): void {
     this.customerSelected.set(!!c);
@@ -198,7 +241,7 @@ export class VoucherFormComponent implements OnInit, CanLeaveComponent {
     const v = this.voucher();
     if (!v) return false;
     const amountOk = v.initialVoucher !== undefined && v.initialVoucher >= 1;
-    return this.phoneError() === null && amountOk && this.countValid() && this.reasonValid();
+    return this.phoneError() === null && amountOk && this.countValid() && !this.codeExists() && !this.checkingCode() && this.reasonValid();
   });
 
   async save(): Promise<void> {

@@ -30,6 +30,21 @@ export class VouchersService {
     await this.api.put(`${BASE}/settings`, vouchersSettings);
   }
 
+  async isVoucherCodeExists(code: string): Promise<boolean> {
+    const result = await this.api.get<any>(`${BASE}/code-exists/${encodeURIComponent(code)}`);
+    // accept a bare boolean, its text form, or a wrapped { exists } payload
+    const value = result?.exists ?? result?.data ?? result;
+    return value === true || value === 'true';
+  }
+
+  async generateVoucherCode(): Promise<string> {
+    const raw = await this.api.get<any>(`${BASE}/generate-code`, { text: true });
+    let value: any = raw;
+    try { value = JSON.parse(raw); } catch { /* plain text code */ }
+    const code = value?.code ?? value?.data?.code ?? value?.data ?? value;
+    return typeof code === 'string' ? code.trim() : '';
+  }
+
   addCustomerVouchers(voucher: VoucherWithCount): Promise<string> {
     return this.api.post<string>(`${BASE}/customer-vouchers`, voucher);
   }

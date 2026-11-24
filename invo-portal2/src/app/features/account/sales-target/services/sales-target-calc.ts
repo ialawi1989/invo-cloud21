@@ -1,6 +1,6 @@
 import {
   BranchSalesTarget, DailySalesTarget, PeriodAnchor, PeriodPayload, PeriodType, SalesTargetSummary,
-  SavedTarget, TargetBranchRow, TargetDashboard, TargetKpi, TargetStatus,
+  SavedTarget, BranchTargetStats, TargetBranchMetrics, TargetBranchRow, TargetDashboard, TargetKpi, TargetStatus,
 } from '../models/sales-target.model';
 
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -123,15 +123,19 @@ export function buildDashboard(
     target: totalTarget,
   };
 
+  const metrics = (st: BranchTargetStats | undefined, current: unknown): TargetBranchMetrics => ({
+    currentSales: num(current),
+    target: num(st?.targetAmt),
+    forecast: num(st?.forecast),
+    ach: st?.achievementPct ?? null,
+    status: st?.status ?? 'NoTarget',
+  });
   const rows: TargetBranchRow[] = (branches?.rows ?? []).map(b => ({
     branchId: b.branchId,
     branchName: b.branchName,
     orderCount: num(b.numberOfInvoices),
-    currentSales: num(b.netSales),
-    target: num(b.targetAmt),
-    forecast: num(b.forecast),
-    ach: b.achievementPct,
-    status: b.status,
+    total: metrics(b.totalSaleInfo, b.total),
+    net: metrics(b.netSalesInfo, b.netSales),
   }));
 
   return {

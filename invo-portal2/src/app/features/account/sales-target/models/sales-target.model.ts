@@ -61,15 +61,25 @@ export interface DailySalesTarget {
   requiredDaily: number;
 }
 
-export interface BranchSalesRow {
-  branchId: string;
-  branchName: string;
-  netSales: number;
-  numberOfInvoices: number;
+/** Target / achievement / forecast of one branch for one measure (total or net sales). */
+export interface BranchTargetStats {
   targetAmt: number | null;
   achievementPct: number | null;
   forecast: number;
   status: string;
+  dailyRateNeeded?: number;
+}
+
+export interface BranchSalesRow {
+  branchId: string;
+  branchName: string;
+  numberOfInvoices: number;
+  /** Total sales amount (what the legacy dashboard shows as the branch's current total sales). */
+  total: number;
+  /** Net sales amount. */
+  netSales: number;
+  totalSaleInfo: BranchTargetStats;
+  netSalesInfo: BranchTargetStats;
 }
 
 /** `salesTarget/getBranchSalesTarget/:id?/branches` */
@@ -116,15 +126,22 @@ export interface TargetKpi {
   netReqRate: number;
 }
 
-export interface TargetBranchRow {
-  branchId: string;
-  branchName: string;
-  orderCount: number;
+export interface TargetBranchMetrics {
   currentSales: number;
   target: number;
   forecast: number;
   ach: number | null;
   status: string;
+}
+
+export type BranchSalesView = 'total' | 'net';
+
+export interface TargetBranchRow {
+  branchId: string;
+  branchName: string;
+  orderCount: number;
+  total: TargetBranchMetrics;
+  net: TargetBranchMetrics;
 }
 
 export interface TargetDashboard {

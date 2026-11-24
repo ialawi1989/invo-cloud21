@@ -21,8 +21,23 @@
       @if (!isEdit()) {
         <section class="vf-card">
           <div class="vf-field">
+            <label>{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.CODE' | translate }}</label>
+            @if (isMultipleVouchers()) {
+              <p class="vf-hint">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.CODES_AUTO_GENERATED' | translate }}</p>
+            } @else {
+              <div style="display:flex;gap:8px">
+                <input type="text" class="vf-input" style="flex:1" [ngModel]="v.code" (ngModelChange)="onCodeChange($event)"/>
+                <button type="button" class="btn btn-outline" (click)="generateCode()">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.GENERATE' | translate }}</button>
+              </div>
+              <p class="vf-hint">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.CODE_SINGLE_VOUCHER_HINT' | translate }}</p>
+              @if (codeExists()) {
+                <p class="vf-error">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.CODE_ALREADY_EXISTS' | translate }}</p>
+              }
+            }
+          </div>
+          <div class="vf-field">
             <label>{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.COUNT' | translate }}</label>
-            <input type="number" class="vf-input" min="1" [max]="maxCount" step="1" [ngModel]="count()" (ngModelChange)="count.set($event)"/>
+            <input type="number" class="vf-input" min="1" [max]="maxCount" step="1" [disabled]="hasCode()" [ngModel]="count()" (ngModelChange)="count.set($event)"/>
             @if (!countValid()) {
               <p class="vf-error">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.COUNT_MUST_BE_BETWEEN' | translate: { max: maxCount } }}</p>
             }

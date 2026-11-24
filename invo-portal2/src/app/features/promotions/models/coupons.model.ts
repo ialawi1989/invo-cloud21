@@ -150,7 +150,7 @@ export interface Coupon {
   isCancel: boolean;
   uesDate?: Date;
   phoneNumber?: string;
-  email?: string;
+  customerEmail?: string;
   orderNumber?: string;
   useInvoiceId?: string;
 }

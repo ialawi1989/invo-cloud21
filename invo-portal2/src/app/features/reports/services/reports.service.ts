@@ -75,7 +75,7 @@ export class ReportsService {
     fileBase = path,
   ): Promise<void> {
     const endpoint = type === 'pdf' ? `accounts/reports/exportPdf/${path}` : `accounts/reports/export/${path}`;
-    const body = { filter: clean({ ...filter, exportType: type }) };
+    const body = { filter: clean({ ...filter, exportType: type }), lang: this.lang.current() };
 
     const response = await firstValueFrom(
       this.http.post(`${environment.backendUrl}${endpoint}`, body, {
@@ -127,7 +127,7 @@ export class ReportsService {
     const w = window.open('', '_blank');
     try {
       const response = await firstValueFrom(
-        this.http.post(`${environment.backendUrl}accounts/reports/exportPdf/${path}`, { filter: clean(filter) }, {
+        this.http.post(`${environment.backendUrl}accounts/reports/exportPdf/${path}`, { filter: clean(filter), lang: this.lang.current() }, {
           responseType: 'blob',
           observe: 'response',
         }),
@@ -157,7 +157,7 @@ export class ReportsService {
 
   private async requestFlat(path: string, type: 'pdf' | 'xlsx', params: Record<string, any>, fileBase: string) {
     const endpoint = type === 'pdf' ? `accounts/reports/exportPdf/${path}` : `accounts/reports/export/${path}`;
-    const body = type === 'pdf' ? { ...clean(params), lang: this.lang.current() } : clean(params);
+    const body = { ...clean(params), lang: this.lang.current() };
     const response = await firstValueFrom(
       this.http.post(`${environment.backendUrl}${endpoint}`, body, { responseType: 'blob', observe: 'response' }),
     );

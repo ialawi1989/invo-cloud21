@@ -223,7 +223,7 @@ export class CouponSetDetailsComponent implements OnInit {
       reason: {},
       giveDate: new Date(),
       phoneNumber: result.phoneNumber,
-      email: result.email,
+      customerEmail: result.email,
       ...(this.isStamp() ? { usedStamps: 0, totalStamps: s['requiresStamps'] } : {}),
     } as Coupon;
     try {

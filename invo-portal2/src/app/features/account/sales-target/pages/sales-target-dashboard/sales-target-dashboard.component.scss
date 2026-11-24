@@ -28,6 +28,13 @@
 .st-progress { height: 8px; border-radius: 4px; background: var(--ui-surface-2); overflow: hidden; span { display: block; height: 100%; background: #2691a4; border-radius: 4px; transition: width .3s; }
   &--green span { background: #10b981; } }
 
+.st-head-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.st-info {
+  display: inline-flex; align-items: center; justify-content: center; margin-inline-start: 6px;
+  width: 15px; height: 15px; border-radius: 50%; border: 1px solid var(--ui-line-strong);
+  font-size: 10px; font-weight: 700; font-style: italic; color: var(--ui-text-4); cursor: default;
+  &:hover, &:focus-visible { color: var(--ui-text-1, inherit); border-color: currentColor; }
+}
 .st-day { font-size: 12.5px; color: var(--ui-text-4); background: var(--ui-surface-2); border-radius: 999px; padding: 4px 12px; }
 .st-table-wrap { overflow-x: auto; }
 .st-table { width: 100%; border-collapse: collapse; font-size: 13.5px;
