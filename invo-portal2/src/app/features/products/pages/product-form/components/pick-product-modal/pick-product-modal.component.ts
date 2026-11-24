@@ -114,6 +114,8 @@ export class PickProductModalComponent implements OnInit, AfterViewInit, OnDestr
   /** Snapshot of `excludedIds` at open — used to compute `removed` on confirm. */
   private initialSelected: Set<string> = new Set();
   private debounce?: ReturnType<typeof setTimeout>;
+  /** Bumped on every search change / page request so a slow, older response can't overwrite newer results. */
+  private loadSeq = 0;
 
   /** Sentinel observed by IntersectionObserver to trigger next-page load. */
   readonly scrollSentinel = viewChild<ElementRef<HTMLElement>>('scrollSentinel');
@@ -152,6 +154,7 @@ export class PickProductModalComponent implements OnInit, AfterViewInit, OnDestr
   onSearchInput(value: string): void {
     this.search.set(value);
     clearTimeout(this.debounce);
+    this.loadSeq++; // anything still in flight belongs to the old search term
     this.debounce = setTimeout(() => {
       // A new filter invalidates any in-flight "select all matching" run —
       // it was fetching ids for the OLD search term.
@@ -207,9 +210,11 @@ export class PickProductModalComponent implements OnInit, AfterViewInit, OnDestr
   }
 
   async loadPage(page: number): Promise<void> {
+    const seq = ++this.loadSeq;
     this.loading.set(true);
     try {
       const { list, count } = await this.fetchProductPage(page, 20);
+      if (seq !== this.loadSeq) return;
       this.cacheItems(list);
       if (page === 1) this.rows.set(list);
       else this.rows.update((prev) => [...prev, ...list]);
@@ -217,7 +222,7 @@ export class PickProductModalComponent implements OnInit, AfterViewInit, OnDestr
       this.hasMore.set(this.rows().length < count);
       this.page.set(page);
     } finally {
-      this.loading.set(false);
+      if (seq === this.loadSeq) this.loading.set(false);
     }
   }
 
