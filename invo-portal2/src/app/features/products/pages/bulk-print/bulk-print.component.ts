@@ -45,6 +45,11 @@ import {
   ImportBarcodesModalComponent,
   ImportBarcodesResult,
 } from './import-barcodes-modal/import-barcodes-modal.component';
+import {
+  ChildChoice,
+  ChooseChildrenData,
+  ChooseChildrenModalComponent,
+} from './choose-children-modal/choose-children-modal.component';
 
 interface BulkRow extends PickedProduct {
   /** How many labels to print for this product. */
@@ -53,6 +58,10 @@ interface BulkRow extends PickedProduct {
    *  user might have bound (`!product.*`). Lazy-loaded the first time
    *  the row is added — cached on the row to avoid refetching. */
   full?: any;
+  /** The row came from a bill / purchase order, so its cost is the document's. */
+  fromDoc?: boolean;
+  /** Set on rows added through "Choose children": the parent row they're shown under. */
+  parentId?: string;
 }
 
 /**
@@ -173,7 +182,7 @@ export class BulkPrintComponent {
 
   // ─── Total label count (sum of printQty) ──────────────────────────
   totalLabels = computed<number>(() =>
-    this.rows().reduce((sum, r) => sum + (r.printQty || 1), 0),
+    this.rows().reduce((sum, r) => sum + (r.printQty ?? 1), 0),
   );
 
   // ─── Initial load: branches + templates ───────────────────────────
@@ -375,7 +384,7 @@ export class BulkPrintComponent {
       for (const p of products) {
         const existing = next.find(r => r.id === p.id);
         if (existing) {
-          existing.printQty = (existing.printQty || 1) + 1;
+          existing.printQty = (existing.printQty ?? 1) + 1;
         } else {
           next.push({
             id:        p.id,
@@ -432,6 +441,7 @@ export class BulkPrintComponent {
         rows.push({
           id: p.id, name: p.name ?? '—', barcode: p.barcode, sku: p.sku, UOM: p.UOM,
           unitCost: mine[0]?.unitCost ?? p.unitCost, price: p.price, type: p.type, full: p,
+          isParent: p.isParent === true, fromDoc: true,
           printQty: Math.max(1, Math.round(qty)),
         });
       }
@@ -456,15 +466,46 @@ export class BulkPrintComponent {
     this.activeRowId.set(id);
   }
 
+  /** 0 is a valid quantity: the row stays in the list but prints no label (a parent whose children were chosen). */
   changeQty(id: string, delta: number): void {
     this.rows.set(this.rows().map(r =>
-      r.id === id ? { ...r, printQty: Math.max(1, (r.printQty || 1) + delta) } : r,
+      r.id === id ? { ...r, printQty: Math.max(0, (r.printQty ?? 1) + delta) } : r,
     ));
   }
 
   setQty(id: string, value: number): void {
-    const qty = Math.max(1, Math.floor(Number(value) || 1));
+    const qty = Math.max(0, Math.floor(Number(value) || 0));
     this.rows.set(this.rows().map(r => r.id === id ? { ...r, printQty: qty } : r));
+  }
+
+  /**
+   * Opens the children picker for a parent row. Each ticked child becomes its own row right below the parent with the
+   * parent's label quantity (1 when it had none), and the parent's quantity drops to 0 so the parent label isn't
+   * printed. A child that is already in the list is left as it is. On a bill / purchase order row the child also takes
+   * the line's unit cost, like the parent row did.
+   */
+  chooseChildren(parent: BulkRow): void {
+    const ref = this.modal.open<ChooseChildrenModalComponent, ChooseChildrenData, ChildChoice[]>(
+      ChooseChildrenModalComponent,
+      { size: 'md', data: { parentId: parent.id, parentName: parent.name } },
+    );
+    ref.afterClosed().then(chosen => {
+      if (!chosen?.length) return;
+      const current = this.rows();
+      const have = new Set(current.map(r => r.id));
+      const qty = parent.printQty > 0 ? parent.printQty : 1;
+      const added: BulkRow[] = chosen.filter(c => !have.has(c.id)).map(c => ({
+        id: c.id, name: c.name, barcode: c.barcode, sku: c.sku, UOM: c.UOM,
+        unitCost: parent.fromDoc ? parent.unitCost : c.unitCost,
+        price: c.price, type: c.type, isParent: false, fromDoc: parent.fromDoc, parentId: parent.id,
+        printQty: qty,
+      }));
+      if (!added.length) return;
+      const at = current.findIndex(r => r.id === parent.id);
+      const next = current.map(r => r.id === parent.id ? { ...r, printQty: 0 } : r);
+      next.splice(at + 1, 0, ...added);
+      this.rows.set(next);
+    });
   }
 
   // ─── Preview render ───────────────────────────────────────────────
@@ -527,7 +568,7 @@ export class BulkPrintComponent {
     for (const row of rows) {
       const product = this.resolveProduct(row);
       const data: LabelDataMap = { product };
-      for (let i = 0; i < (row.printQty || 1); i++) {
+      for (let i = 0; i < (row.printQty ?? 1); i++) {
         const canvas = await renderTemplateToCanvas(tpl, data);
         if (canvas) dataUrls.push(canvas.toDataURL('image/png'));
       }
@@ -677,6 +718,13 @@ export class BulkPrintComponent {
       </html>
     `);
     win.document.close();
+  }
+
+  /** A child row whose next row is not another child of the same parent: it ends the tree branch. */
+  isLastChild(index: number): boolean {
+    const rows = this.rows();
+    const pid = rows[index]?.parentId;
+    return !!pid && rows[index + 1]?.parentId !== pid;
   }
 
   trackRow = (_: number, r: BulkRow) => r.id;

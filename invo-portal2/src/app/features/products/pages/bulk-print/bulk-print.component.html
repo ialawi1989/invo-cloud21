@@ -128,6 +128,8 @@
             <ul class="bp-list">
               @for (row of rows(); track trackRow($index, row)) {
                 <li class="bp-list__row"
+                  [class.bp-list__row--child]="!!row.parentId"
+                  [class.bp-list__row--last]="isLastChild($index)"
                   [class.bp-list__row--active]="row.id === activeRow()?.id"
                   (click)="setActiveRow(row.id)">
                   <div class="bp-list__main">
@@ -136,11 +138,17 @@
                       <span class="bp-list__barcode">{{ row.barcode }}</span>
                     }
                   </div>
+                  @if (row.isParent === true) {
+                    <button type="button" class="btn btn-default bp-list__children"
+                      (click)="$event.stopPropagation(); chooseChildren(row)">
+                      {{ 'PRODUCTS.BULK_PRINT.CHOOSE_CHILDREN' | translate }}
+                    </button>
+                  }
                   <div class="bp-qty" (click)="$event.stopPropagation()">
                     <button type="button" class="bp-qty__btn"
-                      [disabled]="row.printQty <= 1"
+                      [disabled]="row.printQty <= 0"
                       (click)="changeQty(row.id, -1)">−</button>
-                    <input type="number" class="bp-qty__input" min="1"
+                    <input type="number" class="bp-qty__input" min="0"
                       [ngModel]="row.printQty"
                       (ngModelChange)="setQty(row.id, +$event)"/>
                     <button type="button" class="bp-qty__btn"

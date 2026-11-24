@@ -209,7 +209,9 @@
 
   &__row {
     display: grid;
-    grid-template-columns: 1fr auto auto;
+    grid-template-columns: 1fr;
+    grid-auto-flow: column;
+    grid-auto-columns: auto;
     align-items: center;
     gap: 12px;
     padding: 10px 16px;
@@ -405,3 +407,19 @@
   }
 }
 @keyframes bp-spin { to { transform: rotate(360deg); } }
+
+.bp-list__row--child {
+  position: relative;
+  padding-inline-start: 52px;
+
+  // Tree connector: vertical line from the parent, elbow into this row.
+  &::before {
+    content: ''; position: absolute; inset-inline-start: 28px; top: 0; bottom: 0;
+    border-inline-start: 1px solid var(--ui-line-strong);
+  }
+  &::after {
+    content: ''; position: absolute; inset-inline-start: 28px; top: 50%; width: 16px;
+    border-top: 1px solid var(--ui-line-strong);
+  }
+  &.bp-list__row--last::before { bottom: 50%; }
+}

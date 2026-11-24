@@ -192,8 +192,9 @@ export class BillPaymentFormComponent implements OnInit, CanLeaveComponent {
   }
 
   private async selectSupplierById(id: string): Promise<void> {
-    const s: any = await this.suppliers.getSupplier(id);
-    if (!s) return;
+    // Unknown / invalid supplier id: leave the field empty, no error.
+    const s: any = await this.suppliers.getSupplier(id).catch(() => null);
+    if (!s?.id) return;
     this.payment.supplierId = s.id;
     this.payment.supplierName = s.name;
     this.supplierValue = { id: s.id, name: s.name };

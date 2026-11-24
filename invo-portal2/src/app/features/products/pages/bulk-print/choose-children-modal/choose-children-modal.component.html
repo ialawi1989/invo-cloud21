@@ -1,0 +1,47 @@
+<app-modal-header
+  [title]="'PRODUCTS.BULK_PRINT.CHOOSE_CHILDREN_TITLE' | translate"
+  [subtitle]="data.parentName" />
+
+<div class="ccm__body">
+  @if (loading()) {
+    <p class="ccm__state">{{ 'COMMON.LOADING' | translate }}</p>
+  } @else if (error()) {
+    <p class="ccm__state ccm__state--error">
+      {{ 'COMMON.LP_TREE_LOAD_ERROR' | translate }}
+      <button type="button" class="ccm__link" (click)="load()">{{ 'COMMON.LP_TREE_RETRY' | translate }}</button>
+    </p>
+  } @else if (children().length === 0) {
+    <p class="ccm__state">{{ 'PRODUCTS.BULK_PRINT.CHOOSE_CHILDREN_NONE' | translate }}</p>
+  } @else {
+    <label class="ccm__row ccm__row--all">
+      <input type="checkbox" [checked]="allPicked()" (change)="toggleAll()"/>
+      <span class="ccm__name">{{ 'PRODUCTS.BULK_PRINT.SELECT_ALL' | translate }}</span>
+      <span class="ccm__count">{{ children().length }}</span>
+    </label>
+    <div class="ccm__list">
+      @for (c of children(); track c.id) {
+        <label class="ccm__row" [class.ccm__row--picked]="isPicked(c.id)">
+          <input type="checkbox" [checked]="isPicked(c.id)" (change)="toggle(c.id)"/>
+          <span class="ccm__main">
+            <span class="ccm__name">{{ c.name }}</span>
+            <span class="ccm__meta">
+              @if (c.barcode) { <span>{{ c.barcode }}</span> }
+              @if (c.sku) { <span>· {{ c.sku }}</span> }
+              @if (c.UOM) { <span>· {{ c.UOM }}</span> }
+            </span>
+          </span>
+        </label>
+      }
+    </div>
+  }
+</div>
+
+<app-modal-footer>
+  <button type="button" class="ccm__btn ccm__btn--ghost" (click)="cancel()">
+    {{ 'COMMON.CANCEL' | translate }}
+  </button>
+  <button type="button" class="ccm__btn ccm__btn--primary"
+    [disabled]="picked().size === 0" (click)="confirm()">
+    {{ 'PRODUCTS.BULK_PRINT.CHOOSE_CHILDREN_ADD' | translate: { count: picked().size } }}
+  </button>
+</app-modal-footer>

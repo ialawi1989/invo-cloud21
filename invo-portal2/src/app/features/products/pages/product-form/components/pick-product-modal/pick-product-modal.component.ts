@@ -31,6 +31,8 @@ export interface PickedProduct {
   unitCost?: number;
   price?:    number;
   type?:     string;
+  /** True when the list row says this product owns children (the backend always returns it). */
+  isParent?: boolean;
   /** Thumbnail URL for the product-list row. Falls back to the placeholder SVG. */
   thumbnailUrl?: string;
   /** Raw category id + tags + translation blob — only populated for
@@ -172,6 +174,7 @@ export class PickProductModalComponent implements OnInit, AfterViewInit, OnDestr
       unitCost: r.unitCost ?? 0,
       price:    r.defaultPrice ?? 0,
       type:     r.type,
+      isParent: r.isParent === true,
       // `r.image` is the canonical thumbnail the products-list page renders;
       // keep the mediaUrl/thumbnailUrl fallbacks for older response shapes.
       thumbnailUrl: r.mediaUrl?.thumbnailUrl ?? r.mediaUrl?.defaultUrl ?? r.thumbnailUrl ?? r.image ?? undefined,
