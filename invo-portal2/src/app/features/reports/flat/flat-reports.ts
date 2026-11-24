@@ -395,8 +395,8 @@ export const FLAT_REPORTS: Record<string, FlatReportConfig> = {
     route: 'shortOver', paged: true,
     // records are { date, cashierName, details: [{ tender, countAmount, expected, shortOver }] }
     expand: 'details',
-    // each date ends with a total row: the backend puts that date's totals on its records (`countAmountPerDate`, `expectedPerDate`, `shortOverPerDate`)
-    groupBy: { field: 'date', then: 'cashierName', subtotal: { countAmount: 'countAmountPerDate', expected: 'expectedPerDate', shortOver: 'shortOverPerDate' } },
+    // each date ends with a total row: the backend puts that date's totals on its records (`dailyCountAmountTotal`, `dailyExpectedTotal`, `dailyShortOverTotal`)
+    groupBy: { field: 'date', then: 'cashierName', subtotal: { countAmount: 'dailyCountAmountTotal', expected: 'dailyExpectedTotal', shortOver: 'dailyShortOverTotal' } },
     columns: [
       { key: 'date', type: 'date' }, { key: 'cashierName' }, { key: 'tender', tone: 'amber' }, { key: 'countAmount', tone: 'blue', type: 'currency', end: true, total: true },
       { key: 'expected', tone: 'blue', type: 'currency', end: true, total: true }, { key: 'shortOver', tone: 'teal', type: 'profit', end: true, total: true },
