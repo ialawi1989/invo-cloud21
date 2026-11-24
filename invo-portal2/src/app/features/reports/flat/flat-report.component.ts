@@ -154,7 +154,9 @@ export class FlatReportComponent {
       if (!run.length) return;
       const start = out.length;
       run.forEach((rec, i) => out.push({ kind: 'data', rec, first: i === 0 }));
-      if (totalCols.length && !this.config().groupBy?.noSubtotal) {
+      // a group made of a single row (one cashier, one tender on the date) would only repeat that row, so it gets no subtotal
+      const singleSub = !!this.config().groupBy?.then && run.length === 1;
+      if (totalCols.length && !this.config().groupBy?.noSubtotal && !singleSub) {
         const sub: FlatRecord = {};
         for (const c of totalCols) sub[c.key] = mapping?.[c.key] ? toNum(run[0][mapping[c.key]]) : run.reduce((s, r) => s + toNum(r[c.key]), 0);
         out.push({ kind: 'subtotal', rec: sub, first: false, group: run[0][g.flatField!] || '' });

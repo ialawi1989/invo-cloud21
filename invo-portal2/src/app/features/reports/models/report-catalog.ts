@@ -452,7 +452,7 @@ export const REPORT_CATALOG: ReportGroup[] = [
         slug: 'short-over-summary-report', route: 'shortOverSummary', customBody: 'flat', titleKey: 'REPORTS.ITEMS.SHORT_OVER_SUMMARY',
         descriptionKey: 'REPORTS.DESC.SHORT_OVER_SUMMARY', icon: 'scale',
         permission: 'reportsSecurity.actions.ShortOverSummaryReport.access',
-        filters: { date: true, branches: true }, export: { pdf: true, xlsx: true, path: 'shortOverSummary' },
+        filters: { date: true, branches: true, singleEmployee: true }, export: { pdf: true, xlsx: true, path: 'shortOverSummary' },
       },
       {
         slug: 'customer-table-by-employee', route: 'customerTableByEmployee', customBody: 'flat', titleKey: 'REPORTS.ITEMS.CUSTOMER_TABLE_BY_EMPLOYEE',
