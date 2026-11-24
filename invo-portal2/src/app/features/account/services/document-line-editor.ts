@@ -159,6 +159,7 @@ export class DocumentLineEditor {
     item.translation = product.translation ?? null;
     // the product's cost (0 = unknown) - the invoice lines table warns when the price is set below it
     item.unitCost = Number(product.unitCost) || 0;
+    item.hasOptions = product.hasOptions;
     line.selectedItem = item;
 
     line.price = product.defaultPrice || 0;
@@ -334,6 +335,7 @@ export class DocumentLineEditor {
     item.translation = product.translation ?? null;
     // the product's cost (0 = unknown) - the invoice lines table warns when the price is set below it
     item.unitCost = Number(product.unitCost) || 0;
+    item.hasOptions = product.hasOptions;
     line.selectedItem = item;
 
     line.taxId = product.taxId ?? this.defaultTax?.id ?? null;

@@ -255,7 +255,8 @@ export class DocLinesTableComponent {
   async pickProduct(line: InvoiceLine, product: any): Promise<void> {
     // package / menu selection / menu item: the sub items (and their options) are picked first; dismissing leaves the row as it was
     let picked: PickSubItemsResult | null = null;
-    if (this.usesSubItems(product.type)) {
+    // a menu item only opens the options popup when it has options
+    if (this.usesSubItems(product.type) && !(product.type === 'menuItem' && product.hasOptions === false)) {
       this.activeLine.set(null);
       picked = await this.openSubItems({ productId: product.id, defaultPrice: product.defaultPrice || 0, ownOptions: product.type === 'menuItem' });
       if (!picked) return;
@@ -272,7 +273,8 @@ export class DocLinesTableComponent {
   }
   /** The sub-items / options link under the item, shown while the product can still be changed. */
   canEditSubItems(line: InvoiceLine): boolean {
-    return this.usesSubItems(line.selectedItem?.type) && this.canEditProduct(line) && !this.isLocked(line);
+    const noOptions = line.selectedItem?.type === 'menuItem' && line.selectedItem?.hasOptions === false;
+    return this.usesSubItems(line.selectedItem?.type) && !noOptions && this.canEditProduct(line) && !this.isLocked(line);
   }
   subOptionNames(s: any): string { return (s.options ?? []).map((o: any) => o.optionName).join(', '); }
 

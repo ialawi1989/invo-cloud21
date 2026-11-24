@@ -7,6 +7,8 @@ import { TaxDetails, TaxLineModel } from './tax.model';
 
 /** Product picked on a document line (legacy `SelectedItem`). */
 export class SelectedItem {
+  /** menu item: whether it has options to pick (undefined when the source did not say) */
+  hasOptions?: boolean;
   id: string = '';
   name: string = '';
   type: string = '';

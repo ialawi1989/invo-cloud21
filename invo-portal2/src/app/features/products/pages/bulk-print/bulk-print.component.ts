@@ -18,7 +18,7 @@ import { SearchDropdownComponent } from '@shared/components/dropdown/search-drop
 import { TooltipDirective } from '@shared/directives/tooltip.directive';
 import { ModalService } from '@shared/modal/modal.service';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
-import { BranchConnectionService } from '@core/layout/services/branch.service';
+import { BranchSettingsService } from '../../../settings/services/branch-settings.service';
 
 import { BillsService } from '../../../account/bills/services/bills.service';
 import { PurchaseOrdersService } from '../../../account/purchase-orders/services/purchase-orders.service';
@@ -102,7 +102,7 @@ interface BulkRow extends PickedProduct {
 })
 export class BulkPrintComponent {
   private translate = inject(TranslateService);
-  private branches  = inject(BranchConnectionService);
+  private branchApi = inject(BranchSettingsService);
   private builder   = inject(LabelBuilderService);
   private products  = inject(ProductsService);
   private modal     = inject(ModalService);
@@ -143,8 +143,11 @@ export class BulkPrintComponent {
    *  user knows how many barcodes resolved and how many didn't. */
   importResult = signal<{ added: number; missed: number; missedCodes: string[] } | null>(null);
 
+  /** Every company branch (legacy `branch/getBranches`). The connection list the topbar uses leaves out warehouses and
+   *  branches whose subscription ended, so a document's branch could be missing from the dropdown and show as unselected. */
+  private branchList = signal<{ id: string; name: string }[]>([]);
   branchItems = computed(() =>
-    this.branches.branches().map(b => ({ label: b.name || '—', value: b.id })),
+    this.branchList().map(b => ({ label: b.name || '—', value: b.id })),
   );
   selectedBranchId = signal<string>('');
 
@@ -189,12 +192,13 @@ export class BulkPrintComponent {
   private async loadInitial(): Promise<void> {
     this.loading.set(true);
     try {
-      if (!this.branches.loaded()) await this.branches.load();
+      const { list: branchList } = await this.branchApi.getList({ page: 1, limit: 200 });
+      this.branchList.set(branchList.map((b: any) => ({ id: b.id, name: b.name })));
       const { list } = await this.builder.getList({ page: 1, limit: 200 });
       this.templates.set(list);
       // Preselect the first branch + template so the user lands on
       // a usable state instead of staring at empty selectors.
-      const firstBranch   = this.branches.branches()[0]?.id;
+      const firstBranch   = this.branchList()[0]?.id;
       if (firstBranch) this.selectedBranchId.set(firstBranch);
       if (list.length)  await this.pickTemplate(list[0].id);
       // Opened from a bill's "Label print": start with that bill's items and quantities.
