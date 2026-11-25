@@ -37,6 +37,9 @@
   gap: 14px;
 }
 
+// Comments panel above the paper: uses the shell's shared `.dv-card` look (same as Attachments); only the body layout is local.
+.mjv-cmt-body { display: flex; flex-direction: column; gap: 14px; }
+
 .mjv-card-title {
   font-size: 15px;
   font-weight: 700;

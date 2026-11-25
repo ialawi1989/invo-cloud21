@@ -2,8 +2,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
-  OnInit,
-  computed,
   inject,
   signal,
 } from '@angular/core';
@@ -14,8 +12,21 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { withTranslations } from '@core/i18n/with-translations';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
-import { ListShellComponent } from '@shared/components/list-shell/list-shell.component';
-import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
+import { ListPageComponent } from '@shared/components/list-page/components/list-page.component';
+import {
+  ListCellTemplateDirective,
+  ListRowActionsDirective,
+} from '@shared/components/list-page/directives/list-template.directives';
+import {
+  DropdownMenuBtnComponent,
+  DropdownMenuBtnItem,
+} from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
+import type {
+  TableColumn,
+  ListQueryParams,
+  ListResponse,
+  FilterConfig,
+} from '@shared/components/list-page/interfaces/list-page.types';
 
 import { BankingOverviewService } from '../../services/banking-overview.service';
 import { BankAccountOverviewRow } from '../../services/banking-overview.types';
@@ -23,77 +34,152 @@ import { BankAccountOverviewRow } from '../../services/banking-overview.types';
 /**
  * Banking Overview — landing page.
  *
- * Small, non-paginated list of bank/cash accounts and their current
- * balance (the repo always computes "as of today" — see the service
- * doc-comment). A plain client-side table via `<app-list-shell>` is a
- * better fit here than `<app-list-page>`, which is built around a
- * server-paginated `dataSource`; this dataset is a handful of rows.
+ * The endpoint (`accounts/bankOverView`) returns every account in one
+ * response (no server paging), so the `<app-list-page>` dataSource fetches
+ * once and does search / sort / paging in memory.
  */
 @Component({
   selector: 'app-banking-overview',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslateModule, MycurrencyPipe, ListShellComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    TranslateModule,
+    MycurrencyPipe,
+    ListPageComponent,
+    ListCellTemplateDirective,
+    ListRowActionsDirective,
+    DropdownMenuBtnComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './banking-overview.component.html',
   styleUrl: './banking-overview.component.scss',
 })
-export class BankingOverviewComponent implements OnInit {
+export class BankingOverviewComponent {
   private service    = inject(BankingOverviewService);
   private translate  = inject(TranslateService);
   private router     = inject(Router);
   private destroyRef = inject(DestroyRef);
 
-  loading = signal<boolean>(false);
-  rows    = signal<BankAccountOverviewRow[]>([]);
-  search  = signal<string>('');
-
   private i18nTick = signal(0);
+  private cache: BankAccountOverviewRow[] | null = null;
 
-  breadcrumbs = computed<BreadcrumbItem[]>(() => {
-    this.i18nTick();
-    return [
-      { label: this.translate.instant('MENU.DASHBOARD'), routerLink: '/dashboard' },
-      { label: this.translate.instant('BANKING_OVERVIEW.TITLE') },
-    ];
-  });
+  columns: TableColumn<BankAccountOverviewRow>[] = [];
+  /** Filter button + chips of the list page: account type and reconciliation status. */
+  filters: FilterConfig[] = [];
 
-  filteredRows = computed<BankAccountOverviewRow[]>(() => {
-    const term = this.search().trim().toLowerCase();
-    const list = this.rows();
-    if (!term) return list;
-    return list.filter(r =>
-      r.name.toLowerCase().includes(term) || r.type.toLowerCase().includes(term));
-  });
-
-  totalBalance = computed(() => this.filteredRows().reduce((s, r) => s + (r.balance || 0), 0));
+  /** Account types present in the data, for the Type filter (the endpoint returns every account, so no extra call). */
+  private loadTypeOptions = async (p: { page: number; pageSize: number; search: string }) => {
+    if (!this.cache) {
+      try { this.cache = await this.service.getBankingOverview(); } catch { this.cache = []; }
+    }
+    const term = (p.search || '').trim().toLowerCase();
+    const types = [...new Set(this.cache.map(r => r.type).filter(Boolean))]
+      .filter(t => !term || t.toLowerCase().includes(term))
+      .sort((a, b) => a.localeCompare(b));
+    return { items: types.map(t => ({ value: t, label: t })), hasMore: false };
+  };
 
   constructor() {
     withTranslations('settings/banking-overview');
-    this.translate.onLangChange.pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => this.i18nTick.update(n => n + 1));
-    this.translate.onTranslationChange.pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => this.i18nTick.update(n => n + 1));
+    this.initColumns();
+    const rebuild = () => { this.i18nTick.update(n => n + 1); this.initColumns(); };
+    this.translate.onLangChange.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(rebuild);
+    this.translate.onTranslationChange.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(rebuild);
   }
 
-  ngOnInit(): void {
-    void this.load();
+  private initColumns(): void {
+    const t = (key: string) => this.translate.instant(key);
+    this.columns = [
+      { key: 'name',                  label: t('BANKING_OVERVIEW.LIST.NAME'),        sortable: true, primary: true, highlight: true },
+      { key: 'type',                  label: t('BANKING_OVERVIEW.LIST.TYPE'),        sortable: true },
+      { key: 'transactionCount',      label: t('BANKING_OVERVIEW.LIST.TRANSACTIONS'), sortable: true, align: 'right', customTemplate: true },
+      { key: 'lastTransactionDate',   label: t('BANKING_OVERVIEW.LIST.LAST_TRANSACTION'), sortable: true, customTemplate: true },
+      { key: 'lastReconciledTo',      label: t('BANKING_OVERVIEW.LIST.LAST_RECONCILED'),  sortable: true, customTemplate: true },
+      { key: 'hasOpenReconciliation', label: t('BANKING_OVERVIEW.LIST.RECONCILIATION_STATUS'), customTemplate: true },
+      { key: 'balance',               label: t('BANKING_OVERVIEW.LIST.BALANCE'),     sortable: true, align: 'right', customTemplate: true },
+    ];
+    this.filters = [
+      {
+        type: 'dropdown',
+        key: 'types',
+        label: t('BANKING_OVERVIEW.LIST.TYPE'),
+        multiple: true,
+        loadFn: p => this.loadTypeOptions(p),
+      },
+      {
+        type: 'checkbox-group',
+        key: 'reconciliation',
+        label: t('BANKING_OVERVIEW.LIST.RECONCILIATION_STATUS'),
+        options: [
+          { value: 'in-progress', label: t('BANKING_OVERVIEW.STATUS.IN_PROGRESS') },
+          { value: 'never',       label: t('BANKING_OVERVIEW.LIST.NEVER_RECONCILED') },
+        ],
+      },
+    ];
   }
 
-  async load(): Promise<void> {
-    this.loading.set(true);
-    try {
-      const rows = await this.service.getBankingOverview();
-      this.rows.set(rows);
-    } catch (e) {
-      console.error('[banking-overview] load failed', e);
-      this.rows.set([]);
-    } finally {
-      this.loading.set(false);
+  loadAccounts = async (params: ListQueryParams): Promise<ListResponse<BankAccountOverviewRow>> => {
+    // A fresh fetch on page 1 / new search keeps balances current; later pages reuse it.
+    if (!this.cache || params.page === 1) {
+      try {
+        this.cache = await this.service.getBankingOverview();
+      } catch (e) {
+        console.error('[banking-overview] load failed', e);
+        this.cache = [];
+      }
     }
-  }
 
-  onSearch(term: string): void { this.search.set(term); }
-  onClearSearch(): void { this.search.set(''); }
+    let rows = [...this.cache];
+    const term = (params.searchTerm || '').trim().toLowerCase();
+    if (term) {
+      rows = rows.filter(r => r.name.toLowerCase().includes(term) || r.type.toLowerCase().includes(term));
+    }
+
+    const f = params.filter ?? {};
+    const asList = (v: unknown): string[] =>
+      (Array.isArray(v) ? v : v ? [v] : []).map((x: any) => String(x && typeof x === 'object' ? (x.value ?? x.id) : x));
+    const types = asList(f['types']);
+    if (types.length) rows = rows.filter(r => types.includes(r.type));
+    // Ticked reconciliation states combine as "any of".
+    const rec = asList(f['reconciliation']);
+    if (rec.length) {
+      rows = rows.filter(r =>
+        (rec.includes('in-progress') && r.hasOpenReconciliation) ||
+        (rec.includes('never') && !r.lastReconciledTo));
+    }
+
+    const sort = params.sortBy;
+    if (sort?.sortValue) {
+      const key = sort.sortValue as keyof BankAccountOverviewRow;
+      const dir = sort.sortDirection === 'desc' ? -1 : 1;
+      rows.sort((a, b) => {
+        const av = a[key] ?? '';
+        const bv = b[key] ?? '';
+        if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * dir;
+        return String(av).localeCompare(String(bv)) * dir;
+      });
+    }
+
+    const limit = params.limit || 25;
+    const start = (params.page - 1) * limit;
+    return {
+      list: rows.slice(start, start + limit),
+      count: rows.length,
+      pageCount: Math.max(1, Math.ceil(rows.length / limit)),
+    };
+  };
+
+  rowMenuItems(row: BankAccountOverviewRow): DropdownMenuBtnItem[] {
+    const t = (key: string) => this.translate.instant(key);
+    return [
+      { label: t('BANKING_OVERVIEW.LIST.VIEW_TRANSACTIONS'), click: () => this.openTransactions(row) },
+      { label: t('BANKING_OVERVIEW.LIST.RECONCILIATIONS'),
+        click: () => void this.router.navigate(['/account/banking-overview/reconciliations', row.id]) },
+      { label: t('BANKING_OVERVIEW.RECONCILIATIONS.RECONCILE_BY_FILE'),
+        click: () => void this.router.navigate(['/account/banking-overview/file-reconciliation', row.id]) },
+    ];
+  }
 
   openTransactions(row: BankAccountOverviewRow): void {
     void this.router.navigate(['/account/banking-overview/transactions', row.id]);

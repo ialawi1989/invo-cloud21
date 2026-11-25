@@ -103,6 +103,11 @@ export class ReconciliationFormComponent implements OnInit, CanLeaveComponent {
   status = signal<'' | 'in-progress' | 'reconciled'>('');
 
   closingBalance = signal<number>(0);
+  /** The closing balance is text until the pencil is clicked. */
+  editingClosing = signal<boolean>(false);
+  /** Open for typing: the pencil was clicked, or there is no value yet (a new sheet must have one entered). */
+  closingEditable = computed(() =>
+    this.status() !== 'reconciled' && (this.editingClosing() || this.closingBalance() <= 0));
   fromDate       = signal<string>('');
   toDate         = signal<string>('');
 
@@ -180,6 +185,12 @@ export class ReconciliationFormComponent implements OnInit, CanLeaveComponent {
     let total = ob ? (ob.Credit || 0) : 0;
     for (const t of this.transactions()) if (t.reconcile) total += Math.abs(t.Credit || 0);
     return this.round(total);
+  });
+
+  /** Opening balance as the legacy card shows it: whichever side (debit or credit) carries it. */
+  openingAmount = computed(() => {
+    const ob = this.openingBalanceRow();
+    return ob ? (ob.Debit ? ob.Debit : ob.Credit || 0) : 0;
   });
 
   clearedAmount = computed(() => this.round(this.totalDebit() - this.totalCredit()));
@@ -318,6 +329,28 @@ export class ReconciliationFormComponent implements OnInit, CanLeaveComponent {
     this.transactions.update(rows => rows.map(r =>
       r === row || r.id === row.id ? { ...r, reconcile: !r.reconcile, isChanged: true } : r));
     this.dirty.set(true);
+  }
+
+  /** "Reconcile by file" over this sheet: the statement is matched against the loaded rows and the matched ones get ticked. */
+  async openFileReconcile(): Promise<void> {
+    if (this.status() !== 'in-progress' || !this.transactions().length) return;
+    const { FileReconcileModalComponent } = await import('../../components/file-reconcile-modal/file-reconcile-modal.component');
+    const ref = this.modal.open<any, { transactions: ReconciliationTransaction[] }, string[]>(
+      FileReconcileModalComponent,
+      // `lg` (not `xl`): xl modals have a fixed 780px height, which left a big empty area before any results.
+      { size: 'lg', data: { transactions: this.transactions() }, closeOnBackdrop: false },
+    );
+    const ids = await ref.afterClosed();
+    if (!ids?.length) return;
+    const matched = new Set(ids);
+    let ticked = 0;
+    this.transactions.update(rows => rows.map(r => {
+      if (!matched.has(r.id) || r.reconcile) return r;
+      ticked++;
+      return { ...r, reconcile: true, isChanged: true };
+    }));
+    this.dirty.set(true);
+    this.toast.success(this.translate.instant('BANKING_OVERVIEW.FILE_RECONCILIATION.APPLIED', { count: ticked }));
   }
 
   toggleSelectAll(checked: boolean): void {

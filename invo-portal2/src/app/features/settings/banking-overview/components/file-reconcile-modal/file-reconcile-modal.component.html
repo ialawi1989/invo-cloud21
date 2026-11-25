@@ -1,0 +1,227 @@
+<app-modal-header [title]="'BANKING_OVERVIEW.FILE_RECONCILIATION.TITLE' | translate"
+                  [subtitle]="'BANKING_OVERVIEW.FILE_RECONCILIATION.MODAL_SUBTITLE' | translate"/>
+
+<div class="frm">
+  @if (!file()) {
+    <!-- Step 1 — choose the statement -->
+    <label class="frm-zone" (dragover)="$event.preventDefault()" (drop)="onDrop($event)">
+      <input type="file" [accept]="fileAccept" hidden (change)="onFileSelected($event)"/>
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      <strong>{{ (parsing() ? 'COMMON.LOADING' : 'BANKING_OVERVIEW.FILE_RECONCILIATION.DROP_TITLE') | translate }}</strong>
+      <span>{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.DROP_HINT' | translate }}</span>
+    </label>
+  } @else {
+    <!-- Statement + column mapping -->
+    <section class="frm-card">
+      <div class="frm-filebar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+        </svg>
+        <span class="frm-filebar__name">{{ fileName() }}</span>
+        <span class="frm-muted">{{ file()!.rows.length }} {{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.ROWS' | translate }}</span>
+        <label class="frm-link">
+          <input type="file" [accept]="fileAccept" hidden (change)="onFileSelected($event)"/>
+          {{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.CHANGE_FILE' | translate }}
+        </label>
+        <button type="button" class="frm-link" (click)="clearFile()">{{ 'COMMON.CLEAR' | translate }}</button>
+      </div>
+
+      <div class="frm-grid">
+        <label>
+          <span>{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.DATE_COLUMN' | translate }}</span>
+          <app-search-dropdown [items]="file()!.headers" [value]="dateCol()" (valueChange)="setDate($event)" [clearable]="true"
+            [placeholder]="'BANKING_OVERVIEW.FILE_RECONCILIATION.SELECT_COLUMN' | translate"/>
+        </label>
+        <label>
+          <span>{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.REFERENCE_COLUMN' | translate }}</span>
+          <app-search-dropdown [items]="file()!.headers" [value]="refCol()" (valueChange)="setRef($event)" [clearable]="true"
+            [placeholder]="'BANKING_OVERVIEW.FILE_RECONCILIATION.SELECT_COLUMN' | translate"/>
+        </label>
+        <label>
+          <span>{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.DESCRIPTION_COLUMN' | translate }}</span>
+          <app-search-dropdown [items]="file()!.headers" [value]="descCol()" (valueChange)="setDesc($event)" [clearable]="true"
+            [placeholder]="'BANKING_OVERVIEW.FILE_RECONCILIATION.OPTIONAL' | translate"/>
+        </label>
+      </div>
+
+      <div class="frm-amount">
+        <app-segmented-toggle [options]="amountModeOptions" [value]="amountMode()" (valueChange)="amountMode.set($event)"/>
+        <div class="frm-grid frm-grid--amount">
+          @if (amountMode() === 'single') {
+            <label>
+              <span>{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.AMOUNT_COLUMN' | translate }}</span>
+              <app-search-dropdown [items]="file()!.headers" [value]="amountCol()" (valueChange)="setAmount($event)" [clearable]="true"
+                [placeholder]="'BANKING_OVERVIEW.FILE_RECONCILIATION.SELECT_COLUMN' | translate"/>
+            </label>
+          } @else {
+            <label>
+              <span>{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.MONEY_IN_COLUMN' | translate }}</span>
+              <app-search-dropdown [items]="file()!.headers" [value]="inCol()" (valueChange)="setIn($event)" [clearable]="true"
+                [placeholder]="'BANKING_OVERVIEW.FILE_RECONCILIATION.SELECT_COLUMN' | translate"/>
+            </label>
+            <label>
+              <span>{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.MONEY_OUT_COLUMN' | translate }}</span>
+              <app-search-dropdown [items]="file()!.headers" [value]="outCol()" (valueChange)="setOut($event)" [clearable]="true"
+                [placeholder]="'BANKING_OVERVIEW.FILE_RECONCILIATION.SELECT_COLUMN' | translate"/>
+            </label>
+          }
+        </div>
+        @if (prepared().signed) {
+          <p class="frm-note">{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.NOTE_DIRECTION' | translate }}</p>
+        }
+      </div>
+    </section>
+
+    <!-- Matching rules -->
+    <section class="frm-card frm-rules">
+      <app-segmented-toggle [options]="methodOptions" [value]="method()" (valueChange)="method.set($event)"/>
+      @if (usesAmountDate()) {
+        <label class="frm-num">
+          <span>{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.DATE_WINDOW' | translate }}</span>
+          <input type="number" min="0" max="30" step="1" [ngModel]="dateWindow()" (ngModelChange)="onDateWindow($event)"/>
+        </label>
+        <label class="frm-num">
+          <span>{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.TOLERANCE' | translate }}</span>
+          <input type="number" min="0" step="0.01" [ngModel]="amountTol()" (ngModelChange)="onAmountTol($event)"/>
+        </label>
+      }
+    </section>
+
+    @if (refWarning()) {
+      <p class="frm-warn">{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.WARN_REFERENCE_EMPTY' | translate }}</p>
+    }
+    @if (prepared().skipped) {
+      <p class="frm-muted">{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.SKIPPED_ROWS' | translate: { count: prepared().skipped } }}</p>
+    }
+
+    <!-- Result -->
+    @if (result(); as r) {
+      <div class="frm-tiles" role="tablist">
+        <button type="button" role="tab" class="frm-tile frm-tile--ok" [class.is-active]="resultTab() === 'matched'" [attr.aria-selected]="resultTab() === 'matched'" (click)="resultTab.set('matched')">
+          <span class="frm-tile__label">{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.TILE_MATCHED' | translate }}</span>
+          <strong>{{ tiles().matched.count }}</strong>
+          <span class="frm-tile__sum">{{ tiles().matched.total | mycurrency }}</span>
+        </button>
+        <button type="button" role="tab" class="frm-tile frm-tile--warn" [class.is-active]="resultTab() === 'notInBooks'" [attr.aria-selected]="resultTab() === 'notInBooks'" (click)="resultTab.set('notInBooks')">
+          <span class="frm-tile__label">{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.TILE_NOT_IN_BOOKS' | translate }}</span>
+          <strong>{{ tiles().notInBooks.count }}</strong>
+          <span class="frm-tile__sum">{{ tiles().notInBooks.total | mycurrency }}</span>
+        </button>
+        <button type="button" role="tab" class="frm-tile frm-tile--info" [class.is-active]="resultTab() === 'outstanding'" [attr.aria-selected]="resultTab() === 'outstanding'" (click)="resultTab.set('outstanding')">
+          <span class="frm-tile__label">{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.TILE_OUTSTANDING' | translate }}</span>
+          <strong>{{ tiles().outstanding.count }}</strong>
+          <span class="frm-tile__sum">{{ tiles().outstanding.total | mycurrency }}</span>
+        </button>
+      </div>
+
+      <div class="frm-table-wrap">
+        @switch (resultTab()) {
+          @case ('matched') {
+            @if (r.matched.length) {
+              <table class="frm-table">
+                <thead><tr>
+                  <th class="frm-check">
+                    <input type="checkbox" [checked]="allChecked()" [indeterminate]="someChecked()"
+                           [attr.aria-label]="'DOC_VIEW.SELECT_ALL' | translate"
+                           (change)="toggleAll($any($event.target).checked)"/>
+                  </th>
+                  <th>{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.COL_STATEMENT' | translate }}</th>
+                  <th class="frm-num-col">{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.COL_AMOUNT' | translate }}</th>
+                  <th>{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.COL_BOOKS' | translate }}</th>
+                  <th class="frm-num-col">{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.COL_AMOUNT' | translate }}</th>
+                  <th>{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.COL_MATCH' | translate }}</th>
+                </tr></thead>
+                <tbody>
+                  @for (p of r.matched; track $index) {
+                    <tr [class.is-off]="!isChecked(idOf(p.file2))">
+                      <td class="frm-check">
+                        <input type="checkbox" [checked]="isChecked(idOf(p.file2))" (change)="toggle(idOf(p.file2))"
+                               [attr.aria-label]="'DOC_VIEW.SELECT_ROW' | translate"/>
+                      </td>
+                      <td>
+                        <div class="frm-cell-main">{{ p.file1['Reference'] || p.file1['Description'] || '—' }}</div>
+                        <div class="frm-cell-sub">{{ p.file1['Date'] || '—' }}@if (p.file1['Reference'] && p.file1['Description']) { · {{ p.file1['Description'] }} }</div>
+                      </td>
+                      <td class="frm-num-col">{{ num(p.file1) | mycurrency }}</td>
+                      <td>
+                        <div class="frm-cell-main">{{ p.file2['Reference'] || p.file2['Description'] || '—' }}</div>
+                        <div class="frm-cell-sub">{{ p.file2['Date'] || '—' }}@if (p.file2['Reference'] && p.file2['Description']) { · {{ p.file2['Description'] }} }</div>
+                      </td>
+                      <td class="frm-num-col">{{ num(p.file2) | mycurrency }}</td>
+                      <td>
+                        <span class="frm-badge" [class.frm-badge--ref]="p.matchedBy === 'reference'">
+                          {{ (p.matchedBy === 'reference' ? 'BANKING_OVERVIEW.FILE_RECONCILIATION.BY_REFERENCE' : 'BANKING_OVERVIEW.FILE_RECONCILIATION.BY_AMOUNT_DATE') | translate }}
+                        </span>
+                        @if (p.dayDiff) { <span class="frm-flag">{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.DAYS_APART' | translate: { count: p.dayDiff } }}</span> }
+                        @if (diff(p); as d) { <span class="frm-flag frm-flag--bad">{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.DIFFERS_BY' | translate }} {{ d | mycurrency }}</span> }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            } @else {
+              <p class="frm-empty">{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.EMPTY_MATCHED' | translate }}</p>
+            }
+          }
+          @case ('notInBooks') {
+            @if (r.unmatchedFile1.length) {
+              <p class="frm-hint">{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.HINT_NOT_IN_BOOKS' | translate }}</p>
+              <table class="frm-table">
+                <thead><tr>
+                  <th>{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.COL_DATE' | translate }}</th>
+                  <th>{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.COL_REFERENCE' | translate }}</th>
+                  <th>{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.COL_DESCRIPTION' | translate }}</th>
+                  <th class="frm-num-col">{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.COL_AMOUNT' | translate }}</th>
+                </tr></thead>
+                <tbody>
+                  @for (row of r.unmatchedFile1; track $index) {
+                    <tr>
+                      <td>{{ row['Date'] || '—' }}</td><td>{{ row['Reference'] || '—' }}</td><td>{{ row['Description'] || '—' }}</td>
+                      <td class="frm-num-col">{{ num(row) | mycurrency }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            } @else {
+              <p class="frm-empty">{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.EMPTY_UNMATCHED' | translate }}</p>
+            }
+          }
+          @case ('outstanding') {
+            @if (r.unmatchedFile2.length) {
+              <p class="frm-hint">{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.HINT_OUTSTANDING' | translate }}</p>
+              <table class="frm-table">
+                <thead><tr>
+                  <th>{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.COL_DATE' | translate }}</th>
+                  <th>{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.COL_REFERENCE' | translate }}</th>
+                  <th>{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.COL_DESCRIPTION' | translate }}</th>
+                  <th class="frm-num-col">{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.COL_AMOUNT' | translate }}</th>
+                </tr></thead>
+                <tbody>
+                  @for (row of r.unmatchedFile2; track $index) {
+                    <tr>
+                      <td>{{ row['Date'] || '—' }}</td><td>{{ row['Reference'] || '—' }}</td><td>{{ row['Description'] || '—' }}</td>
+                      <td class="frm-num-col">{{ num(row) | mycurrency }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            } @else {
+              <p class="frm-empty">{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.EMPTY_UNMATCHED' | translate }}</p>
+            }
+          }
+        }
+      </div>
+    } @else {
+      <p class="frm-empty">{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.PICK_COLUMNS' | translate }}</p>
+    }
+  }
+</div>
+
+<app-modal-footer>
+  <button type="button" class="frm-btn" (click)="ref.dismiss()">{{ 'COMMON.CANCEL' | translate }}</button>
+  <button type="button" class="frm-btn frm-btn--primary" [disabled]="!checkedIds().length" (click)="apply()">
+    {{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.APPLY_MATCHES' | translate: { count: checkedIds().length } }}
+  </button>
+</app-modal-footer>

@@ -26,17 +26,16 @@
 
 <app-doc-view-attachments beforePaper class="d-print-none" type="journal" [docId]="journalId()" [attachments]="journal().attachment"/>
 
-<div alt class="mjv-viewer">
-  <div class="mjv-sheet">
-    <app-manual-journal-paper [journal]="paperJournal()"/>
-  </div>
-</div>
-
-<div tabs class="mjv-page d-print-none">
-  <app-loading-overlay [show]="loading()" [fullScreen]="false"/>
-
-  <section class="mjv-card d-print-none">
-    <h4 class="mjv-card-title">{{ 'MANUAL_JOURNALS.FORM.COMMENTS' | translate }}</h4>
+<section beforePaper class="dv-card d-print-none">
+  <button type="button" class="dv-card__head" [attr.aria-expanded]="commentsOpen()" (click)="commentsOpen.set(!commentsOpen())">
+    <h2 class="dv-card__title">
+      {{ 'MANUAL_JOURNALS.FORM.COMMENTS' | translate }}
+      @if (journal().comments.length) { <span class="dv-card__count">{{ journal().comments.length }}</span> }
+    </h2>
+    <svg class="dv-card__chev" [class.dv-card__chev--open]="commentsOpen()" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+  </button>
+  @if (commentsOpen()) {
+    <div class="dv-card__body mjv-cmt-body">
     <textarea class="mjv-textarea" rows="3" [ngModel]="newComment()" (ngModelChange)="newComment.set($event)"
       [placeholder]="'MANUAL_JOURNALS.FORM.COMMENT_PLACEHOLDER' | translate"></textarea>
     <div class="mjv-row">
@@ -55,7 +54,18 @@
     } @empty {
       <div class="mjv-empty">{{ 'MANUAL_JOURNALS.FORM.NO_COMMENTS' | translate }}</div>
     }
-  </section>
+    </div>
+  }
+</section>
+
+<div alt class="mjv-viewer">
+  <div class="mjv-sheet">
+    <app-manual-journal-paper [journal]="paperJournal()"/>
+  </div>
+</div>
+
+<div tabs class="mjv-page d-print-none">
+  <app-loading-overlay [show]="loading()" [fullScreen]="false"/>
 
   <app-doc-additional-details [config]="additionalDetails()"/>
 </div>

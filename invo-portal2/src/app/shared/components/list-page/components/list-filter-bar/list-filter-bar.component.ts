@@ -318,7 +318,9 @@ export class ListFilterBarComponent {
     const v = this.active()[key];
     const cache = this.picked[key] ?? {};
     const labelOf = (x: any): FilterOption => cache[String(x)] ?? { value: x, label: this.labels()[key] && !Array.isArray(v) ? this.labels()[key] : String(x) };
-    if ((cfg as any).multiple) return Array.isArray(v) ? v.map(labelOf) : [];
+    // A single pick can be stored as a scalar (the URL state codec collapses one-element arrays), so wrap it —
+    // otherwise the dropdown opens with nothing checked while the chip still shows the value.
+    if ((cfg as any).multiple) return Array.isArray(v) ? v.map(labelOf) : v == null || v === '' ? [] : [labelOf(v)];
     return v == null || v === '' ? null : labelOf(v);
   }
 

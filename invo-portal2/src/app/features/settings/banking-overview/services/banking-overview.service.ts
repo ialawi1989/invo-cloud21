@@ -69,6 +69,10 @@ export class BankingOverviewService {
       name:    str(r?.name),
       type:    str(r?.type),
       balance: num(r?.balance),
+      transactionCount:      num(r?.transactionCount),
+      lastTransactionDate:   r?.lastTransactionDate ?? null,
+      lastReconciledTo:      r?.lastReconciledTo ?? null,
+      hasOpenReconciliation: !!r?.hasOpenReconciliation,
     }));
   }
 
@@ -161,6 +165,8 @@ export class BankingOverviewService {
       filter: {
         accountId: p.accountId,
         status:    p.status || null,
+        from:      p.fromDate || null,
+        to:        p.toDate || null,
       },
     };
     const res = await this.api.request<any>(

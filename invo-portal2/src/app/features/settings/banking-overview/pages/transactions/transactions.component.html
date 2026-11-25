@@ -1,31 +1,8 @@
 <div class="txn-page">
+  <div class="txn-head">
   <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-  <h1 class="txn-title">{{ 'BANKING_OVERVIEW.TRANSACTIONS.TITLE' | translate }}</h1>
-
-  <app-banking-account-header [name]="accountName()"/>
-
-  <div class="txn-toolbar">
-    <app-segmented-toggle
-      [options]="statusOptions"
-      [value]="statusFilter()"
-      (valueChange)="onStatusChange($event)"/>
-
-    <app-date-picker
-      class="txn-dates"
-      mode="range"
-      [value]="dateRange()"
-      (valueChange)="onDateRangeChange($event)"
-      [placeholder]="'BANKING_OVERVIEW.FILTERS.DATE_RANGE' | translate"/>
-
-    <app-search-dropdown
-      class="txn-branch"
-      [items]="branches()"
-      [displayWith]="branchDisplay"
-      [compareWith]="branchCompare"
-      [value]="selectedBranch()"
-      (valueChange)="onBranchChange($event)"
-      [placeholder]="'BANKING_OVERVIEW.FILTERS.ALL_BRANCHES' | translate"/>
-
+  <div class="txn-header">
+    <h1 class="txn-title">{{ 'BANKING_OVERVIEW.TRANSACTIONS.TITLE' | translate }}</h1>
     @if (canReconcile) {
       <button type="button" class="btn btn-primary txn-reconcile-btn" (click)="reconcileAccount()">
         {{ 'BANKING_OVERVIEW.TRANSACTIONS.RECONCILE_ACCOUNT' | translate }}
@@ -33,8 +10,12 @@
     }
   </div>
 
+  <app-banking-account-header [name]="accountName()"/>
+  </div>
+
   <app-list-page
     [columns]="columns"
+    [filters]="filters"
     [dataSource]="loadTransactions"
     [pagination]="{ enabled: true, pageLimits: [15, 25, 50, 100], default: 15 }"
     [search]="{ enabled: true, placeholder: ('BANKING_OVERVIEW.TRANSACTIONS.SEARCH_PLACEHOLDER' | translate) }"
@@ -46,8 +27,8 @@
     </ng-template>
 
     <ng-template listCellTemplate="reference" let-row>
-      @if (row.referenceId && row.reference) {
-        <span class="txn-ref">{{ row.reference }}</span>
+      @if (docLink(row); as link) {
+        <a class="txn-ref" [routerLink]="link" (click)="$event.stopPropagation()">{{ row.reference }}</a>
       } @else {
         {{ row.reference || '—' }}
       }
@@ -61,11 +42,11 @@
     </ng-template>
 
     <ng-template listCellTemplate="Debit" let-row>
-      {{ row.Debit ? (row.Debit | mycurrency) : '—' }}
+      {{ (row.Debit ?? 0) | mycurrency }}
     </ng-template>
 
     <ng-template listCellTemplate="Credit" let-row>
-      {{ row.Credit ? (row.Credit | mycurrency) : '—' }}
+      {{ (row.Credit ?? 0) | mycurrency }}
     </ng-template>
 
     <ng-template listCellTemplate="reconcile" let-row>

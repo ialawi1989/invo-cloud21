@@ -16,7 +16,6 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { withTranslations } from '@core/i18n/with-translations';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
-import { resolveLocalizedName } from '@shared/utils/localized-name';
 import { ListPageComponent } from '@shared/components/list-page/components/list-page.component';
 import {
   ListCellTemplateDirective,
@@ -26,9 +25,8 @@ import type {
   TableColumn,
   ListQueryParams,
   ListResponse,
+  FilterConfig,
 } from '@shared/components/list-page/interfaces/list-page.types';
-import { SegmentedToggleComponent, SegmentedToggleOption } from '@shared/components/segmented-toggle/segmented-toggle.component';
-import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { DropdownMenuBtnComponent, DropdownMenuBtnItem } from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
 import { ModalService } from '@shared/modal/modal.service';
 import { ToastService } from '@shared/components/toast/toast.service';
@@ -36,18 +34,11 @@ import { ConfirmModalComponent, ConfirmModalData } from '@shared/modal/demo/conf
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 
-import { BranchSettingsService } from '../../../services/branch-settings.service';
 import { BankingOverviewService } from '../../services/banking-overview.service';
 import { ReconciliationListRow } from '../../services/banking-overview.types';
 import { AccountHeaderComponent } from '../../components/account-header/account-header.component';
 
 import { TooltipDirective } from '@shared/directives/tooltip.directive';
-interface BranchOption {
-  id: string;
-  name: string;
-  translation?: Record<string, Record<string, string> | undefined>;
-}
-
 type StatusFilter = '' | 'in-progress' | 'reconciled';
 
 /**
@@ -69,8 +60,6 @@ type StatusFilter = '' | 'in-progress' | 'reconciled';
     ListPageComponent,
     ListCellTemplateDirective,
     ListRowActionsDirective,
-    SegmentedToggleComponent,
-    SearchDropdownComponent,
     DropdownMenuBtnComponent,
     BreadcrumbsComponent,
     AccountHeaderComponent,
@@ -81,7 +70,6 @@ type StatusFilter = '' | 'in-progress' | 'reconciled';
 })
 export class ReconciliationsComponent implements OnInit {
   private service    = inject(BankingOverviewService);
-  private branchSvc  = inject(BranchSettingsService);
   private translate  = inject(TranslateService);
   private router     = inject(Router);
   private route      = inject(ActivatedRoute);
@@ -94,9 +82,8 @@ export class ReconciliationsComponent implements OnInit {
   accountId   = signal<string>('');
   accountName = signal<string>('');
 
-  statusFilter = signal<StatusFilter>('');
-  branches     = signal<BranchOption[]>([]);
-  selectedBranchIds = signal<string[]>([]);
+  /** Filter button + chips of the list page (same as Products): status checkboxes and a branch multi-select. */
+  filters: FilterConfig[] = [];
 
   /** First row of the most recently fetched page-1, no-filter dataset —
    *  used only to decide whether "Initiate Reconciliation" is disabled. */
@@ -104,19 +91,6 @@ export class ReconciliationsComponent implements OnInit {
   private currentPage  = signal<number>(1);
 
   private i18nTick = signal(0);
-
-  statusOptions: SegmentedToggleOption<StatusFilter>[] = [
-    { value: '',             label: 'BANKING_OVERVIEW.STATUS.ALL' },
-    { value: 'in-progress',  label: 'BANKING_OVERVIEW.STATUS.UNRECONCILED' },
-    { value: 'reconciled',   label: 'BANKING_OVERVIEW.STATUS.RECONCILED' },
-  ];
-
-  branchDisplay = (b: BranchOption) => resolveLocalizedName(b, this.translate.currentLang);
-  branchCompare = (a: BranchOption, b: BranchOption) => a?.id === b?.id;
-  selectedBranches = computed<BranchOption[]>(() => {
-    const ids = new Set(this.selectedBranchIds());
-    return this.branches().filter(b => ids.has(b.id));
-  });
 
   breadcrumbs = computed<BreadcrumbItem[]>(() => {
     this.i18nTick();
@@ -154,7 +128,7 @@ export class ReconciliationsComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     this.initColumns();
     this.accountId.set(this.route.snapshot.paramMap.get('accountId') || '');
-    await Promise.all([this.loadAccountName(), this.loadBranches()]);
+    await this.loadAccountName();
   }
 
   private initColumns(): void {
@@ -165,6 +139,27 @@ export class ReconciliationsComponent implements OnInit {
       { key: 'closingBalance', label: t('BANKING_OVERVIEW.RECONCILIATIONS.CLOSING_BALANCE'),  customTemplate: true, align: 'right' },
       { key: 'status',         label: t('BANKING_OVERVIEW.RECONCILIATIONS.STATUS'),           customTemplate: true },
     ];
+    this.filters = [
+      {
+        type: 'checkbox-group',
+        key: 'status',
+        label: t('BANKING_OVERVIEW.RECONCILIATIONS.STATUS'),
+        options: [
+          { value: 'in-progress', label: t('BANKING_OVERVIEW.STATUS.UNRECONCILED') },
+          { value: 'reconciled',  label: t('BANKING_OVERVIEW.STATUS.RECONCILED') },
+        ],
+      },
+      { type: 'date-range', keyFrom: 'fromDate', keyTo: 'toDate', label: t('BANKING_OVERVIEW.RECONCILIATIONS.PERIOD') },
+    ];
+  }
+
+  /** `yyyy-MM-dd` of a picked date (local calendar day, not UTC). */
+  private toIsoDate(v: unknown): string | null {
+    if (!v) return null;
+    if (typeof v === 'string') return v.slice(0, 10);
+    const d = v as Date;
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   }
 
   private async loadAccountName(): Promise<void> {
@@ -175,39 +170,26 @@ export class ReconciliationsComponent implements OnInit {
     }
   }
 
-  private async loadBranches(): Promise<void> {
-    try {
-      const res = await this.branchSvc.getList({ limit: 200 });
-      this.branches.set(res.list.map(b => ({ id: b.id, name: b.name, translation: b.translation })));
-    } catch (e) {
-      console.error('[banking-overview] loadBranches failed', e);
-    }
-  }
-
-  onStatusChange(v: StatusFilter): void {
-    this.statusFilter.set(v);
-    this.listPage?.refresh();
-  }
-
-  onBranchChange(options: BranchOption | BranchOption[] | null): void {
-    const list = Array.isArray(options) ? options : (options ? [options] : []);
-    this.selectedBranchIds.set(list.map(b => b.id));
-    this.listPage?.refresh();
-  }
-
   loadReconciliations = async (params: ListQueryParams): Promise<ListResponse<ReconciliationListRow>> => {
     this.currentPage.set(params.page);
+    const f = params.filter ?? {};
+    const fromDate = this.toIsoDate(f['fromDate']);
+    const toDate   = this.toIsoDate(f['toDate']);
+    // Both statuses ticked (or none) = no status restriction.
+    const statuses: string[] = Array.isArray(f['status']) ? f['status'] : f['status'] ? [f['status']] : [];
+    const status: StatusFilter = statuses.length === 1 ? (statuses[0] as StatusFilter) : '';
     const res = await this.service.getReconciliationList({
       accountId:  this.accountId(),
-      branches:   this.selectedBranchIds().length ? this.selectedBranchIds() : null,
-      status:     this.statusFilter() || null,
+      status:     status || null,
+      fromDate,
+      toDate,
       page:       params.page,
       limit:      params.limit,
       searchTerm: params.searchTerm || '',
     });
     // Only trust page-1, unfiltered results for the "most recent period"
     // check — matches the legacy screen's guard (`this.pageNum == 1`).
-    if (params.page === 1 && !this.statusFilter() && !this.selectedBranchIds().length && !params.searchTerm) {
+    if (params.page === 1 && !status && !fromDate && !toDate && !params.searchTerm) {
       this.latestPeriod.set(res.list[0] ?? null);
     } else if (!this.latestPeriod()) {
       // A filtered / later page can't tell which period is the latest, so ask for it once.

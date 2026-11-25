@@ -97,6 +97,8 @@ export class ManualJournalViewComponent implements OnInit, OnDestroy {
   totals = computed(() => calculateJournalTotals(this.journal().lines));
 
   showCommentBox = signal<boolean>(false);
+  /** The Comments panel above the paper — collapsed until opened. */
+  commentsOpen = signal<boolean>(false);
   newComment = signal<string>('');
   commentsSaving = signal<boolean>(false);
 
@@ -163,9 +165,10 @@ export class ManualJournalViewComponent implements OnInit, OnDestroy {
       this.createdById.update(m => ({ ...m, ...Object.fromEntries(res.list.filter(r => r.createdAt).map(r => [r.id, String(r.createdAt)])) }));
       this.railItems.set(res.list.map(r => ({
         id: r.id,
-        primary: r.reference || '—',
-        amountLabel: this.currency.transform(r.amount),
-        sub: [formatJournalDate(r.journalDate), r.branchName].filter(Boolean).join(' · '),
+        // Legacy list-item layout: "Reference#: x" over the date on the left, the branch on the right, status badge under the date.
+        primary: `${this.translate.instant('MANUAL_JOURNALS.LIST.REFERENCE')}#: ${r.reference || '—'}`,
+        amountLabel: r.branchName || '',
+        sub: formatJournalDate(r.journalDate).split('-').reverse().join('/'),
         statusText: r.status ? this.translate.instant('MANUAL_JOURNALS.STATUS.' + r.status.toUpperCase()) : '',
         statusKind: railKind(r.status),
       } as DocRailItem)));

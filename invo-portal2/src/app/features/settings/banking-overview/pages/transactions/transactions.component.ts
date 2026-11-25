@@ -16,33 +16,21 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { withTranslations } from '@core/i18n/with-translations';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
-import { resolveLocalizedName } from '@shared/utils/localized-name';
 import { ListPageComponent } from '@shared/components/list-page/components/list-page.component';
 import { ListCellTemplateDirective } from '@shared/components/list-page/directives/list-template.directives';
 import type {
   TableColumn,
   ListQueryParams,
   ListResponse,
+  FilterConfig,
 } from '@shared/components/list-page/interfaces/list-page.types';
-import { SegmentedToggleComponent, SegmentedToggleOption } from '@shared/components/segmented-toggle/segmented-toggle.component';
-import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
-import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
-import type { DateRange } from '@shared/components/datepicker/date-picker.types';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 
-import { BranchSettingsService } from '../../../services/branch-settings.service';
+import { journalLink } from '../../../chart-of-accounts/utils/journal-links';
 import { BankingOverviewService } from '../../services/banking-overview.service';
 import { ReconciliationTransaction } from '../../services/banking-overview.types';
 import { AccountHeaderComponent } from '../../components/account-header/account-header.component';
-
-interface BranchOption {
-  id: string;
-  name: string;
-  translation?: Record<string, Record<string, string> | undefined>;
-}
-
-type ReconcileFilter = 'all' | 'reconciled' | 'unreconciled';
 
 /**
  * Per-account transactions ledger. Filters: date range, reconcile status
@@ -59,9 +47,6 @@ type ReconcileFilter = 'all' | 'reconciled' | 'unreconciled';
     MycurrencyPipe,
     ListPageComponent,
     ListCellTemplateDirective,
-    SegmentedToggleComponent,
-    SearchDropdownComponent,
-    DatePickerComponent,
     BreadcrumbsComponent,
     AccountHeaderComponent,
   ],
@@ -75,9 +60,13 @@ export class TransactionsComponent implements OnInit {
 
   /** Legacy gate: `reconciliationSecurity.actions.view` shows the button. */
   get canReconcile(): boolean { return this.privilege.check('reconciliationSecurity.actions.view.access'); }
-  private branchSvc  = inject(BranchSettingsService);
   private translate  = inject(TranslateService);
   private router     = inject(Router);
+
+  /** Source document of a ledger row (legacy `LinkedTypes`): '' when the type has no page here. */
+  docLink(row: ReconciliationTransaction): string {
+    return journalLink(row.reference, row.referenceId);
+  }
   private route      = inject(ActivatedRoute);
   private destroyRef = inject(DestroyRef);
 
@@ -86,23 +75,10 @@ export class TransactionsComponent implements OnInit {
   accountId   = signal<string>('');
   accountName = signal<string>('');
 
-  statusFilter = signal<ReconcileFilter>('all');
-  dateRange    = signal<DateRange | null>(null);
-  branches     = signal<BranchOption[]>([]);
-  branchId     = signal<string | null>(null);
+  /** Filter button + chips of the list page (same as Products): status, date range and branch. */
+  filters: FilterConfig[] = [];
 
   private i18nTick = signal(0);
-
-  statusOptions: SegmentedToggleOption<ReconcileFilter>[] = [
-    { value: 'all',          label: 'BANKING_OVERVIEW.STATUS.ALL' },
-    { value: 'reconciled',   label: 'BANKING_OVERVIEW.STATUS.RECONCILED' },
-    { value: 'unreconciled', label: 'BANKING_OVERVIEW.STATUS.UNRECONCILED' },
-  ];
-
-  branchDisplay = (b: BranchOption) => resolveLocalizedName(b, this.translate.currentLang);
-  branchCompare = (a: BranchOption, b: BranchOption) => a?.id === b?.id;
-  selectedBranch = computed<BranchOption | null>(
-    () => this.branches().find(b => b.id === this.branchId()) ?? null);
 
   breadcrumbs = computed<BreadcrumbItem[]>(() => {
     this.i18nTick();
@@ -126,7 +102,7 @@ export class TransactionsComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     this.initColumns();
     this.accountId.set(this.route.snapshot.paramMap.get('accountId') || '');
-    await Promise.all([this.loadAccountName(), this.loadBranches()]);
+    await this.loadAccountName();
   }
 
   private initColumns(): void {
@@ -140,6 +116,18 @@ export class TransactionsComponent implements OnInit {
       { key: 'Credit',             label: t('BANKING_OVERVIEW.TRANSACTIONS.CREDIT'),   customTemplate: true, align: 'end' },
       { key: 'reconcile',          label: t('BANKING_OVERVIEW.TRANSACTIONS.STATUS'),   customTemplate: true },
     ];
+    this.filters = [
+      {
+        type: 'checkbox-group',
+        key: 'status',
+        label: t('BANKING_OVERVIEW.TRANSACTIONS.STATUS'),
+        options: [
+          { value: 'reconciled',   label: t('BANKING_OVERVIEW.STATUS.RECONCILED') },
+          { value: 'unreconciled', label: t('BANKING_OVERVIEW.STATUS.UNRECONCILED') },
+        ],
+      },
+      { type: 'date-range', keyFrom: 'fromDate', keyTo: 'toDate', label: t('BANKING_OVERVIEW.FILTERS.DATE_RANGE') },
+    ];
   }
 
   private async loadAccountName(): Promise<void> {
@@ -150,49 +138,25 @@ export class TransactionsComponent implements OnInit {
     }
   }
 
-  private async loadBranches(): Promise<void> {
-    try {
-      const res = await this.branchSvc.getList({ limit: 200 });
-      this.branches.set(res.list.map(b => ({ id: b.id, name: b.name, translation: b.translation })));
-    } catch (e) {
-      console.error('[banking-overview] loadBranches failed', e);
-    }
-  }
-
-  onStatusChange(v: ReconcileFilter): void {
-    this.statusFilter.set(v);
-    this.listPage?.refresh();
-  }
-
-  onDateRangeChange(value: DateRange | Date | null): void {
-    // `mode="range"` always yields a DateRange (or null); the union is only
-    // there because DatePickerComponent's output type isn't mode-narrowed.
-    this.dateRange.set(value && !(value instanceof Date) ? value : null);
-    this.listPage?.refresh();
-  }
-
   /** `yyyy-MM-dd`, local calendar date (not UTC) so day boundaries match
    *  what the user picked regardless of timezone offset. */
-  private toIsoDate(d: Date): string {
+  private toIsoDate(v: unknown): string | null {
+    if (!v) return null;
+    if (typeof v === 'string') return v.slice(0, 10);
+    const d = v as Date;
     const pad = (n: number) => String(n).padStart(2, '0');
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   }
 
-  onBranchChange(option: BranchOption | BranchOption[] | null): void {
-    const opt = Array.isArray(option) ? option[0] ?? null : option;
-    this.branchId.set(opt?.id ?? null);
-    this.listPage?.refresh();
-  }
-
   loadTransactions = async (params: ListQueryParams): Promise<ListResponse<ReconciliationTransaction>> => {
-    const status = this.statusFilter();
-    const range  = this.dateRange();
+    const f = params.filter ?? {};
+    // Ticking both statuses (or none) = all; exactly one restricts the ledger.
+    const statuses: string[] = Array.isArray(f['status']) ? f['status'] : f['status'] ? [f['status']] : [];
     const res = await this.service.getTransactions({
       accountId:     this.accountId(),
-      branchId:      this.branchId(),
-      fromDate:      range?.start ? this.toIsoDate(range.start) : null,
-      toDate:        range?.end   ? this.toIsoDate(range.end)   : null,
-      reconcile:     status === 'all' ? undefined : status === 'reconciled',
+      fromDate:      this.toIsoDate(f['fromDate']),
+      toDate:        this.toIsoDate(f['toDate']),
+      reconcile:     statuses.length === 1 ? statuses[0] === 'reconciled' : undefined,
       sortDirection: params.sortBy?.sortDirection === 'asc' ? 'ASC' : 'DESC',
       page:          params.page,
       limit:         params.limit,

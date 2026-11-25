@@ -927,8 +927,11 @@ export class DocumentPaperComponent {
   /** The ribbon colour class of the status, as the legacy `status-ribbon` maps it. */
   ribbonClass(): string {
     switch (this.documentStatus().trim().toLowerCase()) {
-      case 'draft': return 'dp__ribbon--draft';
-      case 'paid': return 'dp__ribbon--paid';
+      // Online-order statuses take the colour of their list badge (Placed = info blue, Rejected = red, …)
+      case 'draft': case 'pending': return 'dp__ribbon--draft';
+      case 'paid': case 'accepted': return 'dp__ribbon--paid';
+      case 'placed': return 'dp__ribbon--void';
+      case 'rejected': return 'dp__ribbon--closed';
       case 'partially paid': return 'dp__ribbon--partial';
       case 'partially converted': return 'dp__ribbon--partconv';
       case 'fully converted': return 'dp__ribbon--fullconv';

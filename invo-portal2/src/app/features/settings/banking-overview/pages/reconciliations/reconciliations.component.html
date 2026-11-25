@@ -1,4 +1,5 @@
 <div class="rec-page">
+  <div class="rec-head">
   <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
   <div class="rec-header">
     <h1 class="rec-title">{{ 'BANKING_OVERVIEW.LIST.RECONCILIATIONS' | translate }}</h1>
@@ -16,26 +17,11 @@
   </div>
 
   <app-banking-account-header [name]="accountName()"/>
-
-  <div class="rec-toolbar">
-    <app-segmented-toggle
-      [options]="statusOptions"
-      [value]="statusFilter()"
-      (valueChange)="onStatusChange($event)"/>
-
-    <app-search-dropdown
-      class="rec-branch"
-      [items]="branches()"
-      [displayWith]="branchDisplay"
-      [compareWith]="branchCompare"
-      [multiple]="true"
-      [value]="selectedBranches()"
-      (valueChange)="onBranchChange($event)"
-      [placeholder]="'BANKING_OVERVIEW.FILTERS.ALL_BRANCHES' | translate"/>
   </div>
 
   <app-list-page
     [columns]="columns"
+    [filters]="filters"
     [dataSource]="loadReconciliations"
     [pagination]="{ enabled: true, pageLimits: [15, 25, 50], default: 15 }"
     [search]="{ enabled: true, placeholder: ('COMMON.SEARCH' | translate) }"
@@ -63,10 +49,32 @@
       }
     </ng-template>
 
+    <!-- Hover-reveal primary pill + round ⋮ overflow menu — same as the Banking Overview and the other lists. -->
     <ng-template listRowActions let-row>
-      @if (rowMenuItems(row); as menu) {
-        @if (menu.length) { <app-dropdown-menu-btn [items]="menu" align="end"/> }
-      }
+      <div class="inline-flex items-center justify-end gap-2" (click)="$event.stopPropagation()">
+        <button type="button" (click)="view(row)"
+          class="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity
+                 px-4 h-9 inline-flex items-center rounded-full whitespace-nowrap
+                 bg-brand-600 text-white text-sm font-medium shadow-sm hover:bg-brand-700">
+          {{ (row.status === 'reconciled' ? 'COMMON.VIEW' : 'COMMON.EDIT') | translate }}
+        </button>
+        @if (rowMenuItems(row); as menu) {
+          @if (menu.length) {
+            <app-dropdown-menu-btn
+              [items]="menu"
+              [appendToBody]="true"
+              [chevron]="false"
+              align="end"
+              triggerClass="w-9 h-9 inline-flex items-center justify-center rounded-full bg-white text-slate-500 border border-slate-200 hover:text-brand-600 hover:border-brand-300 transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
+              </svg>
+            </app-dropdown-menu-btn>
+          } @else {
+            <span class="inline-block w-9 h-9" aria-hidden="true"></span>
+          }
+        }
+      </div>
     </ng-template>
   </app-list-page>
 </div>

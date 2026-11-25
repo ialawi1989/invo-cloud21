@@ -20,6 +20,11 @@ export interface BankAccountOverviewRow {
   /** e.g. 'Cash' | 'Bank'. */
   type:    string;
   balance: number;
+  transactionCount: number;
+  lastTransactionDate: string | null;
+  /** End date of the latest reconciled period, or null if never reconciled. */
+  lastReconciledTo: string | null;
+  hasOpenReconciliation: boolean;
 }
 
 // ─── Reconciliation transaction row ────────────────────────────────────────
@@ -76,6 +81,9 @@ export interface ReconciliationListParams {
   accountId: string;
   branches?: string[] | null;
   status?: string | null;
+  /** Period filter (`yyyy-MM-dd`): periods overlapping [fromDate, toDate] are listed. */
+  fromDate?: string | null;
+  toDate?: string | null;
   page: number;
   limit: number;
   searchTerm?: string;

@@ -2,7 +2,15 @@ import { DocumentRenderData } from '@shared/components/document-paper/token-reso
 import { Invoice, InvoiceLine } from '../../models/invoice.model';
 import { CustomerAddress } from '../../customers/models/customer.model';
 
-export const fmtDate = (d: any): string => {
+/** Status the paper's ribbon shows: an online (storefront) document still in Draft shows its online status
+ *  (Placed / Accepted / Rejected…) instead of "Draft"; everything else keeps its own status. */
+export const paperStatus = (doc: any): string => {
+  const status = String(doc?.status ?? '');
+  const online = String(doc?.onlineData?.onlineStatus ?? '').trim();
+  return status.trim().toLowerCase() === 'draft' && online ? online : status;
+};
+
+export const fmtDate =(d: any): string => {
   if (!d) return '';
   const x = new Date(d);
   if (isNaN(x.getTime())) return String(d);
@@ -71,7 +79,7 @@ export function invoiceToRenderData(inv: Invoice): DocumentRenderData {
       service: [inv.serviceName && `Service: ${inv.serviceName}`, inv.tableGroupName && `Section: ${inv.tableGroupName}`, inv.tableName && `Table: ${inv.tableName}`].filter(Boolean).join(' | '),
       orderNo: inv.serviceNo,
       isInclusiveTax: inv.isInclusiveTax,
-      status: inv.status,
+      status: paperStatus(inv),
       customerNote: inv.note,
       customerSignature: inv.customerSignature || '',
       applyDiscountBeforeTax: inv.applyDiscountBeforeTax,

@@ -32,6 +32,8 @@ export interface MatchedPair {
   file1: CsvRow;
   file2: CsvRow;
   matchedBy: MatchedBy;
+  /** Amount+date matches only: whole days between the two dates (0 = same day). */
+  dayDiff?: number;
 }
 
 export interface ReconciliationResult {
@@ -50,6 +52,9 @@ export function reconcile(
   mapping2:  ColumnMapping,
   method:    MatchMethod,
   tolerance: number,
+  /** Amount+date matching also accepts a date up to this many days either side (banks post later than the books).
+   *  The same-day candidate wins ties, then the nearer date. Default 0 = exact day, as before. */
+  dateToleranceDays = 0,
 ): ReconciliationResult {
   const useReference  = method === 'reference' || method === 'both';
   const useAmountDate = method === 'amount-date' || method === 'both';
@@ -69,6 +74,7 @@ export function reconcile(
   for (const row of file1Rows) {
     let matchIdx: number = -1;
     let matchedBy: MatchedBy | null = null;
+    let dayDiff: number | undefined;
 
     if (referenceIndex && mapping1.referenceCol) {
       const key = normalizeReference(row[mapping1.referenceCol]);
@@ -80,21 +86,26 @@ export function reconcile(
     if (matchIdx < 0 && dateIndex && mapping1.dateCol && mapping1.amountCol) {
       const dateKey = normalizeDate(row[mapping1.dateCol]);
       const amount1 = normalizeAmount(row[mapping1.amountCol]);
-      const bucket = dateIndex.get(dateKey) ?? [];
 
       let best = -1;
       let bestDiff = Infinity;
-      for (const { index, amount } of bucket) {
-        if (usedFile2.has(index)) continue;
-        const diff = Math.abs(amount1 - amount);
-        if (diff <= tolerance && diff < bestDiff) { best = index; bestDiff = diff; }
+      let bestOffset = 0;
+      // Same day first, then ±1, ±2 … so on equal amounts the nearest date wins.
+      for (const offset of dateOffsets(dateToleranceDays)) {
+        const key = offset === 0 ? dateKey : shiftDateKey(dateKey, offset);
+        const bucket = key == null ? [] : dateIndex.get(key) ?? [];
+        for (const { index, amount } of bucket) {
+          if (usedFile2.has(index)) continue;
+          const diff = Math.abs(amount1 - amount);
+          if (diff <= tolerance && diff < bestDiff) { best = index; bestDiff = diff; bestOffset = Math.abs(offset); }
+        }
       }
-      if (best >= 0) { matchIdx = best; matchedBy = 'amount-date'; }
+      if (best >= 0) { matchIdx = best; matchedBy = 'amount-date'; dayDiff = bestOffset; }
     }
 
     if (matchIdx >= 0 && matchedBy) {
       usedFile2.add(matchIdx);
-      matched.push({ file1: row, file2: file2Rows[matchIdx], matchedBy });
+      matched.push({ file1: row, file2: file2Rows[matchIdx], matchedBy, ...(matchedBy === 'amount-date' ? { dayDiff } : {}) });
     } else {
       unmatchedFile1.push(row);
     }
@@ -103,6 +114,25 @@ export function reconcile(
   const unmatchedFile2 = file2Rows.filter((_, i) => !usedFile2.has(i));
 
   return { matched, unmatchedFile1, unmatchedFile2 };
+}
+
+// ─── Date window ───────────────────────────────────────────────────
+
+/** 0, -1, +1, -2, +2 … up to ±`days`. */
+function dateOffsets(days: number): number[] {
+  const n = Math.max(0, Math.floor(days) || 0);
+  const out = [0];
+  for (let i = 1; i <= n; i++) out.push(-i, i);
+  return out;
+}
+
+/** `key` (a normalised `YYYY-MM-DD`) moved by `days`; null when `key` isn't a calendar date. */
+export function shiftDateKey(key: string, days: number): string | null {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(key);
+  if (!m) return null;
+  const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]) + days, 12);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
 // ─── Indexing ──────────────────────────────────────────────────────

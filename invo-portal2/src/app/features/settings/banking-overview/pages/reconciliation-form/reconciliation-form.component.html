@@ -6,9 +6,12 @@
     <h1 class="rf-title">
       {{ (isNew() ? 'BANKING_OVERVIEW.FORM.NEW_TITLE' : 'BANKING_OVERVIEW.FORM.EDIT_TITLE') | translate }}
     </h1>
-    <a [routerLink]="['/account/banking-overview/file-reconciliation', accountId()]" class="btn btn-ghost btn-sm">
+    <!-- Opens as a modal over this sheet (no navigation); available once the sheet's rows are loaded. -->
+    <button type="button" class="btn btn-ghost btn-sm"
+            [disabled]="status() !== 'in-progress' || !transactions().length"
+            (click)="openFileReconcile()">
       {{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.TITLE' | translate }}
-    </a>
+    </button>
   </div>
 
   <app-banking-account-header [name]="accountName()"/>
@@ -23,15 +26,36 @@
         <span>{{ 'BANKING_OVERVIEW.FORM.TO_DATE' | translate }}</span>
         <app-date-picker [value]="toValue()" [min]="fromValue()" [max]="today" [clearable]="false" [disabled]="status() === 'reconciled'" (valueChange)="onToPicked($event)"/>
       </label>
-      <label class="rf-field">
-        <span>{{ 'BANKING_OVERVIEW.FORM.CLOSING_BALANCE' | translate }}</span>
-        <input type="number" min="0" step="0.001"
-               [ngModel]="closingBalance()" (ngModelChange)="onClosingBalanceChange($event)"
-               [disabled]="status() === 'reconciled'"/>
-      </label>
     </div>
 
     <div class="rf-summary">
+      <div class="rf-summary__item">
+        <span>{{ 'BANKING_OVERVIEW.FORM.OPENING_BALANCE' | translate }}</span>
+        <strong>{{ openingAmount() | mycurrency }}</strong>
+      </div>
+      <!-- Closing balance: shown as text; the pencil opens the input (and the check commits it) so it can't be changed by accident. -->
+      <div class="rf-summary__item">
+        <span>{{ 'BANKING_OVERVIEW.FORM.CLOSING_BALANCE' | translate }}</span>
+        @if (closingEditable()) {
+          <div class="rf-closing">
+            <input class="rf-closing__input" type="number" min="0" step="0.001" autofocus
+                   [ngModel]="closingBalance()" (ngModelChange)="onClosingBalanceChange($event)"
+                   (keydown.enter)="editingClosing.set(false)"/>
+            <button type="button" class="rf-closing__btn" [attr.aria-label]="'COMMON.SAVE' | translate" (click)="editingClosing.set(false)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+            </button>
+          </div>
+        } @else {
+          <div class="rf-closing">
+            <strong>{{ closingBalance() | mycurrency }}</strong>
+            @if (status() !== 'reconciled') {
+              <button type="button" class="rf-closing__btn" [attr.aria-label]="'COMMON.EDIT' | translate" (click)="editingClosing.set(true)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+              </button>
+            }
+          </div>
+        }
+      </div>
       <div class="rf-summary__item">
         <span>{{ 'BANKING_OVERVIEW.FORM.TOTAL_DEBIT' | translate }}</span>
         <strong>{{ totalDebit() | mycurrency }}</strong>

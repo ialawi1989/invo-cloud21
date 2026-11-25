@@ -453,15 +453,22 @@ export class DatePickerComponent implements ControlValueAccessor {
     // calendar always shows the selected date the next time it opens.
     // `untracked` on cursor prevents this effect from re-running when prev/next
     // change the cursor — only value changes trigger it.
+    // Only a genuinely different date moves the cursor: a parent that rebuilds an equal `Date` on every
+    // change detection (e.g. the list filter bar) must not snap the calendar back while the user browses years.
     effect(() => {
       const v = this.value();
       const target = this.deriveCursorFromValue(v);
+      const key = target ? target.getTime() : null;
+      if (key === this.lastSyncedValueKey) return;
+      this.lastSyncedValueKey = key;
       const currentCursor = untracked(() => this.cursor());
       if (target && !isSameMonth(target, currentCursor)) {
         this.cursor.set(target);
       }
     });
   }
+
+  private lastSyncedValueKey: number | null = null;
 
   private deriveCursorFromValue(v: Date | DateRange | null): Date | null {
     if (!v) return null;

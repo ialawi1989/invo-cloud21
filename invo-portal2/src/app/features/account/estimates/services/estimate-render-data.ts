@@ -1,6 +1,6 @@
 import { DocumentRenderData } from '@shared/components/document-paper/token-resolve';
 import { Estimate } from '../../models/estimate.model';
-import { fmtDate, invoiceToRenderData } from '../../invoices/services/invoice-render-data';
+import { fmtDate, invoiceToRenderData, paperStatus } from '../../invoices/services/invoice-render-data';
 
 /**
  * Token data of an estimate for the shared document paper. It is the invoice mapping with the
@@ -17,7 +17,7 @@ export function estimateToRenderData(e: Estimate): DocumentRenderData {
       number: e.estimateNumber,
       date: fmtDate(e.estimateDate),
       dueDate: fmtDate(e.estimateExpDate),
-      status: e.status,
+      status: paperStatus(e),
     },
     // An estimate's tax comes back as `estimateTaxTotal` (legacy `taxTotalField`), not `invoiceTaxTotal`.
     totals: { ...(data['totals'] as Record<string, unknown>), vat: e.estimateTaxTotal || e.invoiceTaxTotal },

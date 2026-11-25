@@ -4,7 +4,8 @@
  *  Route of the source document behind an account-journal line, by its journal `type` (legacy `LinkedTypes`).
  *  Empty string = no document to open. */
 const ROUTES: Record<string, string> = {};
-const add = (prefix: string, types: string[]) => types.forEach(t => (ROUTES[t] = prefix));
+// Keys are lowercased: backends spell the same type differently ('Bill Of Entry' / 'Bill of Entry').
+const add = (prefix: string, types: string[]) => types.forEach(t => (ROUTES[t.toLowerCase()] = prefix));
 
 add('/account/invoices/view/', ['Invoice', 'Invoices', 'invoice']);
 add('/account/purchase-order/view/', ['purchase-order', 'PurchaseOrder', 'Purchase Order', 'purchase order']);
@@ -19,6 +20,6 @@ add('/account/manual-journals/view/', ['Journal', 'Journals']);
 add('/account/bills/view/', ['Billing', 'Billings']);
 
 export function journalLink(type: string | null | undefined, id: string | null | undefined): string {
-  const prefix = type ? ROUTES[type] : '';
+  const prefix = type ? ROUTES[type.trim().toLowerCase()] : '';
   return prefix && id ? prefix + id : '';
 }

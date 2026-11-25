@@ -302,8 +302,9 @@ export class FilterModalComponent {
   }
 
   getDropdownMultiValue(key: string): FilterOption[] {
-    const val = this.localFilters()[key];
-    if (!Array.isArray(val)) return [];
+    const raw = this.localFilters()[key];
+    // A single pick may be stored as a scalar (URL codec collapses one-element arrays) — wrap it.
+    const val = Array.isArray(raw) ? raw : raw == null || raw === '' ? [] : [raw];
     return val.map((v: any) => {
       const existing = (this.selectedItems[key] as any)?.[v];
       return existing || { value: v, label: String(v) };
