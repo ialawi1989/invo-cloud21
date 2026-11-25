@@ -206,6 +206,15 @@ export class FileReconcileModalComponent {
 
   resultTab = signal<ResultTab>('matched');
 
+  /** The mapping + rules fold into a one-line summary once they give a result; they stay open while incomplete. */
+  setupOpen = signal<boolean>(false);
+  showSetup = computed(() => this.setupOpen() || !this.result());
+  methodKey = computed(() => this.methodOptions.find(o => o.value === this.method())!.label);
+  amountSummary = computed(() =>
+    this.amountMode() === 'single'
+      ? (this.amountCol() || '—')
+      : [this.inCol(), this.outCol()].filter(Boolean).join(' / ') || '—');
+
   private sum = (rows: CsvRow[]) => rows.reduce((s, r) => s + Math.abs(Number(r['Amount']) || 0), 0);
   tiles = computed(() => {
     const r = this.result();
@@ -288,6 +297,7 @@ export class FileReconcileModalComponent {
       this.amountMode.set('single'); this.amountCol.set(amt ?? inn ?? out); this.inCol.set(inn); this.outCol.set(out);
     }
     this.resultTab.set('matched');
+    this.setupOpen.set(false);
   }
 
   clearFile(): void {

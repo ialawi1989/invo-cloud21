@@ -349,8 +349,11 @@ export class ReconciliationFormComponent implements OnInit, CanLeaveComponent {
       ticked++;
       return { ...r, reconcile: true, isChanged: true };
     }));
-    this.dirty.set(true);
-    this.toast.success(this.translate.instant('BANKING_OVERVIEW.FILE_RECONCILIATION.APPLIED', { count: ticked }));
+    if (ticked > 0) this.dirty.set(true);
+    // Say what actually happened: rows that were already ticked are not "newly ticked", so don't report 0 as if it failed.
+    this.toast.success(this.translate.instant(
+      ticked > 0 ? 'BANKING_OVERVIEW.FILE_RECONCILIATION.APPLIED' : 'BANKING_OVERVIEW.FILE_RECONCILIATION.APPLIED_ALREADY',
+      { count: ticked > 0 ? ticked : ids.length }));
   }
 
   toggleSelectAll(checked: boolean): void {

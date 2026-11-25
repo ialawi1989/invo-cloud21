@@ -70,6 +70,8 @@
       <app-attendance-trends [filter]="bodyFilter()" [refresh]="refreshTick()" />
     } @else if (m.customBody === 'attendance-detail') {
       <app-employee-attendance-detail [filter]="bodyFilter()" [refresh]="refreshTick()" />
+    } @else if (m.customBody === 'employee-privileges') {
+      <app-employee-privileges [filter]="bodyFilter()" [refresh]="refreshTick()" />
     } @else if (m.customBody === 'cashier-shifts') {
       <app-cashier-shifts [filter]="bodyFilter()" [refresh]="refreshTick()" />
     } @else if (m.customBody === 'supplier-aging') {

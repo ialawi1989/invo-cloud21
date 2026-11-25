@@ -79,6 +79,19 @@ describe('FileReconcileModalComponent', () => {
     expect(c.result()!.matched.map(p => p.file2['__id']).sort()).toEqual(['a', 'b']);
   });
 
+  it('folds the setup into a summary once there is a result, and reopens on demand', () => {
+    const { c } = make([tx('a', 'R-1', 10, 0, '2025-10-20')], 'Date,Reference,Amount\n2025-10-20,R-1,10\n');
+    expect(c.result()).not.toBeNull();
+    expect(c.showSetup()).toBe(false);          // folded: mapping is complete
+    expect(c.amountSummary()).toBe('Amount');
+    c.setupOpen.set(true);
+    expect(c.showSetup()).toBe(true);
+    c.setupOpen.set(false);
+    c.dateCol.set(null); c.refCol.set(null);    // mapping no longer gives a result -> must stay open
+    expect(c.result()).toBeNull();
+    expect(c.showSetup()).toBe(true);
+  });
+
   it('warns when the chosen reference column is empty in almost every line', () => {
     const { c } = make([], 'Date,Ref,Amount\n2025-02-10,,5.3\n2025-02-11,-,4.7\n2025-02-12,,3.8\n');
     c.refCol.set('Ref');

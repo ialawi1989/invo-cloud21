@@ -5,6 +5,9 @@
   padding: 16px 24px;
   max-height: 72vh;
   overflow-y: auto;
+  // Sections keep their own height and the whole body scrolls — otherwise the results table (itself a scroll box)
+  // is the first thing a flex column squeezes, leaving a one-row sliver.
+  > * { flex-shrink: 0; }
 }
 
 // ── Step 1: choose the statement ──
@@ -51,6 +54,22 @@
   color: var(--ui-brand-t600);
   text-decoration: underline;
   cursor: pointer;
+}
+.frm-link--end { align-self: flex-end; }
+.frm-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  font-size: 12px;
+  .frm-link { margin-inline-start: auto; }
+}
+.frm-chip {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--ui-surface-2);
+  color: var(--ui-text);
+  b { font-weight: 600; color: var(--ui-muted); }
 }
 .frm-muted { font-size: 12px; color: var(--ui-muted); margin: 0; }
 
@@ -128,6 +147,7 @@
 @media (max-width: 640px) { .frm-tiles { grid-template-columns: 1fr; } }
 
 .frm-table-wrap {
+  min-height: 140px;
   max-height: 300px;
   overflow: auto;
   border: 1px solid var(--ui-line);

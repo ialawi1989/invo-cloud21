@@ -127,6 +127,7 @@
       "CUSTOMER_BALANCE_SUMMARY": "Customer Balance Summary",
       "CUSTOMER_AGING": "Customer Aging",
       "PAYMENT_RECEIVED": "Payment Received",
+      "EMPLOYEE_PRIVILEGES": "Employee Privileges Report",
       "CASHIER_REPORT": "Cashier Report",
       "CASHIER_SUMMARY": "Cashier Summary Report",
       "SHORT_OVER": "Short / Over Report",
@@ -251,6 +252,7 @@
       "CUSTOMER_BALANCE_SUMMARY": "Outstanding balance per customer.",
       "CUSTOMER_AGING": "Receivables bucketed by age.",
       "PAYMENT_RECEIVED": "Payments collected from customers.",
+      "EMPLOYEE_PRIVILEGES": "Which employees are on which role, what each role grants, and who holds a given permission.",
       "CASHIER_REPORT": "Cash handled per cashier / shift.",
       "CASHIER_SUMMARY": "Each cashier shift with payments, refunds, expected and counted cash.",
       "SHORT_OVER": "Cash counted against cash expected, per tender.",
@@ -897,6 +899,7 @@
       "PRODUCT_HINT": "This report shows one product at a time. Open Filters and pick a product to see its details.",
       "DISCOUNT_TITLE": "Choose a discount",
       "DISCOUNT_HINT": "This report shows one discount at a time. Open Filters and pick a discount to see the invoices and credit notes that used it.","EMPLOYEE_TITLE": "Choose an employee", "EMPLOYEE_HINT": "This report shows one employee at a time. Open Filters and pick an employee to see their days, shifts and adjustments."},
+    "EMP_PRIV": {"SUPER_ADMIN": "Super admin", "SUPER_ADMIN_NOTE": "Super admin: has every permission regardless of the role below.", "BY_EMPLOYEE": "By employee", "BY_PERMISSION": "By permission", "SEARCH_EMPLOYEES": "Search employees...", "ALL_ROLES": "All roles", "EMPLOYEE": "Employee", "ROLE": "Privilege role", "NO_MATCH": "No employees match these filters.", "SHARED_BY": "Shared by {{n}} employee(s) on this role", "NO_PERMISSIONS": "This role grants no permissions.", "ACCESS_SUMMARY": "Access summary", "ALL": "All", "SEARCH_PERMISSIONS": "Search permissions...", "NOTHING": "Nothing to show with these filters.", "WHO_HAS": "Who has", "PICK_PERMISSION": "Choose a permission", "PICK_HINT": "Choose a permission to see who holds it.", "HOLDERS_COUNT": "{{n}} employee(s)", "GRANTED_VIA": "Granted via", "NOBODY": "Nobody has this permission.", "CLICK_OPEN": "Click a row to open that employee."},
     "CASHIER_SHIFTS": {"SHIFTS": "Cashier shifts", "BRANCH": "Branch", "START": "Cashier start", "END": "Cashier end", "START_AMOUNT": "Start", "END_AMOUNT": "End", "CASHIER": "Cashier", "STARTING": "Starting", "CLOSING": "Closing", "DATE": "Date", "TIME": "Time", "STILL_OPEN": "Shift still open", "TOTAL_ORDERS": "Total orders", "OPENING": "Opening balance", "PAYMENTS": "Total payments", "REFUNDS": "Total refunds", "PAYOUT": "Total payout", "CLOSING_BALANCE": "Closing balance", "BY_TENDER": "Payment by tender", "PAYMENT_METHOD": "Payment method", "TOTAL": "Total", "REFUNDED": "Refunded", "EQUIVALENT": "Equivalent", "SHORT_OVER": "Short / Over", "TENDER": "Tender", "EXPECTED": "Expected", "COUNT": "Count", "SHORT_OVER_COL": "Short / Over", "NONE": "No records found."},
     "CUSTOMER_AGING": {"INTERVALS": "Aging intervals", "COUNT": "Intervals", "EVERY": "Every", "DAYS": "Days", "WEEKS": "Weeks", "MONTHS": "Months", "DAYS_SHORT": "days", "DUE": "Due", "COLUMNS": {"supplier": "Supplier Name", "bill": "Bill Number", "billDate": "Bill Date", "date": "Invoice Date", "invoice": "Invoice Number", "status": "Status", "customer": "Customer Name", "age": "Age", "amount": "Amount", "balanceDue": "Balance Due"}},
     "SALES_BY_TERMINAL": {

@@ -28,6 +28,7 @@
         <button type="button" class="frm-link" (click)="clearFile()">{{ 'COMMON.CLEAR' | translate }}</button>
       </div>
 
+      @if (showSetup()) {
       <div class="frm-grid">
         <label>
           <span>{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.DATE_COLUMN' | translate }}</span>
@@ -72,8 +73,22 @@
           <p class="frm-note">{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.NOTE_DIRECTION' | translate }}</p>
         }
       </div>
+        @if (result()) {
+          <button type="button" class="frm-link frm-link--end" (click)="setupOpen.set(false)">{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.SETUP_DONE' | translate }}</button>
+        }
+      } @else {
+        <!-- Chosen options, folded: one line instead of the whole form -->
+        <div class="frm-summary">
+          <span class="frm-chip"><b>{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.DATE_COLUMN' | translate }}:</b> {{ dateCol() || '—' }}</span>
+          <span class="frm-chip"><b>{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.REFERENCE_COLUMN' | translate }}:</b> {{ refCol() || '—' }}</span>
+          <span class="frm-chip"><b>{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.AMOUNT_COLUMN' | translate }}:</b> {{ amountSummary() }}</span>
+          <span class="frm-chip"><b>{{ methodKey() | translate }}</b>@if (usesAmountDate()) { · ± {{ dateWindow() }} d }</span>
+          <button type="button" class="frm-link" (click)="setupOpen.set(true)">{{ 'COMMON.EDIT' | translate }}</button>
+        </div>
+      }
     </section>
 
+    @if (showSetup()) {
     <!-- Matching rules -->
     <section class="frm-card frm-rules">
       <app-segmented-toggle [options]="methodOptions" [value]="method()" (valueChange)="method.set($event)"/>
@@ -88,6 +103,7 @@
         </label>
       }
     </section>
+    }
 
     @if (refWarning()) {
       <p class="frm-warn">{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.WARN_REFERENCE_EMPTY' | translate }}</p>

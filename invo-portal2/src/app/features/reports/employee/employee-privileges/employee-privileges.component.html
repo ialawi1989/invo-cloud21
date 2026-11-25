@@ -1,0 +1,115 @@
+<div class="ep">
+  <div class="ep-top">
+    <app-segmented-toggle [options]="viewOptions" [value]="view()" (valueChange)="setView($event)" />
+  </div>
+
+  @if (error()) {
+    <app-report-error [message]="error()" (retry)="load()" />
+  } @else if (loading() && !employees().length) {
+    <app-report-skeleton [columns]="2" [rows]="6" />
+  } @else if (view() === 'emp') {
+    <!-- ── By employee ─────────────────────────────────────────── -->
+    @if (!employees().length) {
+      <app-report-empty />
+    } @else {
+      <div class="ep-tools">
+        <input class="ep-input" type="search" [value]="search()" (input)="setSearch($any($event.target).value)"
+          [placeholder]="'REPORTS.EMP_PRIV.SEARCH_EMPLOYEES' | translate" />
+        <app-search-dropdown class="ep-role" [items]="roleItems()" [value]="roleFilter()" (valueChange)="setRole($any($event))"
+          [placeholder]="'REPORTS.EMP_PRIV.ALL_ROLES' | translate" [clearable]="true" />
+      </div>
+
+      <div class="ep-card ep-table" [class.stale]="loading()">
+        <div class="ep-row ep-hd"><span>{{ 'REPORTS.EMP_PRIV.EMPLOYEE' | translate }}</span><span>{{ 'REPORTS.EMP_PRIV.ROLE' | translate }}</span></div>
+        @for (e of pageRows(); track e.employeeId) {
+          <button type="button" class="ep-row ep-pick" [class.active]="e.employeeId === selectedId()" (click)="select(e.employeeId)" [attr.aria-pressed]="e.employeeId === selectedId()">
+            <span class="ep-who"><span class="ep-avatar">{{ initial(e.employeeName) }}</span>
+              <span class="ep-name">{{ e.employeeName }}@if (e.employeeEmail) { <small>{{ e.employeeEmail }}</small> }</span></span>
+            <span><span class="ep-pill">{{ e.privilegeName }}</span>@if (e.isSuperAdmin) { <span class="ep-pill ep-pill-accent">{{ 'REPORTS.EMP_PRIV.SUPER_ADMIN' | translate }}</span> }</span>
+          </button>
+        } @empty {
+          <p class="ep-none">{{ 'REPORTS.EMP_PRIV.NO_MATCH' | translate }}</p>
+        }
+        <app-pagination [page]="page()" [pageSize]="pageSize()" [count]="filtered().length" [pageCount]="pageCount()"
+          [pageSizeOptions]="sizes" (pageChange)="goTo($event)" (pageSizeChange)="setPageSize($event)" />
+      </div>
+
+      @if (selected(); as s) {
+        <section class="ep-card ep-detail" [class.stale]="permsLoading()">
+          <header class="ep-head">
+            <div>
+              <strong>{{ s.employeeName }}</strong>
+              @if (s.employeeEmail) { <span class="ep-sub">{{ s.employeeEmail }}</span> }
+              <span class="ep-sub">{{ 'REPORTS.EMP_PRIV.SHARED_BY' | translate: { n: sharedBy() } }}</span>
+            </div>
+            <span class="ep-pill ep-pill-accent">{{ s.privilegeName }}</span>
+          </header>
+          @if (s.isSuperAdmin) { <p class="ep-sub">{{ 'REPORTS.EMP_PRIV.SUPER_ADMIN_NOTE' | translate }}</p> }
+
+          @if (permsError()) {
+            <app-report-error [message]="permsError()" (retry)="loadPerms()" />
+          } @else if (permsLoading() && !perms().length) {
+            <app-report-skeleton [columns]="1" [rows]="4" />
+          } @else if (!perms().length) {
+            <p class="ep-none">{{ 'REPORTS.EMP_PRIV.NO_PERMISSIONS' | translate }}</p>
+          } @else {
+            <p class="ep-k">{{ 'REPORTS.EMP_PRIV.ACCESS_SUMMARY' | translate }}</p>
+            <div class="ep-tiles">
+              <button type="button" class="ep-tile" [class.on]="!group()" (click)="group.set('')">
+                {{ 'REPORTS.EMP_PRIV.ALL' | translate }}<small>{{ perms().length }}@if (permTotal()) { / {{ permTotal() }} }</small>
+              </button>
+              @for (t of tiles(); track t.key) {
+                <button type="button" class="ep-tile" [class.on]="group() === t.key" (click)="toggleGroup(t.key)" [attr.aria-pressed]="group() === t.key">
+                  {{ t.name }}<small>{{ t.count }}</small>
+                </button>
+              }
+            </div>
+            <input class="ep-input ep-psearch" type="search" [value]="permSearch()" (input)="permSearch.set($any($event.target).value)"
+              [placeholder]="'REPORTS.EMP_PRIV.SEARCH_PERMISSIONS' | translate" />
+            @for (p of visiblePerms(); track $index) {
+              <div class="ep-perm">
+                <span class="ep-check" aria-hidden="true"><svg viewBox="0 0 16 16" width="14" height="14"><path d="M3 8.5l3.2 3L13 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                <span class="ep-perm-name">{{ p.privilegeName || p.actionKey }}</span>
+                <span class="ep-group">{{ p.securityName }}</span>
+              </div>
+            } @empty {
+              <p class="ep-none">{{ 'REPORTS.EMP_PRIV.NOTHING' | translate }}</p>
+            }
+          }
+        </section>
+      }
+    }
+  } @else {
+    <!-- ── By permission ───────────────────────────────────────── -->
+    <div class="ep-tools">
+      <span class="ep-k ep-who-has">{{ 'REPORTS.EMP_PRIV.WHO_HAS' | translate }}</span>
+      <app-search-dropdown class="ep-perm-pick" [items]="permOptions" [groupBy]="permGroupBy" [displayWith]="permLabel" [compareWith]="permCompare"
+        [value]="permValue()" (valueChange)="pickPermission($any($event))" [placeholder]="'REPORTS.EMP_PRIV.PICK_PERMISSION' | translate" [clearable]="true" />
+    </div>
+
+    @if (!permValue()) {
+      <div class="ep-card"><p class="ep-none">{{ 'REPORTS.EMP_PRIV.PICK_HINT' | translate }}</p></div>
+    } @else if (holdersError()) {
+      <app-report-error [message]="holdersError()" (retry)="loadHolders()" />
+    } @else if (holdersLoading()) {
+      <app-report-skeleton [columns]="2" [rows]="4" />
+    } @else {
+      <div class="ep-card ep-table">
+        <div class="ep-row ep-hd">
+          <span>{{ 'REPORTS.EMP_PRIV.HOLDERS_COUNT' | translate: { n: holders().length } }}</span>
+          <span>{{ 'REPORTS.EMP_PRIV.GRANTED_VIA' | translate }}</span>
+        </div>
+        @for (h of sortedHolders(); track $index) {
+          <button type="button" class="ep-row ep-pick" (click)="jumpTo(h)">
+            <span class="ep-who"><span class="ep-avatar">{{ initial(h.employeeName || '') }}</span>
+              <span class="ep-name">{{ h.employeeName }}@if (h.employeeEmail) { <small>{{ h.employeeEmail }}</small> }</span></span>
+            <span><span class="ep-pill">{{ h.roleName }}</span></span>
+          </button>
+        } @empty {
+          <p class="ep-none">{{ 'REPORTS.EMP_PRIV.NOBODY' | translate }}</p>
+        }
+      </div>
+      @if (holders().length) { <p class="ep-hint">{{ 'REPORTS.EMP_PRIV.CLICK_OPEN' | translate }}</p> }
+    }
+  }
+</div>

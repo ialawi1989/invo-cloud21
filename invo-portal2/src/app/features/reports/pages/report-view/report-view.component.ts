@@ -61,6 +61,8 @@ import { AttendanceAbsenceComponent } from '../../attendance/attendance-absence/
 import { AttendanceAuditComponent } from '../../attendance/attendance-audit/attendance-audit.component';
 import { AttendanceTrendsComponent } from '../../attendance/attendance-trends/attendance-trends.component';
 import { EmployeeAttendanceDetailComponent } from '../../attendance/employee-detail/employee-detail.component';
+import { EmployeePrivilegesComponent } from '../../employee/employee-privileges/employee-privileges.component';
+import { employeePrivilegesExport } from '../../employee/employee-privileges/employee-privileges.service';
 import { CashierShiftsComponent } from '../../employee/cashier-shifts/cashier-shifts.component';
 import { CustomerAgingComponent } from '../../customer/customer-aging/customer-aging.component';
 import { SalesByTerminalComponent } from '../../sales/sales-by-terminal/sales-by-terminal.component';
@@ -111,6 +113,7 @@ const DRILL_SOURCE_PARAMS: Record<string, string[]> = {
     SalesByTerminalComponent,
     CustomerAgingComponent,
     CashierShiftsComponent,
+    EmployeePrivilegesComponent,
     AttendanceTrendsComponent,
     AttendanceAuditComponent,
     AttendanceAbsenceComponent,
@@ -590,6 +593,12 @@ export class ReportViewComponent implements OnInit, OnDestroy {
     const meta = this.meta();
     if (!meta || this.requiredFiltersMissing()) return;
     try {
+      if (meta.customBody === 'employee-privileges') {
+        // the chosen employee's role / permission decides what is exported (the list when nothing is chosen)
+        const x = employeePrivilegesExport(this.route.snapshot.queryParams);
+        await this.service.exportPath(x.path, type, x.filter, meta.slug);
+        return;
+      }
       await this.service.export(meta, type, this.toApiFilter());
     } catch (e: any) {
       this.error.set(e?.message ?? this.lang.instant('REPORTS.EXPORT.ERROR'));

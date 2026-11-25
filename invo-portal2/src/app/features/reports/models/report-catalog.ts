@@ -425,6 +425,12 @@ export const REPORT_CATALOG: ReportGroup[] = [
         filters: { date: true, branches: true, singleBranch: true }, export: { pdf: true, xlsx: true, path: 'cashierReportByCashierId' },
       },
       {
+        slug: 'employee-privileges-report', route: 'employeePrivileges', customBody: 'employee-privileges', titleKey: 'REPORTS.ITEMS.EMPLOYEE_PRIVILEGES',
+        descriptionKey: 'REPORTS.DESC.EMPLOYEE_PRIVILEGES', icon: 'shield',
+        permission: 'reportsSecurity.actions.EmployeePrivilegesReport.access',
+        filters: { date: false }, export: { pdf: true, xlsx: true, path: 'employeePrivileges' },
+      },
+      {
         slug: 'cashier-summary-report', route: 'getCashierReport', customBody: 'flat', titleKey: 'REPORTS.ITEMS.CASHIER_SUMMARY',
         descriptionKey: 'REPORTS.DESC.CASHIER_SUMMARY', icon: 'user-check',
         permission: 'reportsSecurity.actions.CashierSummaryReport.access',

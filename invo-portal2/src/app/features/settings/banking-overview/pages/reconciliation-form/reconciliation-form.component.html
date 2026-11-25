@@ -126,9 +126,13 @@
           </th>
           <th>{{ 'BANKING_OVERVIEW.TRANSACTIONS.DATE' | translate }}</th>
           <th>{{ 'BANKING_OVERVIEW.TRANSACTIONS.TYPE' | translate }}</th>
+          <th>{{ 'BANKING_OVERVIEW.TRANSACTIONS.REFERENCE' | translate }}</th>
           <th>{{ 'BANKING_OVERVIEW.TRANSACTIONS.DETAILS' | translate }}</th>
           <th class="rf-table__num">{{ 'BANKING_OVERVIEW.TRANSACTIONS.DEBIT' | translate }}</th>
           <th class="rf-table__num">{{ 'BANKING_OVERVIEW.TRANSACTIONS.CREDIT' | translate }}</th>
+          @if (status() !== 'reconciled') {
+            <th>{{ 'BANKING_OVERVIEW.TRANSACTIONS.STATUS' | translate }}</th>
+          }
         </tr>
       </thead>
       <tbody>
@@ -137,9 +141,11 @@
             <td class="rf-table__check"><input type="checkbox" [checked]="true" disabled/></td>
             <td>{{ ob.date | date:'mediumDate' }}</td>
             <td>{{ 'BANKING_OVERVIEW.FORM.OPENING_BALANCE' | translate }}</td>
+            <td>—</td>
             <td>{{ ob.transactionDetails }}</td>
             <td class="rf-table__num">{{ ob.Debit ? (ob.Debit | mycurrency) : '—' }}</td>
             <td class="rf-table__num">{{ ob.Credit ? (ob.Credit | mycurrency) : '—' }}</td>
+            @if (status() !== 'reconciled') { <td></td> }
           </tr>
         }
         @for (row of pagedTransactions(); track trackRow($index, row)) {
@@ -152,12 +158,21 @@
               {{ row.reference || '—' }}
               @if (row.user?.userName; as userName) { <div class="rf-user">{{ userName }}</div> }
             </td>
+            <td>{{ row.referenceNumber || '—' }}</td>
             <td>{{ row.transactionDetails || '—' }}</td>
             <td class="rf-table__num">{{ row.Debit ? (row.Debit | mycurrency) : '—' }}</td>
             <td class="rf-table__num">{{ row.Credit ? (row.Credit | mycurrency) : '—' }}</td>
+            @if (status() !== 'reconciled') {
+              <!-- Follows the checkbox, as the legacy sheet: ticked = Reconciled, otherwise Pending. -->
+              <td>
+                <span class="rf-badge" [class.rf-badge--done]="row.reconcile">
+                  {{ (row.reconcile ? 'BANKING_OVERVIEW.STATUS.RECONCILED' : 'BANKING_OVERVIEW.STATUS.UNRECONCILED') | translate }}
+                </span>
+              </td>
+            }
           </tr>
         } @empty {
-          <tr><td colspan="6" class="rf-empty">{{ 'BANKING_OVERVIEW.FORM.EMPTY' | translate }}</td></tr>
+          <tr><td [attr.colspan]="status() !== 'reconciled' ? 8 : 7" class="rf-empty">{{ 'BANKING_OVERVIEW.FORM.EMPTY' | translate }}</td></tr>
         }
       </tbody>
     </table>

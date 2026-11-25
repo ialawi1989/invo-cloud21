@@ -200,6 +200,10 @@ export function reportsSecurity() {
         name: "Cashier Summary Report",
         securityType: "cloud",
       }),
+      "EmployeePrivilegesReport": new PrivilegeSetting({
+        name: "Employee Privileges Report",
+        securityType: "cloud",
+      }),
       "DriverDetailsReport": new PrivilegeSetting({
         name: "Driver Details Report",
         securityType: "cloud",
