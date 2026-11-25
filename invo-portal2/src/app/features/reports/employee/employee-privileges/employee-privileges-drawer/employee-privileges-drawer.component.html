@@ -1,0 +1,47 @@
+<header class="epd-head">
+  <span class="epd-avatar">{{ initial(data.employee.employeeName) }}</span>
+  <div class="epd-id">
+    <strong>{{ data.employee.employeeName }}</strong>
+    @if (data.employee.employeeEmail) { <span class="epd-sub">{{ data.employee.employeeEmail }}</span> }
+    <span class="epd-sub">{{ 'REPORTS.EMP_PRIV.SHARED_BY' | translate: { n: data.sharedBy } }}</span>
+  </div>
+  <div class="epd-pills">
+    <span class="epd-pill epd-pill-accent">{{ data.employee.privilegeName }}</span>
+    @if (data.employee.isSuperAdmin) { <span class="epd-pill epd-pill-accent">{{ 'REPORTS.EMP_PRIV.SUPER_ADMIN' | translate }}</span> }
+  </div>
+</header>
+
+<div class="epd-body">
+  @if (data.employee.isSuperAdmin) { <p class="epd-note">{{ 'REPORTS.EMP_PRIV.SUPER_ADMIN_NOTE' | translate }}</p> }
+
+  @if (error()) {
+    <app-report-error [message]="error()" (retry)="load()" />
+  } @else if (loading()) {
+    <app-report-skeleton [columns]="1" [rows]="6" />
+  } @else if (!perms().length) {
+    <p class="epd-none">{{ 'REPORTS.EMP_PRIV.NO_PERMISSIONS' | translate }}</p>
+  } @else {
+    <p class="epd-count">
+      {{ (total() ? 'REPORTS.EMP_PRIV.PERMS_COUNT_OF' : 'REPORTS.EMP_PRIV.PERMS_COUNT') | translate: { n: perms().length, total: total() } }}
+    </p>
+
+    <div class="epd-filters">
+      <app-search-dropdown class="epd-group-pick" [items]="tiles()" [displayWith]="groupLabel" [compareWith]="groupCompare"
+        [value]="groupValue()" (valueChange)="setGroup($any($event))" [placeholder]="'REPORTS.EMP_PRIV.ALL_GROUPS' | translate" [clearable]="true" />
+      <input class="epd-input" type="search" [value]="search()" (input)="search.set($any($event.target).value)"
+        [placeholder]="'REPORTS.EMP_PRIV.SEARCH_PERMISSIONS' | translate" />
+    </div>
+
+    <div class="epd-list">
+      @for (p of visible(); track $index) {
+        <div class="epd-perm">
+          <span class="epd-check" aria-hidden="true"><svg viewBox="0 0 16 16" width="14" height="14"><path d="M3 8.5l3.2 3L13 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span class="epd-perm-name">{{ p.privilegeName || p.actionKey }}</span>
+          <span class="epd-group">{{ p.securityName }}</span>
+        </div>
+      } @empty {
+        <p class="epd-none">{{ 'REPORTS.EMP_PRIV.NOTHING' | translate }}</p>
+      }
+    </div>
+  }
+</div>
