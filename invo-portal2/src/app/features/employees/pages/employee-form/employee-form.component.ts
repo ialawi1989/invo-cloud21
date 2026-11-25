@@ -83,6 +83,7 @@ import {
   HrFileAttachmentsComponent,
   attachmentAccess,
 } from '../../components/hr-file-attachments/hr-file-attachments.component';
+import { EmployeeDocumentsComponent } from '../employee-documents/employee-documents.component';
 import { EmployeeDocument, EmployeeDocumentService } from '../../services/employee-document.service';
 import { EmployeeFileService, FILE_ENTITY } from '../../services/employee-file.service';
 import { GuidedTourService } from '@shared/services/guided-tour.service';
@@ -119,10 +120,13 @@ interface Option {
  * so unknown fields round-trip untouched. The heavy `privileges` blob is
  * dropped from the payload (mirrors the legacy `delete this.employeeData.privileges`).
  */
+type DocSlot = { types: string[]; heading: string };
+const NO_SLOTS: Record<string, DocSlot> = {};
+
 @Component({
   selector: 'app-employee-form',
   standalone: true,
-  imports: [TooltipDirective, FormSkeletonComponent, 
+  imports: [EmployeeDocumentsComponent, TooltipDirective, FormSkeletonComponent, 
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
@@ -415,6 +419,25 @@ export class EmployeeFormComponent implements OnInit, OnDestroy, CanLeaveCompone
 
   /** Entity key for the attachments component — documents, on this form. */
   readonly documentEntity = FILE_ENTITY.document;
+
+  /** Documents attach to a saved employee only, and only with the grant. */
+  readonly docsEmployeeId = computed<string | null>(() =>
+    !this.isCreate() && this.attachAccess().visible ? this.employeeId() : null);
+
+  private slot(types: string[], key: string) {
+    return { types, heading: this.translate.instant(key) };
+  }
+  /** Each section shows the documents that belong to it, directly beneath it. */
+  readonly profileDocSlots = computed<Record<string, { types: string[]; heading: string }>>(() => {
+    if (!this.docsEmployeeId()) return NO_SLOTS;
+    return {
+      nationality: this.slot(['nationalId', 'passport', 'visa', 'workPermit'], 'EMPLOYEES.FILES.SECTION_IDENTITY'),
+      education: this.slot(['qualification'], 'EMPLOYEES.FILES.SECTION_QUALIFICATION'),
+      dependents: this.slot(['drivingLicence', 'healthCard', 'other'], 'EMPLOYEES.FILES.SECTION_OTHER'),
+    };
+  });
+  readonly employmentDocSlots = computed<Record<string, { types: string[]; heading: string }>>(() =>
+    this.docsEmployeeId() ? <Record<string, DocSlot>>{ contractEndDate: this.slot(['contract'], 'EMPLOYEES.FILES.SECTION_CONTRACT') } : NO_SLOTS);
 
   /**
    * Disclosure state for the two HR cards.

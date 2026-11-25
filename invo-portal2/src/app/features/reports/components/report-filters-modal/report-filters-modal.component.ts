@@ -305,6 +305,16 @@ export class ReportFiltersModalComponent {
   });
 
   isSelected = (id: string) => this.selected().includes(id);
+
+  /** Single-branch reports pick through a dropdown instead of the checkbox grid. */
+  selectedBranch = computed(() => this.data.branches.find(b => b.value === this.selected()[0]) ?? null);
+  readonly branchLabel = (b: FilterBranchOption) => b.label;
+  readonly branchValue = (b: FilterBranchOption) => b.value;
+  readonly sameBranch = (a: FilterBranchOption, b: FilterBranchOption) => a?.value === b?.value;
+  setSingleBranch(v: unknown): void {
+    const b = v as FilterBranchOption | null;
+    this.selected.set(b ? [b.value] : []);
+  }
   /** The required branch is not chosen yet — Apply stays disabled. */
   missingRequired = computed(() =>
     (!!this.data.requireBranch && this.selected().length === 0) || (!!this.data.requireProduct && this.productIds().length === 0) || (!!this.data.requireEmployee && this.employeeIds().length === 0) || (!!this.data.requireDiscount && this.discountIds().length === 0));

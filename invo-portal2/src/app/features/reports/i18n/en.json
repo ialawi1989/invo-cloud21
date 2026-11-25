@@ -93,6 +93,9 @@
       "DEPARTMENT_SALES_PAYMENTS": "Department Sales And Payments Overview Report",
       "PURCHASE_BY_ITEM_SUB": "Item Purchases",
       "PURCHASE_BY_SUPPLIER_SUB": "Supplier Purchases",
+      "SALES_BY_CATEGORY_DETAILS": "Category Details",
+      "PAYMENT_RECEIVED_SUB": "Payments by Payment Method",
+      "DAILY_SALES_SUB_BY_PAYMENT": "Payments for Other Days",
       "SALES_BY_SERVICE_DETAILS": "Service Details",
       "SALES_BY_AGGREGATOR_SUB": "Aggregator Details",
       "DAILY_CLOSING": "Daily Closing Report",
@@ -218,6 +221,9 @@
       "DEPARTMENT_SALES_PAYMENTS": "Sales by brand, category or department with the amount paid per payment method.",
       "PURCHASE_BY_ITEM_SUB": "The suppliers a product was bought from.",
       "PURCHASE_BY_SUPPLIER_SUB": "The bills of one supplier.",
+      "SALES_BY_CATEGORY_DETAILS": "The invoices and credit notes of one category.",
+      "PAYMENT_RECEIVED_SUB": "The payments received through one payment method.",
+      "DAILY_SALES_SUB_BY_PAYMENT": "Payments received today for invoices of other days.",
       "SALES_BY_SERVICE_DETAILS": "The invoices and credit notes of one service.",
       "SALES_BY_AGGREGATOR_SUB": "The invoices and credit notes of one aggregator.",
       "DAILY_CLOSING": "A branch’s business day: sales, returns, tenders, categories and payments.",
@@ -402,6 +408,7 @@
       "TAX": "Tax"
     },
     "DAILY_CLOSING": {
+      "VIEW_PAYMENTS": "View payments",
       "OPENING_HOUR_NOTE": "This report always uses the branch's opening hours.",
       "TOTAL_GUESTS": "Total Guests",
       "TOTAL_ORDERS": "Total Orders",
@@ -443,6 +450,7 @@
       "SUB": { "DATE": "Date", "INVOICE": "Invoice #", "CUSTOMER": "Customer", "NET_SALES": "Net Sales" }
     },
     "SALES_BY_AGGREGATOR_SUB": {
+      "CATEGORY": "Category",
       "SERVICE": "Service",
       "AGGREGATOR": "Aggregator",
       "COLUMNS": { "CODE": "Code", "AGGREGATOR_ID": "Aggregator ID", "TYPE": "Type", "TOTAL_SALES": "Total Sales", "TOTAL": "Total" }
@@ -1019,6 +1027,7 @@
       "NO_DATA": "No data available"
     },
     "SALES_SUMMARY": {
+      "UNCATEGORIZED": "Uncategorized",
       "TOTAL_SALES": "Total Sales",
       "NET_REVENUE": "Net Revenue",
       "TOTAL_ORDERS": "Total Orders",

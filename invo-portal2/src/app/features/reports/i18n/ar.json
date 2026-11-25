@@ -93,6 +93,9 @@
       "DEPARTMENT_SALES_PAYMENTS": "تقرير نظرة عامة على مبيعات الأقسام والمدفوعات",
       "PURCHASE_BY_ITEM_SUB": "مشتريات الصنف",
       "PURCHASE_BY_SUPPLIER_SUB": "مشتريات المورد",
+      "SALES_BY_CATEGORY_DETAILS": "تفاصيل الفئة",
+      "PAYMENT_RECEIVED_SUB": "المدفوعات حسب وسيلة الدفع",
+      "DAILY_SALES_SUB_BY_PAYMENT": "مدفوعات أيام أخرى",
       "SALES_BY_SERVICE_DETAILS": "تفاصيل الخدمة",
       "SALES_BY_AGGREGATOR_SUB": "تفاصيل المجمّع",
       "DAILY_CLOSING": "تقرير الإغلاق اليومي",
@@ -218,6 +221,9 @@
       "DEPARTMENT_SALES_PAYMENTS": "المبيعات حسب العلامة التجارية أو التصنيف أو القسم مع المبلغ المدفوع لكل طريقة دفع.",
       "PURCHASE_BY_ITEM_SUB": "الموردون الذين اشتُري منهم المنتج.",
       "PURCHASE_BY_SUPPLIER_SUB": "فواتير شراء مورد واحد.",
+      "SALES_BY_CATEGORY_DETAILS": "فواتير وإشعارات دائنة فئة واحدة.",
+      "PAYMENT_RECEIVED_SUB": "المدفوعات المستلمة عبر وسيلة دفع واحدة.",
+      "DAILY_SALES_SUB_BY_PAYMENT": "مدفوعات مستلمة اليوم لفواتير أيام أخرى.",
       "SALES_BY_SERVICE_DETAILS": "فواتير وإشعارات دائنة خدمة واحدة.",
       "SALES_BY_AGGREGATOR_SUB": "فواتير وإشعارات دائنة مجمّع توصيل واحد.",
       "DAILY_CLOSING": "يوم العمل لفرع: المبيعات والمرتجعات وطرق الدفع والتصنيفات والمدفوعات.",
@@ -402,6 +408,7 @@
       "TAX": "الضريبة"
     },
     "DAILY_CLOSING": {
+      "VIEW_PAYMENTS": "عرض المدفوعات",
       "OPENING_HOUR_NOTE": "يعتمد هذا التقرير دائماً على ساعات عمل الفرع.",
       "TOTAL_GUESTS": "إجمالي الضيوف",
       "TOTAL_ORDERS": "إجمالي الطلبات",
@@ -443,6 +450,7 @@
       "SUB": { "DATE": "التاريخ", "INVOICE": "رقم الفاتورة", "CUSTOMER": "العميل", "NET_SALES": "صافي المبيعات" }
     },
     "SALES_BY_AGGREGATOR_SUB": {
+      "CATEGORY": "الفئة",
       "SERVICE": "الخدمة",
       "AGGREGATOR": "المجمّع",
       "COLUMNS": { "CODE": "الرمز", "AGGREGATOR_ID": "معرّف المجمّع", "TYPE": "النوع", "TOTAL_SALES": "إجمالي المبيعات", "TOTAL": "الإجمالي" }
@@ -1019,6 +1027,7 @@
       "NO_DATA": "لا توجد بيانات"
     },
     "SALES_SUMMARY": {
+      "UNCATEGORIZED": "بدون فئة",
       "TOTAL_SALES": "إجمالي المبيعات",
       "NET_REVENUE": "صافي الإيرادات",
       "TOTAL_ORDERS": "إجمالي الطلبات",

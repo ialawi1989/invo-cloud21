@@ -11,6 +11,7 @@ import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule } f
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
+import { EmployeeDocumentsComponent } from '../../../employee-documents/employee-documents.component';
 import { ToggleComponent } from '@shared/components/toggle/toggle.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { DropdownLoadFn } from '@shared/components/dropdown/search-dropdown.types';
@@ -61,6 +62,7 @@ import {
     ToggleComponent,
     SearchDropdownComponent,
     DatePickerComponent,
+    EmployeeDocumentsComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './field-renderer.component.html',
@@ -89,6 +91,10 @@ export class FieldRendererComponent {
   suggestionSources = input<Record<string, string[]>>({});
   /** Read-only display values for `computed` fields, keyed by full path. */
   computedValues = input<Record<string, string>>({});
+  /** Saved employee id; documents can only attach once the employee exists. */
+  employeeId = input<string | null>(null);
+  /** Document attachments shown under a top-level field, keyed by field key. */
+  docSlots = input<Record<string, { types: string[]; heading: string }>>({});
   /** How hard `required` bites — see {@link RequiredMode}. */
   requiredMode = input<RequiredMode>('strict');
 

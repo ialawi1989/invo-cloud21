@@ -8,7 +8,7 @@
   } @else {
     <div class="ls" [class.stale]="loading()">
       @if (subject()) {
-        <div class="ls-chip">{{ (kind() === 'service' ? 'REPORTS.SALES_BY_AGGREGATOR_SUB.SERVICE' : 'REPORTS.SALES_BY_AGGREGATOR_SUB.AGGREGATOR') | translate }}: <b>{{ subject() }}</b></div>
+        <div class="ls-chip">{{ ('REPORTS.SALES_BY_AGGREGATOR_SUB.' + kind().toUpperCase()) | translate }}: <b>{{ subject() }}</b></div>
       }
       <app-bo-table-shell [periods]="[]" hintKey="salesByAggregatorSub_scrollHint">
         <table class="bo-table">

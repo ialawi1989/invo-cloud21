@@ -376,11 +376,6 @@ export class EmployeeRecordComponent {
       group: null, action: null, enabled: () => true, ready: true,
     },
     {
-      path: 'documents', labelKey: 'EMPLOYEES.TABS.DOCUMENTS',
-      group: 'employeeDocumentSecurity', action: 'view',
-      enabled: () => this.documentsFlag(), ready: true,
-    },
-    {
       path: 'assets', labelKey: 'EMPLOYEES.TABS.ASSETS',
       group: 'employeeAssetSecurity', action: 'view',
       enabled: () => this.assetsFlag(), ready: true,

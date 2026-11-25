@@ -1498,6 +1498,10 @@
       }
     },
     "FILES": {
+      "SECTION_IDENTITY": "Identity & residency documents",
+      "SECTION_QUALIFICATION": "Qualification certificates",
+      "SECTION_OTHER": "Other documents",
+      "SECTION_CONTRACT": "Contract documents",
       "DOCUMENTS": "Documents",
       "ATTACH": "Attach a file",
       "NONE": "No files attached",

@@ -40,7 +40,7 @@
 
   <section class="hr-card">
   <div class="doc-header">
-    <h2 class="doc-header__title">{{ 'EMPLOYEES.DOCUMENTS.TITLE' | translate }}</h2>
+    <h2 class="doc-header__title">{{ heading() ?? ('EMPLOYEES.DOCUMENTS.TITLE' | translate) }}</h2>
     @if (canEdit() && !editing()) {
       <button type="button" class="btn btn-primary" (click)="startAdd()">
         {{ 'EMPLOYEES.DOCUMENTS.ADD' | translate }}
@@ -63,7 +63,7 @@
           <span class="doc-field__label">{{ 'EMPLOYEES.DOCUMENTS.FIELD.TYPE' | translate }}</span>
           <app-search-dropdown
             formControlName="type"
-            [items]="types()"
+            [items]="visibleTypes()"
             [displayWith]="typeName"
             [toValue]="typeKey"
             [compareWith]="typeMatches"
@@ -149,14 +149,14 @@
 
   @if (loading()) {
     <app-list-skeleton [rows]="4" [lines]="2" />
-  } @else if (!documents().length) {
+  } @else if (!visibleDocuments().length) {
     <app-empty-state icon="document"
       [title]="'EMPLOYEES.DOCUMENTS.EMPTY_TITLE' | translate"
       [body]="'EMPLOYEES.DOCUMENTS.EMPTY_BODY' | translate">
     </app-empty-state>
   } @else {
     <div class="doc-list">
-      @for (doc of documents(); track trackDocument($index, doc)) {
+      @for (doc of visibleDocuments(); track trackDocument($index, doc)) {
         <article class="doc-card">
           <header class="doc-card__head">
             <div class="doc-card__ident">

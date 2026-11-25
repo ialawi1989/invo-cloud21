@@ -32,7 +32,7 @@ export class SalesByAggregatorSubComponent {
 
   filter = input.required<ReportApiFilter>();
   /** What the list belongs to: an aggregator row or a service row of the parent report. */
-  kind = input<'aggregator' | 'service'>('aggregator');
+  kind = input<'aggregator' | 'service' | 'category'>('aggregator');
   refresh = input(0);
 
   readonly sizes = [10, 25, 50, 100];
@@ -46,7 +46,8 @@ export class SalesByAggregatorSubComponent {
   records = computed(() => this.data()?.records ?? []);
   isEmpty = computed(() => !!this.data() && this.records().length === 0);
   /** The aggregator / service the list is for (its name travels in the URL). */
-  subject = computed(() => this.kind() === 'service' ? String(this.route.snapshot.queryParams['serviceName'] ?? '') : String(this.filter()['aggregatorName'] ?? ''));
+  subject = computed(() => this.kind() === 'service' ? String(this.route.snapshot.queryParams['serviceName'] ?? '')
+    : this.kind() === 'category' ? String(this.route.snapshot.queryParams['categoryName'] ?? '') : String(this.filter()['aggregatorName'] ?? ''));
   link = (r: AggregatorSubRecord) => journalLink(r.type, r.id);
 
   private seq = 0;
@@ -72,7 +73,7 @@ export class SalesByAggregatorSubComponent {
     this.loading.set(true);
     this.error.set(null);
     try {
-      const d = await this.svc.load(this.filter(), this.page(), this.pageSize(), this.kind() === 'service' ? 'salesByServiceId' : 'salesByAggregatorSubReport');
+      const d = await this.svc.load(this.filter(), this.page(), this.pageSize(), this.kind() === 'service' ? 'salesByServiceId' : this.kind() === 'category' ? 'salesByCategoryId' : 'salesByAggregatorSubReport');
       if (mine === this.seq) this.data.set(d);
     } catch (e: any) {
       if (mine !== this.seq) return;

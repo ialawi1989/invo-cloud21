@@ -165,7 +165,6 @@ describe('employee record shell — one feature key per tab', () => {
   beforeEach(() => TestBed.resetTestingModule());
 
   const CASES: { key: string; path: string }[] = [
-    { key: HR_DOCUMENTS, path: 'documents' },
     { key: HR_ASSETS, path: 'assets' },
     { key: HR_LEAVE, path: 'leave' },
     { key: HR_PERFORMANCE, path: 'performance' },

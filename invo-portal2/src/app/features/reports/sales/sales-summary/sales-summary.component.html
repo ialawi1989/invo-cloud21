@@ -23,7 +23,10 @@
               <tbody>
                 @for (r of categories(); track $index) {
                   <tr>
-                    <td><span class="dot" [style.background-color]="color($index)"></span>{{ r.category }} [{{ r.qty }}]</td>
+                    <td>
+                      <span class="dot" [style.background-color]="color($index)"></span>
+                      <a class="ss-link" [routerLink]="['/reports/view', 'sales-by-category-details']" [queryParams]="drill({ categoryId: r.categoryId ?? null, categoryName: r.category || ('REPORTS.SALES_SUMMARY.UNCATEGORIZED' | translate) })">{{ r.category }}</a> [{{ r.qty }}]
+                    </td>
                     <td class="num pct">
                       <span class="pct-bar" aria-hidden="true"><span [style.width.%]="r.percentage" [style.background-color]="color($index)"></span></span>
                       {{ r.percentage | mynumber: 2 }}%
@@ -82,7 +85,13 @@
               <tbody>
                 @for (r of services(); track $index) {
                   <tr>
-                    <td><span class="dot" [style.background-color]="color($index)"></span>{{ r.serviceName }} [{{ r.qty }}]</td>
+                    <td>
+                      <span class="dot" [style.background-color]="color($index)"></span>
+                      @if (r.serviceId) {
+                        <a class="ss-link" [routerLink]="['/reports/view', 'sales-by-service-details']" [queryParams]="drill({ serviceId: r.serviceId, serviceName: r.serviceName })">{{ r.serviceName }}</a>
+                      } @else { {{ r.serviceName }} }
+                      [{{ r.qty }}]
+                    </td>
                     <td class="num pct">
                       <span class="pct-bar" aria-hidden="true"><span [style.width.%]="r.percentage" [style.background-color]="color($index)"></span></span>
                       {{ r.percentage | mynumber: 2 }}%
@@ -117,7 +126,13 @@
               </thead>
               <tbody>
                 @for (r of taxes(); track $index) {
-                  <tr><td>{{ r.name }}</td><td class="num strong">{{ r.taxTotal | mynumber }}</td></tr>
+                  <tr>
+                    <td>
+                      @if (r.id) { <a class="ss-link" [routerLink]="['/reports/view', 'vat-details-sales']" [queryParams]="drill({ taxId: r.id })">{{ r.name }}</a> }
+                      @else { {{ r.name }} }
+                    </td>
+                    <td class="num strong">{{ r.taxTotal | mynumber }}</td>
+                  </tr>
                 } @empty {
                   <tr><td colspan="2" class="empty">{{ 'REPORTS.SALES_SUMMARY.NO_TAX_DATA' | translate }}</td></tr>
                 }
@@ -146,7 +161,11 @@
               <tbody>
                 @for (r of payments(); track $index) {
                   <tr>
-                    <td>{{ r.name }} ({{ r.total_transaction }})</td>
+                    <td>
+                      @if (r.id) { <a class="ss-link" [routerLink]="['/reports/view', 'payment-received-sub']" [queryParams]="drill({ paymentMethodId: r.id }, false)">{{ r.name }}</a> }
+                      @else { {{ r.name }} }
+                      ({{ r.total_transaction }})
+                    </td>
                     <td class="num">{{ r.amount_paid | mynumber }}</td>
                     <td class="num strong">{{ r.actual_amount_paid | mynumber }}</td>
                   </tr>
@@ -183,7 +202,10 @@
               </thead>
               <tbody>
                 @for (r of discounts(); track $index) {
-                  <tr><td>{{ r.name }}</td><td class="num strong">{{ r.sum | mynumber }}</td></tr>
+                  <tr>
+                    <td><a class="ss-link" [routerLink]="['/reports/view', 'sales-by-discount']" [queryParams]="drill({ discount: r.discountId || 'others' }, false)">{{ r.name }}</a></td>
+                    <td class="num strong">{{ r.sum | mynumber }}</td>
+                  </tr>
                 } @empty {
                   <tr><td colspan="2" class="empty">{{ 'REPORTS.SALES_SUMMARY.NO_DISCOUNTS' | translate }}</td></tr>
                 }

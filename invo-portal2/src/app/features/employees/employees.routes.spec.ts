@@ -31,7 +31,6 @@ const childRoute = (path: string): Route | undefined =>
 
 /** Every HR tab route, and the grant the server checks for it. */
 const HR_TABS = [
-  { path: 'documents', hrGroup: 'employeeDocumentSecurity', hrAction: 'view' },
   { path: 'assets', hrGroup: 'employeeAssetSecurity', hrAction: 'view' },
   { path: 'leave', hrGroup: 'employeeLeaveSecurity', hrAction: 'view', hrSelfAllowed: true },
   { path: 'performance', hrGroup: 'employeePerformanceSecurity', hrAction: 'view' },

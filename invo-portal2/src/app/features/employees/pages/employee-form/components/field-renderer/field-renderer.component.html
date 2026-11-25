@@ -237,6 +237,16 @@
             </div>
           }
         }
+
+        <!-- Attachments that belong to this section, right under it. -->
+        @if (!inRow && docSlots()[d.key]; as slot) {
+          <div class="fr-docs">
+            <app-employee-documents
+              [employeeId]="employeeId()"
+              [typeKeys]="slot.types"
+              [heading]="slot.heading" />
+          </div>
+        }
       }
     }
   </div>

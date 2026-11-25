@@ -4,7 +4,7 @@ import { ReportApiFilter } from '../../models/report.model';
 
 type N = number | string;
 export interface SalesReturn { sales: N; return: N; }
-export interface TenderDetail { tenderType: string; equivalant: N; refund: N; tenderTotal: N; }
+export interface TenderDetail { tenderType: string; paymentMethodId?: string | null; equivalant: N; refund: N; tenderTotal: N; }
 export interface CategoryDetail { departmentName: string | null; categoryName: string; totalSales: N; salesQty: N; totalReturns: N; returnQty: N; }
 export interface ServiceDetail { serviceId?: string | null; serviceName: string; numberOfInvoices?: N; totalSales: N; salesQty: N; totalReturns: N; returnQty: N; }
 export interface SalesDetail { salesDate: string; totalSales: N; itemDiscount: N; taxTotal: N; }

@@ -767,6 +767,7 @@ export const REPORT_CATALOG: ReportGroup[] = [
         descriptionKey: 'REPORTS.DESC.SALES_BY_DISCOUNT', icon: 'percent',
         permission: 'reportsSecurity.actions.SalesByDiscountReport.access',
         filters: { date: true, branches: true, discount: true, requireDiscount: true }, export: { pdf: true, xlsx: true, path: 'salesByDiscountId' },
+        requestFilter: { allowComparison: false, periodQty: 1 },
       },
       {
         slug: 'transaction-discount', route: 'transactionDiscountReports', customBody: 'flat', titleKey: 'REPORTS.ITEMS.TRANSACTION_DISCOUNT',
@@ -862,6 +863,30 @@ export const SUB_REPORTS: ReportMeta[] = [
     icon: 'layers', permission: 'reportsSecurity.actions.SalesByService.access',
     filters: { date: true, branches: true, applyOpeningHour: true },
     export: { pdf: true, xlsx: true, path: 'salesByServiceId' },
+  },
+  {
+    // The invoices and credit notes of one category (opened from a Sales Summary category row, with the category in the URL).
+    slug: 'sales-by-category-details', parent: 'sales-summary', route: 'salesByCategoryId', customBody: 'category-details',
+    titleKey: 'REPORTS.ITEMS.SALES_BY_CATEGORY_DETAILS', descriptionKey: 'REPORTS.DESC.SALES_BY_CATEGORY_DETAILS',
+    icon: 'layers', permission: 'reportsSecurity.actions.SalesSummary.access',
+    filters: { date: true, branches: true, applyOpeningHour: true },
+    export: { pdf: true, xlsx: true, path: 'salesByCategoryId' },
+    requestFilter: { allowComparison: false, periodQty: 1 },
+  },
+  {
+    // The payments of one payment method (opened from a Sales Summary tender or a Daily Closing "Income by tenders" row).
+    slug: 'payment-received-sub', parent: 'sales-summary', route: 'paymentReceived', customBody: 'flat',
+    titleKey: 'REPORTS.ITEMS.PAYMENT_RECEIVED_SUB', descriptionKey: 'REPORTS.DESC.PAYMENT_RECEIVED_SUB',
+    icon: 'credit-card', permission: 'reportsSecurity.actions.SalesSummary.access',
+    filters: { date: true, branches: true }, export: { pdf: true, xlsx: true, path: 'paymentReceived' },
+    requestFilter: { allowComparison: false, periodQty: 1 },
+  },
+  {
+    // Payments received on the Daily Closing day for invoices of other days (opened from its Payment Breakdown section).
+    slug: 'daily-sales-sub-by-payment', parent: 'daily-closing-report', route: 'dailySalesSubReportByPayment', customBody: 'flat',
+    titleKey: 'REPORTS.ITEMS.DAILY_SALES_SUB_BY_PAYMENT', descriptionKey: 'REPORTS.DESC.DAILY_SALES_SUB_BY_PAYMENT',
+    icon: 'credit-card', permission: 'reportsSecurity.actions.SalesBreakdownDailyClosing.access',
+    filters: { asOf: true, branches: true, singleBranch: true, requireBranch: true, sources: ['CallCenter', 'Cloud', 'POS', 'Online'] },
   },
   {
     // The invoices and credit notes of one aggregator (opened from a Sales by Aggregator row, with its name in the URL).

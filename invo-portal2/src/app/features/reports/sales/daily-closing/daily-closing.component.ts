@@ -5,7 +5,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService } from '@core/i18n/language.service';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 import { ReportApiFilter } from '../../models/report.model';
-import { CategoryDetail, DailyClosingData, DailyClosingService, SalesReturn } from './daily-closing.service';
+import { CategoryDetail, DailyClosingData, DailyClosingService, SalesReturn, TenderDetail } from './daily-closing.service';
 import { ReportErrorComponent } from '../../components/report-error/report-error.component';
 import { ReportSkeletonComponent } from '../../components/report-skeleton/report-skeleton.component';
 
@@ -94,6 +94,13 @@ export class DailyClosingComponent {
       sources: Array.isArray(f['sources']) && f['sources'].length ? f['sources'].join(',') : null,
     };
   });
+
+  /** Opens one payment method's payments for the closing day and branch (no opening hours: the backend filters by payment date). */
+  tenderParams = (t: TenderDetail): Record<string, string | null> => {
+    const f = this.filter();
+    const day = String(f['date'] ?? f.toDate ?? '');
+    return { preset: 'custom', fromDate: day, toDate: day, branches: f['branchId'] ? String(f['branchId']) : null, paymentMethodId: t.paymentMethodId ?? null };
+  };
 
   private seq = 0;
 

@@ -98,6 +98,8 @@
       <app-sales-by-aggregator-sub [filter]="bodyFilter()" [refresh]="refreshTick()" />
     } @else if (m.customBody === 'service-details') {
       <app-sales-by-aggregator-sub kind="service" [filter]="bodyFilter()" [refresh]="refreshTick()" />
+    } @else if (m.customBody === 'category-details') {
+      <app-sales-by-aggregator-sub kind="category" [filter]="bodyFilter()" [refresh]="refreshTick()" />
     } @else if (m.customBody === 'comparison') {
       <app-comparison-report [slug]="m.slug" [filter]="bodyFilter()" [refresh]="refreshTick()"
         [subColumns]="filterState().subColumns" (subColumnsChange)="onSubColumns($event)" />

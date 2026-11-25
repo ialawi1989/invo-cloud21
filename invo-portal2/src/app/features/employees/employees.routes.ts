@@ -28,7 +28,6 @@ import { employeeEarningsGuard } from './employee-earnings.guard';
  *   /employees/new              → add-employee form (single page)
  *   /employees/:id             → employee record shell; redirects to the form
  *   /employees/:id/edit        → the form; `?section=` narrows it to one card
- *   /employees/:id/documents   → documents tab
  *   /employees/:id/assets      → assets tab
  *   /employees/:id/leave       → leave tab (reachable by the subject with no grant)
  *   /employees/:id/performance → performance reviews and trainings
@@ -288,17 +287,6 @@ export const EMPLOYEES_ROUTES: Routes = [
        * control is that the tab is absent from the strip for anyone without the
        * grant.
        */
-      {
-        path: 'documents',
-        canActivate: [hrPrivilegeGuard],
-        // `view`, spelled as the server's `employeeDocumentSecurity` helper
-        // checks it. Pinned by hr-privilege-contract.spec.ts on this side and
-        // hrPrivilegeContract.test.ts on the server's.
-        data: { hrGroup: 'employeeDocumentSecurity', hrAction: 'view' },
-        loadComponent: () =>
-          import('./pages/employee-documents/employee-documents.component')
-            .then(m => m.EmployeeDocumentsComponent),
-      },
       {
         path: 'assets',
         canActivate: [hrPrivilegeGuard],

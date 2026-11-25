@@ -1498,6 +1498,10 @@
       }
     },
     "FILES": {
+      "SECTION_IDENTITY": "وثائق الهوية والإقامة",
+      "SECTION_QUALIFICATION": "شهادات المؤهلات",
+      "SECTION_OTHER": "مستندات أخرى",
+      "SECTION_CONTRACT": "مستندات العقد",
       "DOCUMENTS": "المستندات",
       "ATTACH": "إرفاق ملف",
       "NONE": "لا ملفات مرفقة",

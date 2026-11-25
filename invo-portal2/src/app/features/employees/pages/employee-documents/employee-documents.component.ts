@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -58,11 +58,36 @@ export class EmployeeDocumentsComponent {
   private readonly fb = inject(FormBuilder);
   private readonly translate = inject(TranslateService);
 
-  /** `:id` lives on the parent route — this component is a tab child. */
-  readonly employeeId =
+  /** Employee id when embedded in another tab; otherwise `:id` from the parent route. */
+  readonly employeeIdInput = input<string | null>(null, { alias: 'employeeId' });
+  /**
+   * Restrict this view to some document types (server keys, matched loosely —
+   * case and punctuation ignored). Null = every type. Lets each tab of the
+   * record show only the documents that belong to it.
+   */
+  readonly typeKeys = input<string[] | null>(null);
+  /** Heading override for the embedded card. */
+  readonly heading = input<string | null>(null);
+
+  private readonly routeId =
     this.route.parent?.snapshot.paramMap.get('id')
     ?? this.route.snapshot.paramMap.get('id')
     ?? '0';
+  get employeeId(): string { return this.employeeIdInput() ?? this.routeId; }
+
+  private static norm = (k: string) => String(k ?? '').replace(/[^a-z0-9]/gi, '').toLowerCase();
+  private readonly allowed = computed(() => {
+    const keys = this.typeKeys();
+    return keys ? new Set(keys.map(EmployeeDocumentsComponent.norm)) : null;
+  });
+  readonly visibleDocuments = computed(() => {
+    const a = this.allowed();
+    return a ? this.documents().filter(d => a.has(EmployeeDocumentsComponent.norm(d.type))) : this.documents();
+  });
+  readonly visibleTypes = computed(() => {
+    const a = this.allowed();
+    return a ? this.types().filter(t => a.has(EmployeeDocumentsComponent.norm(t.key))) : this.types();
+  });
 
   readonly loading = signal(true);
   readonly busy = signal<string | null>(null);
@@ -91,7 +116,8 @@ export class EmployeeDocumentsComponent {
     this.canEdit() && this.catalog()?.storageConfigured === true);
 
   constructor() {
-    void this.load();
+    // Inputs are not bound yet in the constructor; load once the id is known.
+    queueMicrotask(() => void this.load());
   }
 
   async load(): Promise<void> {

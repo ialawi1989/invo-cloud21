@@ -154,6 +154,22 @@ export const FLAT_REPORTS: Record<string, FlatReportConfig> = {
       { key: 'invoiceNumber', doc: { type: 'Invoice', idKey: 'invoiceId' } }, { key: 'note' }, { key: 'amount', type: 'currency', end: true, total: true },
     ],
   },
+  // The payments of one payment method: with `groupBy: 'Payment Method'` the backend answers one group holding them in `paymentList`.
+  'payment-received-sub': {
+    route: 'paymentReceived', paged: true, expand: 'paymentList',
+    columns: [
+      { key: 'paymentDate', type: 'date' }, { key: 'referenceNumber' }, { key: 'customerName' }, { key: 'paymentMode' }, { key: 'depositTo' },
+      { key: 'invoiceNumber', doc: { type: 'Invoice', idKey: 'invoiceId' } }, { key: 'note' }, { key: 'amount', type: 'currency', end: true, total: true },
+    ],
+  },
+  // Payments received on the closing day for invoices of other days.
+  'daily-sales-sub-by-payment': {
+    route: 'dailySalesSubReportByPayment', paged: false,
+    columns: [
+      { key: 'paymentDate', type: 'date' }, { key: 'paymentMode' }, { key: 'referenceNumber' },
+      { key: 'invoiceNumber', doc: { type: 'Invoice', idKey: 'invoiceId' } }, { key: 'amount', type: 'currency', end: true, total: true },
+    ],
+  },
   'credit-notes': {
     route: 'creditNoteReport', paged: true,
     columns: [

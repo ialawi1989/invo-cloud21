@@ -85,6 +85,8 @@ const isId = (v: string): boolean => !!v && !v.includes('[object');
 /** Drill-through reports and the URL parameter(s) that carry their source row (any one of them is enough). */
 const DRILL_SOURCE_PARAMS: Record<string, string[]> = {
   'sales-by-service-details': ['serviceId'],
+  'sales-by-category-details': ['categoryName'],
+  'payment-received-sub': ['paymentMethodId'],
   'sales-by-aggregator-sub': ['aggregatorName'],
   'purchase-by-supplier-sub': ['supplierId'],
   'purchase-by-item-sub': ['itemProductId', 'itemProductName'],
@@ -417,6 +419,15 @@ export class ReportViewComponent implements OnInit, OnDestroy {
     if (this.meta()?.filters?.voidReasons && s.voidReasons?.length) filter['voidReasons'] = s.voidReasons;
     // The aggregator drill-through carries the aggregator's name in the URL (the export needs it too).
     if (this.meta()?.customBody === 'service-details') filter['serviceId'] = this.route.snapshot.queryParams['serviceId'];
+    // Category drill-through: the category's id (none = uncategorised products)
+    if (this.meta()?.customBody === 'category-details') filter['categoryId'] = this.route.snapshot.queryParams['categoryId'] || null;
+    // Opened from the Sales Summary: the backend then reports the Summary's figures
+    // `report` names the report the drill-down was opened from (only `salesSummary` changes the backend's figures).
+    if (['sales-by-service-details', 'sales-by-category-details', 'vat-details-sales'].includes(this.meta()?.slug ?? '')) {
+      filter['report'] = this.route.snapshot.queryParams['report'] || (this.meta()?.parent === 'sales-by-service' ? 'salesByService' : undefined);
+    }
+    // Payments of one payment method
+    if (this.meta()?.slug === 'payment-received-sub') { filter['groupBy'] = 'Payment Method'; filter['paymentMethodId'] = this.route.snapshot.queryParams['paymentMethodId']; }
     // Payment Method drill-through: the payments of the chosen method
     if (this.meta()?.slug === 'payment-method-sub') { const p = this.route.snapshot.queryParams['paymentId']; if (p) filter['paymentMethods'] = [p]; }
     // Surcharge drill-through: the chosen surcharge and how its amount is charged
@@ -445,7 +456,7 @@ export class ReportViewComponent implements OnInit, OnDestroy {
     // Product Movement is one product's stock card — the backend takes a single `productId`.
     if (this.meta()?.customBody === 'product-movement') filter['productId'] = s.productIds?.[0];
     // Daily Closing (and the sales behind it): one business day of one branch, always with the branch's opening hour.
-    if (this.meta()?.customBody === 'daily-closing' || this.meta()?.customBody === 'daily-sales-sub') {
+    if (this.meta()?.customBody === 'daily-closing' || this.meta()?.customBody === 'daily-sales-sub' || this.meta()?.slug === 'daily-sales-sub-by-payment') {
       filter['date'] = range.to;
       filter['branchId'] = s.branches?.[0];
       filter.applyOpeningHour = true;

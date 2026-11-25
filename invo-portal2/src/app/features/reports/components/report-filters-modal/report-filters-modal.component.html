@@ -22,23 +22,31 @@
         }
       </div>
 
-      @if (data.branches.length > 6) {
-        <input type="text" class="w-full mb-2.5 px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-brand-500"
-               [value]="search()" (input)="search.set($any($event.target).value)"
-               [placeholder]="'REPORTS.BO.SEARCH_BRANCH' | translate" />
-      }
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-56 overflow-y-auto pe-1">
-        @for (b of visibleBranches(); track b.value) {
-          <label class="flex items-center gap-2.5 px-3 py-2 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors"
-                 [class.bg-brand-50]="isSelected(b.value)" [class.border-brand-500]="isSelected(b.value)">
-            <input type="checkbox" class="rounded border-slate-300" [checked]="isSelected(b.value)" (change)="toggleBranch(b.value)" />
-            <span class="text-sm text-slate-800 truncate">{{ b.label }}</span>
-          </label>
-        } @empty {
-          <p class="col-span-full text-sm text-slate-400 py-3 text-center">{{ 'REPORTS.BO.FILTERS.NO_BRANCH_MATCH' | translate }}</p>
+      @if (data.singleBranch) {
+        <app-search-dropdown [items]="data.branches" [displayWith]="branchLabel" [toValue]="branchValue" [compareWith]="sameBranch"
+          [clearable]="!data.requireBranch" [searchable]="data.branches.length > 6"
+          [value]="$any(selectedBranch())" (valueChange)="setSingleBranch($event)"
+          [placeholder]="'REPORTS.BO.SEARCH_BRANCH' | translate" triggerClass="w-full px-3 py-2 text-sm border rounded-lg bg-white"
+          [class.border-red-400]="missingRequired()" />
+      } @else {
+        @if (data.branches.length > 6) {
+          <input type="text" class="w-full mb-2.5 px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-brand-500"
+                 [value]="search()" (input)="search.set($any($event.target).value)"
+                 [placeholder]="'REPORTS.BO.SEARCH_BRANCH' | translate" />
         }
-      </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-56 overflow-y-auto pe-1">
+          @for (b of visibleBranches(); track b.value) {
+            <label class="flex items-center gap-2.5 px-3 py-2 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors"
+                   [class.bg-brand-50]="isSelected(b.value)" [class.border-brand-500]="isSelected(b.value)">
+              <input type="checkbox" class="rounded border-slate-300" [checked]="isSelected(b.value)" (change)="toggleBranch(b.value)" />
+              <span class="text-sm text-slate-800 truncate">{{ b.label }}</span>
+            </label>
+          } @empty {
+            <p class="col-span-full text-sm text-slate-400 py-3 text-center">{{ 'REPORTS.BO.FILTERS.NO_BRANCH_MATCH' | translate }}</p>
+          }
+        </div>
+      }
       @if (data.requireBranch) {
         <p class="text-xs mt-2" [class.text-red-600]="missingRequired()" [class.text-slate-400]="!missingRequired()">{{ 'REPORTS.BO.FILTERS.BRANCH_REQUIRED' | translate }}</p>
       } @else {

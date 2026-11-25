@@ -67,7 +67,10 @@
             <tbody>
               @for (t of d.tenderDetails; track $index) {
                 <tr>
-                  <td>{{ t.tenderType }}</td>
+                  <td>
+                    @if (t.paymentMethodId) { <a class="dc-link" [routerLink]="['/reports/view', 'payment-received-sub']" [queryParams]="tenderParams(t)">{{ t.tenderType }}</a> }
+                    @else { {{ t.tenderType }} }
+                  </td>
                   <td class="n">{{ num(t.equivalant) | mycurrency }}</td>
                   <td class="n neg">{{ num(t.refund) | mycurrency }}</td>
                   <td class="n"><b>{{ num(t.tenderTotal) | mycurrency }}</b></td>
@@ -185,7 +188,10 @@
 
       @if (d.paymentBreakdown?.length) {
         <section class="dc-card">
-          <h3>{{ 'REPORTS.DAILY_CLOSING.PAYMENT_BREAKDOWN' | translate }}</h3>
+          <h3>
+            {{ 'REPORTS.DAILY_CLOSING.PAYMENT_BREAKDOWN' | translate }}
+            <a class="dc-link dc-more" [routerLink]="['/reports/view', 'daily-sales-sub-by-payment']" [queryParams]="drillParams()">{{ 'REPORTS.DAILY_CLOSING.VIEW_PAYMENTS' | translate }}</a>
+          </h3>
           <table class="dc-table">
             <thead><tr>
               <th>{{ 'REPORTS.DAILY_CLOSING.INVOICE_DATE' | translate }}</th>

@@ -1,4 +1,5 @@
 import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService } from '@core/i18n/language.service';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
@@ -27,7 +28,7 @@ const sum = (rows: any[], key: string): number =>
 @Component({
   selector: 'app-sales-summary',
   standalone: true,
-  imports: [ReportSkeletonComponent, ReportErrorComponent, TranslateModule, MycurrencyPipe, MynumberPipe, ReportKpiRowComponent],
+  imports: [ReportSkeletonComponent, ReportErrorComponent, TranslateModule, RouterLink, MycurrencyPipe, MynumberPipe, ReportKpiRowComponent],
   templateUrl: './sales-summary.component.html',
   styleUrl: './sales-summary.component.scss',
 })
@@ -70,6 +71,21 @@ export class SalesSummaryComponent {
   }
 
   readonly color = (i: number): string => PALETTE[i] ?? PALETTE[0];
+
+  /**
+   * URL params that open a row's detail report for the same period and branches. `report=salesSummary` makes the backend
+   * answer with the Summary's own figures, so the detail adds up to the row it was opened from.
+   */
+  drill(extra: Record<string, string | null>, summary = true): Record<string, string | null> {
+    const f = this.filter();
+    return {
+      preset: 'custom', fromDate: f.fromDate ?? null, toDate: f.toDate ?? null,
+      branches: f.branches?.length ? f.branches.join(',') : null,
+      openingHour: f.applyOpeningHour ? '1' : null,
+      ...(summary ? { report: 'salesSummary' } : {}),
+      ...extra,
+    };
+  }
 
   stats = computed(() => this.data()?.stats ?? {});
   categories = computed(() => this.data()?.categories ?? []);
