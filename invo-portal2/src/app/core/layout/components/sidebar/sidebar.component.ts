@@ -147,11 +147,8 @@ export const SIDE_MENU: SideMenuItem[] = [
   // ── Appointments ───────────────────────────────────────────────────
   {
     id: 18, label: 'MENU.APPOINTMENTS', icon: 'calendar',
-    requiredPermission: '',
-    badge: { text: 'BETA', variant: 'danger' },
-    subItems: [
-      { id: 181, label: 'MENU.SUB.APPOINTMENTS_CALENDAR', link: '/appointments', requiredPermission: 'salonSecurity.actions.view.access' },
-    ],
+    link: '/appointments',
+    requiredPermission: 'salonSecurity.actions.view.access',
   },
   // ── Accounts ───────────────────────────────────────────────────────
   {
@@ -279,7 +276,6 @@ export const SIDE_MENU: SideMenuItem[] = [
   {
     id: 17, label: 'MENU.NOTIFICATIONS', icon: 'bell',
     link: '/settings/notifications',
-    badge: { text: 'BETA', variant: 'danger' },
     requiredPermission: 'notificationSettingsSecurity.actions.view.access',
   },
   // ── Website Content ────────────────────────────────────────────────

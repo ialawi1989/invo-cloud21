@@ -2,7 +2,8 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer } from '@angular/platform-browser';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService } from '@core/i18n/language.service';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
@@ -12,6 +13,9 @@ import { isEmployeeEarningsEnabled } from '@core/auth/employee-earnings';
 import { REPORT_CATALOG, ALL_REPORTS } from '../../models/report-catalog';
 import { ReportGroup, ReportMeta } from '../../models/report.model';
 import { reportIcon } from '../../models/report-icons';
+import { REPORT_BODY_SEARCH_KEYS } from '../../models/report-body-search-keys';
+import { FLAT_REPORTS } from '../../flat/flat-reports';
+import { getReportColumns } from '../../columns/report-columns';
 import { ReportsFavoritesService } from '../../services/reports-favorites.service';
 import { ReportsRecentService } from '../../services/reports-recent.service';
 import { groupAccent } from '../../models/report-accents';
@@ -37,6 +41,7 @@ type MetaTab = 'all' | 'favorites' | 'new';
 })
 export class ReportsCatalogComponent implements OnInit {
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private modal = inject(ModalService);
   private lang = inject(LanguageService);
   private privileges = inject(PrivilegeService);
@@ -53,7 +58,27 @@ export class ReportsCatalogComponent implements OnInit {
     return (this.privileges.check(customReportsViewPrivilegeFullKey) || this.privileges.check(customReportsEditPrivilegeFullKey));
   }
 
+  /** The applied search (kept in the URL as `?q=`); `draft` is what is typed in the box until Search / Enter. */
   search = signal('');
+  draft = signal('');
+
+  constructor() {
+    // the URL is the source of truth: a shared link, a reload and Back/Forward all restore the search
+    this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe(m => {
+      const q = m.get('q') ?? '';
+      this.search.set(q);
+      this.draft.set(q);
+    });
+  }
+
+  /** Apply the typed text (empty clears it) and write it to the URL. */
+  applySearch(): void {
+    const q = this.draft().trim();
+    this.draft.set(q);
+    this.search.set(q);
+    void this.router.navigate([], { relativeTo: this.route, queryParams: { q: q || null }, queryParamsHandling: 'merge', replaceUrl: true });
+  }
+  clearSearch(): void { this.draft.set(''); this.applySearch(); }
   activeTab = signal<MetaTab | string>('all'); // string = a group key
 
   /** Reports the user is allowed to see (permission-gated). */
@@ -98,14 +123,83 @@ export class ReportsCatalogComponent implements OnInit {
 
     if (!term) return groups;
 
-    // Search matches the localized report title.
+    // Deep search: every word must be found somewhere in the report (title, description, topic, filters, columns).
+    const words = term.split(/\s+/).filter(Boolean);
+    const index = this.searchIndex();
     return groups
       .map(g => ({
         ...g,
-        reports: g.reports.filter(r => this.lang.instant(r.titleKey).toLowerCase().includes(term)),
+        reports: g.reports.filter(r => {
+          const e = index.get(r.slug);
+          return !!e && words.every(w => e.some(f => f.text.includes(w)));
+        }),
       }))
       .filter(g => g.reports.length > 0);
   });
+
+  /** The topic tiles: with a search, only the topics that still have a matching report, counting just those. */
+  topicTiles = computed<ReportGroup[]>(() => {
+    const words = this.search().trim().toLowerCase().split(/\s+/).filter(Boolean);
+    if (!words.length) return this.visibleGroups();
+    const index = this.searchIndex();
+    const active = this.activeTab();
+    return this.visibleGroups()
+      .map(g => ({ ...g, reports: g.reports.filter(r => { const e = index.get(r.slug); return !!e && words.every(w => e.some(f => f.text.includes(w))); }) }))
+      .filter(g => g.reports.length > 0 || g.key === active); // the open topic stays, so it can be closed again
+  });
+
+  /** Per report: the searchable fields, each tagged with where it comes from. Rebuilt when the language changes. */
+  private searchIndex = computed(() => {
+    this.lang.current(); // re-index (and re-translate) on a language switch
+    const t = (k: string): string => { const v = this.lang.instant(k); return v && v !== k ? v : ''; };
+    const FILTER_LABELS: [keyof NonNullable<ReportMeta['filters']>, string][] = [
+      ['products', 'REPORTS.FILTER.PRODUCTS'], ['singleProduct', 'REPORTS.FILTER.PRODUCT'], ['categories', 'REPORTS.FILTER.CATEGORIES'],
+      ['departments', 'REPORTS.FILTER.DEPARTMENTS'], ['customers', 'REPORTS.FILTER.CUSTOMERS'], ['suppliers', 'REPORTS.FILTER.SUPPLIERS'],
+      ['locations', 'REPORTS.FILTER.LOCATIONS'], ['discount', 'REPORTS.FILTER.DISCOUNT'], ['voidedBy', 'REPORTS.FILTER.VOIDED_BY'],
+      ['voidReasons', 'REPORTS.FILTER.VOID_REASONS'], ['voidTimings', 'REPORTS.FILTER.VOID_TIMINGS'], ['singleEmployee', 'REPORTS.FILTER.EMPLOYEE'],
+      ['customerType', 'REPORTS.FILTER.CUSTOMER_TYPE'], ['salesEmployee', 'REPORTS.FILTER.SALES_EMPLOYEE'], ['hasBalanceOnly', 'REPORTS.FILTER.BALANCE_ONLY'],
+      ['hideDeleted', 'REPORTS.FILTER.HIDE_DELETED'], ['purchaseMode', 'REPORTS.FILTER.PURCHASE_MODE'], ['applyOpeningHour', 'REPORTS.FILTER.OPENING_HOURS'],
+      ['comparePeriods', 'REPORTS.FILTER.COMPARE'], ['compare', 'REPORTS.FILTER.COMPARE'], ['productTypes', 'REPORTS.FILTER.PRODUCT_TYPES'],
+    ];
+    const lc = this.lang.current();
+    const map = new Map<string, { kind: 'title' | 'description' | 'topic' | 'filter' | 'column' | 'section'; text: string }[]>();
+    for (const g of this.groups) {
+      const topic = t(g.titleKey).toLowerCase();
+      for (const r of g.reports) {
+        const f: { kind: 'title' | 'description' | 'topic' | 'filter' | 'column' | 'section'; text: string }[] = [];
+        const add = (kind: typeof f[number]['kind'], v: string | undefined) => { if (v) f.push({ kind, text: v.toLowerCase() }); };
+        add('title', t(r.titleKey));
+        add('description', r.descriptionKey ? t(r.descriptionKey) : '');
+        add('topic', topic);
+        for (const [flag, key] of FILTER_LABELS) if (r.filters?.[flag]) add('filter', t(key));
+        for (const o of r.filters?.filterBy ?? []) add('filter', t(`REPORTS.FILTER.FILTER_BY_OPTION.${o}`) || o);
+        for (const o of r.filters?.sources ?? []) add('filter', o);
+        for (const k of [...(r.customBody ? REPORT_BODY_SEARCH_KEYS[r.customBody] ?? [] : []), ...(r.searchKeys ?? [])]) add('section', t(k));
+        for (const c of FLAT_REPORTS[r.slug]?.columns ?? []) add('column', t(c.label ?? `REPORTS.FLAT.COLUMNS.${c.key}`));
+        for (const x of FLAT_REPORTS[r.slug]?.summary ?? []) add('section', t(`REPORTS.FLAT.SUMMARY.${x.key}`));
+        for (const c of getReportColumns(r.slug)) {
+          add('column', lc === 'ar' ? c.label.ar : c.label.en);
+          add('column', lc === 'ar' ? c.description?.ar : c.description?.en);
+        }
+        map.set(r.slug, f);
+      }
+    }
+    return map;
+  });
+
+  /** When a report matched through something other than its title, says where ("Filter: Products"), so the hit is not a mystery. */
+  matchHint(r: ReportMeta): { kind: string; text: string } | null {
+    const words = this.search().trim().toLowerCase().split(/\s+/).filter(Boolean);
+    const e = this.searchIndex().get(r.slug);
+    if (!words.length || !e) return null;
+    if (words.every(w => e.some(f => f.kind === 'title' && f.text.includes(w)))) return null;
+    for (const w of words) {
+      if (e.some(f => f.kind === 'title' && f.text.includes(w))) continue;
+      const hit = e.find(f => f.kind === 'section' && f.text.includes(w)) ?? e.find(f => f.kind === 'filter' && f.text.includes(w)) ?? e.find(f => f.kind === 'column' && f.text.includes(w));
+      if (hit) return { kind: hit.kind, text: hit.text };
+    }
+    return null;
+  }
 
   /** How the lists are ordered: the legacy order, or by name (groups and the reports inside them). */
   sort = signal<'default' | 'az' | 'za'>(this.readSort());

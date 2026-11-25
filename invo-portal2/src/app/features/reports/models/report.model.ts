@@ -165,6 +165,8 @@ export interface ReportMeta {
   route: string;
   titleKey: string;
   descriptionKey?: string;
+  /** i18n keys of what a custom-body report shows inside (its panels, headline figures) — searchable from the catalog. */
+  searchKeys?: string[];
   /** Catalog-card icon key (see `report-icons.ts`). */
   icon?: string;
   /** Privilege gate, e.g. `reportsSecurity.actions.SalesByDepartment.access`. */

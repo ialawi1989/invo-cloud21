@@ -72,16 +72,19 @@
   <!-- ── Toolbar: search + tabs ─────────────────────────────────── -->
   <div class="rc-toolbar">
     <div class="rc-search">
+      <div class="rc-field">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
       </svg>
-      <input type="text" [ngModel]="search()" (ngModelChange)="search.set($event)"
+      <input type="text" [ngModel]="draft()" (ngModelChange)="draft.set($event)" (keydown.enter)="applySearch()"
              [placeholder]="'REPORTS.CATALOG.SEARCH' | translate" [attr.aria-label]="'REPORTS.CATALOG.SEARCH' | translate" />
-      @if (search()) {
-        <button type="button" class="rc-clear" (click)="search.set('')" aria-label="clear">
+      @if (draft()) {
+        <button type="button" class="rc-clear" (click)="clearSearch()" aria-label="clear">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       }
+      </div>
+      <button type="button" class="rc-search-btn" (click)="applySearch()">{{ 'REPORTS.CATALOG.SEARCH_BTN' | translate }}</button>
     </div>
 
     <div class="rc-sort">
@@ -107,7 +110,7 @@
     <div class="rc-topics-wrap">
       <span class="rc-topics-label">{{ 'REPORTS.CATALOG.TOPICS' | translate }}</span>
       <div class="rc-topics">
-        @for (g of visibleGroups(); track g.key) {
+        @for (g of topicTiles(); track g.key) {
           <button type="button" class="rc-topic" [class.active]="activeTab() === g.key" [attr.aria-pressed]="activeTab() === g.key"
                   [style.--accent]="accent(g.key)" (click)="setTab(activeTab() === g.key ? 'all' : g.key)">
             <span class="rc-topic-icon" [innerHTML]="icon(g.icon)"></span>
@@ -160,6 +163,9 @@
                     @if (isNew(report)) { <span class="rc-new">{{ 'REPORTS.TABS.NEW' | translate }}</span> }
                   </span>
                   @if (report.descriptionKey) { <span class="rc-row-desc">{{ report.descriptionKey | translate }}</span> }
+                  @if (matchHint(report); as m) {
+                    <span class="rc-row-hit">{{ 'REPORTS.CATALOG.MATCH_' + m.kind.toUpperCase() | translate }}: <b>{{ m.text }}</b></span>
+                  }
                 </span>
                 @if (caps(report).length) {
                   <span class="rc-caps">

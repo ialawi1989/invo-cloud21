@@ -5,6 +5,7 @@
       "SORT": "الترتيب", "SORT_DEFAULT": "الافتراضي", "SORT_AZ": "أ–ي", "SORT_ZA": "ي–أ",
       "TITLE": "التقارير",
       "SUBTITLE": "{{count}} تقرير عبر أعمالك",
+      "SEARCH_BTN": "بحث", "MATCH_SECTION": "داخل التقرير", "MATCH_FILTER": "فلتر", "MATCH_COLUMN": "عمود",
       "SEARCH": "البحث في التقارير…",
       "NO_RESULTS": "لا توجد تقارير مطابقة لبحثك.",
       "NO_NEW": "لا توجد تقارير جديدة خلال آخر 30 يومًا.",

@@ -5,6 +5,7 @@
       "SORT": "Order", "SORT_DEFAULT": "Default", "SORT_AZ": "A–Z", "SORT_ZA": "Z–A",
       "TITLE": "Reports",
       "SUBTITLE": "{{count}} reports across your business",
+      "SEARCH_BTN": "Search", "MATCH_SECTION": "Inside", "MATCH_FILTER": "Filter", "MATCH_COLUMN": "Column",
       "SEARCH": "Search reports…",
       "NO_RESULTS": "No reports match your search.",
       "NO_NEW": "No new reports in the last 30 days.",
