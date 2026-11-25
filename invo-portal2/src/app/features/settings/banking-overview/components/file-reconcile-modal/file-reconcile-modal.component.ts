@@ -49,10 +49,12 @@ function headerWords(header: string): string[] {
   return header.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
 }
 
-/** First header (whole-word hint match, hint order = priority) whose column has at least one value. */
-function guessColumn(headers: string[], rows: CsvRow[], hints: string[], exclude: (string | null)[] = []): string | null {
+/** First header (whole-word hint match, hint order = priority). By default the column must hold at least one value —
+ *  a correctly named but empty column is rarely the right default — except where the name alone is decisive
+ *  (`requireValues = false`: a statement with no withdrawals still has a "Withdrawal" column). */
+function guessColumn(headers: string[], rows: CsvRow[], hints: string[], exclude: (string | null)[] = [], requireValues = true): string | null {
   const candidates = headers
-    .filter(h => !exclude.includes(h) && rows.some(r => (r[h] ?? '').trim()))
+    .filter(h => !exclude.includes(h) && (!requireValues || rows.some(r => (r[h] ?? '').trim())))
     .map(h => ({ header: h, words: ` ${headerWords(h).join(' ')} ` }));
   for (const hint of hints) {
     const match = candidates.find(c => c.words.includes(` ${hint} `));
@@ -274,8 +276,8 @@ export class FileReconcileModalComponent {
     const date = guessColumn(headers, rows, DATE_HINTS);
     const ref  = guessColumn(headers, rows, REFERENCE_HINTS, [date]);
     const amt  = guessColumn(headers, rows, AMOUNT_HINTS, [date, ref]);
-    const inn  = guessColumn(headers, rows, IN_HINTS, [date, ref]);
-    const out  = guessColumn(headers, rows, OUT_HINTS, [date, ref, inn]);
+    const inn  = guessColumn(headers, rows, IN_HINTS, [date, ref], false);
+    const out  = guessColumn(headers, rows, OUT_HINTS, [date, ref, inn], false);
     this.dateCol.set(date);
     this.refCol.set(ref);
     this.descCol.set(guessColumn(headers, rows, DESCRIPTION_HINTS, [date, ref]));
