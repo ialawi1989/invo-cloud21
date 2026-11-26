@@ -9,7 +9,6 @@
 .pf-seo {
   // Push the "Edit SEO Settings" button to the trailing edge of the
   // shared `.pf-card__header` row.
-  .pf-card__header { gap: 8px; }
   &__edit {
     margin-inline-start: auto;
     flex-shrink: 0;
@@ -17,12 +16,6 @@
     border-radius: 999px;
     font-size: 12px;
     font-weight: 600;
-  }
-
-  .pf-card__body {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
   }
 
   &__sub {

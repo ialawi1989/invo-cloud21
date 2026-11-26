@@ -2,7 +2,7 @@
   @let e = boe;
   <app-doc-form-shell
     [title]="'BILL_OF_ENTRY.FORM.BILL_OF_ENTRY' | translate" [breadcrumbs]="breadcrumbs"
-    [canDraft]="canOfferDraft" [submitting]="submitting" [saveDisabled]="missing.length > 0" [draftDisabled]="missingDraft.length > 0" [showView]="formStatus === 'edit'"
+    [canDraft]="canOfferDraft" [submitting]="submitting" [saveDisabled]="missing.length > 0" [saveDisabledReason]="missing.join(' · ')" [draftDisabled]="missingDraft.length > 0" [draftDisabledReason]="missingDraft.join(' · ')" [showView]="formStatus === 'edit'"
     [saveLabel]="saveLabelKey | translate" [saveMenu]="saveMenu()" [actionsMenu]="actionsMenu()"
     [total]="e.total" [totalQty]="totalQuantity"
     (draft)="saveDraft()" (save)="savePrimary()" (cancel)="cancel()" (view)="view()">
@@ -13,7 +13,7 @@
     </div>
 
     <section class="df-card">
-      <h2 class="df-card__title"><span class="df-ico df-ico--green" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg></span>{{ 'BILL_OF_ENTRY.FORM.DETAILS' | translate }}</h2>
+      <h2 class="df-card__title"><span class="df-ico df-ico--green" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg></span><span class="df-card__text">{{ 'BILL_OF_ENTRY.FORM.DETAILS' | translate }}</span></h2>
 
       <div class="df-row">
         <div class="df-field df-field--grow">

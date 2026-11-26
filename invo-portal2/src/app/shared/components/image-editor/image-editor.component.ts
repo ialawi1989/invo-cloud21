@@ -14,9 +14,11 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { TranslateModule } from '@ngx-translate/core';
 
 import { TooltipDirective } from '../../directives/tooltip.directive';
 import { ColorPickerComponent } from '../color-picker/color-picker.component';
+import type { EditorSourceIssue } from './editor-image-source';
 import {
   EditorTool,
   CropDragMode,
@@ -43,7 +45,7 @@ import {
 @Component({
   selector: 'app-image-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule, TooltipDirective, ColorPickerComponent],
+  imports: [CommonModule, FormsModule, TranslateModule, TooltipDirective, ColorPickerComponent],
   templateUrl: './image-editor.component.html',
   styleUrls: ['./image-editor.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -59,12 +61,25 @@ export class ImageEditorComponent implements OnInit, OnDestroy {
   /** Crop preset selected when the editor opens: 'free' (default), 'original', or a ratio key such as 'r0' (1:1). */
   initialCropPreset = input<string>('free');
 
+  /**
+   * Set when the caller could not load a same-origin copy of the image and passed the direct storage address instead. The
+   * real reason is shown, and Save stays off unless the canvas turns out to be exportable anyway (CORS allowed).
+   */
+  sourceIssue = input<EditorSourceIssue | null>(null);
+  /** Show a "Retry loading" button (the caller re-runs its load and calls {@link reload}). */
+  canRetry = input(false);
+  /** The caller is retrying right now. */
+  retrying = input(false);
+
   // ── Outputs ────────────────────────────────────────────────────────────────
   /** Fires with the edited image Blob when the user clicks Save. */
   save = output<Blob>();
 
   /** Fires when the user clicks Cancel. */
   cancel = output<void>();
+
+  /** Fires when the user clicks "Retry loading". */
+  retry = output<void>();
 
   // ── View children ──────────────────────────────────────────────────────────
   mainCanvas  = viewChild<ElementRef<HTMLCanvasElement>>('mainCanvas');
@@ -172,6 +187,16 @@ export class ImageEditorComponent implements OnInit, OnDestroy {
    */
   exportBlocked = signal(false);
 
+  /** Why the copy could not be loaded, as a short technical line (HTTP status and route), or '' when unknown. */
+  readonly issueDetail = computed(() => {
+    const a = this.sourceIssue()?.attempts?.[0];
+    return a ? `${a.status ? 'HTTP ' + a.status : 'no response'} on ${a.path}` : (this.sourceIssue()?.summary ?? '');
+  });
+  /** Every route that was tried, for the tooltip. */
+  readonly issueFull = computed(() => this.sourceIssue()?.summary ?? '');
+  /** Save is off while the canvas cannot be exported: the browser refused it (tainted), or a save just failed that way. */
+  readonly saveBlocked = computed(() => this.exportBlocked());
+
   // Free-rotate dial: pixels per degree + tick marks (45°…-45°, majors at 15°).
   readonly PX_PER_DEG = 4;
   readonly FREE_ROTATE_MAX = 45;
@@ -226,8 +251,12 @@ export class ImageEditorComponent implements OnInit, OnDestroy {
       // Crop is the default tool — show its live frame immediately.
       if (this.initialCropPreset() !== 'free') this.cropSel.set(this.initialCropPreset());
       if (this.activeTool() === 'crop') this.startCrop();
+      this.probeExport();
     };
     this.img.onerror = () => {
+      // Try the next way of loading the direct address before giving up.
+      const next = this.directAttempts.shift();
+      if (next) { next(); return; }
       this.loading.set(false);
       this.loadError.set(true);
     };
@@ -243,7 +272,43 @@ export class ImageEditorComponent implements OnInit, OnDestroy {
    * fails (e.g. CORS on the XHR), we fall back to a direct load so the image
    * at least renders.
    */
+  /** Fallbacks for a direct (cross-origin) address, tried one after another when the image fails to load. */
+  private directAttempts: Array<() => void> = [];
+
+  /** Replaces the image (the caller retried and got a same-origin copy). Edits made so far are discarded. */
+  reload(url: string): void {
+    this.loadError.set(false);
+    this.exportBlocked.set(false);
+    this.loading.set(true);
+    this.loadImage(url);
+  }
+
+  /** The browser refuses to read back a canvas drawn from a cross-origin image loaded without CORS: find out now, not at Save. */
+  private probeExport(): void {
+    const ctx = this.getCtx();
+    if (!ctx) return;
+    try { ctx.getImageData(0, 0, 1, 1); this.exportBlocked.set(false); }
+    catch { this.exportBlocked.set(true); }
+  }
+
+  /**
+   * A direct address: first with `crossOrigin="anonymous"` and a cache-busting query (a copy the browser cached earlier without
+   * CORS headers would otherwise poison the request); then the same address as it is; then with no CORS at all, which still
+   * shows the picture but cannot be exported.
+   */
+  private loadDirect(url: string): void {
+    const bust = (u: string) => u + (u.includes('?') ? '&' : '?') + '_cb=' + Date.now();
+    this.directAttempts = [
+      () => { this.img.crossOrigin = 'anonymous'; this.img.src = url; },
+      () => { this.img.crossOrigin = null; this.img.src = url; },
+    ];
+    this.img.crossOrigin = 'anonymous';
+    this.img.src = bust(url);
+  }
+
   private loadImage(url: string): void {
+    this.directAttempts = [];
+    this.img.crossOrigin = null;
     // Already a same-origin source (the caller fetched it through an
     // authenticated/CORS-safe endpoint) — load it straight in, untainted.
     if (url.startsWith('blob:') || url.startsWith('data:')) {
@@ -259,11 +324,11 @@ export class ImageEditorComponent implements OnInit, OnDestroy {
         this.objectUrl = URL.createObjectURL(xhr.response);
         this.img.src = this.objectUrl;
       } else {
-        this.img.src = url; // fall back to a direct (possibly tainted) load
+        this.loadDirect(url); // fall back to a direct load (see loadDirect)
       }
     };
     xhr.onerror = () => {
-      this.img.src = url; // fall back to a direct (possibly tainted) load
+      this.loadDirect(url); // fall back to a direct load (see loadDirect)
     };
     xhr.send();
   }
@@ -1234,6 +1299,7 @@ export class ImageEditorComponent implements OnInit, OnDestroy {
   }
 
   async onSave(): Promise<void> {
+    if (this.saveBlocked()) return;
     // Commit a pending crop frame first (there's no explicit Apply button).
     if (this.activeTool() === 'crop') this.commitCrop();
     // Bake any pending adjustments (Adjust tool) and filter preset.

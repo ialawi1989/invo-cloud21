@@ -1,0 +1,175 @@
+// Shared form section card: the card with an (optional) icon badge, a title, an optional description and header
+// actions, holding a stack of fields. One spec for every form; pages do not restyle it locally.
+//
+//   <section class="form-card">
+//     <header class="form-card__head">
+//       <span class="form-card__icon form-card__icon--green" aria-hidden="true"> <svg/> </span>   (optional)
+//       <h2 class="form-card__title">Title</h2>
+//       <div class="form-card__actions"> … </div>                                                  (optional)
+//     </header>
+//     … fields …
+//   </section>
+//
+// The document-form cards (`.df-card`, `.df-card__title`, `.df-ico`) are the same rules under their legacy class
+// names, so they and any page that adopts `.form-card` share this one source.
+//
+// Spec (spacing tokens are `--space-*` in styles.scss):
+//   card padding      20px desktop / 16px phone, all four sides
+//   header            flex row, centred, 12px gap, icon 36px (28px phone), title 16/24 600, ellipsis on overflow
+//   header -> content 16px (the card's own row-gap), the same in every card
+//   field rhythm      label -> input 6px, field -> field 16px, hint 6px under its input,
+//                     sub-heading 24px above / 12px below
+//   between cards     16px, owned by the PARENT (`.form-stack`, a flex/grid gap): cards carry no outer margin
+
+.form-card,
+.df-card,
+.cf-card {
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--space-4);
+  box-sizing: border-box;
+  padding-block: var(--space-5);
+  padding-inline: var(--space-5);
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
+  border-radius: 12px;
+  margin: 0;
+  min-width: 0;
+
+  @media (max-width: 639px) {
+    padding-block: var(--space-4);
+    padding-inline: var(--space-4);
+  }
+}
+
+// Dense variant for side-column cards (the discount form's option cards): 16px padding, 12px rhythm, 14px title.
+.form-card--compact {
+  padding-block: var(--space-4);
+  padding-inline: var(--space-4);
+  row-gap: var(--space-3);
+
+  .form-card__title { font-size: 14px; line-height: 20px; }
+}
+
+// ── Header ────────────────────────────────────────────────────────────────────
+.form-card__head,
+.df-card__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: var(--space-3);
+  min-width: 0;
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  color: var(--ui-text);
+}
+
+// The title text. The heading itself is the flex row in the legacy markup, so its text sits in a span.
+.form-card__title,
+.df-card__text,
+.cf-card__title {
+  flex: 0 1 auto;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  color: var(--ui-text);
+}
+// Inside a header row the title takes the free space (so actions sit at the inline-end).
+.form-card__head > .form-card__title,
+.df-card__title > .df-card__text { flex: 1 1 auto; }
+
+// Optional description under the title (full row).
+.form-card__desc {
+  flex: 0 0 100%;
+  margin: var(--space-1) 0 0;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 400;
+  color: var(--ui-muted);
+}
+
+// Body wrapper for pages that keep a separate header and body block: the same 16px rhythm as the card itself.
+.form-card__body {
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--space-4);
+  min-width: 0;
+}
+
+.form-card__icon,
+.df-ico {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-icon);
+
+  @media (max-width: 639px) {
+    width: 28px;
+    height: 28px;
+    svg { width: 16px; height: 16px; }
+  }
+
+  &--blue, &.df-ico--blue   { background: var(--ui-sky-soft);   color: var(--ui-t-0369a1); }
+  &--amber, &.df-ico--amber { background: var(--ui-amber-soft); color: var(--ui-amber-text); }
+  &--green, &.df-ico--green { background: var(--ui-green-soft); color: var(--ui-green-text); }
+}
+
+.form-card__actions {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  column-gap: var(--space-2);
+  margin-inline-start: auto;
+}
+
+// ── Fields ────────────────────────────────────────────────────────────────────
+.form-card__row,
+.df-card .df-row,
+.cf-card .cf-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.form-card__field,
+.df-card .df-field,
+.cf-card .cf-field {
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--space-1-5);   // label -> input
+  min-width: 0;
+}
+
+// Hint text sits 6px under its input although the card's row-gap is 16px.
+.form-card > .form-card__hint,
+.df-card > .df-hint,
+.cf-card > .cf-hint {
+  margin-block: calc(var(--space-1-5) - var(--space-4)) 0;
+}
+
+// Sub-heading inside a card: 24px above, 12px below (the row-gap already supplies 16px on each side).
+.form-card__subhead {
+  margin-block: calc(var(--space-6) - var(--space-4)) calc(var(--space-3) - var(--space-4));
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--ui-text);
+}
+
+// ── Stack: the parent owns the gap between cards ──────────────────────────────
+.form-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}

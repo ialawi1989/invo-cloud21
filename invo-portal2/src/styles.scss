@@ -5,6 +5,7 @@
 @use 'styles/dark';
 @use 'styles/mdi-icons';
 @use 'styles/list-page';
+@use 'styles/form-card';
 // Guided-tour popover styling. Global because driver.js renders into <body>,
 // but every selector is scoped to our own tour — see the file header.
 @use 'styles/guided-tour';
@@ -128,6 +129,22 @@ input[type="checkbox"]:not(.no-custom) {
 // designed. Page content can still feel compact via `body` overrides.
 html {
   font-size: 16px;
+  // Phones: a field scrolled into view (focus, scroll-to-first-error) must clear the fixed top bar and the form-actions bar
+  // (app-form-actions publishes its height as --mobile-action-bar-h; it is unset elsewhere, so this is 0 there).
+  scroll-padding-top: 72px;
+  scroll-padding-bottom: var(--mobile-action-bar-h, 0px);
+}
+
+// Spacing scale. Used by the shared form card and the code migrated onto it (existing literals elsewhere are untouched).
+:root {
+  --space-1: 4px;
+  --space-1-5: 6px;   // the half step the form-field rhythm needs (label -> input, hint)
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --radius-icon: 10px;
 }
 
 html, body {

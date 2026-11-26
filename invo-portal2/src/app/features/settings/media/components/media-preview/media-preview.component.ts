@@ -6,7 +6,7 @@ import { Media } from '../../models/media.model';
 import { MediaService } from '../../services/media.service';
 import { MODAL_REF, MODAL_DATA } from '../../../../../shared/modal/modal.tokens';
 import { ModalRef, ModalService } from '../../../../../shared/modal/modal.service';
-import { ImageEditorModalComponent, ImageEditorModalData, ImageEditorSaveResult } from '../../../../../shared/components/image-editor';
+import { ImageEditorModalComponent, ImageEditorModalData, ImageEditorSaveResult, loadEditorImage, type EditorImageSource } from '../../../../../shared/components/image-editor';
 
 import { ModelViewerComponent } from '../model-viewer/model-viewer.component';
 import { TooltipDirective } from '@shared/directives/tooltip.directive';
@@ -358,20 +358,11 @@ export class MediaPreviewComponent implements OnInit, OnDestroy {
     // backend (with CORS + auth) so the canvas stays untainted and Save works.
     // A same-origin blob: URL is what the editor loads. Fall back to the CDN
     // URL if the fetch fails (editing still works; export may be blocked).
-    let editorUrl = fallbackUrl;
-    let objectUrl: string | null = null; // only set when *we* create one here
-    if (this.currentObjectUrl) {
-      // Reuse the blob the preview already fetched — no second round-trip.
-      editorUrl = this.currentObjectUrl;
-    } else if (mediaId) {
-      try {
-        const rawBlob = await this.mediaService.getMediaRawBlob(mediaId);
-        objectUrl = URL.createObjectURL(rawBlob);
-        editorUrl = objectUrl;
-      } catch (err) {
-        console.error('Failed to fetch image for editing; using direct URL:', err);
-      }
-    }
+    const load = () => loadEditorImage(this.mediaService, mediaId, fallbackUrl, 'media-preview.edit');
+    // Reuse the blob the preview already fetched (no second round-trip); otherwise the same loader as everywhere else.
+    const source: EditorImageSource = this.currentObjectUrl
+      ? { url: this.currentObjectUrl, objectUrl: null, issue: null }
+      : await load();
 
     const ref = this.modalSvc.open<ImageEditorModalComponent, ImageEditorModalData, ImageEditorSaveResult | undefined>(
       ImageEditorModalComponent,
@@ -379,7 +370,9 @@ export class MediaPreviewComponent implements OnInit, OnDestroy {
         size: 'fullscreen',
         closeable: false,
         data: {
-          imageUrl: editorUrl,
+          imageUrl: source.url,
+          sourceIssue: source.issue,
+          reloadSource: load,
           fileName: this.currentMedia.name,
           // An existing library item: Save asks "new image" or "replace the original".
           allowReplace: !!mediaId,
@@ -391,7 +384,7 @@ export class MediaPreviewComponent implements OnInit, OnDestroy {
     try {
       saved = await ref.afterClosed();
     } finally {
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
+      if (source.objectUrl) URL.revokeObjectURL(source.objectUrl);
     }
     const editedBlob = saved?.blob;
 

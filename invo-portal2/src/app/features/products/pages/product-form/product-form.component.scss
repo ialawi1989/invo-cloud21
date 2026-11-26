@@ -93,9 +93,9 @@
 // inter-section spacing inside each column.
 .form-row {
   display: grid;
-  gap: 20px;
+  gap: var(--space-4);
   grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); // default = 2-1
-  margin-bottom: 20px;
+  margin-bottom: var(--space-4);
 
   &[data-row-layout='1-1'] { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   &[data-row-layout='1-2'] { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); }

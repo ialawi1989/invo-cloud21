@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { BehaviorSubject, firstValueFrom } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
 import {
@@ -15,6 +15,24 @@ import {
  * Media Service
  * Uses HTTP Interceptor for auth (like CmsService)
  */
+
+/** One try at reading a media file's bytes through the backend, and why it failed. */
+export interface MediaLoadAttempt {
+  route: 'raw' | 'getMediabyId';
+  /** Path relative to the API root, e.g. `media/<id>/raw`. */
+  path: string;
+  /** HTTP status, or null when the request never got a response (network / CORS / offline). */
+  status: number | null;
+  message: string;
+}
+
+/** Thrown by {@link MediaService.getMediaRawBlob} when no route could deliver the file; says what each route answered. */
+export class MediaRawError extends Error {
+  constructor(readonly attempts: MediaLoadAttempt[]) {
+    super(attempts.map(a => `${a.status ? 'HTTP ' + a.status : 'no response'} on ${a.path}`).join('; ') || 'The file could not be read from the server');
+    this.name = 'MediaRawError';
+  }
+}
 
 @Injectable({ providedIn: 'root' })
 export class MediaService {
@@ -297,14 +315,27 @@ export class MediaService {
    * (`data.media`, small files only: the server gives up on storage after 2 seconds).
    */
   async getMediaRawBlob(mediaId: string): Promise<Blob> {
+    const attempts: MediaLoadAttempt[] = [];
+    const record = (route: MediaLoadAttempt['route'], path: string, e: unknown): void => {
+      const status = e instanceof HttpErrorResponse && e.status > 0 ? e.status : null;
+      attempts.push({ route, path, status, message: e instanceof Error ? e.message : String(e) });
+    };
+    const rawPath = `media/${mediaId}/raw`;
+    const inlinePath = `media/getMediabyId/${mediaId}`;
     try {
-      return await firstValueFrom(this.http.get(`${this.baseUrl}media/${mediaId}/raw`, { responseType: 'blob' }));
-    } catch {
-      const res = await firstValueFrom(this.http.get<any>(`${this.baseUrl}media/getMediabyId/${mediaId}`));
-      const dataUri: string | null | undefined = res?.data?.media;
-      if (!dataUri || !dataUri.startsWith('data:')) throw new Error('The file could not be read from the server');
-      return (await fetch(dataUri)).blob();
+      return await firstValueFrom(this.http.get(`${this.baseUrl}${rawPath}`, { responseType: 'blob' }));
+    } catch (e) {
+      record('raw', rawPath, e);
     }
+    try {
+      const res = await firstValueFrom(this.http.get<any>(`${this.baseUrl}${inlinePath}`));
+      const dataUri: string | null | undefined = res?.data?.media;
+      if (dataUri && dataUri.startsWith('data:')) return (await fetch(dataUri)).blob();
+      attempts.push({ route: 'getMediabyId', path: inlinePath, status: 200, message: 'The response carried no inline file (data.media)' });
+    } catch (e) {
+      record('getMediabyId', inlinePath, e);
+    }
+    throw new MediaRawError(attempts);
   }
 
   /** Download a media item's bytes through the authenticated backend (see {@link getMediaRawBlob}). */

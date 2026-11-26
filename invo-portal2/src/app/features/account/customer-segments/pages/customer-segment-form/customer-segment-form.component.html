@@ -13,8 +13,8 @@
 
   <div class="df-body">
     <!-- ── Details ─────────────────────────────────────────────── -->
-    <section class="card">
-      <div class="card__body">
+    <section class="form-card">
+      <div class="form-card__body">
         <div class="field">
           <span class="field__label">{{ 'CUSTOMER_SEGMENTS.FORM.TITLE' | translate }}</span>
           <input class="field__input" type="text"
@@ -47,8 +47,8 @@
 
     <!-- ── Manual: customers ───────────────────────────────────── -->
     @if (isManual()) {
-      <section class="card">
-        <div class="card__body">
+      <section class="form-card">
+        <div class="form-card__body">
           <div class="prod-head">
             <span class="field__label">{{ 'CUSTOMER_SEGMENTS.FORM.CUSTOMERS' | translate }}</span>
             <button type="button" class="btn btn-default btn-sm" (click)="pickCustomers()">
@@ -81,8 +81,8 @@
       </section>
     } @else {
       <!-- ── Automated: conditions ─────────────────────────────── -->
-      <section class="card">
-        <div class="card__body">
+      <section class="form-card">
+        <div class="form-card__body">
           <div class="field">
             <span class="field__label">{{ 'CUSTOMER_SEGMENTS.FORM.MATCH_LABEL' | translate }}</span>
             <app-segmented-toggle [options]="matchOptions" [value]="segment().match" (valueChange)="setMatch($event)"/>

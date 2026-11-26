@@ -1,7 +1,8 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, DestroyRef, inject, signal, viewChild } from '@angular/core';
 import { MODAL_DATA, MODAL_REF } from '../../modal/modal.tokens';
 import { ModalRef } from '../../modal/modal.service';
 import { ImageEditorComponent } from './image-editor.component';
+import type { EditorImageSource, EditorSourceIssue } from './editor-image-source';
 
 export interface ImageEditorModalData {
   /** URL of the image to edit. */
@@ -15,6 +16,10 @@ export interface ImageEditorModalData {
    * closes with an {@link ImageEditorSaveResult} instead of a bare Blob.
    */
   allowReplace?: boolean;
+  /** Set when the caller could not load a same-origin copy: the editor shows the reason and keeps Save off while export is blocked. */
+  sourceIssue?: EditorSourceIssue | null;
+  /** Re-runs the caller's load (the /raw route, then the inline copy). Gives the editor its "Retry loading" button. */
+  reloadSource?: () => Promise<EditorImageSource>;
 }
 
 /** What the modal closes with when `allowReplace` is set. */
@@ -46,6 +51,10 @@ export interface ImageEditorSaveResult {
   template: `
     <app-image-editor
       [imageUrl]="data.imageUrl"
+      [sourceIssue]="issue()"
+      [canRetry]="!!data.reloadSource"
+      [retrying]="retrying()"
+      (retry)="retry()"
       [fileName]="data.fileName ?? 'edited.png'"
       [initialCropPreset]="data.initialCropPreset ?? 'free'"
       (save)="onSave($event)"
@@ -106,6 +115,31 @@ export interface ImageEditorSaveResult {
 export class ImageEditorModalComponent {
   data = inject<ImageEditorModalData>(MODAL_DATA);
   ref  = inject<ModalRef<Blob | ImageEditorSaveResult | undefined>>(MODAL_REF);
+
+  private readonly editor = viewChild(ImageEditorComponent);
+  readonly issue = signal<EditorSourceIssue | null>(this.data.sourceIssue ?? null);
+  readonly retrying = signal(false);
+  /** The blob: URL a successful retry created; this modal owns it (the opener revokes only the one it made). */
+  private retriedObjectUrl: string | null = null;
+
+  constructor() {
+    inject(DestroyRef).onDestroy(() => { if (this.retriedObjectUrl) URL.revokeObjectURL(this.retriedObjectUrl); });
+  }
+
+  /** Re-runs the caller's load; on success the editor swaps to the same-origin copy (so Save works), otherwise the new reason shows. */
+  async retry(): Promise<void> {
+    if (!this.data.reloadSource || this.retrying()) return;
+    this.retrying.set(true);
+    try {
+      const src = await this.data.reloadSource();
+      if (this.retriedObjectUrl) URL.revokeObjectURL(this.retriedObjectUrl);
+      this.retriedObjectUrl = src.objectUrl;
+      this.issue.set(src.issue);
+      this.editor()?.reload(src.url);
+    } finally {
+      this.retrying.set(false);
+    }
+  }
 
   /** The edited image waiting for the "new or replace" answer. */
   pending = signal<Blob | null>(null);

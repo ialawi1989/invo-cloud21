@@ -1,4 +1,4 @@
-.df-page { display: flex; flex-direction: column; gap: 16px; }
+.df-page { display: flex; flex-direction: column; gap: var(--space-4); }
 
 .page-header { display: flex; flex-direction: column; gap: 4px; }
 
@@ -8,7 +8,7 @@
 .df-body {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-  gap: 16px;
+  gap: var(--space-4);
   align-items: start;
 
   @media (max-width: 900px) {
@@ -41,46 +41,6 @@
   }
 }
 
-.card {
-  background: var(--ui-surface);
-  border: 1px solid var(--ui-line);
-  border-radius: 12px;
-  overflow: hidden;
-
-  &__head {
-    padding: 14px 16px;
-    border-bottom: 1px solid var(--ui-surface-2);
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-  &__title {
-    margin: 0;
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--ui-text);
-  }
-  &__sub {
-    margin: 0;
-    font-size: 12px;
-    color: var(--ui-muted);
-    line-height: 1.5;
-  }
-  &__body {
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  // Compact variant for the sidebar cards — denser padding so the
-  // side column doesn't feel airy compared to the main column.
-  &--compact {
-    .card__head { padding: 10px 12px; }
-    .card__title { font-size: 13px; }
-    .card__body { padding: 12px; gap: 10px; }
-  }
-}
 
 .field {
   display: flex;

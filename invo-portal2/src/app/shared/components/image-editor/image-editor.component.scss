@@ -16,7 +16,14 @@
 .export-error {
   font-size: 12px; font-weight: 500; color: var(--ui-red-text);
   background: var(--ui-red-soft); border: 1px solid var(--ui-red-soft-2); border-radius: 6px;
-  padding: 5px 10px; white-space: nowrap;
+  padding: 5px 10px; max-width: 560px; line-height: 1.35;
+}
+.btn-retry {
+  padding: 7px 14px; border-radius: 8px; border: 1px solid var(--ui-line-strong); background: var(--ui-surface);
+  color: var(--ui-text); font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; white-space: nowrap;
+  &:hover:not(:disabled) { background: var(--ui-surface-2); }
+  &:disabled { opacity: .55; cursor: progress; }
+  &:focus-visible { outline: 2px solid var(--color-brand-600); outline-offset: 2px; }
 }
 .header-title { font-size: 15px; font-weight: 600; color: var(--ui-text); }
 .hdr-btn {
@@ -251,7 +258,7 @@
 .drawing-cursor { cursor: crosshair; }
 .canvas-loading {
   position: absolute; inset: 0; display: flex; align-items: center;
-  justify-content: center; font-size: 14px; color: var(--ui-faint);
+  justify-content: center; flex-wrap: wrap; gap: 12px; padding: 24px; text-align: center; font-size: 14px; color: var(--ui-faint);
 }
 
 /* ── Crop overlay ───────────────────────────────────────────────────────── */

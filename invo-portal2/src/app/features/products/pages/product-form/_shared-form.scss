@@ -5,39 +5,59 @@
 @mixin pfCard {
   :host { display: block; }
 
+  // The product-form card is the shared form card (styles/_form-card.scss): same padding, header and 16px rhythm.
+  // (It used to be frameless with a shadow and a divider under the header; it now has the shared 1px border and no divider.)
   .pf-card {
+    display: flex;
+    flex-direction: column;
+    row-gap: var(--space-4);
+    box-sizing: border-box;
+    padding-block: var(--space-5);
+    padding-inline: var(--space-5);
     background: var(--ui-surface);
+    border: 1px solid var(--ui-line);
     border-radius: 12px;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
     overflow: hidden;
+
+    @media (max-width: 639px) {
+      padding-block: var(--space-4);
+      padding-inline: var(--space-4);
+    }
   }
 
   .pf-card__header {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 14px 18px;
-    border-bottom: 1px solid var(--ui-surface-2);
-    background: var(--ui-surface);
+    column-gap: var(--space-3);
+    min-width: 0;
+    margin: 0;
   }
 
   .pf-card__icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    flex: 0 0 auto;
     width: 36px;
     height: 36px;
     background: var(--ui-x-d9f2f6);
     color: var(--ui-t-143742);
-    border-radius: 9px;
+    border-radius: var(--radius-icon);
+
+    @media (max-width: 639px) { width: 28px; height: 28px; }
   }
 
   .pf-card__title {
-    font-size: 15px;
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 16px;
+    line-height: 24px;
     font-weight: 600;
     color: var(--ui-text);
-    margin: 0;
-    letter-spacing: -0.1px;
 
     &--required {
       color: var(--ui-red-text);
@@ -56,10 +76,10 @@
   }
 
   .pf-card__body {
-    padding: 18px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    row-gap: var(--space-4);
+    min-width: 0;
   }
 
   .pf-row {

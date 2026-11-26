@@ -22,7 +22,7 @@ export class FormActionPrimaryDirective {}
 @Directive({ selector: '[formActionSecondary]', standalone: true, host: { class: 'fa-btn fa-btn--secondary' } })
 export class FormActionSecondaryDirective {}
 
-/** A primary action with a caret menu beside it (Save | ▾). Wrap the primary button and the caret in it. */
+/** Marks the split primary (`<app-form-split>`): it takes its slot in the row / bottom bar. */
 @Directive({ selector: '[formActionSplit]', standalone: true, host: { class: 'fa-split' } })
 export class FormActionSplitDirective {}
 
@@ -62,7 +62,62 @@ const PHONE_QUERY = '(max-width: 639px)';
   standalone: true,
   imports: [TranslateModule, NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: ,
+  template: `
+    <!-- One <ng-content> per selector (Angular projects into the first only), each in a template that the active layout renders. -->
+    <ng-template #tExtra><ng-content select="[formActionExtra]"/></ng-template>
+    <ng-template #tSecondary><ng-content select="[formActionSecondary]"/></ng-template>
+    <ng-template #tOverflow><ng-content select="[formActionOverflow]"/></ng-template>
+    <ng-template #tSplit><ng-content select="[formActionSplit]"/></ng-template>
+    <ng-template #tPrimary><ng-content select="[formActionPrimary]"/></ng-template>
+    <ng-template #tDefault><ng-content/></ng-template>
+
+    @if (phone()) {
+      <div class="fm" role="group" #bar>
+        @if (hasMenu()) {
+          <div class="fm__more">
+            <button type="button" class="fm__more-btn" #moreBtn aria-haspopup="menu"
+                    [attr.aria-expanded]="open()" [attr.aria-label]="'COMMON.MORE_ACTIONS' | translate"
+                    (click)="toggle()">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <circle cx="12" cy="5" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="12" cy="19" r="1.9"/>
+              </svg>
+            </button>
+            <div class="fm__menu" role="menu" [hidden]="!open()" (click)="close(true)" (keydown)="onMenuKey($event)">
+              <ng-container *ngTemplateOutlet="tExtra"/>
+              <ng-container *ngTemplateOutlet="tDefault"/>
+              <ng-container *ngTemplateOutlet="tOverflow"/>
+              @if (hasPrimary()) { <ng-container *ngTemplateOutlet="tSecondary"/> }
+            </div>
+          </div>
+        }
+        @if (!hasPrimary()) { <ng-container *ngTemplateOutlet="tSecondary"/> }
+        <ng-container *ngTemplateOutlet="tSplit"/>
+        <ng-container *ngTemplateOutlet="tPrimary"/>
+      </div>
+    } @else {
+      <div class="fa" role="group">
+        <ng-container *ngTemplateOutlet="tExtra"/>
+        <ng-container *ngTemplateOutlet="tSecondary"/>
+        @if (hasOverflow()) {
+          <div class="fa__more">
+            <button type="button" class="fa-btn fa-btn--secondary fa__more-btn" aria-haspopup="menu"
+                    [attr.aria-expanded]="open()" [attr.aria-label]="'COMMON.MORE_ACTIONS' | translate"
+                    (click)="toggle()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/>
+              </svg>
+            </button>
+            <div class="fa__menu" role="menu" [hidden]="!open()" (click)="close()">
+              <ng-container *ngTemplateOutlet="tOverflow"/>
+            </div>
+          </div>
+        }
+        <ng-container *ngTemplateOutlet="tSplit"/>
+        <ng-container *ngTemplateOutlet="tPrimary"/>
+        <ng-container *ngTemplateOutlet="tDefault"/>
+      </div>
+    }
+  `,
   styles: [`
     :host { display: block; }
     .fa { display: flex; align-items: center; flex-wrap: nowrap; gap: 8px; }
@@ -71,7 +126,7 @@ const PHONE_QUERY = '(max-width: 639px)';
     :host ::ng-deep .fa-btn {
       display: inline-flex; align-items: center; justify-content: center; gap: 6px;
       height: 36px; padding: 0 16px; border-radius: 8px; box-sizing: border-box;
-      font: inherit; font-size: 13.5px; font-weight: 600; line-height: 1; white-space: nowrap;
+      font: inherit; font-size: 13.5px; font-weight: 500; line-height: 1; white-space: nowrap;
       cursor: pointer; text-decoration: none; transition: background .12s, border-color .12s, box-shadow .12s;
     }
     :host ::ng-deep .fa-btn--secondary { background: var(--ui-surface); color: var(--ui-text); border: 1px solid var(--ui-line-strong); }
@@ -87,13 +142,7 @@ const PHONE_QUERY = '(max-width: 639px)';
     .fa > ::ng-deep app-dropdown-menu-btn { order: 1; display: inline-flex; }
     .fa__more { order: 2; }
     .fa ::ng-deep .fa-btn--primary, .fa ::ng-deep .fa-split { order: 3; }
-
-    /* A primary action with a caret menu beside it (Save | ▾). */
-    :host ::ng-deep .fa-split { display: inline-flex; align-items: stretch; }
-    :host ::ng-deep .fa-split app-dropdown-menu-btn { display: inline-flex; }
-    :host ::ng-deep .fa-split > .fa-btn--primary { border-start-end-radius: 0; border-end-end-radius: 0; }
-    :host ::ng-deep .fa-split__caret { height: 36px; padding: 0 10px; border-start-start-radius: 0; border-end-start-radius: 0; border-inline-start: 1px solid rgba(255, 255, 255, .45); } /* theme-ok: divider on the brand fill */
-    :host ::ng-deep .fa-split__caret * { background: transparent !important; color: inherit !important; border: 0 !important; box-shadow: none !important; padding: 0 !important; }
+    /* The split primary (app-form-split) draws itself; here it only takes its place in the row. */
 
     .fa__more { position: relative; }
     .fa__more-btn { padding: 0 10px; }
@@ -146,25 +195,12 @@ const PHONE_QUERY = '(max-width: 639px)';
     .fm__menu ::ng-deep .tour-btn span[aria-hidden] { flex: none; }
 
     /* The primary action: one tall, high-contrast pill filling the rest of the row. */
-    .fm ::ng-deep > .fa-btn--primary, .fm ::ng-deep > .fa-split {
+    .fm ::ng-deep > .fa-btn--primary {
       flex: 1 1 auto; min-width: 0; height: 48px; border-radius: 24px; font-size: 16px; font-weight: 600;
     }
     .fm ::ng-deep > .fa-btn--primary { padding: 0 20px; }
     .fm ::ng-deep > .fa-btn--primary:disabled { opacity: .5; }
     .fm ::ng-deep > .fa-btn--secondary { flex: 1 1 auto; height: 48px; border-radius: 24px; font-size: 16px; }
-    /* Split primary: the label area is the primary action, the caret segment sits inside the same pill behind a thin divider. */
-    .fm ::ng-deep > .fa-split { display: flex; align-items: stretch; background: var(--ui-brand-t700); }
-    .fm ::ng-deep > .fa-split > .fa-btn--primary {
-      flex: 1 1 auto; height: 48px; font-size: 16px; font-weight: 600; padding: 0 16px;
-      border-start-start-radius: 24px; border-end-start-radius: 24px; border-start-end-radius: 0; border-end-end-radius: 0;
-    }
-    .fm ::ng-deep > .fa-split app-dropdown-menu-btn { flex: 0 0 auto; display: flex; }
-    .fm ::ng-deep > .fa-split .fa-split__caret {
-      height: 48px; width: 52px; padding: 0; justify-content: center;
-      border-start-start-radius: 0; border-end-start-radius: 0; border-start-end-radius: 24px; border-end-end-radius: 24px;
-      border-inline-start: 1px solid rgba(255, 255, 255, .45); /* theme-ok: divider on the brand fill */
-    }
-    .fm ::ng-deep > .fa-split .fa-split__caret svg { width: 16px; height: 16px; }
     .fm ::ng-deep .fa-btn:focus-visible { outline: 2px solid var(--ui-brand-t700); outline-offset: 2px; }
     @media print { .fm { display: none; } }
   `]

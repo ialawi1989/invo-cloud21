@@ -16,11 +16,11 @@
        column under ~900px (mobile). -->
   <div class="df-body">
     <div class="df-main">
-      <section class="card">
-        <header class="card__head">
-          <h2 class="card__title">{{ 'DISCOUNT.FORM.DETAILS' | translate }}</h2>
+      <section class="form-card">
+        <header class="form-card__head">
+          <h2 class="form-card__title">{{ 'DISCOUNT.FORM.DETAILS' | translate }}</h2>
         </header>
-        <div class="card__body">
+        <div class="form-card__body">
           <!-- Name -->
           <label class="field">
             <span class="field__label">
@@ -99,12 +99,12 @@
       </section>
 
       @if (discount().type === 'automatic') {
-        <section class="card">
-          <header class="card__head">
-            <h2 class="card__title">{{ 'DISCOUNT.FORM.SCHEDULE' | translate }}</h2>
-            <p class="card__sub">{{ 'DISCOUNT.FORM.SCHEDULE_HINT' | translate }}</p>
+        <section class="form-card">
+          <header class="form-card__head">
+            <h2 class="form-card__title">{{ 'DISCOUNT.FORM.SCHEDULE' | translate }}</h2>
+            <p class="form-card__desc">{{ 'DISCOUNT.FORM.SCHEDULE_HINT' | translate }}</p>
           </header>
-          <div class="card__body">
+          <div class="form-card__body">
             <app-toggle
               [checked]="isAllDay()"
               (checkedChange)="setAllDay($event)"
@@ -156,12 +156,12 @@
       }
 
       @if (discount().type === 'automatic') {
-      <section class="card">
-        <header class="card__head">
-          <h2 class="card__title">{{ 'DISCOUNT.FORM.SCOPE' | translate }}</h2>
-          <p class="card__sub">{{ 'DISCOUNT.FORM.SCOPE_HINT' | translate }}</p>
+      <section class="form-card">
+        <header class="form-card__head">
+          <h2 class="form-card__title">{{ 'DISCOUNT.FORM.SCOPE' | translate }}</h2>
+          <p class="form-card__desc">{{ 'DISCOUNT.FORM.SCOPE_HINT' | translate }}</p>
         </header>
-        <div class="card__body">
+        <div class="form-card__body">
           <div class="field">
             <span class="field__label">{{ 'DISCOUNT.FORM.APPLY_TO' | translate }}</span>
             <app-segmented-toggle
@@ -295,11 +295,11 @@
            branch the whole sidebar contents on `type`. -->
 
       @if (discount().type === 'manual') {
-        <section class="card card--compact">
-          <header class="card__head">
-            <h2 class="card__title">{{ 'DISCOUNT.FORM.EMPLOYEES' | translate }}</h2>
+        <section class="form-card form-card--compact">
+          <header class="form-card__head">
+            <h2 class="form-card__title">{{ 'DISCOUNT.FORM.EMPLOYEES' | translate }}</h2>
           </header>
-          <div class="card__body">
+          <div class="form-card__body">
             <app-search-dropdown
               [loadFn]="loadEmployees"
               [displayWith]="display"
@@ -339,11 +339,11 @@
         </section>
       }
 
-      <section class="card card--compact">
-        <header class="card__head">
-          <h2 class="card__title">{{ 'DISCOUNT.FORM.AVAILABILITY' | translate }}</h2>
+      <section class="form-card form-card--compact">
+        <header class="form-card__head">
+          <h2 class="form-card__title">{{ 'DISCOUNT.FORM.AVAILABILITY' | translate }}</h2>
         </header>
-        <div class="card__body">
+        <div class="form-card__body">
           <app-toggle
             [checked]="discount().available"
             (checkedChange)="setAvailable($event)"
@@ -373,11 +373,11 @@
       </section>
 
       @if (discount().type === 'automatic') {
-        <section class="card card--compact">
-          <header class="card__head">
-            <h2 class="card__title">{{ 'DISCOUNT.FORM.BRANCHES' | translate }}</h2>
+        <section class="form-card form-card--compact">
+          <header class="form-card__head">
+            <h2 class="form-card__title">{{ 'DISCOUNT.FORM.BRANCHES' | translate }}</h2>
           </header>
-          <div class="card__body">
+          <div class="form-card__body">
             <app-search-dropdown
               [loadFn]="loadBranches"
               [displayWith]="display"

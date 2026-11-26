@@ -46,7 +46,7 @@ interface AutoLine {
       (save)="create()" (cancel)="cancel()">
 
       <section class="df-card">
-        <h2 class="df-card__title"><span class="df-ico df-ico--green" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg></span>{{ 'PURCHASE_ORDERS.AUTO.DETAILS' | translate }}</h2>
+        <h2 class="df-card__title"><span class="df-ico df-ico--green" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg></span><span class="df-card__text">{{ 'PURCHASE_ORDERS.AUTO.DETAILS' | translate }}</span></h2>
         <div class="df-field df-field--wide">
           <label>{{ 'DOC_FORM.BRANCH' | translate }} <span class="req">*</span></label>
           <app-search-dropdown [items]="branches()" [displayWith]="branchLabel" [compareWith]="byId"
@@ -56,7 +56,7 @@ interface AutoLine {
       </section>
 
       <section class="df-card">
-        <h2 class="df-card__title">{{ 'PURCHASE_ORDERS.AUTO.RECOMMENDED_LINES' | translate }}</h2>
+        <h2 class="df-card__title"><span class="df-card__text">{{ 'PURCHASE_ORDERS.AUTO.RECOMMENDED_LINES' | translate }}</span></h2>
         @if (loading()) {
           <p class="ap__empty">…</p>
         } @else if (!branch()) {

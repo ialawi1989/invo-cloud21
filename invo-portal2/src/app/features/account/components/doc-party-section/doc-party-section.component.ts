@@ -18,7 +18,7 @@ import { CustomerAddress } from '../../customers/models/customer.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="df-card">
-      <h2 class="df-card__title"><span class="df-ico df-ico--blue" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg></span>{{ 'DOC_FORM.CUSTOMER_INFORMATION' | translate }}</h2>
+      <h2 class="df-card__title"><span class="df-ico df-ico--blue" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg></span><span class="df-card__text">{{ 'DOC_FORM.CUSTOMER_INFORMATION' | translate }}</span></h2>
       <div class="df-field df-field--wide">
         <label>{{ 'DOC_FORM.CUSTOMER_NAME' | translate }} <span class="req">*</span></label>
         <app-customer-picker [value]="customer()" [allowCreate]="true" [allowAdvanced]="!locked()" [disabled]="locked()"

@@ -1,4 +1,6 @@
 import { FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, FormActionSplitDirective } from '@shared/components/form-actions/form-actions.component';
+import { FormSplitComponent } from '@shared/components/form-actions/form-split.component';
+import { TooltipDirective } from '@shared/directives/tooltip.directive';
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import '../../account-i18n';
 import { ChangeDetectionStrategy, Component, ViewEncapsulation, input, output } from '@angular/core';
@@ -19,7 +21,7 @@ import { DropdownMenuBtnComponent, DropdownMenuBtnItem } from '@shared/component
 @Component({
   selector: 'app-doc-form-shell',
   standalone: true,
-  imports: [FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, FormActionSplitDirective, PageHeaderComponent, TranslateModule, MycurrencyPipe, DropdownMenuBtnComponent],
+  imports: [FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, FormActionSplitDirective, FormSplitComponent, TooltipDirective, PageHeaderComponent, TranslateModule, MycurrencyPipe, DropdownMenuBtnComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   styleUrl: './doc-form-shell.component.scss',
@@ -30,7 +32,7 @@ import { DropdownMenuBtnComponent, DropdownMenuBtnItem } from '@shared/component
           <!-- The page's own extra actions (Make recurring, Convert to invoice …) lead the row. -->
           <ng-content select="[footerExtra]" ngProjectAs="[formActionExtra]"/>
           @if (canDraft()) {
-            <button type="button" formActionSecondary [disabled]="submitting() || draftDisabled()" (click)="draft.emit()">{{ draftLabel() || ('DOC_FORM.SAVE_AS_DRAFT' | translate) }}</button>
+            <button type="button" formActionSecondary [disabled]="submitting() || draftDisabled()" [appTooltip]="draftDisabled() ? draftDisabledReason() : ''" (click)="draft.emit()">{{ draftLabel() || ('DOC_FORM.SAVE_AS_DRAFT' | translate) }}</button>
           }
           @if (showView()) {
             <button type="button" formActionSecondary (click)="view.emit()">{{ 'COMMON.VIEW' | translate }}</button>
@@ -39,12 +41,7 @@ import { DropdownMenuBtnComponent, DropdownMenuBtnItem } from '@shared/component
             <app-dropdown-menu-btn [items]="actionsMenu()" [disabled]="submitting()" [appendToBody]="true" align="start" triggerClass="fa-btn fa-btn--secondary">{{ 'DOC_VIEW.ACTIONS' | translate }}</app-dropdown-menu-btn>
           }
           <button type="button" formActionSecondary (click)="cancel.emit()">{{ 'COMMON.CANCEL' | translate }}</button>
-          <span formActionSplit>
-            <button type="button" formActionPrimary [disabled]="submitting() || saveDisabled()" (click)="save.emit()">{{ saveLabel() || ('DOC_FORM.SAVE_AND_SEND' | translate) }}</button>
-            @if (saveMenu().length) {
-              <app-dropdown-menu-btn [items]="saveMenu()" [disabled]="submitting() || saveDisabled()" [appendToBody]="true" [chevron]="false" align="start" triggerClass="fa-btn fa-btn--primary fa-split__caret"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 15 12 9 18 15"/></svg></app-dropdown-menu-btn>
-            }
-          </span>
+          <app-form-split formActionSplit [items]="saveMenu()" [disabled]="submitting() || saveDisabled()" [disabledReason]="saveDisabled() ? saveDisabledReason() : ''" (action)="save.emit()">{{ saveLabel() || ('DOC_FORM.SAVE_AND_SEND' | translate) }}</app-form-split>
         </app-form-actions>
       </app-page-header>
 
@@ -67,6 +64,9 @@ export class DocFormShellComponent {
   submitting = input<boolean>(false);
   /** Form incomplete: Save / Save as draft stay disabled until it is. */
   saveDisabled = input<boolean>(false);
+  /** Why Save is disabled (the missing required fields), shown as a tooltip on the disabled button. */
+  saveDisabledReason = input<string>('');
+  draftDisabledReason = input<string>('');
   draftDisabled = input<boolean>(false);
   showView = input<boolean>(false);
   draftLabel = input<string>('');

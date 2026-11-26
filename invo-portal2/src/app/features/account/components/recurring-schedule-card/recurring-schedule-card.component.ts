@@ -41,7 +41,7 @@ export const PERIOD_MAX: Record<RecurringPeriodicity, number> = { Monthly: 31, W
   template: `
     @let r = rec();
     <section class="df-card">
-      <h2 class="df-card__title">{{ root() + '.FORM.PROFILE' | translate }}</h2>
+      <h2 class="df-card__title"><span class="df-card__text">{{ root() + '.FORM.PROFILE' | translate }}</span></h2>
 
       <div class="df-row">
         <div class="df-field df-field--grow">

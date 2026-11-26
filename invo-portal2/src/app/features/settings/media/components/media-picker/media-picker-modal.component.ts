@@ -15,6 +15,7 @@ import { MediaUploadComponent } from '../media-upload';
 import {
   ImageEditorModalComponent,
   ImageEditorModalData,
+  loadEditorImage,
 } from '../../../../../shared/components/image-editor';
 
 import { SkeletonComponent } from '@shared/components/skeleton/skeleton.component';
@@ -796,24 +797,16 @@ export class MediaPickerModalComponent implements OnInit {
     const fallbackUrl = item.imageUrl;
     if (!mediaId && !fallbackUrl) return;
 
-    let editorUrl = fallbackUrl;
-    let objectUrl: string | null = null;
-    if (mediaId) {
-      try {
-        const rawBlob = await this.mediaService.getMediaRawBlob(mediaId);
-        objectUrl = URL.createObjectURL(rawBlob);
-        editorUrl = objectUrl;
-      } catch (err) {
-        console.error('Failed to fetch image for editing; using direct URL:', err);
-      }
-    }
+    // Same-origin copy when possible; otherwise the direct URL, the logged reason and a Retry button (see loadEditorImage).
+    const load = () => loadEditorImage(this.mediaService, mediaId, fallbackUrl, 'media-picker.editImage');
+    const source = await load();
 
     const ref = this.modalService.open<ImageEditorModalComponent, ImageEditorModalData, Blob | undefined>(
       ImageEditorModalComponent,
       {
         size: 'fullscreen',
         closeable: false,
-        data: { imageUrl: editorUrl!, fileName: item.name },
+        data: { imageUrl: source.url, fileName: item.name, sourceIssue: source.issue, reloadSource: load },
       },
     );
 
@@ -821,7 +814,7 @@ export class MediaPickerModalComponent implements OnInit {
     try {
       editedBlob = await ref.afterClosed();
     } finally {
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
+      if (source.objectUrl) URL.revokeObjectURL(source.objectUrl);
     }
     if (!editedBlob) return;
 

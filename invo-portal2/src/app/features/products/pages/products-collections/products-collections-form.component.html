@@ -13,8 +13,8 @@
 
   <div class="df-body">
     <!-- ── Details ─────────────────────────────────────────────── -->
-    <section class="card">
-      <div class="card__body">
+    <section class="form-card">
+      <div class="form-card__body">
         <!-- Cover image -->
         <div class="field">
           <span class="field__label">{{ 'PRODUCTS.COLLECTIONS.FORM.IMAGE' | translate }}</span>
@@ -99,8 +99,8 @@
 
     <!-- ── Manual options ──────────────────────────────────────── -->
     @if (isManual()) {
-      <section class="card">
-        <div class="card__body">
+      <section class="form-card">
+        <div class="form-card__body">
           <div class="prod-head">
             <span class="field__label">{{ 'PRODUCTS.COLLECTIONS.FORM.PRODUCTS' | translate }}</span>
             <button type="button" class="btn btn-default btn-sm" (click)="openProductPicker()">
@@ -137,8 +137,8 @@
 
     <!-- ── Automated options ───────────────────────────────────── -->
     @if (!isManual()) {
-      <section class="card">
-        <div class="card__body">
+      <section class="form-card">
+        <div class="form-card__body">
           <!-- Match all / any -->
           <div class="field">
             <span class="field__label">{{ 'PRODUCTS.COLLECTIONS.FORM.MATCH_LABEL' | translate }}</span>

@@ -38,7 +38,7 @@
     <!-- Start: how the products of a new count are chosen -->
     @if (showStart && mode) {
       <section class="df-card">
-        <h2 class="df-card__title">{{ 'PHYSICAL_COUNT.START_TITLE' | translate }}</h2>
+        <h2 class="df-card__title"><span class="df-card__text">{{ 'PHYSICAL_COUNT.START_TITLE' | translate }}</span></h2>
         @switch (mode) {
           @case ('by-product') {
             <p class="pc-hint">{{ 'PHYSICAL_COUNT.START_BY_PRODUCT' | translate }}</p>
@@ -90,7 +90,7 @@
     @if (!showStart) {
       <section class="df-card">
         <div class="pc-head">
-          <h2 class="df-card__title">{{ 'PHYSICAL_COUNT.PRODUCTS' | translate }} ({{ liveLines.length }})</h2>
+          <h2 class="df-card__title"><span class="df-card__text">{{ 'PHYSICAL_COUNT.PRODUCTS' | translate }} ({{ liveLines.length }})</span></h2>
           <div class="pc-tools">
             @if (liveLines.length) {
               <input class="df-input pc-filter" type="text" [(ngModel)]="filterTerm" [placeholder]="'PHYSICAL_COUNT.FILTER_LINES' | translate"/>

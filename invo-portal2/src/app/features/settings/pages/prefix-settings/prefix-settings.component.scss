@@ -81,17 +81,11 @@
 .ps-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 12px;
+  gap: var(--space-4);
 }
 
+// Each document type is a shared form card (styles/_form-card.scss: padding, header, 16px rhythm); only what is specific to this page stays here.
 .ps-card {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 16px;
-  background: var(--ui-surface);
-  border: 1px solid var(--ui-line);
-  border-radius: 12px;
   transition: border-color 120ms ease, box-shadow 120ms ease;
 
   &:hover { border-color: var(--ui-line-strong); }
@@ -99,20 +93,6 @@
   &--invalid {
     border-color: #fda4af;
     background: var(--ui-x-fff7f7);
-  }
-
-  &__head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-  }
-
-  &__title {
-    margin: 0;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--ui-text);
   }
 
   &__reset {

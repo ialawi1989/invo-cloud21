@@ -136,7 +136,7 @@ export type PageWidth = 'fluid' | 'form' | 'narrow' | 'bleed';
     @media (max-width: 991px) {
       /* The sidebar becomes an overlay below this width, so nothing is
          reserved for it and the bar spans the full viewport again. */
-      .main-content { margin-left: 0 !important; overflow-x: hidden; }
+      .main-content { margin-left: 0 !important; overflow-x: clip; }
     }
     @media (max-width: 767px) {
       :host { --page-gutter: 16px; }

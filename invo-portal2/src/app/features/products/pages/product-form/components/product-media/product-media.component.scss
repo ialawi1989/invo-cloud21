@@ -8,6 +8,7 @@
   border: 0;
   border-radius: 0;
   box-shadow: none;
+  padding: 0;
 }
 :host ::ng-deep app-pf-product-gallery .pf-card__header,
 :host ::ng-deep app-pf-product-3dmodel .pf-card__header {
@@ -19,7 +20,7 @@
 }
 
 .pf-media__body {
-  padding: 18px;
+  padding: 0;
 }
 
 // Tab bar as the card's header — prominent icon chips with labels and an

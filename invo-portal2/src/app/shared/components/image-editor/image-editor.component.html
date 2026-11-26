@@ -9,9 +9,15 @@
     </div>
     <div class="header-right">
       @if (exportBlocked()) {
-        <span class="export-error" appTooltip="The image host didn't allow it to be read back for export (CORS).">
-          Can’t save — image can’t be exported
+        <span class="export-error" role="alert" [appTooltip]="'IMAGE_EDITOR.SAVE_OFF_HINT' | translate: { detail: issueFull() }">
+          @if (issueDetail()) { {{ 'IMAGE_EDITOR.COPY_LOAD_FAILED' | translate: { detail: issueDetail() } }} }
+          @else { {{ 'IMAGE_EDITOR.CANT_SAVE' | translate }} }
         </span>
+        @if (canRetry()) {
+          <button class="btn-retry" type="button" [disabled]="retrying()" [attr.aria-busy]="retrying()" (click)="retry.emit()">
+            {{ (retrying() ? 'IMAGE_EDITOR.RETRYING' : 'IMAGE_EDITOR.RETRY') | translate }}
+          </button>
+        }
       }
       <button class="btn-revert" [disabled]="!canRevert()" (click)="revertToOriginal()" appTooltip="Discard all edits and restore the original image">
         Revert to Original
@@ -23,7 +29,8 @@
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10H11a5 5 0 000 10h4M21 10l-4-4M21 10l-4 4"/></svg>
       </button>
       <button class="btn-cancel" (click)="onCancel()">Cancel</button>
-      <button class="btn-save" [disabled]="saving()" (click)="onSave()">Save</button>
+      <button class="btn-save" [disabled]="saving() || saveBlocked()" [attr.aria-disabled]="saveBlocked()"
+              [appTooltip]="saveBlocked() ? ('IMAGE_EDITOR.SAVE_OFF_HINT' | translate: { detail: issueFull() }) : ''" (click)="onSave()">Save</button>
     </div>
   </div>
 
@@ -225,7 +232,15 @@
         <div class="canvas-loading">Loading image…</div>
       }
       @if (loadError()) {
-        <div class="canvas-loading">Couldn’t load this image for editing. The file may be missing from storage — try re-uploading it.</div>
+        <div class="canvas-loading">
+          @if (issueDetail()) { {{ 'IMAGE_EDITOR.LOAD_FAILED_REASON' | translate: { detail: issueDetail() } }} }
+          @else { {{ 'IMAGE_EDITOR.LOAD_FAILED' | translate }} }
+          @if (canRetry()) {
+            <button class="btn-retry" type="button" [disabled]="retrying()" [attr.aria-busy]="retrying()" (click)="retry.emit()">
+              {{ (retrying() ? 'IMAGE_EDITOR.RETRYING' : 'IMAGE_EDITOR.RETRY') | translate }}
+            </button>
+          }
+        </div>
       }
       <canvas
         #mainCanvas

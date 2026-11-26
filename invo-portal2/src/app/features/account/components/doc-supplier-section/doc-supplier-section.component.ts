@@ -30,7 +30,7 @@ export interface SupplierMini {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="df-card">
-      <h2 class="df-card__title"><span class="df-ico df-ico--blue" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg></span>{{ 'DOC_FORM.SUPPLIER_INFORMATION' | translate }}</h2>
+      <h2 class="df-card__title"><span class="df-ico df-ico--blue" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg></span><span class="df-card__text">{{ 'DOC_FORM.SUPPLIER_INFORMATION' | translate }}</span></h2>
       <div class="df-field df-field--wide">
         <label>{{ 'DOC_FORM.SUPPLIER_NAME' | translate }} @if (required()) { <span class="req">*</span> }</label>
         <app-search-dropdown [loadFn]="load" [pageSize]="20" [displayWith]="display" [compareWith]="same"

@@ -48,9 +48,9 @@
     @if (view() === 'cards') {
     <div class="ps-grid">
       @for (r of rows(); track r.module) {
-        <article class="ps-card" [class.ps-card--invalid]="!!r.prefixError || !!r.widthError">
-          <header class="ps-card__head">
-            <h2 class="ps-card__title">{{ r.label }}</h2>
+        <article class="form-card ps-card" [class.ps-card--invalid]="!!r.prefixError || !!r.widthError">
+          <header class="form-card__head">
+            <h2 class="form-card__title">{{ r.label }}</h2>
             <button
               type="button"
               class="ps-card__reset"

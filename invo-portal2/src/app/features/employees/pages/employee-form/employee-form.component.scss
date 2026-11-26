@@ -31,38 +31,22 @@
 .form-grid {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-  gap: 16px;
+  gap: var(--space-4);
   align-items: start;
 
   @media (max-width: 900px) {
     grid-template-columns: 1fr;
   }
 
+  // The columns own the 16px gap between their cards (the cards carry no outer margin).
   &__main, &__side {
     display: flex;
     flex-direction: column;
+    row-gap: var(--space-4);
     min-width: 0;
   }
 }
 
-// ── Cards ─────────────────────────────────────────────────────────────
-.card {
-  background: var(--ui-surface);
-  border: 1px solid var(--ui-line);
-  border-radius: 12px;
-  margin-bottom: 16px;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
-
-  &__head {
-    padding: 14px 18px;
-    border-bottom: 1px solid var(--ui-surface-2);
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-  &__title { margin: 0; font-size: 15px; font-weight: 600; color: var(--ui-text); }
-  &__body  { padding: 18px; }
-}
 
 // ── Form fields ───────────────────────────────────────────────────────
 .grid {
@@ -555,13 +539,6 @@
   }
 }
 
-// Sub-heading inside a card, above a related block of fields.
-.card__subtitle {
-  margin: 0 0 12px;
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--ui-text);
-}
 
 // ── Tabs ──────────────────────────────────────────────────────────────────
 // Panes are hidden, never removed, so validation and autofill span all tabs.

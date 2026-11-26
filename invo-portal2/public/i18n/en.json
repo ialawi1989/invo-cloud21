@@ -175,6 +175,7 @@
     "NO": "No",
     "BACK": "Back",
     "MORE_ACTIONS": "More actions",
+    "MORE_SAVE_OPTIONS": "More save options",
     "LP_FILTER": "Filter",
     "LP_FILTER_ACTIVE": "Filter, {{count}} active",
     "LP_SORT": "Sort",
@@ -903,5 +904,14 @@
       "Completed": "Completed",
       "merged": "Merged"
     }
+  },
+  "IMAGE_EDITOR": {
+    "COPY_LOAD_FAILED": "Couldn’t load a copy of this image ({{detail}})",
+    "LOAD_FAILED_REASON": "Couldn’t load this image for editing ({{detail}}).",
+    "LOAD_FAILED": "Couldn’t load this image for editing. The file may be missing from storage — try re-uploading it.",
+    "CANT_SAVE": "Can’t save — image can’t be exported",
+    "SAVE_OFF_HINT": "Saving is off. The editor could only load this image from its direct address, which the browser won’t let it read back for export. You can still preview and edit it. {{detail}}",
+    "RETRY": "Retry loading",
+    "RETRYING": "Retrying…"
   }
 }

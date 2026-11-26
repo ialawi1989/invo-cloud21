@@ -29,7 +29,7 @@ import { ToastService } from '@shared/components/toast/toast.service';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
 import { ModalService } from '@shared/modal/modal.service';
 import { TooltipDirective } from '@shared/directives/tooltip.directive';
-import { ImageEditorModalComponent, ImageEditorModalData } from '@shared/components/image-editor';
+import { ImageEditorModalComponent, ImageEditorModalData, loadEditorImage, type EditorSourceIssue } from '@shared/components/image-editor';
 import { MediaService } from '../../media/services/media.service';
 
 import { BusinessSettingsService } from '../../services/business-settings.service';
@@ -208,26 +208,28 @@ export class BusinessSettingsComponent implements OnInit, CanLeaveComponent {
     // `editBeforeUpload`); a picture picked from the library is used as it is. The pen on the logo crops it later.
   }
 
+  /** Why the last logo crop could only use the direct image address (null when a same-origin copy loaded). */
+  readonly logoLoadIssue = signal<EditorSourceIssue | null>(null);
+
   /** Crop the current logo to a square (the editor opens on the 1:1 preset). The cropped picture is saved as a new media item. */
   async cropLogo(): Promise<void> {
     const id = this.mediaId();
     const current = this.mediaUrl();
     if (!id && !current) return;
-    let editorUrl = current ?? '';
-    let objectUrl: string | null = null;
-    if (id) {
-      try { objectUrl = URL.createObjectURL(await this.media.getMediaRawBlob(id)); editorUrl = objectUrl; }
-      catch { /* the editor falls back to the direct URL */ }
-    }
+    // Same-origin copy through the backend when possible; otherwise the direct URL and the real reason (logged, kept in
+    // `logoLoadIssue`, and shown by the editor with a Retry button). See loadEditorImage.
+    const load = () => loadEditorImage(this.media, id, current, 'business-settings.cropLogo');
+    const source = await load();
+    this.logoLoadIssue.set(source.issue);
     let blob: Blob | undefined;
     try {
       const ref = this.modal.open<ImageEditorModalComponent, ImageEditorModalData, Blob | undefined>(
         ImageEditorModalComponent,
-        { size: 'fullscreen', closeable: false, data: { imageUrl: editorUrl, fileName: 'logo', initialCropPreset: 'r0' } },
+        { size: 'fullscreen', closeable: false, data: { imageUrl: source.url, fileName: 'logo', initialCropPreset: 'r0', sourceIssue: source.issue, reloadSource: load } },
       );
       blob = await ref.afterClosed();
     } finally {
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
+      if (source.objectUrl) URL.revokeObjectURL(source.objectUrl);
     }
     if (!blob) return;
     try {

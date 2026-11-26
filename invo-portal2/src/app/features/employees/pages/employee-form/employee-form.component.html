@@ -58,11 +58,11 @@
         @if (showsSection('basic')) {
 
         <!-- ── Basic Information ── -->
-        <section class="card form-grid__full" data-tour="emp-basic" [class.tab-hidden]="tabHidden('basic')" data-pane="basic">
-          <header class="card__head">
-            <h2 class="card__title">{{ 'EMPLOYEES.FORM.BASIC_INFORMATION' | translate }}</h2>
+        <section class="form-card form-grid__full" data-tour="emp-basic" [class.tab-hidden]="tabHidden('basic')" data-pane="basic">
+          <header class="form-card__head">
+            <h2 class="form-card__title">{{ 'EMPLOYEES.FORM.BASIC_INFORMATION' | translate }}</h2>
           </header>
-          <div class="card__body">
+          <div class="form-card__body">
             <div class="access-row" data-tour="emp-system-access">
               <div class="access-toggle">
               <app-toggle
@@ -228,11 +228,11 @@
         <!-- Roles and access only exist for employees who sign in. -->
         @if (showsSection('basic') && hasSystemAccess()) {
         <!-- ── Employee Roles ── -->
-        <section class="card" data-tour="emp-roles" [class.tab-hidden]="tabHidden('basic')" data-pane="basic">
-          <header class="card__head">
-            <h2 class="card__title">{{ 'EMPLOYEES.FORM.EMPLOYEE_ROLES' | translate }}</h2>
+        <section class="form-card" data-tour="emp-roles" [class.tab-hidden]="tabHidden('basic')" data-pane="basic">
+          <header class="form-card__head">
+            <h2 class="form-card__title">{{ 'EMPLOYEES.FORM.EMPLOYEE_ROLES' | translate }}</h2>
           </header>
-          <div class="card__body role-cards">
+          <div class="form-card__body role-cards">
             <!-- Cloud Admin -->
             <button type="button" class="role-card" role="checkbox"
               [class.role-card--active]="isAdmin()"
@@ -301,11 +301,11 @@
         </section>
 
         <!-- ── Access & Permissions ── -->
-        <section class="card" data-tour="emp-access" [class.tab-hidden]="tabHidden('basic')" data-pane="basic">
-          <header class="card__head">
-            <h2 class="card__title">{{ 'EMPLOYEES.FORM.ACCESS_PERMISSIONS' | translate }}</h2>
+        <section class="form-card" data-tour="emp-access" [class.tab-hidden]="tabHidden('basic')" data-pane="basic">
+          <header class="form-card__head">
+            <h2 class="form-card__title">{{ 'EMPLOYEES.FORM.ACCESS_PERMISSIONS' | translate }}</h2>
           </header>
-          <div class="card__body">
+          <div class="form-card__body">
             <div class="grid grid--2">
               <div class="field">
                 <label class="field-label">{{ 'EMPLOYEES.FORM.SELECT_PRIVILEGE' | translate }}</label>
@@ -349,11 +349,11 @@
         <!-- ── Personal details (manifest-driven) ──
              Only exists when the EMPLOYEE_HR_FIELDS flag is on. -->
         @if (showsSection('personal') && profileGroup(); as group) {
-          <section class="card" data-tour="emp-hr-profile" [class.tab-hidden]="tabHidden('personal')" data-pane="personal">
-            <header class="card__head">
-              <h2 class="card__title">{{ 'EMPLOYEES.FORM.PERSONAL_DETAILS' | translate }}</h2>
+          <section class="form-card" data-tour="emp-hr-profile" [class.tab-hidden]="tabHidden('personal')" data-pane="personal">
+            <header class="form-card__head">
+              <h2 class="form-card__title">{{ 'EMPLOYEES.FORM.PERSONAL_DETAILS' | translate }}</h2>
             </header>
-            <div class="card__body">
+            <div class="form-card__body">
               <app-field-renderer
                 [descriptors]="profileFields()"
                 [group]="group"
@@ -372,11 +372,11 @@
              column: they're top-level fields and stay authoritative. -->
         @if (showsSection('employment')) {
         @if (employmentGroup(); as group) {
-          <section class="card" data-tour="emp-hr-employment" [class.tab-hidden]="tabHidden('employment')" data-pane="employment">
-            <header class="card__head">
-              <h2 class="card__title">{{ 'EMPLOYEES.FORM.EMPLOYMENT_DETAILS' | translate }}</h2>
+          <section class="form-card" data-tour="emp-hr-employment" [class.tab-hidden]="tabHidden('employment')" data-pane="employment">
+            <header class="form-card__head">
+              <h2 class="form-card__title">{{ 'EMPLOYEES.FORM.EMPLOYMENT_DETAILS' | translate }}</h2>
             </header>
-            <div class="card__body">
+            <div class="form-card__body">
             <!-- Hire and termination live WITH the rest of employment, not in
                  the side column. They are top-level employee fields rather than
                  manifest ones, so they are rendered here explicitly and stay
@@ -415,11 +415,11 @@
                not the HR data owner). The two dates are still the employee's
                own top-level fields, so they get a plain card rather than
                vanishing along with the manifest. -->
-          <section class="card" [class.tab-hidden]="tabHidden('employment')" data-pane="employment">
-            <header class="card__head">
-              <h2 class="card__title">{{ 'EMPLOYEES.FORM.EMPLOYMENT' | translate }}</h2>
+          <section class="form-card" [class.tab-hidden]="tabHidden('employment')" data-pane="employment">
+            <header class="form-card__head">
+              <h2 class="form-card__title">{{ 'EMPLOYEES.FORM.EMPLOYMENT' | translate }}</h2>
             </header>
-            <div class="card__body">
+            <div class="form-card__body">
             <!-- Hire and termination live WITH the rest of employment, not in
                  the side column. They are top-level employee fields rather than
                  manifest ones, so they are rendered here explicitly and stay
@@ -453,11 +453,11 @@
              payment method). It stays here for a NEW employee only, because
              there is no Payroll tab until the record exists. -->
         @if (isCreate() && showsSection('payment') && canEditBank()) {
-        <section class="card" data-tour="emp-payment" [formGroup]="bankForm" [class.tab-hidden]="tabHidden('employment')" data-pane="employment">
-          <header class="card__head">
-            <h2 class="card__title">{{ 'EMPLOYEES.WIZARD.PAYMENT_QUESTION' | translate }}</h2>
+        <section class="form-card" data-tour="emp-payment" [formGroup]="bankForm" [class.tab-hidden]="tabHidden('employment')" data-pane="employment">
+          <header class="form-card__head">
+            <h2 class="form-card__title">{{ 'EMPLOYEES.WIZARD.PAYMENT_QUESTION' | translate }}</h2>
           </header>
-          <div class="card__body">
+          <div class="form-card__body">
             <div class="pay-methods" role="radiogroup"
                  [attr.aria-label]="'EMPLOYEES.WIZARD.PAYMENT_QUESTION' | translate">
               @for (m of ['BankTransfer', 'Cash', 'Cheque']; track m) {
@@ -487,7 +487,7 @@
             }
 
             @if (paysToBank()) {
-              <h3 class="card__subtitle">{{ 'EMPLOYEES.WIZARD.BANK_INFORMATION' | translate }}</h3>
+              <h3 class="form-card__subhead">{{ 'EMPLOYEES.WIZARD.BANK_INFORMATION' | translate }}</h3>
               <div class="grid grid--2">
                 <div class="field">
                   <label class="field-label" for="bank-name">{{ 'EMPLOYEES.WIZARD.BANK_NAME' | translate }}</label>
@@ -517,11 +517,11 @@
 
         @if (showsSection('basic')) {
         <!-- ── Image ── -->
-        <section class="card" data-tour="emp-image" [class.tab-hidden]="tabHidden('basic')" data-pane="basic">
-          <header class="card__head">
-            <h2 class="card__title">{{ 'EMPLOYEES.FORM.IMAGE' | translate }}</h2>
+        <section class="form-card" data-tour="emp-image" [class.tab-hidden]="tabHidden('basic')" data-pane="basic">
+          <header class="form-card__head">
+            <h2 class="form-card__title">{{ 'EMPLOYEES.FORM.IMAGE' | translate }}</h2>
           </header>
-          <div class="card__body">
+          <div class="form-card__body">
             <div class="avatar">
               @if (avatarPreview()) {
                 <div class="avatar__preview">
@@ -551,11 +551,11 @@
         </section>
 
         <!-- ── Branch Assignment ── -->
-        <section class="card" data-tour="emp-branches" [class.tab-hidden]="tabHidden('basic')" data-pane="basic">
-          <header class="card__head">
-            <h2 class="card__title">{{ 'EMPLOYEES.FORM.BRANCH_ASSIGNMENT' | translate }}</h2>
+        <section class="form-card" data-tour="emp-branches" [class.tab-hidden]="tabHidden('basic')" data-pane="basic">
+          <header class="form-card__head">
+            <h2 class="form-card__title">{{ 'EMPLOYEES.FORM.BRANCH_ASSIGNMENT' | translate }}</h2>
           </header>
-          <div class="card__body">
+          <div class="form-card__body">
             <p class="branch-hint">{{ 'EMPLOYEES.FORM.PRIMARY_HINT' | translate }}</p>
 
             @if (selectedBranches().length) {

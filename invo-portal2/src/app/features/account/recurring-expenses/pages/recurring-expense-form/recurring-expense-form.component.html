@@ -2,7 +2,7 @@
   @let d = exp;
   <app-doc-form-shell
     [title]="'RECURRING_EXPENSES.FORM.RECURRING_EXPENSE' | translate" [breadcrumbs]="breadcrumbs"
-    [canDraft]="false" [submitting]="submitting" [saveDisabled]="missing.length > 0" [showView]="formStatus === 'edit'"
+    [canDraft]="false" [submitting]="submitting" [saveDisabled]="missing.length > 0" [saveDisabledReason]="missing.join(' · ')" [showView]="formStatus === 'edit'"
     [saveLabel]="saveLabelKey | translate" [actionsMenu]="actionsMenu()"
     [total]="d.total" [totalQty]="liveLines.length"
     (save)="savePrimary()" (cancel)="cancel()" (view)="view()">
@@ -12,7 +12,7 @@
     <app-doc-supplier-section [supplier]="supplierValue" [required]="false" (supplierChange)="onSupplier($event)" (createNew)="createSupplier()"/>
 
     <section class="df-card">
-      <h2 class="df-card__title"><span class="df-ico df-ico--blue" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg></span>{{ 'EXPENSES.FORM.CUSTOMER_INFORMATION' | translate }}</h2>
+      <h2 class="df-card__title"><span class="df-ico df-ico--blue" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg></span><span class="df-card__text">{{ 'EXPENSES.FORM.CUSTOMER_INFORMATION' | translate }}</span></h2>
       <div class="df-field df-field--wide">
         <label>{{ 'EXPENSES.FORM.BILLABLE_CUSTOMER' | translate }}</label>
         <app-customer-picker [value]="customerValue" [allowCreate]="true" [allowAdvanced]="true" [placeholder]="'DOC_FORM.SELECT_CUSTOMER' | translate"
@@ -21,7 +21,7 @@
     </section>
 
     <section class="df-card">
-      <h2 class="df-card__title"><span class="df-ico df-ico--green" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg></span>{{ 'RECURRING_EXPENSES.FORM.EXPENSE_DETAILS' | translate }}</h2>
+      <h2 class="df-card__title"><span class="df-ico df-ico--green" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg></span><span class="df-card__text">{{ 'RECURRING_EXPENSES.FORM.EXPENSE_DETAILS' | translate }}</span></h2>
 
       <div class="df-row">
         <div class="df-field df-field--grow">
