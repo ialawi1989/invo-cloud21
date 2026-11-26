@@ -83,7 +83,7 @@ export const EMPLOYEES_ROUTES: Routes = [
     path: 'privileges/:id',
     canActivate: [translationsLoaded, privilegeGuard],
     canDeactivate: [unsavedChangesGuard],
-    data: { permissionPath: 'privilegeSecurity.actions.add.access' },
+    data: { pageWidth: 'form', permissionPath: 'privilegeSecurity.actions.add.access' },
     loadComponent: () =>
       import('./pages/privilege-form/privilege-form.component').then(m => m.PrivilegeFormComponent),
   },
@@ -98,7 +98,7 @@ export const EMPLOYEES_ROUTES: Routes = [
     path: 'attendance/:id',
     canActivate: [translationsLoaded, privilegeGuard],
     canDeactivate: [unsavedChangesGuard],
-    data: { permissionPath: 'employeeAttendenceSecurity.actions.view' },
+    data: { pageWidth: 'form', permissionPath: 'employeeAttendenceSecurity.actions.view' },
     loadComponent: () =>
       import('./pages/attendance-form/attendance-form.component').then(m => m.AttendanceFormComponent),
   },
@@ -116,7 +116,7 @@ export const EMPLOYEES_ROUTES: Routes = [
     // holidays for every branch.
     path: 'holiday-calendars',
     canActivate: [translationsLoaded, privilegeGuard],
-    data: { permissionPath: 'employeeLeaveSecurity.actions.view' },
+    data: { pageWidth: 'form', permissionPath: 'employeeLeaveSecurity.actions.view' },
     loadComponent: () =>
       import('./pages/holiday-calendars/holiday-calendars.component')
         .then(m => m.HolidayCalendarsComponent),
@@ -143,7 +143,7 @@ export const EMPLOYEES_ROUTES: Routes = [
   {
     path: 'payouts/view/:id',
     canActivate: [translationsLoaded, employeeEarningsGuard, privilegeGuard],
-    data: { earningsFeature: ['commission', 'tips'], permissionPath: 'employeePayoutSecurity.actions.view' },
+    data: { pageWidth: 'form', earningsFeature: ['commission', 'tips'], permissionPath: 'employeePayoutSecurity.actions.view' },
     loadComponent: () =>
       import('./pages/employee-payout-view/employee-payout-view.component').then(m => m.EmployeePayoutViewComponent),
   },
@@ -151,21 +151,21 @@ export const EMPLOYEES_ROUTES: Routes = [
     path: 'payouts/:id',
     canActivate: [translationsLoaded, employeeEarningsGuard, privilegeGuard],
     canDeactivate: [unsavedChangesGuard],
-    data: { earningsFeature: ['commission', 'tips'], permissionPath: 'employeePayoutSecurity.actions.add' },
+    data: { pageWidth: 'form', earningsFeature: ['commission', 'tips'], permissionPath: 'employeePayoutSecurity.actions.add' },
     loadComponent: () =>
       import('./pages/employee-payout-form/employee-payout-form.component').then(m => m.EmployeePayoutFormComponent),
   },
   {
     path: 'tips',
     canActivate: [translationsLoaded, employeeEarningsGuard, privilegeGuard],
-    data: { earningsFeature: 'tips', permissionPath: 'tipsSecurity.actions.view' },
+    data: { pageWidth: 'form', earningsFeature: 'tips', permissionPath: 'tipsSecurity.actions.view' },
     loadComponent: () =>
       import('./pages/employee-tips/employee-tips.component').then(m => m.EmployeeTipsComponent),
   },
   {
     path: 'leave-types',
     canActivate: [translationsLoaded, hrPrivilegeGuard],
-    data: { hrGroup: 'employeeLeaveSecurity', hrAction: 'edit' },
+    data: { pageWidth: 'form', hrGroup: 'employeeLeaveSecurity', hrAction: 'edit' },
     loadComponent: () =>
       import('./pages/leave-types/leave-types.component').then(m => m.LeaveTypesComponent),
   },
@@ -191,11 +191,11 @@ export const EMPLOYEES_ROUTES: Routes = [
     // action rather than an employees privilege.
     path: 'service-team',
     canActivate: [serviceTeamTranslationsLoaded, privilegeGuard],
-    data: { permissionPath: 'salonSecurity.actions.serviceTeam.access' },
+    data: { pageWidth: 'form', permissionPath: 'salonSecurity.actions.serviceTeam.access' },
     loadComponent: () =>
       import('./pages/service-team/service-team.component').then(m => m.ServiceTeamComponent),
   },
-  {
+  { data: { pageWidth: 'form' },
     path: 'my-account',
     canActivate: [translationsLoaded],
     canDeactivate: [unsavedChangesGuard],
@@ -206,7 +206,7 @@ export const EMPLOYEES_ROUTES: Routes = [
     path: 'invitation/:id',
     canActivate: [translationsLoaded, privilegeGuard],
     canDeactivate: [unsavedChangesGuard],
-    data: { permissionPath: 'employeeInvitationSecurity.actions.add.access' },
+    data: { pageWidth: 'form', permissionPath: 'employeeInvitationSecurity.actions.add.access' },
     loadComponent: () =>
       import('./pages/employee-invitation/employee-invitation.component').then(m => m.EmployeeInvitationComponent),
   },
@@ -218,7 +218,7 @@ export const EMPLOYEES_ROUTES: Routes = [
      */
     path: 'view/:id',
     canActivate: [translationsLoaded, privilegeGuard],
-    data: { permissionPath: 'employeeSecurity.actions.view' },
+    data: { pageWidth: 'bleed', permissionPath: 'employeeSecurity.actions.view' },
     loadComponent: () =>
       import('./pages/employee-view/employee-view.component').then(m => m.EmployeeViewComponent),
   },
@@ -232,7 +232,7 @@ export const EMPLOYEES_ROUTES: Routes = [
     path: 'new',
     canActivate: [translationsLoaded, privilegeGuard],
     canDeactivate: [unsavedChangesGuard],
-    data: { permissionPath: 'employeeSecurity.actions.add.access' },
+    data: { pageWidth: 'form', permissionPath: 'employeeSecurity.actions.add.access' },
     loadComponent: () =>
       import('./pages/employee-form/employee-form.component').then(m => m.EmployeeFormComponent),
   },
@@ -255,7 +255,7 @@ export const EMPLOYEES_ROUTES: Routes = [
      */
     path: ':id',
     canActivate: [translationsLoaded, privilegeGuard],
-    data: { permissionPath: 'employeeSecurity.actions.add.access' },
+    data: { pageWidth: 'form', permissionPath: 'employeeSecurity.actions.add.access' },
     loadComponent: () =>
       import('./pages/employee-record/employee-record.component').then(m => m.EmployeeRecordComponent),
     children: [
@@ -266,7 +266,7 @@ export const EMPLOYEES_ROUTES: Routes = [
         pathMatch: 'full',
         redirectTo: 'edit',
       },
-      {
+      { data: { pageWidth: 'form' },
         // The form, reached from an overview pencil. `?section=` narrows it to
         // one card; without it the whole form renders, which is what a direct
         // link or a bookmark to `/employees/:id/edit` still gets.

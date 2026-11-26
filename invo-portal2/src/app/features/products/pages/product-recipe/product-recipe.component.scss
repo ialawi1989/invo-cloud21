@@ -1,9 +1,4 @@
-.pr-page {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 16px 24px 96px;
-  position: relative;
-}
+.pr-page { position: relative; }
 
 .page-header {
   margin-bottom: 16px;
@@ -11,8 +6,6 @@
   &__titles { min-width: 0; }
   &__actions { flex-shrink: 0; display: flex; align-items: center; gap: 8px; }
 }
-.page-title { margin: 8px 0 2px; font-size: 22px; font-weight: 700; color: var(--ui-text); letter-spacing: -0.01em; }
-.page-sub { margin: 0; font-size: 13px; color: var(--ui-muted); }
 
 .loading { display: flex; align-items: center; justify-content: center; padding: 60px 0; }
 .spinner {

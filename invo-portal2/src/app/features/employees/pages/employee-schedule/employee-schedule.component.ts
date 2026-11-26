@@ -1,3 +1,4 @@
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -14,7 +15,6 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { withTranslations } from '@core/i18n/with-translations';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
@@ -108,10 +108,9 @@ const SORT_OPTIONS: SortOption[] = [
 @Component({
   selector: 'app-employee-schedule',
   standalone: true,
-  imports: [TooltipDirective, 
+  imports: [PageHeaderComponent, TooltipDirective, 
     CommonModule,
     TranslateModule,
-    BreadcrumbsComponent,
     LoadingOverlayComponent,
     SearchDropdownComponent,
     DropdownMenuBtnComponent,

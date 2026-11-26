@@ -38,14 +38,14 @@ export const BILLS_PAYMENT_ROUTES: Routes = [
   {
     path: 'view/:id',
     canActivate: [translationsLoaded, privilegeGuard],
-    data: { permissionPath: 'billingPaymentsSecurity.actions.view.access' },
+    data: { pageWidth: 'bleed', permissionPath: 'billingPaymentsSecurity.actions.view.access' },
     loadComponent: () => import('./pages/bill-payment-view/bill-payment-view.component').then(m => m.BillPaymentViewComponent),
   },
   {
     path: ':id',
     canActivate: [translationsLoaded, privilegeGuard, billPaymentEditableGuard],
     canDeactivate: [unsavedChangesGuard],
-    data: { permissionPath: 'billingPaymentsSecurity.actions.add.access' },
+    data: { pageWidth: 'form', permissionPath: 'billingPaymentsSecurity.actions.add.access' },
     loadComponent: () => import('./pages/bill-payment-form/bill-payment-form.component').then(m => m.BillPaymentFormComponent),
   },
 ];

@@ -1,35 +1,13 @@
 // The main layout already pads the content; padding here too pushed the toolbar button past the
 // list card's edge and left the card inset from the title.
-.txn-page {
-  padding: 0 0 40px;
-}
 
 // The list card is inset by the list page's side padding (24px, 12px in compact density). Give the
 // header block the same inset so the breadcrumb, title, filters and Reconcile button line up with the card edges.
 // Same top gap and extra 4px inline inset as the list page's own header (`.lp-head`), so this page's
 // breadcrumb and title sit exactly where they do on the other list pages (e.g. VAT Payments).
-.txn-head {
-  --txn-px: 24px;
-  --txn-pt: 14px;
-  padding: var(--txn-pt) calc(var(--txn-px) + 4px) 0;
-}
 :host-context([data-density="compact"]) .txn-head { --txn-px: 12px; --txn-pt: 10px; }
 
-.txn-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin: 4px 0 12px;
-}
 
-.txn-title {
-  margin: 0;
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--ui-text);
-  letter-spacing: -0.01em;
-}
 
 .txn-toolbar {
   display: flex;

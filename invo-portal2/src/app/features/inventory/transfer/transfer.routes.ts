@@ -30,7 +30,7 @@ export const TRANSFER_ROUTES: Routes = [
     path: 'view/:id',
     canActivate: [translationsLoaded, privilegeGuard],
     loadComponent: () => import('./pages/transfer-view/transfer-view.component').then(m => m.TransferViewComponent),
-    data: { permissionPath: 'inventoryTransferSecurity.actions.view.access' },
+    data: { pageWidth: 'bleed', permissionPath: 'inventoryTransferSecurity.actions.view.access' },
   },
   {
     path: 'new/:direction',

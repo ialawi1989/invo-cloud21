@@ -1,9 +1,11 @@
 @if (invoice && payment.lines.length) {
   <div class="ipp">
-    <header class="page-header">
-      <app-breadcrumbs [items]="breadcrumbs" separator="chevron"/>
-      <h1 class="page-header__title">{{ 'INVOICES.PAYMENT.PAYMENT_FOR' | translate }} {{ line.invoiceNumber }}</h1>
-    </header>
+    <app-page-header [title]="('INVOICES.PAYMENT.PAYMENT_FOR' | translate) + ' ' + line.invoiceNumber" [trail]="breadcrumbs">
+<app-form-actions pageActions>
+      <button formActionSecondary type="button" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+      <button formActionPrimary type="button" [disabled]="!canSave" (click)="save()">{{ 'COMMON.SAVE' | translate }}</button>
+</app-form-actions>
+</app-page-header>
 
     <section class="ipp-card">
       <h2>{{ 'INVOICES.PAYMENT.PAYMENT' | translate }}</h2>
@@ -74,9 +76,6 @@
 
     <app-doc-attachments-card [attachments]="payment.attachment" (changed)="onAttachments($event)"/>
 
-    <app-form-sticky-footer>
-      <button type="button" class="ipp-btn" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
-      <button type="button" class="ipp-btn ipp-btn--primary" [disabled]="!canSave" (click)="save()">{{ 'COMMON.SAVE' | translate }}</button>
-    </app-form-sticky-footer>
+    
   </div>
 }

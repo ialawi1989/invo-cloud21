@@ -1,4 +1,4 @@
-.st { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+.st { display: flex; flex-direction: column; gap: 16px; }
 .page-header { display: flex; flex-direction: column; gap: 8px; padding-bottom: 16px; border-bottom: 1px solid var(--ui-line);
   &__row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
   &__title { margin: 0; font-size: 24px; font-weight: 700; color: var(--ui-text); }
@@ -50,4 +50,4 @@
 .st-empty { align-items: center; padding: 40px; color: var(--ui-muted); p { margin: 0; } }
 .st-empty-note { margin: 24px 0; text-align: center; color: var(--ui-faint); font-size: 13px; }
 
-@media (max-width: 576px) { .st { padding-inline: 0 !important; } }
+

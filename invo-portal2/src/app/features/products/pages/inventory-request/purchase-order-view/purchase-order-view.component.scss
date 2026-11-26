@@ -1,4 +1,4 @@
-.pov { max-width: 1400px; margin: 0 auto; padding: 16px 24px 48px; position: relative; }
+.pov { position: relative; }
 .pov__header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
 .pov__title { margin: 8px 0 4px; font-size: 22px; font-weight: 700; color: var(--ui-text); letter-spacing: -0.01em; }
 .pov__actions { display: flex; gap: 8px; flex-wrap: wrap; }

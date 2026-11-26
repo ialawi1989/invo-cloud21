@@ -1,3 +1,5 @@
+import { FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective } from '@shared/components/form-actions/form-actions.component';
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -21,7 +23,6 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { withTranslations } from '@core/i18n/with-translations';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
 import { CompanyService } from '@core/auth/company.service';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { ModalService } from '@shared/modal/modal.service';
@@ -51,7 +52,6 @@ import {
   TranslationLang,
 } from '@shared/components/translation-modal/translation-modal.component';
 import { EntityCustomFieldsComponent } from '../../components/entity-custom-fields/entity-custom-fields.component';
-import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 import { ToastService } from '@shared/components/toast/toast.service';
 import { LocationMapComponent } from '../../components/location-map/location-map.component';
 import { SegmentedToggleComponent, SegmentedToggleOption } from '@shared/components/segmented-toggle/segmented-toggle.component';
@@ -74,16 +74,14 @@ type BranchTab = 'general' | 'operations' | 'location' | 'hours' | 'delivery';
 @Component({
   selector: 'app-branch-form',
   standalone: true,
-  imports: [FormSkeletonComponent, 
+  imports: [FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, PageHeaderComponent, FormSkeletonComponent, 
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
     TranslateModule,
-    BreadcrumbsComponent,
     LoadingOverlayComponent,
     TimePickerComponent,
     EntityCustomFieldsComponent,
-    FormStickyFooterComponent,
     ToggleComponent,
     SegmentedToggleComponent,
     LocationMapComponent,

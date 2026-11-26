@@ -1,3 +1,5 @@
+import { FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective } from '@shared/components/form-actions/form-actions.component';
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { DragIconComponent } from '@shared/components/drag-icon/drag-icon.component';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -9,10 +11,8 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { withTranslations } from '@core/i18n/with-translations';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
-import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { ToastService } from '@shared/components/toast/toast.service';
@@ -36,9 +36,9 @@ interface TaxOption { id: string; name: string; taxPercentage: number; }
 @Component({
   selector: 'app-tax-form',
   standalone: true,
-  imports: [DragIconComponent, 
+  imports: [FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, PageHeaderComponent, DragIconComponent, 
     CommonModule, RouterModule, FormsModule, ReactiveFormsModule, TranslateModule, CdkDropList, CdkDrag, CdkDragHandle,
-    BreadcrumbsComponent, LoadingOverlayComponent, FormStickyFooterComponent, FormSkeletonComponent, SearchDropdownComponent, ToggleComponent,
+    LoadingOverlayComponent, FormSkeletonComponent, SearchDropdownComponent, ToggleComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './tax-form.component.html',

@@ -1,3 +1,5 @@
+import { FormActionsComponent, FormActionPrimaryDirective } from '@shared/components/form-actions/form-actions.component';
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -20,11 +22,9 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { withTranslations } from '@core/i18n/with-translations';
 import { LanguageService } from '@core/i18n/language.service';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
-import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 import { ToggleComponent } from '@shared/components/toggle/toggle.component';
 import { ToastService } from '@shared/components/toast/toast.service';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
@@ -54,15 +54,13 @@ import { TooltipDirective } from '@shared/directives/tooltip.directive';
 @Component({
   selector: 'app-blog-settings',
   standalone: true,
-  imports: [TooltipDirective, FormSkeletonComponent, 
+  imports: [FormActionsComponent, FormActionPrimaryDirective, PageHeaderComponent, TooltipDirective, FormSkeletonComponent, 
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
     TranslateModule,
-    BreadcrumbsComponent,
     LoadingOverlayComponent,
     SearchDropdownComponent,
-    FormStickyFooterComponent,
     ToggleComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,

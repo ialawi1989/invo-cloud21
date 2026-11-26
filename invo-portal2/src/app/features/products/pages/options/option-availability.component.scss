@@ -6,11 +6,8 @@
 // [bottomReserve] adds exactly the footer's height on top, so that same 16px gap
 // lands above the footer instead of the viewport edge and the page matches the
 // Options list. padding-bottom keeps page content clear of the fixed bar.
-.oa-page {
-  padding-bottom: 80px;
-  // Lift the list's floating selection bar above the sticky save footer.
-  --lp-selbar-offset: 68px;
-}
+.oa-page { // Lift the list's floating selection bar above the sticky save footer.
+  --lp-selbar-offset: 68px; }
 
 .oa-loading { display: flex; align-items: center; justify-content: center; padding: 60px 0; }
 .oa-spinner {

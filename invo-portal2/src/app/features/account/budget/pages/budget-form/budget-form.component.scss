@@ -1,5 +1,5 @@
 // Same identity as the other account forms.
-.bf { padding: 24px; padding-bottom: 96px; display: flex; flex-direction: column; gap: 14px; }
+.bf { display: flex; flex-direction: column; gap: 14px; }
 .page-header { display: flex; flex-direction: column; gap: 8px; margin-bottom: 6px; padding-bottom: 16px; border-bottom: 1px solid var(--ui-line);
   &__title { margin: 0; font-size: 24px; font-weight: 700; color: var(--ui-text); } }
 
@@ -22,8 +22,8 @@
   &:hover:not(:disabled) { background: var(--ui-surface-1); } &:disabled { opacity: .5; cursor: not-allowed; }
   &--primary { border-color: #2691a4; background: #2691a4; color: #fff; &:hover:not(:disabled) { background: #227d8d; } } }
 
-@media (max-width: 576px) { .bf { padding-inline: 0 !important; } }
+
 
 // The footer content spans exactly the page content: same start edge, same end edge (shell 24 + page 24 each side).
-:host ::ng-deep .ffs__inner { width: calc(100% - 96px) !important; max-width: none !important; margin: 0 0 0 48px !important; padding: 12px 0 !important; }
+:host ::ng-deep .ffs__inner { width: calc(100% - 48px) !important; max-width: none !important; margin: 0 0 0 24px !important; padding: 12px 0 !important; }
 @media (max-width: 576px) { :host ::ng-deep .ffs__inner { width: calc(100% - 32px) !important; margin-inline-start: 16px !important; } }

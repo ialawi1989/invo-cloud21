@@ -1,3 +1,4 @@
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -26,12 +27,11 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { withTranslations } from '@core/i18n/with-translations';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { SegmentedToggleComponent, SegmentedToggleOption } from '@shared/components/segmented-toggle/segmented-toggle.component';
 import { FormErrorSummaryComponent } from '@shared/components/form-error-summary/form-error-summary.component';
-import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
+import { FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, FormActionExtraDirective } from '@shared/components/form-actions/form-actions.component';
 import { ToggleComponent } from '@shared/components/toggle/toggle.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { DropdownLoadFn } from '@shared/components/dropdown/search-dropdown.types';
@@ -126,14 +126,16 @@ const NO_SLOTS: Record<string, DocSlot> = {};
 @Component({
   selector: 'app-employee-form',
   standalone: true,
-  imports: [EmployeeDocumentsComponent, TooltipDirective, FormSkeletonComponent, 
+  imports: [PageHeaderComponent, EmployeeDocumentsComponent, TooltipDirective, FormSkeletonComponent, 
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
     TranslateModule,
-    BreadcrumbsComponent,
     LoadingOverlayComponent,
-    FormStickyFooterComponent,
+    FormActionsComponent,
+    FormActionPrimaryDirective,
+    FormActionSecondaryDirective,
+    FormActionExtraDirective,
     FormErrorSummaryComponent,
     SegmentedToggleComponent,
     ToggleComponent,
@@ -486,6 +488,9 @@ export class EmployeeFormComponent implements OnInit, OnDestroy, CanLeaveCompone
   }
 
   /** Invalid leaf controls across the whole form, including hidden tabs. */
+  /** Set once a save fails validation; shows the error banner under the header. */
+  readonly saveAttempted = signal(false);
+
   readonly errorCount = computed<number>(() => {
     this.formStatusTick();
     const count = (c: AbstractControl): number => {
@@ -1417,6 +1422,7 @@ export class EmployeeFormComponent implements OnInit, OnDestroy, CanLeaveCompone
     // before deciding, otherwise a fast save would slip past them.
     if (this.form.pending) await this.whenSettled();
     if (this.form.invalid) {
+      this.saveAttempted.set(true);
       this.revealInvalidSections();
       return false;
     }

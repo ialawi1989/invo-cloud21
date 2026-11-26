@@ -1,8 +1,16 @@
 <div class="pf-page">
-  <header class="page-header">
-    <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-    <h1 class="page-header__title">{{ 'PROMOTIONS.PROMOTIONS_POINTS.GIVE_PROMOTIONS_POINTS' | translate }}</h1>
-  </header>
+  <app-page-header [title]="'PROMOTIONS.PROMOTIONS_POINTS.GIVE_PROMOTIONS_POINTS' | translate" [trail]="breadcrumbs()">
+@if (point(); as p) {
+@if (settings()?.enabled) {
+<app-form-actions pageActions>
+        <button formActionSecondary type="button" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+        <button formActionPrimary type="button" [disabled]="!formValid() || saving()" (click)="save()">
+          {{ 'COMMON.SAVE' | translate }}
+        </button>
+</app-form-actions>
+}
+}
+</app-page-header>
 
   @if (!loading() && settings() && !settings()!.enabled) {
     <div class="pf-disabled">{{ 'PROMOTIONS.PROMOTIONS_POINTS.SORRY_THE_POINTS_SETTING_IS_DISABLED' | translate }}</div>
@@ -75,12 +83,7 @@
         </div>
       </section>
 
-      <app-form-sticky-footer>
-        <button type="button" class="pf-btn" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
-        <button type="button" class="pf-btn pf-btn--primary" [disabled]="!formValid() || saving()" (click)="save()">
-          {{ 'COMMON.SAVE' | translate }}
-        </button>
-      </app-form-sticky-footer>
+      
     }
   }
 </div>

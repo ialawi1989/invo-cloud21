@@ -1,3 +1,5 @@
+import { FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective } from '@shared/components/form-actions/form-actions.component';
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -6,7 +8,6 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import { LanguageService } from '@core/i18n/language.service';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { ToastService } from '@shared/components/toast/toast.service';
@@ -24,7 +25,7 @@ interface TypeChoice { id: QuestionType; name: string; }
 @Component({
   selector: 'app-questionnaire-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, BreadcrumbsComponent, SearchDropdownComponent],
+  imports: [FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, PageHeaderComponent, CommonModule, FormsModule, TranslateModule, SearchDropdownComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './questionnaire-form.component.html',
   styleUrl: './questionnaire-form.component.scss',

@@ -53,7 +53,7 @@ export const PRODUCTS_ROUTES: Routes = [
       import('./pages/product-form/product-form.component').then(m => m.ProductFormComponent),
     // `add` is the Add/Edit privilege in this model — there is no separate
     // edit action (see privileges/definitions/productSecurity.ts).
-    data: { permissionPath: 'productSecurity.actions.add.access' },
+    data: { pageWidth: 'form', permissionPath: 'productSecurity.actions.add.access' },
   },
   {
     // Per-employee price + duration for each service (the employee-centric
@@ -62,7 +62,7 @@ export const PRODUCTS_ROUTES: Routes = [
     canActivate: [translationsLoaded, privilegeGuard],
     loadComponent: () =>
       import('./pages/employee-services/employee-services.component').then(m => m.EmployeeServicesComponent),
-    data: { permissionPath: 'productSecurity.actions.view.access' },
+    data: { pageWidth: 'form', permissionPath: 'productSecurity.actions.view.access' },
   },
   {
     path: 'bulk-print',
@@ -135,7 +135,7 @@ export const PRODUCTS_ROUTES: Routes = [
     canDeactivate: [unsavedChangesGuard],
     loadComponent: () =>
       import('./pages/departments/department-form.component').then(m => m.DepartmentFormComponent),
-    data: { permissionPath: 'departmentSecurity.actions.add.access' },
+    data: { pageWidth: 'form', permissionPath: 'departmentSecurity.actions.add.access' },
   },
 
   // ── Classifications: Categories ───────────────────────────────────────────
@@ -152,7 +152,7 @@ export const PRODUCTS_ROUTES: Routes = [
     canDeactivate: [unsavedChangesGuard],
     loadComponent: () =>
       import('./pages/categories/category-form.component').then(m => m.CategoryFormComponent),
-    data: { permissionPath: 'categorySecurity.actions.add.access' },
+    data: { pageWidth: 'form', permissionPath: 'categorySecurity.actions.add.access' },
   },
 
   // ── Classifications: Brands ───────────────────────────────────────────────
@@ -169,7 +169,7 @@ export const PRODUCTS_ROUTES: Routes = [
     canDeactivate: [unsavedChangesGuard],
     loadComponent: () =>
       import('./pages/brands/brand-form.component').then(m => m.BrandFormComponent),
-    data: { permissionPath: 'brandSecurity.actions.add.access' },
+    data: { pageWidth: 'form', permissionPath: 'brandSecurity.actions.add.access' },
   },
 
   // ── Options & Recipes: Recipes ────────────────────────────────────────────
@@ -186,7 +186,7 @@ export const PRODUCTS_ROUTES: Routes = [
     canDeactivate: [unsavedChangesGuard],
     loadComponent: () =>
       import('./pages/recipes/recipe-form.component').then(m => m.RecipeFormComponent),
-    data: { permissionPath: 'recipeSecurity.actions.add.access' },
+    data: { pageWidth: 'form', permissionPath: 'recipeSecurity.actions.add.access' },
   },
 
   // ── Options & Recipes: Options ────────────────────────────────────────────
@@ -211,7 +211,7 @@ export const PRODUCTS_ROUTES: Routes = [
     canDeactivate: [unsavedChangesGuard],
     loadComponent: () =>
       import('./pages/options/option-form.component').then(m => m.OptionFormComponent),
-    data: { permissionPath: 'optionSecurity.actions.add.access' },
+    data: { pageWidth: 'form', permissionPath: 'optionSecurity.actions.add.access' },
   },
 
   // ── Options & Recipes: Option Groups ──────────────────────────────────────
@@ -228,7 +228,7 @@ export const PRODUCTS_ROUTES: Routes = [
     canDeactivate: [unsavedChangesGuard],
     loadComponent: () =>
       import('./pages/option-groups/option-group-form.component').then(m => m.OptionGroupFormComponent),
-    data: { permissionPath: 'optionGroupSecurity.actions.add.access' },
+    data: { pageWidth: 'form', permissionPath: 'optionGroupSecurity.actions.add.access' },
   },
 
   // ── Options & Recipes: Product Recipe (quick menu-item recipe editor) ──────
@@ -237,6 +237,6 @@ export const PRODUCTS_ROUTES: Routes = [
     canActivate: [translationsLoaded, privilegeGuard],
     loadComponent: () =>
       import('./pages/product-recipe/product-recipe.component').then(m => m.ProductRecipeComponent),
-    data: { permissionPath: 'recipeSecurity.actions.view' },
+    data: { pageWidth: 'form', permissionPath: 'recipeSecurity.actions.view' },
   },
 ];

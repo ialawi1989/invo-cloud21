@@ -47,7 +47,7 @@ export const REPORTS_ROUTES: Routes = [
     loadComponent: () =>
       import('./business-overview/pages/bo-report-host/bo-report-host.component').then(m => m.BoReportHostComponent),
     // The per-report privilege is checked inside the host (it depends on the slug).
-    data: { permissionPath: 'reportsSecurity.actions.view.access' },
+    data: { pageWidth: 'bleed', permissionPath: 'reportsSecurity.actions.view.access' },
   },
   {
     path: 'view/:slug',
@@ -56,7 +56,7 @@ export const REPORTS_ROUTES: Routes = [
       import('./pages/report-view/report-view.component').then(m => m.ReportViewComponent),
     // Per-report privileges are enforced in the catalog (which reports are
     // shown/openable); the shell itself only needs list-view access.
-    data: { permissionPath: 'reportsSecurity.actions.view.access' },
+    data: { pageWidth: 'bleed', permissionPath: 'reportsSecurity.actions.view.access' },
   },
   {
     // The saved custom reports list (the legacy "Custom Report" tab): select,

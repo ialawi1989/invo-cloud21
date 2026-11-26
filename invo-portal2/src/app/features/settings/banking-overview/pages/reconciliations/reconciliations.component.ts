@@ -1,3 +1,4 @@
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -32,7 +33,6 @@ import { ModalService } from '@shared/modal/modal.service';
 import { ToastService } from '@shared/components/toast/toast.service';
 import { ConfirmModalComponent, ConfirmModalData } from '@shared/modal/demo/confirm-modal.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 
 import { BankingOverviewService } from '../../services/banking-overview.service';
 import { ReconciliationListRow } from '../../services/banking-overview.types';
@@ -51,7 +51,7 @@ type StatusFilter = '' | 'in-progress' | 'reconciled';
 @Component({
   selector: 'app-banking-reconciliations',
   standalone: true,
-  imports: [TooltipDirective, 
+  imports: [PageHeaderComponent, TooltipDirective, 
     CommonModule,
     FormsModule,
     RouterModule,
@@ -61,7 +61,6 @@ type StatusFilter = '' | 'in-progress' | 'reconciled';
     ListCellTemplateDirective,
     ListRowActionsDirective,
     DropdownMenuBtnComponent,
-    BreadcrumbsComponent,
     AccountHeaderComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,

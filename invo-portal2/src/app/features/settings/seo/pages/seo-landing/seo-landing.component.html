@@ -1,9 +1,5 @@
 <div class="seo-landing">
-  <header class="page-header">
-    <app-breadcrumbs [items]="breadcrumbs" separator="chevron"/>
-    <h1 class="page-title">{{ 'SEO.TITLE' | translate }}</h1>
-    <p class="page-sub">{{ 'SEO.SUBTITLE' | translate }}</p>
-  </header>
+  <app-page-header [title]="'SEO.TITLE' | translate" [description]="'SEO.SUBTITLE' | translate" [trail]="breadcrumbs"/>
 
   <!-- Original-language notice — informational only -->
   <section class="notice">

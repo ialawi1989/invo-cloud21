@@ -1,8 +1,15 @@
 <div class="srq-page">
-  <header class="page-header">
-    <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-    <h1 class="page-title">{{ (isNew() ? 'SERVICE_REQUEST.FORM_NEW' : 'SERVICE_REQUEST.FORM_EDIT') | translate }}</h1>
-  </header>
+  <app-page-header [title]="(isNew() ? 'SERVICE_REQUEST.FORM_NEW' : 'SERVICE_REQUEST.FORM_EDIT') | translate" [trail]="breadcrumbs()">
+@if (!notFound()) {
+<app-form-actions pageActions>
+      <button formActionSecondary type="button" (click)="cancel()" [disabled]="saving()">{{ 'COMMON.CANCEL' | translate }}</button>
+      <button formActionPrimary type="button" (click)="save()" [disabled]="saving()">
+        @if (saving()) { <span class="spinner" aria-hidden="true"></span> }
+        {{ saving() ? ('COMMON.SAVING' | translate) : ('COMMON.SAVE' | translate) }}
+      </button>
+</app-form-actions>
+}
+</app-page-header>
 
   @if (notFound()) {
     <app-empty-state icon="error" tone="error" [title]="'SERVICE_REQUEST.NOT_FOUND' | translate">
@@ -29,13 +36,7 @@
       </div>
     </section>
 
-    <footer class="save-bar">
-      <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">{{ 'COMMON.CANCEL' | translate }}</button>
-      <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving()">
-        @if (saving()) { <span class="spinner" aria-hidden="true"></span> }
-        {{ saving() ? ('COMMON.SAVING' | translate) : ('COMMON.SAVE' | translate) }}
-      </button>
-    </footer>
+    
   }
 
   <app-loading-overlay [show]="loading()"/>

@@ -394,6 +394,16 @@ export class MediaService {
     }
   }
 
+  /**
+   * Photo Editor "Replace": re-point everything that used `mediaId` at `newMediaId` (`POST media/replaceMedia`), then either delete the
+   * original or leave it in the library as the old version. Throws on failure so the caller can say the new image was saved but not applied.
+   */
+  async replaceMedia(mediaId: string, newMediaId: string, deleteOriginal: boolean): Promise<{ relinked: number; deleted: boolean }> {
+    const res = await firstValueFrom(this.http.post<any>(`${this.baseUrl}media/replaceMedia`, { mediaId, newMediaId, deleteOriginal }));
+    if (res?.success === false) throw new Error(res.msg || res.message || 'Could not replace the image');
+    return res?.data ?? { relinked: 0, deleted: deleteOriginal };
+  }
+
   // ── Download ──────────────────────────────────────────────────────────────
 
   downloadImage(url: string, filename: string): void {

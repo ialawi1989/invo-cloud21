@@ -1,12 +1,12 @@
+import { FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective } from '@shared/components/form-actions/form-actions.component';
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
-import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { ToggleComponent } from '@shared/components/toggle/toggle.component';
@@ -32,17 +32,23 @@ interface Option { id: string; name: string; }
 @Component({
   selector: 'app-website-page-form',
   standalone: true,
-  imports: [
+  imports: [FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, PageHeaderComponent, 
     CommonModule, FormsModule, TranslateModule,
-    BreadcrumbsComponent, FormStickyFooterComponent, LoadingOverlayComponent,
+    LoadingOverlayComponent,
     SearchDropdownComponent, ToggleComponent, PageSettingsFormComponent,
   ],
   template: `
     <div class="pf-page">
-      <header class="page-header">
-        <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-        <h1 class="page-title">{{ pageTitle() }}</h1>
-      </header>
+      <app-page-header [title]="pageTitle()" [trail]="breadcrumbs()">
+<app-form-actions pageActions>
+        <button formActionSecondary type="button" (click)="cancel()" [disabled]="saving()">
+          {{ 'COMMON.CANCEL' | translate }}
+        </button>
+        <button formActionPrimary type="button" (click)="save()" [disabled]="saving() || !canSave()">
+          {{ 'COMMON.SAVE' | translate }}
+        </button>
+</app-form-actions>
+</app-page-header>
 
       @if (loading()) {
         <div class="pf-loading"><span class="spinner spinner--lg"></span></div>
@@ -173,18 +179,10 @@ interface Option { id: string; name: string; }
 
       <app-loading-overlay [show]="saving()" [message]="'COMMON.SAVING' | translate"/>
 
-      <app-form-sticky-footer>
-        <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
-          {{ 'COMMON.CANCEL' | translate }}
-        </button>
-        <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving() || !canSave()">
-          {{ 'COMMON.SAVE' | translate }}
-        </button>
-      </app-form-sticky-footer>
+      
     </div>
   `,
   styles: [`
-    .pf-page { padding-bottom: 80px; }
     .pf-loading { display: flex; justify-content: center; padding: 60px 0; }
     .card { background: var(--ui-surface); border-radius: 12px; box-shadow: 0 1px 2px rgba(15,23,42,.04); margin-bottom: 16px; overflow: hidden; }
     .card__head { padding: 14px 18px; border-bottom: 1px solid var(--ui-surface-2); }

@@ -1,6 +1,5 @@
-.pmf-page { padding: 16px 20px 100px; display: flex; flex-direction: column; gap: 16px; }
+.pmf-page { display: flex; flex-direction: column; gap: 16px; }
 .page-header { display: flex; flex-direction: column; gap: 4px; }
-.page-title { margin: 0; font-size: 22px; font-weight: 700; color: var(--ui-text); }
 
 .card { background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: 12px; overflow: hidden;
   &__head { padding: 14px 16px; border-bottom: 1px solid var(--ui-surface-2); }

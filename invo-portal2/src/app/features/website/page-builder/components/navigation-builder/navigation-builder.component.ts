@@ -53,7 +53,7 @@ export interface LinkOption {
   template: `
     <div class="navigation-builder">
       <div class="builder-header">
-        <h2>{{ menuData.id ? 'Edit Menu' : 'New Menu' }}</h2>
+        <h1>{{ menuData.id ? 'Edit Menu' : 'New Menu' }}</h1>
         <div class="header-actions">
           <button class="btn-secondary" (click)="onCancel()">Cancel</button>
           <button class="btn-primary" (click)="onSave()">Save Menu</button>
@@ -267,7 +267,7 @@ export interface LinkOption {
   styles: [`
     .navigation-builder { display: flex; flex-direction: column; height: 100%; background: var(--ui-x-f5f5f5); }
     .builder-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; background: var(--ui-surface); border-bottom: 1px solid var(--ui-line); }
-    .builder-header h2 { margin: 0; font-size: 18px; font-weight: 600; }
+    .builder-header h1 { margin: 0; font-size: 18px; font-weight: 600; }
     .header-actions { display: flex; gap: 12px; }
     
     .builder-body { display: flex; flex: 1; overflow: hidden; }

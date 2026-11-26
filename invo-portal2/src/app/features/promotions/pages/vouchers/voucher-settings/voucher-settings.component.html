@@ -1,8 +1,14 @@
 <div class="vs-page">
-  <header class="page-header">
-    <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-    <h1 class="page-header__title">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.PROMOTIONS_VOUCHER_SETTINGS' | translate }}</h1>
-  </header>
+  <app-page-header [title]="'PROMOTIONS.PROMOTIONS_VOUCHERS.PROMOTIONS_VOUCHER_SETTINGS' | translate" [trail]="breadcrumbs()">
+@if (setting(); as s) {
+<app-form-actions pageActions>
+      <button formActionSecondary type="button" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+      <button formActionPrimary type="button" [disabled]="!formValid() || saving()" (click)="save()">
+        {{ 'COMMON.SAVE' | translate }}
+      </button>
+</app-form-actions>
+}
+</app-page-header>
 
   @if (setting(); as s) {
     <section class="vs-card">
@@ -57,11 +63,6 @@
       </div>
     </section>
 
-    <app-form-sticky-footer>
-      <button type="button" class="vs-btn" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
-      <button type="button" class="vs-btn vs-btn--primary" [disabled]="!formValid() || saving()" (click)="save()">
-        {{ 'COMMON.SAVE' | translate }}
-      </button>
-    </app-form-sticky-footer>
+    
   }
 </div>

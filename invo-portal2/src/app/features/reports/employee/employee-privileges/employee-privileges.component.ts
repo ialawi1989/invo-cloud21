@@ -114,6 +114,10 @@ export class EmployeePrivilegesComponent {
   selected = computed(() => this.employees().find(e => e.employeeId === this.selectedId()) ?? null);
 
   sortedHolders = computed(() => [...this.holders()].sort((a, b) => (a.employeeName ?? '').localeCompare(b.employeeName ?? '')));
+  holdersPage = signal(1);
+  holdersPageSize = signal(15);
+  holdersPageCount = computed(() => Math.max(1, Math.ceil(this.holders().length / this.holdersPageSize())));
+  holdersPageRows = computed(() => { const s = (this.holdersPage() - 1) * this.holdersPageSize(); return this.sortedHolders().slice(s, s + this.holdersPageSize()); });
 
   constructor() {
     const u = this.urlState.read(PARAMS);
@@ -182,7 +186,7 @@ export class EmployeePrivilegesComponent {
     this.holdersLoading.set(true);
     try {
       const rows = await this.svc.holders(o.securityKey, o.actionKey);
-      if (mine === this.holdersSeq) this.holders.set(rows);
+      if (mine === this.holdersSeq) { this.holders.set(rows); this.holdersPage.set(1); }
     } catch (e: any) {
       if (mine !== this.holdersSeq) return;
       this.holdersError.set(e?.message ?? this.lang.instant('REPORTS.VIEW.LOAD_ERROR'));
@@ -201,6 +205,8 @@ export class EmployeePrivilegesComponent {
   setSearch(v: string): void { this.search.set(v); this.page.set(1); }
   setRole(v: string | null): void { this.roleFilter.set(v); this.page.set(1); }
   goTo(p: number): void { this.page.set(p); }
+  goToHolders(p: number): void { this.holdersPage.set(p); }
+  setHoldersPageSize(n: number): void { this.holdersPageSize.set(n); this.holdersPage.set(1); }
   setPageSize(n: number): void { this.pageSize.set(n); this.page.set(1); }
   initial(n: string): string { return (n || '?').charAt(0).toUpperCase(); }
 

@@ -1,11 +1,10 @@
 <div class="tf">
-  <header class="tf-head">
-    <h1>{{ (isEditMode() ? 'NOTIFICATIONS_SETTINGS.TEMPLATE_FORM.EDIT_TITLE' : 'NOTIFICATIONS_SETTINGS.TEMPLATE_FORM.NEW_TITLE') | translate }}</h1>
-    <div class="tf-head__actions">
+  <app-page-header [title]="(isEditMode() ? 'NOTIFICATIONS_SETTINGS.TEMPLATE_FORM.EDIT_TITLE' : 'NOTIFICATIONS_SETTINGS.TEMPLATE_FORM.NEW_TITLE') | translate">
+    <div pageActions class="tf-head__actions">
       <button type="button" class="tf-btn" (click)="cancel()">{{ 'NOTIFICATIONS_SETTINGS.TEMPLATE_FORM.CANCEL' | translate }}</button>
       <button type="button" class="tf-btn tf-btn--primary" [disabled]="saving()" (click)="save()">{{ 'NOTIFICATIONS_SETTINGS.TEMPLATE_FORM.SAVE' | translate }}</button>
     </div>
-  </header>
+  </app-page-header>
 
   @if (loading()) {
     <div class="tf-loading">…</div>

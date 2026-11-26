@@ -13,13 +13,13 @@ export const APPOINTMENTS_ROUTES: Routes = [
   {
     path: '',
     canActivate: [translationsLoaded, privilegeGuard],
-    data: { permissionPath: 'salonSecurity.actions.view.access' },
+    data: { pageWidth: 'bleed', permissionPath: 'salonSecurity.actions.view.access' },
     loadComponent: () => import('./pages/calendar/appointment-calendar.component').then(m => m.AppointmentCalendarComponent),
   },
   {
     path: 'form',
     canActivate: [translationsLoaded, privilegeGuard],
-    data: { permissionPath: { new: 'salonSecurity.actions.newAppointment.access', edit: 'salonSecurity.actions.editAppointment.access' } },
+    data: { pageWidth: 'form', permissionPath: { new: 'salonSecurity.actions.newAppointment.access', edit: 'salonSecurity.actions.editAppointment.access' } },
     loadComponent: () => import('./pages/form/appointment-form.component').then(m => m.AppointmentFormComponent),
   },
 ];

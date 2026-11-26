@@ -1,9 +1,4 @@
-.plf-page {
-  padding: 16px 20px 100px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
+.plf-page { display: flex; flex-direction: column; gap: 16px; }
 
 .page-header {
   display: flex;
@@ -23,12 +18,6 @@
     align-items: center;
     gap: 8px;
   }
-}
-.page-title {
-  margin: 0;
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--ui-text);
 }
 
 // Two-column row that hosts the Products + Options cards. Stacks
@@ -295,24 +284,6 @@
   }
 }
 
-// ── Fixed footer ───────────────────────────────────────────────────
-// Matches the product form's pattern: pinned to the viewport
-// bottom (not sticky-inside-the-card) with a frosted backdrop, so
-// every page using a save action reads the same.
-.form-footer {
-  position: fixed;
-  inset-inline: 0;
-  bottom: 0;
-  z-index: 60;
-  background: var(--ui-footer-bg);
-  border-top: 1px solid var(--ui-line);
-  box-shadow: 0 -4px 12px rgba(15, 23, 42, 0.06);
-  padding: 12px 24px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-}
 
 // ── Buttons ────────────────────────────────────────────────────────
 // `.btn` / `.btn-primary` / `.btn-default` / `.btn-ghost` live in

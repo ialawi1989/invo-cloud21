@@ -1,26 +1,6 @@
-.tx {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 16px 24px 64px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
+.tx { display: flex; flex-direction: column; gap: 16px; }
 
-.tx__head {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
-}
-.tx__headText { min-width: 0; }
-.tx__title {
-  margin: 0 0 4px; font-size: 28px; font-weight: 800; color: var(--ui-text); letter-spacing: -0.02em;
-  display: inline-flex; align-items: baseline; gap: 8px;
-}
 .tx__count { font-size: 18px; font-weight: 700; color: var(--ui-faint); }
-.tx__sub   { margin: 0; font-size: 14px; color: var(--ui-muted); }
-.tx__headActions { display: inline-flex; align-items: center; gap: 12px; flex-shrink: 0; }
 
 .tx__card {
   background: var(--ui-surface);

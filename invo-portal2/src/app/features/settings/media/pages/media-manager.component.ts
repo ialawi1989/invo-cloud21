@@ -1,3 +1,4 @@
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { Component, signal, computed, ViewChild, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -5,7 +6,7 @@ import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 
 import { Media } from '../models/media.model';
 import { MediaGalleryComponent } from '../components/media-gallery';
-import { MediaPreviewComponent } from '../components/media-preview';
+import { MediaPreviewComponent, MediaEditResult } from '../components/media-preview';
 import { DetachMediaComponent } from '../components/detach-media';
 import { AttachMediaComponent } from '../components/attach-media';
 import { UploadModalComponent } from '../components/upload-modal';
@@ -15,7 +16,7 @@ import { ConfirmModalComponent, ConfirmModalData } from '../../../../shared/moda
 import { SearchDropdownComponent } from '../../../../shared/components/dropdown';
 import { DatePickerComponent, formatDate } from '../../../../shared/components/datepicker';
 import { PaginationComponent } from '../../../../shared/components/pagination';
-import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../shared/components/breadcrumbs';
+import { BreadcrumbItem } from '../../../../shared/components/breadcrumbs';
 import { SpinnerComponent, LoadingOverlayComponent } from '../../../../shared/components/spinner';
 import { SkeletonComponent } from '../../../../shared/components/skeleton/skeleton.component';
 import { UploadToastService } from '../../../../shared/components/upload-toast';
@@ -95,7 +96,7 @@ const TAB_META: Record<MediaTab, { label: string; icon: string }> = {
 @Component({
   selector: 'app-media-manager',
   standalone: true,
-  imports: [TooltipDirective, 
+  imports: [PageHeaderComponent, TooltipDirective, 
     CommonModule,
     FormsModule,
     MediaGalleryComponent,
@@ -104,7 +105,6 @@ const TAB_META: Record<MediaTab, { label: string; icon: string }> = {
     SearchDropdownComponent,
     DatePickerComponent,
     PaginationComponent,
-    BreadcrumbsComponent,
     SpinnerComponent,
     SkeletonComponent,
     LoadingOverlayComponent,
@@ -544,7 +544,7 @@ export class MediaManagerComponent implements OnInit, OnDestroy {
   // ── Preview ─────────────────────────────────────────────────────────────────
 
   async onMediaEdit(media: Media): Promise<void> {
-    const ref = this.modalService.open<MediaPreviewComponent, unknown, File | undefined>(
+    const ref = this.modalService.open<MediaPreviewComponent, unknown, MediaEditResult | undefined>(
       MediaPreviewComponent,
       {
         size: 'xl',
@@ -560,17 +560,30 @@ export class MediaManagerComponent implements OnInit, OnDestroy {
     // The preview closes and returns the edited image as a File when the user
     // saves an edit. Upload it here (with a page-level spinner) so the modal is
     // gone by the time we're crunching the upload, then refresh the library.
-    const editedFile = await ref.afterClosed();
-    if (!editedFile) return;
+    const edit = await ref.afterClosed();
+    if (!edit) return;
 
     this.savingEdit.set(true);
     try {
       // `uploadFile` reports a server-side rejection as `{ success: false }` rather than throwing, so check it.
-      const result = await this.mediaService.uploadFile(editedFile);
+      const result = await this.mediaService.uploadFile(edit.file);
       if (result.success === false) throw new Error(result.error || result.message || 'Upload failed');
-      await this.loadMedia({ refreshCounts: true });
-      // The edit is a new media item: offer to put it on the entities that used the original.
       const savedId = result.data?.[0]?.id;
+
+      if (edit.mode === 'replace' && savedId && edit.original.id) {
+        // Replace: the new image takes the original's place on everything that used it; the original is then deleted or kept (old version).
+        try {
+          await this.mediaService.replaceMedia(edit.original.id, savedId, edit.deleteOriginal);
+        } catch (e: any) {
+          this.uploadToast.add({ id: `error-${Date.now()}`, name: 'Replace failed', size: '', status: 'failed', progress: 0,
+            error: `The edited image was saved as a new image, but could not replace the original. ${e?.error?.msg ?? e?.message ?? ''}`.trim() });
+        }
+        await this.loadMedia({ refreshCounts: true });
+        return;
+      }
+
+      await this.loadMedia({ refreshCounts: true });
+      // Saved as a new media item: offer to put it on the entities that used the original.
       const used = (media.uploadTo as any[] | undefined)?.filter(e => e && e.id && e.reference) ?? [];
       if (savedId && used.length && result.data?.[0]) this.attachTarget.set({ media: new Media({ ...result.data[0] }), entities: used });
     } catch (err: any) {

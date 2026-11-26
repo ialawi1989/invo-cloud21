@@ -289,7 +289,7 @@
 /* ── Flat, single-colour page (Huly-style) ──────────────────────────────────
    Full-bleed: white surfaces separated by hairline dividers - no cards,
    shadows, gradients or pills. One accent colour for the active states.     */
-:host { flex: 1 1 auto; min-height: 0; height: auto; background: var(--ui-surface); }
+:host { flex: 1 1 auto; min-height: 0; height: auto; }
 
 .cal { gap: 0; height: 100%; background: var(--ui-surface); }
 

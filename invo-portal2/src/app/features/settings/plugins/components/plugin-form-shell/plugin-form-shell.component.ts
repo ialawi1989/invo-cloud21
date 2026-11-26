@@ -1,3 +1,5 @@
+import { FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective } from '@shared/components/form-actions/form-actions.component';
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -9,9 +11,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
-import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 
 /**
@@ -25,52 +25,35 @@ import { LoadingOverlayComponent } from '@shared/components/spinner/loading-over
 @Component({
   selector: 'app-plugin-form-shell',
   standalone: true,
-  imports: [
+  imports: [FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, PageHeaderComponent, 
     CommonModule,
     RouterModule,
     TranslateModule,
-    BreadcrumbsComponent,
-    FormStickyFooterComponent,
     LoadingOverlayComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="pf-page">
-      <header class="pf-header">
-        @if (breadcrumbs?.length) {
-          <app-breadcrumbs [items]="breadcrumbs ?? []" separator="chevron"/>
+      <app-page-header [title]="title" [description]="intro || null" [trail]="breadcrumbs ?? []">
+        @if (showFooter) {
+          <app-form-actions pageActions>
+            <button type="button" formActionSecondary (click)="back.emit()">{{ 'PLUGINS.COMMON.BACK' | translate }}</button>
+            <button type="button" formActionPrimary [disabled]="saving || !canSave" (click)="save.emit()">{{ 'PLUGINS.COMMON.SAVE' | translate }}</button>
+          </app-form-actions>
         }
-        <div class="pf-header__row">
-          @if (logo) {
-            <img class="pf-header__logo" [src]="logo" [alt]="title"/>
-          }
-          <div>
-            <h1 class="pf-title">{{ title }}</h1>
-            @if (intro) { <p class="pf-intro">{{ intro }}</p> }
-          </div>
-        </div>
-      </header>
+        @if (logo) {
+          <img pageLead class="pf-header__logo" [src]="logo" [alt]="title"/>
+        }
+      </app-page-header>
 
       <ng-content/>
 
-      @if (showFooter) {
-        <app-form-sticky-footer>
-          <button type="button" class="btn btn-ghost" (click)="back.emit()">
-            {{ 'PLUGINS.COMMON.BACK' | translate }}
-          </button>
-          <button type="button" class="btn btn-primary"
-                  [disabled]="saving || !canSave"
-                  (click)="save.emit()">
-            {{ 'PLUGINS.COMMON.SAVE' | translate }}
-          </button>
-        </app-form-sticky-footer>
-      }
     </div>
 
     <app-loading-overlay [show]="loading"/>
   `,
   styles: [`
-    .pf-page { max-width: 880px; margin: 0 auto; padding: 16px 24px 110px; position: relative; }
+    .pf-page { position: relative; }
     .pf-header { margin-bottom: 20px; }
     .pf-header__row { display: flex; align-items: center; gap: 14px; margin-top: 8px; }
     .pf-header__logo {

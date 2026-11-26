@@ -24,6 +24,8 @@ import { EmployeeEarningsFeature, isEmployeeEarningsEnabled } from '../../../aut
 import { EmployeeOptionsService } from '../../services/employee-options.service';
 import { FavoritesService } from '../../services/favorites.service';
 
+import { SettingsNavComponent } from '../settings-nav/settings-nav.component';
+import { SettingsModeService } from '../../services/settings-mode.service';
 import { TooltipDirective } from '@shared/directives/tooltip.directive';
 /* ── Menu definition (matches original menu.ts structure with icons) ─ */
 export interface SideMenuItem {
@@ -316,9 +318,14 @@ interface FavoritePage { label: string; link: string; }
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [TooltipDirective, CommonModule, FormsModule, RouterModule, SafeHtmlPipe, QuickActionsComponent, TranslateModule],
+  imports: [TooltipDirective, CommonModule, FormsModule, RouterModule, SafeHtmlPipe, QuickActionsComponent, TranslateModule, SettingsNavComponent],
   template: `
-    <aside class="sidebar" [class.collapsed]="collapsed" [class.mobile-open]="mobileOpen">
+    <aside class="sidebar" [class.collapsed]="collapsed" [class.mobile-open]="mobileOpen" [class.settings-mode]="settingsMode.inSettingsMode()">
+
+      @if (settingsMode.inSettingsMode()) {
+        <!-- Settings mode: the app menu is swapped for the settings menu, in the same drawer. -->
+        @defer (on immediate) { <app-settings-nav (navigated)="onSubLinkClick()"/> }
+      } @else {
 
       <!-- ══ Company identity ══ -->
       @if (!collapsed) {
@@ -448,6 +455,7 @@ interface FavoritePage { label: string; link: string; }
         </div>
       }
 
+      }
     </aside>
 
     @if (mobileOpen) {
@@ -481,6 +489,9 @@ interface FavoritePage { label: string; link: string; }
       overscroll-behavior: contain;
     }
     aside.sidebar.collapsed { width: var(--w-col); }
+    /* Settings mode always shows the full-width menu, whatever the app menu's collapsed state. */
+    aside.sidebar.settings-mode { width: var(--w); }
+    @media print { aside.sidebar.settings-mode { display: none !important; } }
 
     /* Top bar */
 
@@ -779,6 +790,7 @@ export class SidebarComponent implements OnInit, OnChanges, OnDestroy {
   @Output() mobileOpenChange = new EventEmitter<boolean>();
 
   private router           = inject(Router);
+  settingsMode             = inject(SettingsModeService);
   private privilegeService = inject(PrivilegeService);
   private featureService   = inject(FeatureService);
   private translateService = inject(TranslateService);

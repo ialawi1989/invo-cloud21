@@ -1,3 +1,5 @@
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
+import { FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, FormActionExtraDirective } from '@shared/components/form-actions/form-actions.component';
 import { DragIconComponent } from '@shared/components/drag-icon/drag-icon.component';
 import {
   ChangeDetectionStrategy,
@@ -23,7 +25,6 @@ import {
 import { CompanyService } from '@core/auth/company.service';
 import { withTranslations } from '@core/i18n/with-translations';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { ModalService } from '@shared/modal/modal.service';
@@ -69,11 +70,10 @@ import { TooltipDirective } from '@shared/directives/tooltip.directive';
 @Component({
   selector: 'app-shipping',
   standalone: true,
-  imports: [DragIconComponent, TooltipDirective, 
+  imports: [FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, FormActionExtraDirective, PageHeaderComponent, DragIconComponent, TooltipDirective, 
     CommonModule,
     FormsModule,
     TranslateModule,
-    BreadcrumbsComponent,
     LoadingOverlayComponent,
     SearchDropdownComponent,
     DragDropModule,

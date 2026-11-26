@@ -14,7 +14,7 @@ export const TRACKING_MAP_ROUTES: Routes = [
   {
     path: '',
     canActivate: [translationsLoaded, privilegeGuard],
-    data: { permissionPath: 'mapTrackingSecurity.actions.view.access' },
+    data: { pageWidth: 'bleed', permissionPath: 'mapTrackingSecurity.actions.view.access' },
     loadComponent: () => import('./pages/overview/tracking-map.component').then(m => m.TrackingMapComponent),
   },
 ];

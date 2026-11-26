@@ -25,7 +25,7 @@ export const ESTIMATES_ROUTES: Routes = [
   {
     path: 'view/:id',
     canActivate: [translationsLoaded, privilegeGuard],
-    data: { permissionPath: 'estimateSecurity.actions.view.access' },
+    data: { pageWidth: 'bleed', permissionPath: 'estimateSecurity.actions.view.access' },
     loadComponent: () =>
       import('./pages/estimate-view/estimate-view.component').then(m => m.EstimateViewComponent),
   },

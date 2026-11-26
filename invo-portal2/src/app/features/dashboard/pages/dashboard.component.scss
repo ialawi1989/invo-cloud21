@@ -1,27 +1,5 @@
-.db { padding: 16px 20px 40px; }
 
-// ── Header ──────────────────────────────────────────────────────────
-.db__head {
-  display: flex; align-items: flex-start; justify-content: space-between;
-  flex-wrap: wrap; gap: 16px;
-  margin-bottom: 18px;
-}
-.db__titles { min-width: 0; }
-.db__title {
-  margin: 0 0 4px;
-  font-size: 24px; font-weight: 800; color: var(--ui-text); letter-spacing: -0.02em;
-}
-.db__sub { margin: 0; font-size: 14px; color: var(--ui-muted); }
-
-// Back link shown while editing a role's default dashboard.
-.db__back {
-  display: inline-flex; align-items: center; gap: 6px;
-  margin-bottom: 6px;
-  font-size: 13px; font-weight: 600; color: var(--ui-muted); text-decoration: none;
-  &:hover { color: var(--ui-brand-t700); }
-  svg { color: currentColor; }
-}
-
+// ── Header actions (the header itself is <app-page-header>) ─────────
 .db__filters {
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
 }

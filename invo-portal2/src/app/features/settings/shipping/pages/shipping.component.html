@@ -1,19 +1,21 @@
 <div class="shp-page">
-  <header class="page-header">
-    <div class="page-header__titles">
-      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-      <h1 class="page-title">{{ 'SHIPPING.TITLE' | translate }}</h1>
-      <p class="page-sub">{{ 'SHIPPING.SUBTITLE' | translate }}</p>
-    </div>
-    <div class="page-header__actions">
-      <button type="button" class="btn btn-default" (click)="addZone()">
+  <app-page-header [title]="'SHIPPING.TITLE' | translate" [description]="'SHIPPING.SUBTITLE' | translate" [trail]="breadcrumbs()">
+    <app-form-actions pageActions>
+      <button type="button" class="btn btn-default" formActionExtra (click)="addZone()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
         </svg>
         {{ 'SHIPPING.ADD_ZONE' | translate }}
       </button>
-    </div>
-  </header>
+      <button type="button" formActionSecondary (click)="cancel()" [disabled]="saving()">
+        {{ 'COMMON.CANCEL' | translate }}
+      </button>
+      <button type="button" formActionPrimary (click)="save()" [disabled]="!canSave()">
+        @if (saving()) { <span class="spinner" aria-hidden="true"></span> }
+        {{ saving() ? ('COMMON.SAVING' | translate) : ('COMMON.SAVE' | translate) }}
+      </button>
+    </app-form-actions>
+  </app-page-header>
 
   @if (zones().length === 0) {
     <div class="empty">
@@ -298,15 +300,6 @@
     </div>
   }
 
-  <footer class="save-bar">
-    <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
-      {{ 'COMMON.CANCEL' | translate }}
-    </button>
-    <button type="button" class="btn btn-primary" (click)="save()" [disabled]="!canSave()">
-      @if (saving()) { <span class="spinner" aria-hidden="true"></span> }
-      {{ saving() ? ('COMMON.SAVING' | translate) : ('COMMON.SAVE' | translate) }}
-    </button>
-  </footer>
 
   <app-loading-overlay [show]="loading()"/>
 </div>

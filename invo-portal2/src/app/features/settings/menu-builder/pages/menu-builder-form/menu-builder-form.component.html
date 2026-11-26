@@ -1,10 +1,7 @@
 <div class="mbf-page">
-  <header class="mbf-header">
-    <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-    <div class="mbf-titlebar">
-      <h1 class="mbf-title">{{ store.menu().id ? store.menu().name : ('MENU_BUILDER.NEW_MENU' | translate) }}</h1>
-    </div>
-  </header>
+  <app-page-header [title]="store.menu().id ? store.menu().name : ('MENU_BUILDER.NEW_MENU' | translate)" [trail]="breadcrumbs()" [stickyActions]="true">
+    <app-sticky-save-bar pageActions [dirty]="store.isDirty()" [saving]="store.saving()" (cancel)="cancel()" (save)="save()"/>
+  </app-page-header>
 
   @if (store.errors()['_general']; as general) {
     <p class="mbf-general-error" role="alert">{{ general }}</p>
@@ -37,6 +34,5 @@
     </div>
   }
 
-  <app-sticky-save-bar [dirty]="store.isDirty()" [saving]="store.saving()" (cancel)="cancel()" (save)="save()"/>
   <app-loading-overlay [show]="store.saving()" [message]="'COMMON.SAVING' | translate"/>
 </div>

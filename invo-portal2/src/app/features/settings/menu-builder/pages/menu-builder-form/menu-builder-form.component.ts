@@ -1,3 +1,4 @@
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, OnInit, computed, inject, signal } from '@angular/core';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -6,7 +7,6 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { withTranslations } from '@core/i18n/with-translations';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton.component';
@@ -41,8 +41,8 @@ import {
 @Component({
   selector: 'app-menu-builder-form',
   standalone: true,
-  imports: [
-    RouterModule, TranslateModule, BreadcrumbsComponent, LoadingOverlayComponent, FormSkeletonComponent,
+  imports: [PageHeaderComponent, 
+    RouterModule, TranslateModule, LoadingOverlayComponent, FormSkeletonComponent,
     MenuDetailsCardComponent, SectionListComponent, SectionEditorComponent, StickySaveBarComponent,
   ],
   providers: [MenuBuilderStore],

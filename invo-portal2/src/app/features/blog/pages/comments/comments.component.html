@@ -1,10 +1,6 @@
 <div class="cm">
-  <header class="cm__head">
-    <div class="cm__headText">
-      <h1 class="cm__title">{{ 'BLOG.COMMENTS.TITLE' | translate }}</h1>
-      <p class="cm__sub">{{ 'BLOG.COMMENTS.SUBTITLE' | translate }}</p>
-    </div>
-    <div class="cm__headActions">
+  <app-page-header [title]="'BLOG.COMMENTS.TITLE' | translate" [description]="'BLOG.COMMENTS.SUBTITLE' | translate">
+    <div pageActions>
       <app-dropdown-menu-btn
         [items]="moreActionsMenu()"
         [appendToBody]="true"
@@ -16,7 +12,7 @@
         {{ 'BLOG.COMMENTS.MODERATION_RULES' | translate }}
       </button>
     </div>
-  </header>
+  </app-page-header>
 
   <nav class="cm__tabs" role="tablist">
     @for (t of tabOptions(); track t.value) {

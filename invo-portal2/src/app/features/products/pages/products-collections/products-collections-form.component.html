@@ -1,8 +1,15 @@
 <div class="df-page">
-  <header class="page-header">
-    <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-    <h1 class="page-title">{{ pageTitle() }}</h1>
-  </header>
+  <app-page-header [title]="pageTitle()" [trail]="breadcrumbs()">
+<app-form-actions pageActions>
+    <button formActionSecondary type="button" (click)="cancel()" [disabled]="saving()">
+      {{ 'PRODUCTS.COLLECTIONS.FORM.CANCEL' | translate }}
+    </button>
+    <button formActionPrimary type="button" (click)="save()" [disabled]="!canSave()">
+      @if (saving()) { <span class="spinner" aria-hidden="true"></span> }
+      {{ 'PRODUCTS.COLLECTIONS.FORM.SAVE' | translate }}
+    </button>
+</app-form-actions>
+</app-page-header>
 
   <div class="df-body">
     <!-- ── Details ─────────────────────────────────────────────── -->
@@ -225,15 +232,7 @@
     }
   </div>
 
-  <footer class="save-bar">
-    <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
-      {{ 'PRODUCTS.COLLECTIONS.FORM.CANCEL' | translate }}
-    </button>
-    <button type="button" class="btn btn-primary" (click)="save()" [disabled]="!canSave()">
-      @if (saving()) { <span class="spinner" aria-hidden="true"></span> }
-      {{ 'PRODUCTS.COLLECTIONS.FORM.SAVE' | translate }}
-    </button>
-  </footer>
+  
 
   <app-loading-overlay [show]="loading()"/>
 </div>

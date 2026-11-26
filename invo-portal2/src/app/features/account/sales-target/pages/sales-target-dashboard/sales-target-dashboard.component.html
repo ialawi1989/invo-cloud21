@@ -1,12 +1,6 @@
 <div class="st">
-  <header class="page-header">
-    <app-breadcrumbs [items]="breadcrumbs" separator="chevron"/>
-    <div class="page-header__row">
-      <div>
-        <h1 class="page-header__title">{{ 'SALES_TARGET.TITLE' | translate }}</h1>
-        <p class="page-header__sub">{{ subtitle() }}</p>
-      </div>
-      <div class="st__tools">
+  <app-page-header [title]="'SALES_TARGET.TITLE' | translate" [description]="subtitle()" [trail]="breadcrumbs">
+    <div pageActions class="st__tools">
         <button type="button" class="st-btn" (click)="openSaved()">{{ 'SALES_TARGET.SAVED_TARGETS' | translate }}</button>
         <app-st-period-anchor [value]="anchor()" (valueChange)="onAnchor($event)"/>
         <button type="button" class="st-btn st-btn--primary" (click)="openTargetModal()">{{ 'SALES_TARGET.SET_TARGET' | translate }}</button>
@@ -14,8 +8,7 @@
           {{ 'SALES_TARGET.COMPARE' | translate }}: {{ (compare() ? 'SALES_TARGET.ON' : 'SALES_TARGET.OFF') | translate }}
         </button>
       </div>
-    </div>
-  </header>
+  </app-page-header>
 
   @if (failed() && !data()) {
     <div class="st-card st-empty">

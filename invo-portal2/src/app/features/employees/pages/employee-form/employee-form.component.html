@@ -1,24 +1,36 @@
 <div class="employee-form-page" [formGroup]="form">
-  @if (isCreate() || editSection()) {
-  <header class="page-header">
-    <div class="page-header__titles">
-      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-      <h1 class="page-title">{{ sectionTitle() }}</h1>
-    </div>
-    <!-- Replays the guided tour. Button-only: the tour is never auto-started
-         here, since this form is where someone is mid-task. -->
-    <button
-      type="button"
-      class="btn btn-ghost btn-sm tour-btn"
-      [attr.aria-label]="'EMPLOYEES.TOUR.START' | translate"
-      [appTooltip]="'EMPLOYEES.TOUR.START' | translate"
-      [disabled]="loading()"
-      (click)="startTour()">
-      <span aria-hidden="true">?</span>
-      <span class="tour-btn__label">{{ 'EMPLOYEES.TOUR.START' | translate }}</span>
-    </button>
-  </header>
-  }
+  <!-- Create and single-section edit: full header. The tabbed record view sits under the record shell, which already has the title: actions only. -->
+  <app-page-header [title]="sectionTitle()" [trail]="breadcrumbs()" [bare]="!(isCreate() || editSection())">
+    <app-form-actions pageActions>
+      <!-- Replays the guided tour. Button-only: the tour is never auto-started
+           here, since this form is where someone is mid-task. -->
+      <button
+        type="button"
+        class="btn btn-ghost btn-sm tour-btn" formActionExtra
+        [attr.aria-label]="'EMPLOYEES.TOUR.START' | translate"
+        [appTooltip]="'EMPLOYEES.TOUR.START' | translate"
+        [disabled]="loading()"
+        (click)="startTour()">
+        <span aria-hidden="true">?</span>
+        <span class="tour-btn__label">{{ 'EMPLOYEES.TOUR.START' | translate }}</span>
+      </button>
+      <button type="button" formActionSecondary (click)="cancel()" [disabled]="saving()">
+        {{ 'COMMON.CANCEL' | translate }}
+      </button>
+      <button type="button" formActionPrimary class="save-btn"
+        [class.save-btn--invalid]="errorCount() > 0"
+        (click)="save()" [disabled]="saving() || loading()">
+        {{ 'COMMON.SAVE' | translate }}
+        @if (errorCount() > 0) {
+          <span class="save-btn__badge" aria-hidden="true">{{ errorCount() }}</span>
+        }
+      </button>
+    </app-form-actions>
+  </app-page-header>
+
+  <!-- After a failed save: what is blocking it, as links to the fields. -->
+  <app-form-error-summary class="fes--banner" variant="banner" [show]="saveAttempted()" [count]="errorCount()" [form]="form" [container]="host"
+                          (jumping)="revealPaneOf($event)"/>
 
   @if (loading()) {
     <app-form-skeleton />
@@ -603,26 +615,5 @@
 
   <app-loading-overlay [show]="saving()" [message]="saveLabel()"/>
 
-  <app-form-sticky-footer>
-    @if (errorCount() > 0) {
-      <app-form-error-summary [count]="errorCount()" [form]="form" [container]="host"
-                              (jumping)="revealPaneOf($event)"/>
-    }
-    <span class="mandatory-legend">{{ 'COMMON.MANDATORY_LEGEND' | translate }}</span>
-    <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
-      {{ 'COMMON.CANCEL' | translate }}
-    </button>
-    <button
-      type="button"
-      class="btn btn-primary save-btn"
-      [class.save-btn--invalid]="errorCount() > 0"
-      (click)="save()"
-      [disabled]="saving() || loading()"
-    >
-      {{ 'COMMON.SAVE' | translate }}
-      @if (errorCount() > 0) {
-        <span class="save-btn__badge" aria-hidden="true">{{ errorCount() }}</span>
-      }
-    </button>
-  </app-form-sticky-footer>
+  <span class="mandatory-legend">{{ 'COMMON.MANDATORY_LEGEND' | translate }}</span>
 </div>

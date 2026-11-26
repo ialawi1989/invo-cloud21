@@ -1751,7 +1751,6 @@ html.app-dark {
     // Same colour as the page footer next to it, so the sidebar gets a 1px edge (drawn inside, no layout shift).
     aside.sidebar { box-shadow: inset -1px 0 0 var(--ui-line-strong); }
   }
-  .ffs, .form-footer { background: var(--ui-footer-bg); border-top: 1px solid var(--ui-line-strong); box-shadow: none; backdrop-filter: none; }
 }
 
 // ── Documents stay light ───────────────────────────────────────────────

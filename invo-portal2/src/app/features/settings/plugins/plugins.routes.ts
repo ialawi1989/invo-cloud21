@@ -21,6 +21,7 @@ const translationsLoaded: CanActivateFn = async () => {
 export const PLUGINS_ROUTES: Routes = [
   {
     path: '',
+    data: { pageWidth: 'fluid' },
     canActivate: [translationsLoaded],
     loadComponent: () =>
       import('./pages/list/plugins-list.component').then(m => m.PluginsListComponent),
@@ -29,6 +30,7 @@ export const PLUGINS_ROUTES: Routes = [
   // ── WhatsApp ─────────────────────────────────────────────────────────
   {
     path: 'whatsapp-notifications/:id',
+    data: { pageWidth: 'narrow' },
     canActivate: [translationsLoaded],
     canDeactivate: [unsavedChangesGuard],
     loadComponent: () =>
@@ -36,6 +38,7 @@ export const PLUGINS_ROUTES: Routes = [
   },
   {
     path: 'whatsapp-infobip/:id',
+    data: { pageWidth: 'narrow' },
     canActivate: [translationsLoaded],
     canDeactivate: [unsavedChangesGuard],
     loadComponent: () =>
@@ -43,6 +46,7 @@ export const PLUGINS_ROUTES: Routes = [
   },
   {
     path: 'whatsapp-wasender/:id',
+    data: { pageWidth: 'narrow' },
     canActivate: [translationsLoaded],
     canDeactivate: [unsavedChangesGuard],
     loadComponent: () =>
@@ -52,6 +56,7 @@ export const PLUGINS_ROUTES: Routes = [
   // ── SMS ──────────────────────────────────────────────────────────────
   {
     path: 'sms-infobip/:id',
+    data: { pageWidth: 'narrow' },
     canActivate: [translationsLoaded],
     canDeactivate: [unsavedChangesGuard],
     loadComponent: () =>
@@ -59,6 +64,7 @@ export const PLUGINS_ROUTES: Routes = [
   },
   {
     path: 'sms-bareedsms/:id',
+    data: { pageWidth: 'narrow' },
     canActivate: [translationsLoaded],
     canDeactivate: [unsavedChangesGuard],
     loadComponent: () =>
@@ -68,6 +74,7 @@ export const PLUGINS_ROUTES: Routes = [
   // ── Email ────────────────────────────────────────────────────────────
   {
     path: 'email-smtp/:id',
+    data: { pageWidth: 'narrow' },
     canActivate: [translationsLoaded],
     canDeactivate: [unsavedChangesGuard],
     loadComponent: () =>
@@ -77,6 +84,7 @@ export const PLUGINS_ROUTES: Routes = [
   // ── Utilities ────────────────────────────────────────────────────────
   {
     path: 'moic/:id',
+    data: { pageWidth: 'narrow' },
     canActivate: [translationsLoaded],
     canDeactivate: [unsavedChangesGuard],
     loadComponent: () =>
@@ -84,6 +92,7 @@ export const PLUGINS_ROUTES: Routes = [
   },
   {
     path: 'footfallcam/:id',
+    data: { pageWidth: 'narrow' },
     canActivate: [translationsLoaded],
     canDeactivate: [unsavedChangesGuard],
     loadComponent: () =>
@@ -91,6 +100,7 @@ export const PLUGINS_ROUTES: Routes = [
   },
   {
     path: 'grub-tech/:id',
+    data: { pageWidth: 'narrow' },
     canActivate: [translationsLoaded],
     canDeactivate: [unsavedChangesGuard],
     loadComponent: () =>
@@ -98,12 +108,14 @@ export const PLUGINS_ROUTES: Routes = [
   },
   {
     path: 'zatca/:id',
+    data: { pageWidth: 'narrow' },
     canActivate: [translationsLoaded],
     loadComponent: () =>
       import('./pages/forms/zatca.component').then(m => m.ZatcaComponent),
   },
   {
     path: 'jordanfatoorah/:id',
+    data: { pageWidth: 'narrow' },
     canActivate: [translationsLoaded],
     canDeactivate: [unsavedChangesGuard],
     loadComponent: () =>
@@ -113,12 +125,14 @@ export const PLUGINS_ROUTES: Routes = [
   // ── Analytics ────────────────────────────────────────────────────────
   {
     path: 'google-setup',
+    data: { pageWidth: 'form' },
     canActivate: [translationsLoaded],
     loadComponent: () =>
       import('./pages/forms/google-setup-guide.component').then(m => m.GoogleSetupGuideComponent),
   },
   {
     path: 'google-analytics-ga4/:id',
+    data: { pageWidth: 'narrow' },
     canActivate: [translationsLoaded],
     canDeactivate: [unsavedChangesGuard],
     loadComponent: () =>
@@ -126,6 +140,7 @@ export const PLUGINS_ROUTES: Routes = [
   },
   {
     path: 'google-search-console/:id',
+    data: { pageWidth: 'narrow' },
     canActivate: [translationsLoaded],
     canDeactivate: [unsavedChangesGuard],
     loadComponent: () =>
@@ -135,12 +150,14 @@ export const PLUGINS_ROUTES: Routes = [
   // ── Marketing Tools ──────────────────────────────────────────────────
   {
     path: 'marketing-setup',
+    data: { pageWidth: 'form' },
     canActivate: [translationsLoaded],
     loadComponent: () =>
       import('./pages/forms/marketing-setup-guide.component').then(m => m.MarketingSetupGuideComponent),
   },
   {
     path: 'google-tag/:id',
+    data: { pageWidth: 'narrow' },
     canActivate: [translationsLoaded],
     canDeactivate: [unsavedChangesGuard],
     loadComponent: () =>
@@ -148,6 +165,7 @@ export const PLUGINS_ROUTES: Routes = [
   },
   {
     path: 'facebook-pixel/:id',
+    data: { pageWidth: 'narrow' },
     canActivate: [translationsLoaded],
     canDeactivate: [unsavedChangesGuard],
     loadComponent: () =>
@@ -157,6 +175,7 @@ export const PLUGINS_ROUTES: Routes = [
   // ── AI ───────────────────────────────────────────────────────────────
   {
     path: 'content-ai/:id',
+    data: { pageWidth: 'narrow' },
     canActivate: [translationsLoaded],
     canDeactivate: [unsavedChangesGuard],
     loadComponent: () =>

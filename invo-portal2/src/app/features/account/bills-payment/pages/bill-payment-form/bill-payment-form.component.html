@@ -1,9 +1,19 @@
 @if (loaded) {
   <div class="pf">
-    <header class="page-header">
-      <app-breadcrumbs [items]="breadcrumbs" separator="chevron"/>
-      <h1 class="page-header__title">{{ 'BILLS_PAYMENT.FORM.PAYMENT' | translate }}</h1>
-    </header>
+    <app-page-header [title]="'BILLS_PAYMENT.FORM.PAYMENT' | translate" [trail]="breadcrumbs">
+<app-form-actions pageActions>
+      <button formActionSecondary type="button" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+      @if (formStatus === 'edit') {
+        <button formActionSecondary type="button" (click)="view()">{{ 'COMMON.VIEW' | translate }}</button>
+      }
+      @if (actionsMenu(); as items) {
+        @if (items.length) {
+          <app-dropdown-menu-btn [items]="items" [appendToBody]="true" align="start" triggerClass="fa-btn fa-btn--secondary">{{ 'DOC_VIEW.ACTIONS' | translate }}</app-dropdown-menu-btn>
+        }
+      }
+      <button formActionPrimary type="button" [disabled]="submitting" (click)="save()">{{ 'COMMON.SAVE' | translate }}</button>
+</app-form-actions>
+</app-page-header>
 
     <div class="pf-top">
     <!-- General information -->
@@ -152,17 +162,6 @@
       </section>
     }
 
-    <app-form-sticky-footer>
-      <button type="button" class="pf-btn" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
-      @if (formStatus === 'edit') {
-        <button type="button" class="pf-btn" (click)="view()">{{ 'COMMON.VIEW' | translate }}</button>
-      }
-      @if (actionsMenu(); as items) {
-        @if (items.length) {
-          <app-dropdown-menu-btn [items]="items" [appendToBody]="true" align="start" triggerClass="pf-btn">{{ 'DOC_VIEW.ACTIONS' | translate }}</app-dropdown-menu-btn>
-        }
-      }
-      <button type="button" class="pf-btn pf-btn--primary" [disabled]="submitting" (click)="save()">{{ 'COMMON.SAVE' | translate }}</button>
-    </app-form-sticky-footer>
+    
   </div>
 }

@@ -1,3 +1,5 @@
+import { FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective } from '@shared/components/form-actions/form-actions.component';
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
@@ -6,9 +8,7 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import { LanguageService } from '@core/i18n/language.service';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
-import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 import { ToastService } from '@shared/components/toast/toast.service';
 
 import { Supplier } from '../../models/supplier.model';
@@ -25,7 +25,7 @@ import { SupplierFormDetailsComponent } from '../../components/supplier-form-det
 @Component({
   selector: 'app-supplier-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, BreadcrumbsComponent, FormStickyFooterComponent, SupplierFormDetailsComponent],
+  imports: [FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, PageHeaderComponent, CommonModule, ReactiveFormsModule, TranslateModule, SupplierFormDetailsComponent],
   templateUrl: './supplier-form.component.html',
   styleUrl: './supplier-form.component.scss',
 })

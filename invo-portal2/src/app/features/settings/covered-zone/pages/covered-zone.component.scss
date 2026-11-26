@@ -1,5 +1,5 @@
 .czp-page {
-  padding: 16px 20px 100px;
+
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -14,8 +14,6 @@
   &__titles  { display: flex; flex-direction: column; gap: 4px; }
   &__actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 }
-.page-title { margin: 0; font-size: 22px; font-weight: 700; color: var(--ui-text); }
-.page-sub   { margin: 0; font-size: 13px; color: var(--ui-muted); max-width: 80ch; line-height: 1.5; }
 
 .card {
   background: var(--ui-surface);
@@ -285,20 +283,6 @@
   p { margin: 0; }
 }
 
-// ─── Save bar ────────────────────────────────────────────────────
-.save-bar {
-  position: fixed;
-  inset-inline: 0;
-  bottom: 0;
-  z-index: 60;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  background: var(--ui-footer-bg);
-  border-top: 1px solid var(--ui-line);
-}
 
 .spinner {
   width: 14px;

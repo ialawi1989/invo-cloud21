@@ -5,10 +5,10 @@ import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { withTranslations } from '@core/i18n/with-translations';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
-import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
+import { FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, FormActionExtraDirective } from '@shared/components/form-actions/form-actions.component';
 import { ToastService } from '@shared/components/toast/toast.service';
 
 import { SalesLookupsService } from '../../../../account/services/sales-lookups.service';
@@ -28,8 +28,8 @@ const ZOOM_KEY = 'convertToPurchaseOrderZoomLevel';
   selector: 'app-convert-to-purchase-order',
   standalone: true,
   imports: [FormSkeletonComponent, 
-    CommonModule, FormsModule, TranslateModule, BreadcrumbsComponent, LoadingOverlayComponent,
-    FormStickyFooterComponent, PoPreviewPaperComponent,
+    CommonModule, FormsModule, TranslateModule, LoadingOverlayComponent,
+    PageHeaderComponent, FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, FormActionExtraDirective, PoPreviewPaperComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './convert-to-purchase-order.component.html',

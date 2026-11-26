@@ -1,3 +1,5 @@
+import { FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective } from '@shared/components/form-actions/form-actions.component';
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -15,7 +17,6 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { ToastService } from '@shared/components/toast/toast.service';
@@ -92,8 +93,8 @@ const emptySegment = (): Segment => ({
 @Component({
   selector: 'app-customer-segment-form',
   standalone: true,
-  imports: [
-    CommonModule, FormsModule, TranslateModule, BreadcrumbsComponent, LoadingOverlayComponent,
+  imports: [FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, PageHeaderComponent, 
+    CommonModule, FormsModule, TranslateModule, LoadingOverlayComponent,
     SegmentedToggleComponent, SearchDropdownComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,

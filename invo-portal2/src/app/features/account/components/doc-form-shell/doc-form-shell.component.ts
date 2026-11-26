@@ -1,12 +1,12 @@
+import { FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, FormActionSplitDirective } from '@shared/components/form-actions/form-actions.component';
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import '../../account-i18n';
 import { ChangeDetectionStrategy, Component, ViewEncapsulation, input, output } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { DropdownMenuBtnComponent, DropdownMenuBtnItem } from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
-import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 
 /**
  * Page template of every sales / purchase document form: header (breadcrumbs + title), the
@@ -19,48 +19,44 @@ import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer
 @Component({
   selector: 'app-doc-form-shell',
   standalone: true,
-  imports: [TranslateModule, MycurrencyPipe, BreadcrumbsComponent, DropdownMenuBtnComponent, FormStickyFooterComponent],
+  imports: [FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, FormActionSplitDirective, PageHeaderComponent, TranslateModule, MycurrencyPipe, DropdownMenuBtnComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   styleUrl: './doc-form-shell.component.scss',
   template: `
     <div class="df-page">
-      <header class="df-header">
-        <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-        <h1 class="df-header__title">{{ title() }}</h1>
-      </header>
+      <app-page-header [title]="title()" [trail]="breadcrumbs()">
+        <app-form-actions pageActions>
+          <!-- The page's own extra actions (Make recurring, Convert to invoice …) lead the row. -->
+          <ng-content select="[footerExtra]" ngProjectAs="[formActionExtra]"/>
+          @if (canDraft()) {
+            <button type="button" formActionSecondary [disabled]="submitting() || draftDisabled()" (click)="draft.emit()">{{ draftLabel() || ('DOC_FORM.SAVE_AS_DRAFT' | translate) }}</button>
+          }
+          @if (showView()) {
+            <button type="button" formActionSecondary (click)="view.emit()">{{ 'COMMON.VIEW' | translate }}</button>
+          }
+          @if (actionsMenu().length) {
+            <app-dropdown-menu-btn [items]="actionsMenu()" [disabled]="submitting()" [appendToBody]="true" align="start" triggerClass="fa-btn fa-btn--secondary">{{ 'DOC_VIEW.ACTIONS' | translate }}</app-dropdown-menu-btn>
+          }
+          <button type="button" formActionSecondary (click)="cancel.emit()">{{ 'COMMON.CANCEL' | translate }}</button>
+          <span formActionSplit>
+            <button type="button" formActionPrimary [disabled]="submitting() || saveDisabled()" (click)="save.emit()">{{ saveLabel() || ('DOC_FORM.SAVE_AND_SEND' | translate) }}</button>
+            @if (saveMenu().length) {
+              <app-dropdown-menu-btn [items]="saveMenu()" [disabled]="submitting() || saveDisabled()" [appendToBody]="true" [chevron]="false" align="start" triggerClass="fa-btn fa-btn--primary fa-split__caret"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 15 12 9 18 15"/></svg></app-dropdown-menu-btn>
+            }
+          </span>
+        </app-form-actions>
+      </app-page-header>
 
       <ng-content/>
 
-      <app-form-sticky-footer>
-        <div class="df-bar">
-          <div class="df-bar__actions">
-            @if (canDraft()) {
-              <button type="button" class="df-btn" [disabled]="submitting() || draftDisabled()" (click)="draft.emit()">{{ draftLabel() || ('DOC_FORM.SAVE_AS_DRAFT' | translate) }}</button>
-            }
-            <span class="df-split">
-              <button type="button" class="df-btn df-btn--primary df-split__main" [disabled]="submitting() || saveDisabled()" (click)="save.emit()">{{ saveLabel() || ('DOC_FORM.SAVE_AND_SEND' | translate) }}</button>
-              @if (saveMenu().length) {
-                <app-dropdown-menu-btn [items]="saveMenu()" [disabled]="submitting() || saveDisabled()" [appendToBody]="true" [chevron]="false" align="start" triggerClass="df-split__caret"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 15 12 9 18 15"/></svg></app-dropdown-menu-btn>
-              }
-            </span>
-            <button type="button" class="df-btn" (click)="cancel.emit()">{{ 'COMMON.CANCEL' | translate }}</button>
-            @if (showView()) {
-              <button type="button" class="df-btn" (click)="view.emit()">{{ 'COMMON.VIEW' | translate }}</button>
-            }
-            @if (actionsMenu().length) {
-              <app-dropdown-menu-btn [items]="actionsMenu()" [disabled]="submitting()" [appendToBody]="true" align="start" triggerClass="df-btn">{{ 'DOC_VIEW.ACTIONS' | translate }}</app-dropdown-menu-btn>
-            }
-          </div>
-          <div class="df-bar__side">
-            <ng-content select="[footerExtra]"/>
-            <div class="df-sum">
-              <div class="df-sum__total">{{ 'DOC_FORM.TOTAL_AMOUNT' | translate }}: <b>{{ total() | mycurrency }}</b></div>
-              <div class="df-sum__qty">{{ 'DOC_FORM.TOTAL_QUANTITY' | translate }}: {{ totalQty() }}</div>
-            </div>
-          </div>
+      <!-- Totals only (no buttons): a sticky bar at the bottom so they stay in view while editing long line items. -->
+      <div class="df-totals">
+        <div class="df-sum">
+          <div class="df-sum__total">{{ 'DOC_FORM.TOTAL_AMOUNT' | translate }}: <b>{{ total() | mycurrency }}</b></div>
+          <div class="df-sum__qty">{{ 'DOC_FORM.TOTAL_QUANTITY' | translate }}: {{ totalQty() }}</div>
         </div>
-      </app-form-sticky-footer>
+      </div>
     </div>
   `,
 })

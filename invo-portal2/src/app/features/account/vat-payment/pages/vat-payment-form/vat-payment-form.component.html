@@ -1,9 +1,22 @@
 @if (loaded) {
   <div class="pf">
-    <header class="page-header">
-      <app-breadcrumbs [items]="breadcrumbs" separator="chevron"/>
-      <h1 class="page-header__title">{{ 'VAT_PAYMENT.FORM.VAT_PAYMENT' | translate }}</h1>
-    </header>
+    <app-page-header [title]="'VAT_PAYMENT.FORM.VAT_PAYMENT' | translate" [trail]="breadcrumbs">
+<app-form-actions pageActions>
+      <button formActionSecondary type="button" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+      @if (formStatus === 'edit') {
+        <button formActionSecondary type="button" (click)="view()">{{ 'COMMON.VIEW' | translate }}</button>
+      }
+      @if (actionsMenu(); as items) {
+        @if (items.length) {
+          <app-dropdown-menu-btn [items]="items" [appendToBody]="true" align="start" triggerClass="fa-btn fa-btn--secondary">{{ 'DOC_VIEW.ACTIONS' | translate }}</app-dropdown-menu-btn>
+        }
+      }
+      @if (toValue && vatPayment.netVat > 0 || canPay) {
+        <button formActionSecondary type="button" [disabled]="submitting || !toValue" (click)="pay()">{{ 'VAT_PAYMENT.FORM.PAY' | translate }}</button>
+      }
+      <button formActionPrimary type="button" [disabled]="submitting" (click)="save()">{{ 'COMMON.SAVE' | translate }}</button>
+</app-form-actions>
+</app-page-header>
 
     <section class="pf-card">
       <h2 class="pf-card__title">{{ 'VAT_PAYMENT.FORM.PERIOD' | translate }}</h2>
@@ -45,20 +58,6 @@
       </section>
     }
 
-    <app-form-sticky-footer>
-      <button type="button" class="pf-btn" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
-      @if (formStatus === 'edit') {
-        <button type="button" class="pf-btn" (click)="view()">{{ 'COMMON.VIEW' | translate }}</button>
-      }
-      @if (actionsMenu(); as items) {
-        @if (items.length) {
-          <app-dropdown-menu-btn [items]="items" [appendToBody]="true" align="start" triggerClass="pf-btn">{{ 'DOC_VIEW.ACTIONS' | translate }}</app-dropdown-menu-btn>
-        }
-      }
-      @if (toValue && vatPayment.netVat > 0 || canPay) {
-        <button type="button" class="pf-btn" [disabled]="submitting || !toValue" (click)="pay()">{{ 'VAT_PAYMENT.FORM.PAY' | translate }}</button>
-      }
-      <button type="button" class="pf-btn pf-btn--primary" [disabled]="submitting" (click)="save()">{{ 'COMMON.SAVE' | translate }}</button>
-    </app-form-sticky-footer>
+    
   </div>
 }

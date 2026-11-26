@@ -1,10 +1,5 @@
 <div class="ep-page">
-  <header class="ep-header">
-    <div class="ep-header__titles">
-      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-      <h1 class="ep-title">{{ 'TIPS.TITLE' | translate }}</h1>
-    </div>
-  </header>
+  <app-page-header [title]="'TIPS.TITLE' | translate" [trail]="breadcrumbs()"/>
 
   @if (canDistribute) {
     <section class="ep-card">

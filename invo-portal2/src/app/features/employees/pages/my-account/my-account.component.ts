@@ -1,3 +1,5 @@
+import { FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective } from '@shared/components/form-actions/form-actions.component';
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -21,10 +23,8 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { withTranslations } from '@core/i18n/with-translations';
 import { AuthService } from '@core/auth/auth.service';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
-import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 import { ToggleComponent } from '@shared/components/toggle/toggle.component';
 import { ToastService } from '@shared/components/toast/toast.service';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
@@ -67,13 +67,11 @@ type MyAccountTab = 'profile' | 'security' | 'preferences' | 'notifications' | '
 @Component({
   selector: 'app-my-account',
   standalone: true,
-  imports: [FormSkeletonComponent, 
+  imports: [FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, PageHeaderComponent, FormSkeletonComponent, 
     CommonModule,
     ReactiveFormsModule,
     TranslateModule,
-    BreadcrumbsComponent,
     LoadingOverlayComponent,
-    FormStickyFooterComponent,
     ToggleComponent,
     SearchDropdownComponent,
     SegmentedToggleComponent,

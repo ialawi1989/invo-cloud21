@@ -1,9 +1,5 @@
 // ── Page chrome (mirrors business-settings) ───────────────────────────
-.blog-settings-page {
-  max-width: 1200px;
-  padding: 0 0 96px;
-  position: relative;
-}
+.blog-settings-page { position: relative; }
 
 .page-header {
   display: flex;
@@ -15,8 +11,6 @@
   &__titles { min-width: 0; flex: 1; }
 }
 
-.page-title { font-size: 20px; font-weight: 700; color: var(--ui-text-2); margin: 6px 0 0; }
-.page-sub   { font-size: 13px; color: var(--ui-muted);  margin: 2px 0 0; }
 
 .btn {
   padding: 8px 18px;

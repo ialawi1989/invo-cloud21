@@ -1,5 +1,4 @@
 :host { display: block; }
-.pa { max-width: 1280px; margin: 0 auto; padding: 24px 20px 64px; }
 .pa__header h1 { margin: 6px 0 2px; font-size: 22px; font-weight: 700; color: var(--ui-text); }
 .pa__header p { margin: 0 0 16px; font-size: 13px; color: var(--ui-muted); }
 
@@ -42,7 +41,6 @@
 .pa__badge { margin-inline-start: 6px; padding: 1px 8px; border-radius: 999px; background: var(--ui-surface-2); color: var(--ui-muted); font-size: 11px; }
 
 @media (max-width: 640px) {
-  .pa { padding: 16px 12px 64px; }
   .pa__filter, .pa__search { width: 100%; max-width: none; flex-basis: 100%; }
   .pa__pager { margin-inline-start: 0; }
 }

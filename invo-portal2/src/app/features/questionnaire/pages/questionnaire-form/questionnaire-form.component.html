@@ -1,8 +1,12 @@
 <div class="qf-page">
-  <header class="qf-header">
-    <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-    <h1 class="qf-title">{{ title() }}</h1>
-  </header>
+  <app-page-header [title]="title()" [trail]="breadcrumbs()">
+<app-form-actions pageActions>
+    <button formActionSecondary type="button" (click)="cancel()" [disabled]="saving()">{{ 'COMMON.CANCEL' | translate }}</button>
+    <button formActionPrimary type="button" (click)="save()" [disabled]="saving()">
+      {{ saving() ? ('COMMON.SAVING' | translate) : ('COMMON.SAVE' | translate) }}
+    </button>
+</app-form-actions>
+</app-page-header>
 
   <section class="qf-card">
     <h2 class="qf-card__title">{{ 'QUESTIONNAIRE.DETAILS' | translate }}</h2>
@@ -22,10 +26,5 @@
     </div>
   </section>
 
-  <footer class="qf-bar">
-    <button type="button" class="qf-btn qf-btn--ghost" (click)="cancel()" [disabled]="saving()">{{ 'COMMON.CANCEL' | translate }}</button>
-    <button type="button" class="qf-btn qf-btn--primary" (click)="save()" [disabled]="saving()">
-      {{ saving() ? ('COMMON.SAVING' | translate) : ('COMMON.SAVE' | translate) }}
-    </button>
-  </footer>
+  
 </div>

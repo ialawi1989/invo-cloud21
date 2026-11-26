@@ -3,11 +3,11 @@
 // are added here.
 
 .df-page {
-  padding: 0 0 100px;
+  
   display: flex;
   flex-direction: column;
   gap: 16px;
-  @media (max-width: 640px) { padding: 0 0 96px; gap: 12px; }
+  @media (max-width: 640px) { gap: 12px; }
 }
 
 .page-header { display: flex; flex-direction: column; gap: 4px; }
@@ -237,19 +237,6 @@
   border-radius: 8px;
 }
 
-.save-bar {
-  position: fixed;
-  inset-inline: 0;
-  bottom: 0;
-  z-index: 60;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  background: var(--ui-footer-bg);
-  border-top: 1px solid var(--ui-line);
-}
 
 .spinner {
   width: 14px;

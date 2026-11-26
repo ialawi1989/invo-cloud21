@@ -2,16 +2,9 @@ $border: #eef2f6;
 $ink: #0f172a;
 $muted: #64748b;
 
-.ob-page { max-width: 1080px; margin: 0 auto; padding: 8px 0 96px; position: relative; }
+.ob-page { padding: 0 0 96px; position: relative; }
 
 // ── Header ───────────────────────────────────────────────────────────────
-.ob-head {
-  display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
-  margin: 10px 0 18px;
-}
-.ob-title { margin: 6px 0 4px; font-size: 22px; font-weight: 700; color: $ink; letter-spacing: -0.01em; }
-.ob-sub   { margin: 0; max-width: 640px; font-size: 13px; line-height: 1.5; color: $muted; }
-.ob-head__actions { flex-shrink: 0; }
 
 // ── Buttons ──────────────────────────────────────────────────────────────
 ::ng-deep .ob-btn {

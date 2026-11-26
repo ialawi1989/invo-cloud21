@@ -1,8 +1,15 @@
 <div class="mf-page">
-  <header class="page-header">
-    <app-breadcrumbs [items]="breadcrumbs()" separator="chevron" />
-    <h1 class="page-title">{{ pageTitle() }}</h1>
-  </header>
+  <app-page-header [title]="pageTitle()" [trail]="breadcrumbs()">
+<app-form-actions pageActions>
+    <button formActionSecondary type="button" (click)="cancel()" [disabled]="saving()">
+      {{ 'MATRIX.FORM.CANCEL' | translate }}
+    </button>
+    <button formActionPrimary type="button" (click)="save()" [disabled]="saving() || form.invalid">
+      @if (saving()) { <span class="spinner" aria-hidden="true"></span> }
+      {{ 'MATRIX.FORM.SAVE' | translate }}
+    </button>
+</app-form-actions>
+</app-page-header>
 
   <form [formGroup]="form" (keydown.enter)="$event.preventDefault()">
     <div class="mf-main">
@@ -433,15 +440,7 @@
     </div><!-- /.mf-main -->
   </form>
 
-  <footer class="save-bar">
-    <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
-      {{ 'MATRIX.FORM.CANCEL' | translate }}
-    </button>
-    <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving() || form.invalid">
-      @if (saving()) { <span class="spinner" aria-hidden="true"></span> }
-      {{ 'MATRIX.FORM.SAVE' | translate }}
-    </button>
-  </footer>
+  
 
   <app-loading-overlay [show]="loading()" />
 </div>

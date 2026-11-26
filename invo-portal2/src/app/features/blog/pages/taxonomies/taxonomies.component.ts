@@ -1,3 +1,4 @@
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -14,7 +15,6 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { withTranslations } from '@core/i18n/with-translations';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { SegmentedToggleComponent } from '@shared/components/segmented-toggle/segmented-toggle.component';
 import { TooltipDirective } from '@shared/directives/tooltip.directive';
@@ -37,12 +37,11 @@ type Tab = 'category' | 'tag' | 'hashtag';
 @Component({
   selector: 'app-blog-taxonomies',
   standalone: true,
-  imports: [ListSkeletonComponent, 
+  imports: [PageHeaderComponent, ListSkeletonComponent, 
     CommonModule,
     FormsModule,
     RouterModule,
     TranslateModule,
-    BreadcrumbsComponent,
     SegmentedToggleComponent,
     SearchDropdownComponent,
     EmptyStateComponent,

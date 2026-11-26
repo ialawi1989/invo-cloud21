@@ -1,25 +1,7 @@
-.seo-type {
-  max-width: 1180px;
-  padding: 0 0 96px;
-}
 
 // ── Header ──────────────────────────────────────────────────────────────
 .page-header {
   margin-bottom: 16px;
-}
-.page-header__row {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  margin-top: 6px;
-}
-.page-header__titles { flex: 1; min-width: 0; }
-.page-title {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--ui-text-2);
-  margin: 4px 0;
 }
 .page-sub {
   font-size: 14px;

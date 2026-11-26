@@ -1,26 +1,12 @@
 // The main layout already pads the content (same as the Transactions page), so the page adds no side padding of
 // its own — only room at the bottom for the sticky action bar.
 .rf-page {
-  padding: 0 0 120px;
+
   position: relative;
 }
 
 // Title on the left, "File Reconciliation" on the right, one row.
-.rf-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin: 4px 0 12px;
-}
 
-.rf-title {
-  margin: 0;
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--ui-text);
-  letter-spacing: -0.01em;
-}
 
 .rf-card {
   background: var(--ui-surface);
@@ -197,7 +183,6 @@
   button:disabled { opacity: 0.4; cursor: not-allowed; }
 }
 
-.rf-spacer { height: 24px; }
 
 .rf-attachments-head {
   display: flex;

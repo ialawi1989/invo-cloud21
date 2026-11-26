@@ -1,17 +1,14 @@
 <div class="txn-page">
-  <div class="txn-head">
-  <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-  <div class="txn-header">
-    <h1 class="txn-title">{{ 'BANKING_OVERVIEW.TRANSACTIONS.TITLE' | translate }}</h1>
-    @if (canReconcile) {
-      <button type="button" class="btn btn-primary txn-reconcile-btn" (click)="reconcileAccount()">
-        {{ 'BANKING_OVERVIEW.TRANSACTIONS.RECONCILE_ACCOUNT' | translate }}
-      </button>
-    }
-  </div>
-
+  <app-page-header [title]="'BANKING_OVERVIEW.TRANSACTIONS.TITLE' | translate" [trail]="breadcrumbs()">
+    <div pageActions>
+      @if (canReconcile) {
+        <button type="button" class="btn btn-primary txn-reconcile-btn" (click)="reconcileAccount()">
+          {{ 'BANKING_OVERVIEW.TRANSACTIONS.RECONCILE_ACCOUNT' | translate }}
+        </button>
+      }
+    </div>
+  </app-page-header>
   <app-banking-account-header [name]="accountName()"/>
-  </div>
 
   <app-list-page
     [columns]="columns"

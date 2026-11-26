@@ -1,3 +1,5 @@
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
+import { FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, FormActionExtraDirective } from '@shared/components/form-actions/form-actions.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -16,7 +18,6 @@ import { Router } from '@angular/router';
 
 import { withTranslations } from '@core/i18n/with-translations';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { ModalService } from '@shared/modal/modal.service';
@@ -66,11 +67,10 @@ interface BulkFields {
 @Component({
   selector: 'app-covered-zone',
   standalone: true,
-  imports: [TooltipDirective, 
+  imports: [FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, FormActionExtraDirective, PageHeaderComponent, TooltipDirective, 
     CommonModule,
     FormsModule,
     TranslateModule,
-    BreadcrumbsComponent,
     LoadingOverlayComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,

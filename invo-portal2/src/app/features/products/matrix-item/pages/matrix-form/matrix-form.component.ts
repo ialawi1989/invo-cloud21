@@ -1,3 +1,5 @@
+import { FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective } from '@shared/components/form-actions/form-actions.component';
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -23,7 +25,6 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { withTranslations } from '@core/i18n/with-translations';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
 import { BranchConnectionService } from '@core/layout/services/branch.service';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { ToastService } from '@shared/components/toast/toast.service';
@@ -103,13 +104,12 @@ import { TooltipDirective } from '@shared/directives/tooltip.directive';
 @Component({
   selector: 'app-matrix-form',
   standalone: true,
-  imports: [TooltipDirective, 
+  imports: [FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, PageHeaderComponent, TooltipDirective, 
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
     FormsModule,
     TranslateModule,
-    BreadcrumbsComponent,
     LoadingOverlayComponent,
     ManageDimensionsComponent,
     BranchTabsComponent,

@@ -1,16 +1,9 @@
 :host {
   display: block;
-  padding-bottom: 96px;
+  
 }
 
-.mjf-page {
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 16px 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
+.mjf-page { display: flex; flex-direction: column; gap: 16px; }
 
 .mjf-header {
   display: flex;

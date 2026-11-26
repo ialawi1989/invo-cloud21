@@ -1,18 +1,41 @@
 <div class="rf-page">
   <app-loading-overlay [show]="loading()" [fullScreen]="false"/>
 
-  <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-  <div class="rf-header">
-    <h1 class="rf-title">
-      {{ (isNew() ? 'BANKING_OVERVIEW.FORM.NEW_TITLE' : 'BANKING_OVERVIEW.FORM.EDIT_TITLE') | translate }}
-    </h1>
-    <!-- Opens as a modal over this sheet (no navigation); available once the sheet's rows are loaded. -->
-    <button type="button" class="btn btn-ghost btn-sm"
-            [disabled]="status() !== 'in-progress' || !transactions().length"
-            (click)="openFileReconcile()">
-      {{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.TITLE' | translate }}
-    </button>
-  </div>
+  <app-page-header [title]="(isNew() ? 'BANKING_OVERVIEW.FORM.NEW_TITLE' : 'BANKING_OVERVIEW.FORM.EDIT_TITLE') | translate" [trail]="breadcrumbs()">
+    <app-form-actions pageActions>
+      <!-- Opens as a modal over this sheet (no navigation); available once the sheet's rows are loaded. -->
+      <button type="button" class="btn btn-ghost btn-sm" formActionExtra
+              [disabled]="status() !== 'in-progress' || !transactions().length"
+              (click)="openFileReconcile()">
+        {{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.TITLE' | translate }}
+      </button>
+      <button type="button" formActionSecondary (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+      <ng-container ngProjectAs="[formActionSecondary]">
+        @if (status() === 'in-progress') {
+          <button type="button" formActionSecondary [disabled]="saving()" (click)="saveDraft()">
+            {{ 'BANKING_OVERVIEW.FORM.SAVE_DRAFT' | translate }}
+          </button>
+        }
+      </ng-container>
+      <ng-container ngProjectAs="[formActionPrimary]">
+        @if (status() === '') {
+          <button type="button" formActionPrimary [disabled]="!headerValid() || loading()" (click)="startReconciliation()">
+            {{ 'BANKING_OVERVIEW.FORM.START_RECONCILIATION' | translate }}
+          </button>
+        }
+        @if (status() === 'reconciled' && canUndo) {
+          <button type="button" formActionPrimary [disabled]="saving()" (click)="undoReconciliation()">
+            {{ 'BANKING_OVERVIEW.FORM.UNDO_RECONCILIATION' | translate }}
+          </button>
+        }
+        @if (status() === 'in-progress') {
+          <button type="button" formActionPrimary [disabled]="!canSave() || saving()" (click)="save()">
+            {{ 'BANKING_OVERVIEW.FORM.RECONCILE_COUNT' | translate:{ count: selectedCount() } }}
+          </button>
+        }
+      </ng-container>
+    </app-form-actions>
+  </app-page-header>
 
   <app-banking-account-header [name]="accountName()"/>
 
@@ -187,28 +210,4 @@
     </div>
   }
 
-  <div class="rf-spacer"></div>
-
-  <app-form-sticky-footer>
-    <button type="button" class="btn btn-ghost" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
-
-    @if (status() === '') {
-      <button type="button" class="btn btn-primary" [disabled]="!headerValid() || loading()" (click)="startReconciliation()">
-        {{ 'BANKING_OVERVIEW.FORM.START_RECONCILIATION' | translate }}
-      </button>
-    }
-    @if (status() === 'reconciled' && canUndo) {
-      <button type="button" class="btn btn-primary" [disabled]="saving()" (click)="undoReconciliation()">
-        {{ 'BANKING_OVERVIEW.FORM.UNDO_RECONCILIATION' | translate }}
-      </button>
-    }
-    @if (status() === 'in-progress') {
-      <button type="button" class="btn btn-secondary" [disabled]="saving()" (click)="saveDraft()">
-        {{ 'BANKING_OVERVIEW.FORM.SAVE_DRAFT' | translate }}
-      </button>
-      <button type="button" class="btn btn-primary" [disabled]="!canSave() || saving()" (click)="save()">
-        {{ 'BANKING_OVERVIEW.FORM.RECONCILE_COUNT' | translate:{ count: selectedCount() } }}
-      </button>
-    }
-  </app-form-sticky-footer>
 </div>

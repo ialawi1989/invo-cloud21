@@ -4,47 +4,39 @@
   <!-- PAGE HEADER (on the page background)                            -->
   <!-- ══════════════════════════════════════════════════════════════ -->
   @if (pageTitle) {
-  <header class="lp-head">
-    <div class="lp-head__main">
-      @if (breadcrumbs.length > 0) {
-        <app-breadcrumbs [items]="breadcrumbs" separator="chevron" class="block"/>
+  <app-page-header class="lp-head" [stickyActions]="!!projectedFormActions()" [title]="pageTitle" [description]="pageSubtitle || null" [trail]="breadcrumbs">
+    <!-- The count pill (plain, on-demand "Count" button, retry, skeleton) is projected into the title line, unchanged. -->
+    <span pageCount class="lp-head__count">
+      @if (chrome().pillKind === 'button') {
+        <button type="button" class="lp-count lp-count--btn" (click)="requestCount()"
+          [attr.aria-label]="'COMMON.LP_COUNT_ARIA' | translate:{ noun: resultsNoun }">
+          <svg class="lp-count__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8"/><path d="M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01M8 19h.01M12 19h.01M16 19h.01"/></svg>
+          {{ 'COMMON.LP_COUNT' | translate }}
+        </button>
+      } @else if (chrome().pillKind === 'retry') {
+        <button type="button" class="lp-count lp-count--btn lp-count--danger" (click)="requestCount()"
+          [attr.aria-label]="'COMMON.LP_COUNT_FAILED_ARIA' | translate:{ noun: resultsNoun }">
+          <svg class="lp-count__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+          {{ 'COMMON.LP_RETRY' | translate }}
+        </button>
+      } @else if (chrome().skeleton) {
+        <span class="lp-count lp-count--skel" [attr.aria-busy]="chrome().status === 'counting' ? 'true' : null" [attr.aria-hidden]="chrome().status === 'counting' ? null : 'true'"><span class="lp-skel lp-skel--bar"></span></span>
+      } @else if (chrome().pill) {
+        <span class="lp-count" dir="ltr" [attr.aria-label]="'COMMON.LP_TOTAL_COUNT' | translate:{ count: pageInfo().total }">{{ fmtCount(pageInfo().total!) }}</span>
       }
-      <div class="lp-head__title-row">
-        <h1 class="lp-title">{{ pageTitle }}</h1>
-        @if (chrome().pillKind === 'button') {
-          <button type="button" class="lp-count lp-count--btn" (click)="requestCount()"
-            [attr.aria-label]="'COMMON.LP_COUNT_ARIA' | translate:{ noun: resultsNoun }">
-            <svg class="lp-count__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8"/><path d="M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01M8 19h.01M12 19h.01M16 19h.01"/></svg>
-            {{ 'COMMON.LP_COUNT' | translate }}
-          </button>
-        } @else if (chrome().pillKind === 'retry') {
-          <button type="button" class="lp-count lp-count--btn lp-count--danger" (click)="requestCount()"
-            [attr.aria-label]="'COMMON.LP_COUNT_FAILED_ARIA' | translate:{ noun: resultsNoun }">
-            <svg class="lp-count__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-            {{ 'COMMON.LP_RETRY' | translate }}
-          </button>
-        } @else if (chrome().skeleton) {
-          <span class="lp-count lp-count--skel" [attr.aria-busy]="chrome().status === 'counting' ? 'true' : null" [attr.aria-hidden]="chrome().status === 'counting' ? null : 'true'"><span class="lp-skel lp-skel--bar"></span></span>
-        } @else if (chrome().pill) {
-          <span class="lp-count" dir="ltr" [attr.aria-label]="'COMMON.LP_TOTAL_COUNT' | translate:{ count: pageInfo().total }">{{ fmtCount(pageInfo().total!) }}</span>
+    </span>
+    <div pageActions class="lp-head__actions">
+        <ng-content select="[listHeaderActions]"></ng-content>
+        @for (action of enabledHeaderActions(); track action.id) {
+        <button type="button" (click)="onHeaderAction(action)" [disabled]="isActionDisabled(action)"
+          class="lp-btn"
+          [class.lp-btn--primary]="action.color === 'primary'"
+          [class.lp-btn--danger]="action.color === 'danger'">
+          {{ action.label }}
+        </button>
         }
-      </div>
-      @if (pageSubtitle) {
-        <p class="lp-subtitle">{{ pageSubtitle }}</p>
-      }
     </div>
-    <div class="lp-head__actions">
-      <ng-content select="[listHeaderActions]"></ng-content>
-      @for (action of enabledHeaderActions(); track action.id) {
-      <button type="button" (click)="onHeaderAction(action)" [disabled]="isActionDisabled(action)"
-        class="lp-btn"
-        [class.lp-btn--primary]="action.color === 'primary'"
-        [class.lp-btn--danger]="action.color === 'danger'">
-        {{ action.label }}
-      </button>
-      }
-    </div>
-  </header>
+  </app-page-header>
   }
 
   <!-- Optional sub-header between the page header and the card (e.g. status tabs). -->

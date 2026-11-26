@@ -25,7 +25,7 @@ export const RECURRING_BILLS_ROUTES: Routes = [
   {
     path: 'view/:id',
     canActivate: [translationsLoaded, privilegeGuard],
-    data: { permissionPath: 'recurringBillSecurity.actions.view.access' },
+    data: { pageWidth: 'bleed', permissionPath: 'recurringBillSecurity.actions.view.access' },
     loadComponent: () =>
       import('./pages/recurring-bill-view/recurring-bill-view.component').then(m => m.RecurringBillViewComponent),
   },

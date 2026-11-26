@@ -30,7 +30,7 @@ export const CUSTOMERS_ROUTES: Routes = [
   {
     path: 'view/:id',
     canActivate: [translationsLoaded, privilegeGuard],
-    data: { permissionPath: 'customerSecurity.actions.view.access' },
+    data: { pageWidth: 'bleed', permissionPath: 'customerSecurity.actions.view.access' },
     loadComponent: () =>
       import('./pages/customer-dashboard/customer-dashboard.component').then(m => m.CustomerDashboardComponent),
   },
@@ -39,7 +39,7 @@ export const CUSTOMERS_ROUTES: Routes = [
     path: ':id',
     canActivate: [translationsLoaded, privilegeGuard],
     canDeactivate: [unsavedChangesGuard],
-    data: { permissionPath: 'customerSecurity.actions.add.access' },
+    data: { pageWidth: 'form', permissionPath: 'customerSecurity.actions.add.access' },
     loadComponent: () =>
       import('./pages/customer-form/customer-form.component').then(m => m.CustomerFormComponent),
   },

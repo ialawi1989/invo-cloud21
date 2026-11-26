@@ -6,6 +6,8 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
+import { FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective } from '@shared/components/form-actions/form-actions.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { DateFieldComponent } from '@shared/components/date-field/date-field.component';
@@ -16,7 +18,6 @@ import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 import { AlertComponent } from '@shared/components/alert/alert.component';
-import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { ModalService } from '@shared/modal/modal.service';
 import { ConfirmModalComponent, ConfirmModalData } from '@shared/modal/demo/confirm-modal.component';
@@ -59,7 +60,7 @@ import { describeError, HrError } from '../../hr-error';
 @Component({
   selector: 'app-employee-eos',
   standalone: true,
-  imports: [TranslateModule, LoadingOverlayComponent, MycurrencyPipe, AlertComponent, SearchDropdownComponent, FormStickyFooterComponent, DateFieldComponent],
+  imports: [PageHeaderComponent, FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, TranslateModule, LoadingOverlayComponent, MycurrencyPipe, AlertComponent, SearchDropdownComponent, DateFieldComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './employee-eos.component.html',
   styleUrl: './employee-eos.component.scss',

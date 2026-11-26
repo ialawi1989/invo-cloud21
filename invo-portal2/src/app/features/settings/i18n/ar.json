@@ -16,6 +16,24 @@
       "SUCCESS":          "تم الاستيراد بنجاح!"
     },
 
+    "BACK": "رجوع",
+    "ALL_SETTINGS": "كل الإعدادات",
+    "NO_RESULTS": "لا توجد إعدادات مطابقة",
+    "MATCH_ONE": "{{count}} نتيجة",
+    "MATCH_MANY": "{{count}} نتائج",
+    "COLLAPSE_MENU": "طيّ القائمة",
+    "EXPAND_MENU": "توسيع القائمة",
+    "NAV_LABEL": "قائمة الإعدادات",
+    "SUBMENU_LABEL": "قسم الإعدادات",
+    "BREADCRUMB_LABEL": "مسار التنقل",
+    "CLEAR_SEARCH": "مسح البحث",
+    "SECTIONS": {
+      "BUSINESS_SETUP": "إعداد النشاط",
+      "SALES_POS": "المبيعات ونقاط البيع",
+      "PURCHASING_FINANCE": "المشتريات والمالية",
+      "OPERATIONS": "العمليات"
+    },
+
     "GROUPS": {
       "COMPANY":   "إعداد الشركة",
       "PRODUCTS":  "المنتجات",

@@ -1,3 +1,5 @@
+import { FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective } from '@shared/components/form-actions/form-actions.component';
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -19,11 +21,9 @@ import { AuthService } from '@core/auth/auth.service';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { hrGrantFor } from '../../hr-privilege';
 
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { FormErrorSummaryComponent } from '@shared/components/form-error-summary/form-error-summary.component';
-import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 import { ToastService } from '@shared/components/toast/toast.service';
 import { ModalService } from '@shared/modal/modal.service';
 import { ConfirmModalComponent, ConfirmModalData } from '@shared/modal/demo/confirm-modal.component';
@@ -105,12 +105,10 @@ const TIER3_DECISION_OPTIONS: readonly Tier3DecisionOption[] = [
 @Component({
   selector: 'app-gosi-settings',
   standalone: true,
-  imports: [TooltipDirective, 
+  imports: [FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, PageHeaderComponent, TooltipDirective, 
     ReactiveFormsModule,
     TranslateModule,
-    BreadcrumbsComponent,
     LoadingOverlayComponent,
-    FormStickyFooterComponent,
     FormErrorSummaryComponent,
     SearchDropdownComponent, DateFieldComponent
   ],

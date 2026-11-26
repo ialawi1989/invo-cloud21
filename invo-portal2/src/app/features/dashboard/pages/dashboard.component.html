@@ -1,66 +1,51 @@
 <div class="db">
-  <header class="db__head">
-    <div class="db__titles">
-      @if (roleMode()) {
-        <a class="db__back" [routerLink]="backLink()">
+  <app-page-header
+    [title]="roleMode() ? ('DASHBOARD.ROLE_EDIT_TITLE' | translate:{ name: roleName() }) : greeting()"
+    [description]="(roleMode() ? 'DASHBOARD.ROLE_EDIT_SUB' : 'DASHBOARD.SUBTITLE') | translate"
+    [trail]="roleMode() ? [{ label: ('DASHBOARD.BACK_TO_ROLE' | translate), routerLink: backLink() }, { label: '' }] : []">
+    <!-- Customize leads (accent-coloured, it's the primary action here), then the date range, then the branch selector. -->
+      <div pageActions class="db__filters">
+        <button type="button" class="db__customize" (click)="openCustomize()">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+            <line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/>
+            <line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/>
+            <line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/>
           </svg>
-          {{ 'DASHBOARD.BACK_TO_ROLE' | translate }}
-        </a>
-        <h1 class="db__title">{{ 'DASHBOARD.ROLE_EDIT_TITLE' | translate:{ name: roleName() } }}</h1>
-        <p class="db__sub">{{ 'DASHBOARD.ROLE_EDIT_SUB' | translate }}</p>
-      } @else {
-        <h1 class="db__title">{{ greeting() }}</h1>
-        <p class="db__sub">{{ 'DASHBOARD.SUBTITLE' | translate }}</p>
-      }
-    </div>
-
-    <!-- Filters sit in one row above the content, never inside a card.
-         Customize leads (accent-coloured, it's the primary action here), then
-         the date range, then the branch selector. -->
-    <div class="db__filters">
-      <button type="button" class="db__customize" (click)="openCustomize()">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/>
-          <line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/>
-          <line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/>
-          <line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/>
-        </svg>
-        {{ 'DASHBOARD.CUSTOMIZE' | translate }}
-      </button>
-
-      @if (roleMode()) {
-        <button type="button" class="db__customize db__customize--save" (click)="saveRole()">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-            <polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
-          </svg>
-          {{ 'COMMON.SAVE' | translate }}
+          {{ 'DASHBOARD.CUSTOMIZE' | translate }}
         </button>
-      }
-
-      <app-search-dropdown
-        class="db__period"
-        [items]="datePresets"
-        [value]="selectedPreset()"
-        [displayWith]="displayPreset"
-        [compareWith]="comparePreset"
-        [searchable]="false"
-        [clearable]="false"
-        (valueChange)="onPresetChange($any($event))"/>
-
-      <app-search-dropdown
-        class="db__branch"
-        [items]="branchOptions()"
-        [displayWith]="branchDisplay"
-        [compareWith]="branchCompare"
-        [value]="selectedBranch()"
-        [searchable]="true"
-        [clearable]="false"
-        (valueChange)="onBranch($event)"/>
-    </div>
-  </header>
+  
+        @if (roleMode()) {
+          <button type="button" class="db__customize db__customize--save" (click)="saveRole()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+              <polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+            </svg>
+            {{ 'COMMON.SAVE' | translate }}
+          </button>
+        }
+  
+        <app-search-dropdown
+          class="db__period"
+          [items]="datePresets"
+          [value]="selectedPreset()"
+          [displayWith]="displayPreset"
+          [compareWith]="comparePreset"
+          [searchable]="false"
+          [clearable]="false"
+          (valueChange)="onPresetChange($any($event))"/>
+  
+        <app-search-dropdown
+          class="db__branch"
+          [items]="branchOptions()"
+          [displayWith]="branchDisplay"
+          [compareWith]="branchCompare"
+          [value]="selectedBranch()"
+          [searchable]="true"
+          [clearable]="false"
+          (valueChange)="onBranch($event)"/>
+      </div>
+    </app-page-header>
 
   @if (rows().length === 0) {
     <div class="db__empty">

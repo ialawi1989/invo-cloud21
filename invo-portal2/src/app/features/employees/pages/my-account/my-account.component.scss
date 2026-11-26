@@ -1,10 +1,6 @@
 // ── Page chrome (matches branch-form) ─────────────────────────────────
-.my-account-page {
-  max-width: 900px;
-  // Extra bottom padding leaves room for the sticky save bar.
-  padding: 0 0 96px;
-  position: relative;
-}
+.my-account-page { // Extra bottom padding leaves room for the sticky save bar.
+  position: relative; }
 
 .page-header {
   display: flex;
@@ -16,13 +12,6 @@
   &__titles { min-width: 0; flex: 1; }
 }
 
-.page-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--ui-text-2);
-  margin: 6px 0 0;
-  word-break: break-word;
-}
 
 .btn {
   padding: 8px 18px;

@@ -92,7 +92,7 @@
         }
 
         <!-- Separator (skip after the last item) -->
-        @if (!isCurrent($index)) {
+        @if ($index < visibleItems().length - 1) {
           <span class="text-slate-400 select-none mx-3 inline-flex items-center" aria-hidden="true">
             @switch (separator()) {
               @case ('chevron') {

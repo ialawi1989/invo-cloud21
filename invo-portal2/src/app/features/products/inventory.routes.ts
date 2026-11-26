@@ -38,7 +38,7 @@ export const INVENTORY_ROUTES: Routes = [
     canDeactivate: [unsavedChangesGuard],
     loadComponent: () =>
       import('./pages/inventory-locations/inventory-locations-form/inventory-locations-form.component').then(m => m.InventoryLocationsFormComponent),
-    data: { permissionPath: 'inventoryLocationsSecurity.actions.add.access' },
+    data: { pageWidth: 'form', permissionPath: 'inventoryLocationsSecurity.actions.add.access' },
   },
 
   // ── Inventory requests (sidebar id 82 → /inventory/request) ─────
@@ -63,14 +63,14 @@ export const INVENTORY_ROUTES: Routes = [
     canActivate: [translationsLoaded, privilegeGuard],
     loadComponent: () =>
       import('./pages/inventory-request/purchase-order-view/purchase-order-view.component').then(m => m.PurchaseOrderViewComponent),
-    data: { permissionPath: 'purchaseOrderSecurity.actions.add.access' },
+    data: { pageWidth: 'fluid', permissionPath: 'purchaseOrderSecurity.actions.add.access' },
   },
   {
     path: 'request/:id/view',
     canActivate: [translationsLoaded, privilegeGuard],
     loadComponent: () =>
       import('./pages/inventory-request/inventory-request-view/inventory-request-view.component').then(m => m.InventoryRequestViewComponent),
-    data: { permissionPath: 'productSecurity.actions.requestInventory.access' },
+    data: { pageWidth: 'bleed', permissionPath: 'productSecurity.actions.requestInventory.access' },
   },
   {
     // Creating needs the Add privilege; editing (below) only needs request access, as in legacy.

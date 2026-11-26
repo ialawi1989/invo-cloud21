@@ -1,9 +1,6 @@
 <div class="rec-page">
-  <div class="rec-head">
-  <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-  <div class="rec-header">
-    <h1 class="rec-title">{{ 'BANKING_OVERVIEW.LIST.RECONCILIATIONS' | translate }}</h1>
-    <div class="rec-header__actions">
+  <app-page-header [title]="'BANKING_OVERVIEW.LIST.RECONCILIATIONS' | translate" [trail]="breadcrumbs()">
+    <div pageActions>
       <a [routerLink]="['/account/banking-overview/file-reconciliation', accountId()]" class="btn btn-ghost">
         {{ 'BANKING_OVERVIEW.RECONCILIATIONS.RECONCILE_BY_FILE' | translate }}
       </a>
@@ -14,10 +11,8 @@
         {{ 'BANKING_OVERVIEW.RECONCILIATIONS.INITIATE' | translate }}
       </button>
     </div>
-  </div>
-
+  </app-page-header>
   <app-banking-account-header [name]="accountName()"/>
-  </div>
 
   <app-list-page
     [columns]="columns"

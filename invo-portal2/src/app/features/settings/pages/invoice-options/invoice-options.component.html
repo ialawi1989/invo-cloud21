@@ -1,11 +1,22 @@
 <div class="invoice-options-page" [formGroup]="form">
-  <header class="page-header">
-    <div class="page-header__titles">
-      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-      <h1 class="page-title">{{ 'SETTINGS.ITEMS.INVOICE_OPTIONS' | translate }}</h1>
-      <p class="page-sub">{{ 'SETTINGS.ITEMS.INVOICE_OPTIONS_DESC' | translate }}</p>
-    </div>
-  </header>
+  <app-page-header [title]="'SETTINGS.ITEMS.INVOICE_OPTIONS' | translate" [description]="'SETTINGS.ITEMS.INVOICE_OPTIONS_DESC' | translate" [trail]="breadcrumbs()">
+<app-form-actions pageActions>
+    <button formActionSecondary
+      type="button"
+      (click)="back()"
+      [disabled]="saving()"
+    >
+      {{ 'COMMON.CANCEL' | translate }}
+    </button>
+    <button formActionPrimary
+      type="button"
+      (click)="save()"
+      [disabled]="saving() || loading() || form.invalid"
+    >
+      {{ 'COMMON.SAVE' | translate }}
+    </button>
+</app-form-actions>
+</app-page-header>
 
   @if (loading()) {
     <app-form-skeleton />
@@ -82,22 +93,5 @@
 
   <app-loading-overlay [show]="saving()" [message]="saveLabel()"/>
 
-  <app-form-sticky-footer>
-    <button
-      type="button"
-      class="btn btn-cancel"
-      (click)="back()"
-      [disabled]="saving()"
-    >
-      {{ 'COMMON.CANCEL' | translate }}
-    </button>
-    <button
-      type="button"
-      class="btn btn-primary"
-      (click)="save()"
-      [disabled]="saving() || loading() || form.invalid"
-    >
-      {{ 'COMMON.SAVE' | translate }}
-    </button>
-  </app-form-sticky-footer>
+  
 </div>

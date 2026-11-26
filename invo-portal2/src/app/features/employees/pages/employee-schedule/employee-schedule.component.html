@@ -1,9 +1,6 @@
 <div class="schedule-page">
-  <app-breadcrumbs [items]="breadcrumbs()" />
-
-  <div class="page-head">
-    <h1 class="page-title">{{ 'EMPLOYEES.SCHEDULE.SCHEDULED_SHIFTS' | translate }}</h1>
-    <div class="page-head__actions">
+  <app-page-header [title]="'EMPLOYEES.SCHEDULE.SCHEDULED_SHIFTS' | translate" [trail]="breadcrumbs()">
+    <div pageActions>
       <app-dropdown-menu-btn
         [items]="addMenuTop()"
         [appendToBody]="true"
@@ -13,7 +10,7 @@
         {{ 'COMMON.ADD' | translate }}
       </app-dropdown-menu-btn>
     </div>
-  </div>
+  </app-page-header>
 
   <!-- Controls -->
   <div class="controls">

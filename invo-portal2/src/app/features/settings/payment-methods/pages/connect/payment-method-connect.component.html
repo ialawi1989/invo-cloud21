@@ -1,21 +1,25 @@
 <div class="pmc-page">
-  <header class="page-header">
+  <app-page-header [title]="pageTitle()" [description]="provider() ? pageSubtitle() : null" [trail]="breadcrumbs()">
     @if (provider()?.logo; as logo) {
-      <img class="page-header__logo" [src]="logo" [alt]="provider()!.displayName"/>
+      <img pageLead class="page-header__logo" [src]="logo" [alt]="provider()!.displayName"/>
     }
-    <div class="page-header__titles">
-      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-      <h1 class="page-title">{{ pageTitle() }}</h1>
-      @if (provider(); as p) {
-        <p class="page-sub">
-          {{ pageSubtitle() }}
-          @if (p.setupDocUrl) {
-            · <a [href]="p.setupDocUrl" target="_blank" rel="noopener noreferrer">{{ p.setupDocUrl }}</a>
-          }
-        </p>
+    @if (provider(); as p) {
+      @if (p.setupDocUrl) {
+        <ng-container pageDescriptionExtra> · <a [href]="p.setupDocUrl" target="_blank" rel="noopener noreferrer">{{ p.setupDocUrl }}</a></ng-container>
       }
-    </div>
-  </header>
+    }
+  @if (!!provider()) {
+<app-form-actions pageActions>
+      <button formActionSecondary type="button" (click)="cancel()" [disabled]="saving()">
+        {{ 'COMMON.CANCEL' | translate }}
+      </button>
+      <button formActionPrimary type="button" (click)="save()" [disabled]="!canSave()">
+        @if (saving()) { <span class="spinner" aria-hidden="true"></span> }
+        {{ saving() ? ('COMMON.SAVING' | translate) : ('COMMON.SAVE' | translate) }}
+      </button>
+</app-form-actions>
+}
+</app-page-header>
 
   <!-- Unknown provider — slug isn't in the registry. -->
   @if (!provider()) {
@@ -365,15 +369,7 @@
       </aside>
     </div>
 
-    <footer class="save-bar">
-      <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
-        {{ 'COMMON.CANCEL' | translate }}
-      </button>
-      <button type="button" class="btn btn-primary" (click)="save()" [disabled]="!canSave()">
-        @if (saving()) { <span class="spinner" aria-hidden="true"></span> }
-        {{ saving() ? ('COMMON.SAVING' | translate) : ('COMMON.SAVE' | translate) }}
-      </button>
-    </footer>
+    
   }
 
   <app-loading-overlay [show]="loading()"/>

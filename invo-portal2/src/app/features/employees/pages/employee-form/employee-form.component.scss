@@ -1,9 +1,5 @@
 // ── Page chrome (matches branch-form) ─────────────────────────────────
-.employee-form-page {
-  max-width: 1200px;
-  padding: 0 0 96px;
-  position: relative;
-}
+.employee-form-page { padding: 0 0 96px; position: relative; }
 
 .page-header {
   display: flex;
@@ -15,13 +11,6 @@
   &__titles { min-width: 0; flex: 1; }
 }
 
-.page-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--ui-text-2);
-  margin: 6px 0 0;
-  word-break: break-word;
-}
 
 .loading {
   display: flex;

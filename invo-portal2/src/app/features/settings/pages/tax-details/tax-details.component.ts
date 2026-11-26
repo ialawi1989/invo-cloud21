@@ -1,3 +1,5 @@
+import { FormActionsComponent, FormActionPrimaryDirective } from '@shared/components/form-actions/form-actions.component';
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
@@ -6,10 +8,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { withTranslations } from '@core/i18n/with-translations';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
-import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton.component';
 import { ToastService } from '@shared/components/toast/toast.service';
 import { ToggleComponent } from '@shared/components/toggle/toggle.component';
@@ -27,9 +27,9 @@ import { BusinessSettingsService } from '../../services/business-settings.servic
 @Component({
   selector: 'app-tax-details',
   standalone: true,
-  imports: [
-    CommonModule, RouterModule, ReactiveFormsModule, TranslateModule, BreadcrumbsComponent, LoadingOverlayComponent,
-    FormStickyFooterComponent, FormSkeletonComponent, ToggleComponent,
+  imports: [FormActionsComponent, FormActionPrimaryDirective, PageHeaderComponent, 
+    CommonModule, RouterModule, ReactiveFormsModule, TranslateModule, LoadingOverlayComponent,
+    FormSkeletonComponent, ToggleComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './tax-details.component.html',

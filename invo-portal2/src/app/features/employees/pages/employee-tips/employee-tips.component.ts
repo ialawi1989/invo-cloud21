@@ -1,3 +1,4 @@
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { ChangeDetectorRef, Component, OnInit, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -7,7 +8,6 @@ import { withTranslations } from '@core/i18n/with-translations';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { MathUtils } from '@core/math/math-helpers';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { DateFieldComponent } from '@shared/components/date-field/date-field.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
@@ -36,9 +36,9 @@ const ymd = (d: Date) => {
 @Component({
   selector: 'app-employee-tips',
   standalone: true,
-  imports: [TooltipDirective, 
+  imports: [PageHeaderComponent, TooltipDirective, 
     CommonModule, FormsModule, TranslateModule, MycurrencyPipe,
-    BreadcrumbsComponent, SearchDropdownComponent, DateFieldComponent, LoadingOverlayComponent,
+    SearchDropdownComponent, DateFieldComponent, LoadingOverlayComponent,
   ],
   templateUrl: './employee-tips.component.html',
   styleUrl: '../earnings-pages.scss',

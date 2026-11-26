@@ -17,7 +17,8 @@
     "verify": "npm run test && npm run i18n:check && npm run lint:colors",
     "i18n:check": "node scripts/check-i18n.mjs",
     "lint:colors": "node scripts/check-theme-colors.mjs",
-    "lint:colors:update": "node scripts/check-theme-colors.mjs --update"
+    "lint:colors:update": "node scripts/check-theme-colors.mjs --update",
+    "check:layout": "node scripts/page-frame-check.mjs"
   },
   "private": true,
   "packageManager": "npm@10.9.4",
@@ -64,6 +65,7 @@
     "@types/pdfmake": "^0.2.13",
     "@types/three": "^0.183.1",
     "jsdom": "^29.1.1",
+    "playwright": "^1.65.1",
     "postcss": "^8.5.9",
     "prettier": "^3.8.1",
     "tailwindcss": "^4.2.2",

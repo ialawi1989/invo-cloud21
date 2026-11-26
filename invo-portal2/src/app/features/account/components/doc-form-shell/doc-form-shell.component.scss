@@ -1,6 +1,6 @@
 // Shared look of every sales / purchase document form (white cards, stacked 13px labels, teal focus).
 // The shell is `ViewEncapsulation.None`, so the classes below are available to the projected sections.
-.df-page { padding: 24px; padding-bottom: 96px; max-width: 1500px; display: flex; flex-direction: column; gap: 14px; }
+.df-page { display: flex; flex-direction: column; gap: 14px; }
 
 .df-header { display: flex; flex-direction: column; gap: 8px; margin-bottom: 6px; padding-bottom: 16px; border-bottom: 1px solid var(--ui-line);
   &__title { margin: 0; font-size: 24px; font-weight: 700; color: var(--ui-text); } }
@@ -30,24 +30,11 @@
 .df-btn { padding: 9px 18px; border-radius: 8px; border: 1px solid var(--ui-line-strong); background: var(--ui-surface); color: var(--ui-text-3); font-size: 13.5px; font-weight: 600; cursor: pointer; line-height: 1.2; white-space: nowrap;
   &:hover:not(:disabled) { background: var(--ui-surface-1); } &:disabled { opacity: .5; cursor: not-allowed; }
   &--primary { border-color: #2691a4; background: #2691a4; color: #fff; &:hover:not(:disabled) { background: #227d8d; } } }
-.df-split { display: inline-flex; align-items: stretch; }
-.df-split__main { border-start-end-radius: 0; border-end-end-radius: 0; }
-.df-split app-dropdown-menu-btn { display: inline-flex; }
-.df-split app-dropdown-menu-btn button {
-  display: inline-flex !important; align-items: center; justify-content: center; height: 100%; min-width: 36px; padding: 0 12px !important;
-  background: var(--ui-b-2691a4) !important; color: #fff !important; border: 1px solid #2691a4 !important;
-  border-inline-start: 1px solid rgba(255, 255, 255, .45) !important;
-  border-radius: 0 8px 8px 0 !important; font-size: 14px; line-height: 1; cursor: pointer; box-shadow: none !important;
-}
-.df-split app-dropdown-menu-btn button * { background: transparent !important; color: inherit !important; border: 0 !important; box-shadow: none !important; padding: 0 !important; }
-.df-split app-dropdown-menu-btn button:hover:not(:disabled) { background: #227d8d !important; }
-// Disabled: same dimmed look as the main button (.df-btn:disabled → opacity .5).
-.df-split app-dropdown-menu-btn button:disabled { opacity: .5; cursor: not-allowed; }
-[dir='rtl'] .df-split app-dropdown-menu-btn button { border-radius: 8px 0 0 8px !important; }
 
-.df-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; width: 100%; flex-wrap: wrap; }
-.df-bar__actions { display: flex; align-items: center; gap: 10px; }
-.df-bar__side { display: flex; align-items: center; gap: 18px; margin-inline-start: auto; }
+/* Totals: a sticky bar at the bottom of the form, totals only. On phones it rides directly above the fixed action bar
+   (one stack: the action bar publishes its own height, safe area included, so nothing overlaps or doubles the padding). */
+.df-totals { position: sticky; bottom: var(--mobile-action-bar-h, 0px); z-index: 30; display: flex; justify-content: flex-end;
+  padding: 10px 16px; background: var(--ui-surface); border-top: 1px solid var(--ui-line); box-shadow: 0 -4px 12px rgba(15, 23, 42, .06); /* theme-ok: shadow */ }
 .df-link { display: inline-flex; align-items: center; gap: 6px; border: 0; background: none; color: var(--ui-brand-text); font-size: 13.5px; font-weight: 600; cursor: pointer; padding: 0;
   &:hover { color: var(--ui-brand-text); text-decoration: underline; } }
 .df-sum { border-inline-start: 1px solid var(--ui-line); padding-inline-start: 18px; text-align: end; line-height: 1.35;
@@ -62,21 +49,16 @@
 .df-visa { font-style: italic; font-size: 12px; color: var(--ui-t-1a1f71); letter-spacing: .5px; }
 
 @media (max-width: 720px) {
-  .df-page { padding: 12px 12px 140px; gap: 12px; }
+  .df-page { gap: 12px; }
   .df-card { padding: 14px; }
-  .df-bar { flex-direction: column; align-items: stretch; gap: 8px; }
-  .df-bar__actions { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; width: 100%; justify-content: center; }
-  .df-bar__actions .df-btn { padding: 9px 10px; font-size: 13px; }
-  .df-split { width: 100%; }
-  .df-split__main { flex: 1; }
-  .df-bar__side { margin-inline-start: 0; justify-content: space-between; gap: 12px; }
   .df-sum { padding-inline-start: 12px; }
 }
-@media (max-width: 576px) { .df-page { padding-inline: 0 !important; } }
+@media (max-width: 639px) {
+  /* Compact single row above the action bar. */
+  .df-totals { padding: 8px 16px; justify-content: stretch; }
+  .df-sum { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; width: 100%; border-inline-start: 0; padding-inline-start: 0; text-align: start; }
+}
 
-// The footer content spans exactly the page content: same start edge, same end edge (shell 24 + page 24 each side).
-app-doc-form-shell .ffs__inner { width: calc(100% - 96px) !important; max-width: 1452px !important; margin: 0 0 0 48px !important; padding: 12px 0 !important; }
-@media (max-width: 576px) { app-doc-form-shell .ffs__inner { width: calc(100% - 32px) !important; margin-inline-start: 16px !important; } }
 
 // Customer / supplier on the left, attachments on the right: the legacy layout, so
 // the details card starts higher. Stacks on narrow screens (party first).
@@ -84,7 +66,6 @@ app-doc-form-shell .ffs__inner { width: calc(100% - 96px) !important; max-width:
   @media (max-width: 900px) { grid-template-columns: minmax(0, 1fr); } }
 
 // Card titles with a coloured icon badge, as in the legacy forms.
-.df-card__title { display: flex; align-items: center; gap: 12px; }
 .df-ico { width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
   display: inline-flex; align-items: center; justify-content: center;
   &--blue { background: var(--ui-sky-soft); color: var(--ui-t-0369a1); }

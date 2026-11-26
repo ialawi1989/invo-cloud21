@@ -1,12 +1,6 @@
-.pmf-page {
-  padding: 16px 20px 100px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
+.pmf-page { display: flex; flex-direction: column; gap: 16px; }
 
 .page-header { display: flex; flex-direction: column; gap: 4px; }
-.page-title  { margin: 0; font-size: 22px; font-weight: 700; color: var(--ui-text); }
 
 // Two-column layout — mirrors the discount-form. Sidebar sticks to
 // the top so the toggle cards remain visible while editing tall
@@ -327,19 +321,6 @@
   > svg { color: currentColor; flex-shrink: 0; }
 }
 
-.save-bar {
-  position: fixed;
-  inset-inline: 0;
-  bottom: 0;
-  z-index: 60;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  background: var(--ui-footer-bg);
-  border-top: 1px solid var(--ui-line);
-}
 
 .spinner {
   width: 14px;

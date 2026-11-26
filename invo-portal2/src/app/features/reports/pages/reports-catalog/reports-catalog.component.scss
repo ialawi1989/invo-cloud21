@@ -1,20 +1,9 @@
 :host { display: block; }
 
-.reports-catalog { max-width: 1280px; margin: 0 auto; padding: 18px 28px 56px; --accent: #32acc1; }
-
-/* Breadcrumb */
-.rc-crumbs {
-  display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 13px; color: var(--ui-muted);
-  a { color: var(--ui-text-3); text-decoration: none; &:hover { color: var(--ui-t-167d8f); text-decoration: underline; } }
-  svg { color: var(--ui-faint); }
-  span { color: var(--ui-text); font-weight: 500; }
-}
+.reports-catalog { --accent: #32acc1; }
 
 /* Hero */
 .rc-hero-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-.rc-hero { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 18px; }
-.rc-heading h1 { margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -.02em; color: var(--ui-text); }
-.rc-heading p { margin: 4px 0 0; font-size: 14px; color: var(--ui-muted); }
 
 .rc-stats { display: flex; gap: 10px; flex-wrap: wrap; }
 .rc-stat {
@@ -162,10 +151,6 @@
   .rc-group { grid-template-columns: minmax(0, 1fr); }
   .rc-group-count { margin-top: 4px; }
   .rc-caps { display: none; }
-}
-@media (max-width: 640px) {
-  .reports-catalog { padding: 14px 16px 40px; }
-  .rc-heading h1 { font-size: 24px; }
 }
 
 /* The icons are injected with innerHTML, so the component's scoped styles cannot reach their <svg> — size them through ::ng-deep. */

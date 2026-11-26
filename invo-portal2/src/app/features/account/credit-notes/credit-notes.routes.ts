@@ -36,7 +36,7 @@ export const CREDIT_NOTES_ROUTES: Routes = [
   {
     path: 'view/:id',
     canActivate: [translationsLoaded, privilegeGuard],
-    data: { permissionPath: 'creditNoteSecurity.actions.view.access' },
+    data: { pageWidth: 'bleed', permissionPath: 'creditNoteSecurity.actions.view.access' },
     loadComponent: () => import('./pages/credit-note-view/credit-note-view.component').then(m => m.CreditNoteViewComponent),
   },
   {

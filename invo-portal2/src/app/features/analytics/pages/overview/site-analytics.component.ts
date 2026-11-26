@@ -1,3 +1,4 @@
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -34,7 +35,7 @@ type TrafficMetric = 'users' | 'sessions' | 'pageviews';
 @Component({
   selector: 'app-site-analytics',
   standalone: true,
-  imports: [TooltipDirective, CommonModule, RouterModule, TranslateModule, DatePickerComponent, MycurrencyPipe, SkeletonComponent],
+  imports: [PageHeaderComponent, TooltipDirective, CommonModule, RouterModule, TranslateModule, DatePickerComponent, MycurrencyPipe, SkeletonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './site-analytics.component.html',
   styleUrl: './site-analytics.component.scss',

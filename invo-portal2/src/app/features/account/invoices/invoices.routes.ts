@@ -27,14 +27,14 @@ export const INVOICES_ROUTES: Routes = [
   {
     path: 'view/:id',
     canActivate: [translationsLoaded, privilegeGuard],
-    data: { permissionPath: 'invoiceSecurity.actions.view.access' },
+    data: { pageWidth: 'bleed', permissionPath: 'invoiceSecurity.actions.view.access' },
     loadComponent: () =>
       import('./pages/invoice-view/invoice-view.component').then(m => m.InvoiceViewComponent),
   },
   {
     path: 'payment/:id',
     canActivate: [translationsLoaded, privilegeGuard],
-    data: { permissionPath: 'invoicePaymentsSecurity.actions.add.access' },
+    data: { pageWidth: 'form', permissionPath: 'invoicePaymentsSecurity.actions.add.access' },
     loadComponent: () =>
       import('./pages/invoice-payment/invoice-payment.component').then(m => m.InvoicePaymentComponent),
   },

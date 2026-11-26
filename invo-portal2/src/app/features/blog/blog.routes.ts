@@ -47,7 +47,7 @@ export const BLOG_ROUTES: Routes = [
   {
     path: 'categories',
     canActivate: [translationsLoaded, privilegeGuard],
-    data: { permissionPath: 'blogSecurity.actions.manageCategories.access' },
+    data: { pageWidth: 'form', permissionPath: 'blogSecurity.actions.manageCategories.access' },
     loadComponent: () =>
       import('./pages/taxonomies/taxonomies.component').then(m => m.TaxonomiesComponent),
   },
@@ -100,14 +100,14 @@ export const BLOG_ROUTES: Routes = [
   {
     path: 'comments/rules/new',
     canActivate: [translationsLoaded, privilegeGuard],
-    data: { permissionPath: 'blogSecurity.actions.moderateComments.access' },
+    data: { pageWidth: 'form', permissionPath: 'blogSecurity.actions.moderateComments.access' },
     loadComponent: () =>
       import('./pages/moderation-rules/moderation-rule-form.component').then(m => m.ModerationRuleFormComponent),
   },
   {
     path: 'comments/rules/:id/edit',
     canActivate: [translationsLoaded, privilegeGuard],
-    data: { permissionPath: 'blogSecurity.actions.moderateComments.access' },
+    data: { pageWidth: 'form', permissionPath: 'blogSecurity.actions.moderateComments.access' },
     loadComponent: () =>
       import('./pages/moderation-rules/moderation-rule-form.component').then(m => m.ModerationRuleFormComponent),
   },
@@ -126,7 +126,7 @@ export const BLOG_ROUTES: Routes = [
     path: 'settings',
     canActivate:   [translationsLoaded, privilegeGuard],
     canDeactivate: [unsavedChangesGuard],
-    data: { permissionPath: 'blogSecurity.actions.manageSettings.access' },
+    data: { pageWidth: 'form', permissionPath: 'blogSecurity.actions.manageSettings.access' },
     loadComponent: () =>
       import('./pages/blog-settings/blog-settings.component').then(m => m.BlogSettingsComponent),
   },

@@ -5,13 +5,7 @@
  * states rather than two — `--unknown` is styled as its own thing rather than
  * borrowing the reassuring green, because a missing flag is not a reassurance.
  */
-.employee-assets {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding: 1rem 0.25rem;
-  min-width: 0;
-}
+.employee-assets { display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
 
 // ─── Shared HR error banner ──────────────────────────────────────────────
 // Same markup as the documents tab. Duplicated in styling only; the mapping

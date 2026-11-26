@@ -1,6 +1,4 @@
-.cpo { max-width: 1400px; margin: 0 auto; padding: 16px 24px 96px; position: relative; }
-.cpo__header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
-.cpo__title { margin: 8px 0 4px; font-size: 22px; font-weight: 700; color: var(--ui-text); letter-spacing: -0.01em; }
+.cpo { position: relative; }
 .loading { display: flex; align-items: center; justify-content: center; padding: 60px 0; }
 .spinner { width: 32px; height: 32px; border-radius: 50%; border: 3px solid var(--ui-line); border-top-color: var(--color-brand-600); animation: cpo-spin .8s linear infinite; display: inline-block; }
 @keyframes cpo-spin { to { transform: rotate(360deg); } }

@@ -1,8 +1,6 @@
-.sop-page { padding: 16px 20px 100px; display: flex; flex-direction: column; gap: 16px; }
+.sop-page { display: flex; flex-direction: column; gap: 16px; }
 
 .page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; &__titles { display: flex; flex-direction: column; gap: 4px; } }
-.page-title { margin: 0; font-size: 22px; font-weight: 700; color: var(--ui-text); }
-.page-sub   { margin: 0; font-size: 13px; color: var(--ui-muted); max-width: 80ch; line-height: 1.5; }
 
 .sop-card {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;
@@ -11,10 +9,7 @@
 .sop-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .sop-label { font-size: 12px; font-weight: 600; color: var(--ui-text-4); }
 
-.save-bar {
-  position: fixed; inset-inline: 0; bottom: 0; z-index: 60; display: flex; justify-content: flex-end; align-items: center; gap: 8px;
-  padding: 10px 20px; background: var(--ui-footer-bg); border-top: 1px solid var(--ui-line);
-}
+
 .spinner {
   width: 14px; height: 14px; border: 2px solid rgba(255, 255, 255, 0.4); border-top-color: var(--ui-surface); border-radius: 50%;
   animation: sop-spin 0.7s linear infinite;

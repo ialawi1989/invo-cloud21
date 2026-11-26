@@ -36,7 +36,7 @@ export const MANUAL_JOURNALS_ROUTES: Routes = [
   {
     path: 'view/:id',
     canActivate: [translationsLoaded, privilegeGuard],
-    data: { permissionPath: 'manualJournalSecurity.actions.view.access' },
+    data: { pageWidth: 'bleed', permissionPath: 'manualJournalSecurity.actions.view.access' },
     loadComponent: () =>
       import('./pages/view/manual-journal-view.component')
         .then(m => m.ManualJournalViewComponent),
@@ -47,7 +47,7 @@ export const MANUAL_JOURNALS_ROUTES: Routes = [
     path: ':id',
     canActivate: [translationsLoaded, privilegeGuard],
     canDeactivate: [unsavedChangesGuard],
-    data: { permissionPath: 'manualJournalSecurity.actions.add.access' },
+    data: { pageWidth: 'form', permissionPath: 'manualJournalSecurity.actions.add.access' },
     loadComponent: () =>
       import('./pages/form/manual-journal-form.component')
         .then(m => m.ManualJournalFormComponent),

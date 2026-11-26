@@ -28,14 +28,14 @@ export const SUPPLIER_CREDITS_ROUTES: Routes = [
   {
     path: 'view/:id',
     canActivate: [translationsLoaded, privilegeGuard],
-    data: { permissionPath: 'supplierCredit.actions.view.access' },
+    data: { pageWidth: 'bleed', permissionPath: 'supplierCredit.actions.view.access' },
     loadComponent: () => import('./pages/supplier-credit-view/supplier-credit-view.component').then(m => m.SupplierCreditViewComponent),
   },
   {
     path: 'refund/:supplierCreditId',
     canActivate: [translationsLoaded, privilegeGuard],
     canDeactivate: [unsavedChangesGuard],
-    data: { permissionPath: 'supplierCredit.actions.refund.access' },
+    data: { pageWidth: 'form', permissionPath: 'supplierCredit.actions.refund.access' },
     loadComponent: () => import('./pages/supplier-credit-refund-form/supplier-credit-refund-form.component').then(m => m.SupplierCreditRefundFormComponent),
   },
   {

@@ -34,7 +34,7 @@ export const PHYSICAL_COUNT_ROUTES: Routes = [
     path: 'view/:id',
     canActivate: [translationsLoaded, privilegeGuard],
     loadComponent: () => import('./pages/physical-count-view/physical-count-view.component').then(m => m.PhysicalCountViewComponent),
-    data: { permissionPath: 'inventoryPhysicalCountsSecurity.actions.view.access' },
+    data: { pageWidth: 'bleed', permissionPath: 'inventoryPhysicalCountsSecurity.actions.view.access' },
   },
   {
     path: 'new/:mode',

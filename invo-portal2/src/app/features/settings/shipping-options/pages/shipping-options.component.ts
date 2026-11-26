@@ -1,3 +1,5 @@
+import { FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective } from '@shared/components/form-actions/form-actions.component';
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -6,7 +8,6 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { CompanyService } from '@core/auth/company.service';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
@@ -27,7 +28,7 @@ interface DropOption<V extends string> { value: V; label: string; }
 @Component({
   selector: 'app-shipping-options-page',
   standalone: true,
-  imports: [CommonModule, TranslateModule, BreadcrumbsComponent, LoadingOverlayComponent, SearchDropdownComponent],
+  imports: [FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, PageHeaderComponent, CommonModule, TranslateModule, LoadingOverlayComponent, SearchDropdownComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './shipping-options.component.html',
   styleUrl: './shipping-options.component.scss',

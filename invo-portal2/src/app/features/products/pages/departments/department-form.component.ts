@@ -1,3 +1,5 @@
+import { FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective } from '@shared/components/form-actions/form-actions.component';
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -21,10 +23,8 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { withTranslations } from '@core/i18n/with-translations';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
-import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 import { TranslateLinkComponent } from '@shared/components/translate-link/translate-link.component';
 import { ToastService } from '@shared/components/toast/toast.service';
 import { ModalService } from '@shared/modal/modal.service';
@@ -44,15 +44,13 @@ import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton
 @Component({
   selector: 'app-department-form',
   standalone: true,
-  imports: [FormSkeletonComponent, 
+  imports: [FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, PageHeaderComponent, FormSkeletonComponent, 
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
     TranslateModule,
-    BreadcrumbsComponent,
     LoadingOverlayComponent,
-    FormStickyFooterComponent,
-  TranslateLinkComponent,
+    TranslateLinkComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './department-form.component.html',

@@ -1,3 +1,5 @@
+import { FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective } from '@shared/components/form-actions/form-actions.component';
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -10,9 +12,7 @@ import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { MathUtils } from '@core/math/math-helpers';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
-import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown';
 import { DropdownMenuBtnComponent, DropdownMenuBtnItem } from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
 import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
@@ -38,9 +38,8 @@ import { BillPaymentActions } from '../../services/bill-payment-actions';
 @Component({
   selector: 'app-bill-payment-form',
   standalone: true,
-  imports: [
-    CommonModule, FormsModule, TranslateModule, MycurrencyPipe, BreadcrumbsComponent, FormStickyFooterComponent,
-    SearchDropdownComponent, DatePickerComponent, DocAttachmentsCardComponent, DropdownMenuBtnComponent,
+  imports: [FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, PageHeaderComponent, 
+    CommonModule, FormsModule, TranslateModule, MycurrencyPipe, SearchDropdownComponent, DatePickerComponent, DocAttachmentsCardComponent, DropdownMenuBtnComponent,
   ],
   templateUrl: './bill-payment-form.component.html',
   styleUrl: './bill-payment-form.component.scss',

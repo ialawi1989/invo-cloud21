@@ -1,3 +1,5 @@
+import { FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective } from '@shared/components/form-actions/form-actions.component';
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { DragIconComponent } from '@shared/components/drag-icon/drag-icon.component';
 import {
   ChangeDetectionStrategy,
@@ -24,10 +26,8 @@ import {
 
 import { withTranslations } from '@core/i18n/with-translations';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
-import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 import { ModalService } from '@shared/modal/modal.service';
 import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
 import { TimePickerComponent } from '@shared/components/time-picker/time-picker.component';
@@ -72,14 +72,12 @@ import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton
 @Component({
   selector: 'app-custom-fields-manager',
   standalone: true,
-  imports: [DragIconComponent, FormSkeletonComponent, 
+  imports: [FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, PageHeaderComponent, DragIconComponent, FormSkeletonComponent, 
     CommonModule,
     RouterModule,
     FormsModule,
     TranslateModule,
-    BreadcrumbsComponent,
     LoadingOverlayComponent,
-    FormStickyFooterComponent,
     DragDropModule,
     DatePickerComponent,
     TimePickerComponent,

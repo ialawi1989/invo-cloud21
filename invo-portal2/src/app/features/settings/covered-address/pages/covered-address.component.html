@@ -1,11 +1,15 @@
 <div class="cap-page">
-  <header class="page-header">
-    <div class="page-header__titles">
-      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-      <h1 class="page-title">{{ 'COVERED_ADDRESS.TITLE' | translate }}</h1>
-      <p class="page-sub">{{ 'COVERED_ADDRESS.SUBTITLE' | translate }}</p>
-    </div>
-  </header>
+  <app-page-header [title]="'COVERED_ADDRESS.TITLE' | translate" [description]="'COVERED_ADDRESS.SUBTITLE' | translate" [trail]="breadcrumbs()">
+<app-form-actions pageActions>
+    <button formActionSecondary type="button" (click)="cancel()" [disabled]="saving()">
+      {{ 'COMMON.CANCEL' | translate }}
+    </button>
+    <button formActionPrimary type="button" (click)="save()" [disabled]="!canSave()">
+      @if (saving()) { <span class="spinner" aria-hidden="true"></span> }
+      {{ saving() ? ('COMMON.SAVING' | translate) : ('COMMON.SAVE' | translate) }}
+    </button>
+</app-form-actions>
+</app-page-header>
 
   <!-- Type picker -->
   <section class="card">
@@ -296,15 +300,7 @@
     <p class="validation">{{ validationError()! | translate }}</p>
   }
 
-  <footer class="save-bar">
-    <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
-      {{ 'COMMON.CANCEL' | translate }}
-    </button>
-    <button type="button" class="btn btn-primary" (click)="save()" [disabled]="!canSave()">
-      @if (saving()) { <span class="spinner" aria-hidden="true"></span> }
-      {{ saving() ? ('COMMON.SAVING' | translate) : ('COMMON.SAVE' | translate) }}
-    </button>
-  </footer>
+  
 
   <app-loading-overlay [show]="loading()"/>
 </div>

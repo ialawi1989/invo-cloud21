@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, HostListener, computed, inject, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, HostListener, computed, effect, inject, input, output, signal } from '@angular/core';
 import { AbstractControl } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -24,6 +24,24 @@ export interface FormErrorItem {
   imports: [TranslateModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
+    @if (variant() === 'banner') {
+      @if (show() && count() > 0) {
+        <div class="fes__banner" role="alert">
+          <div class="fes__banner-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            {{ count() }} {{ (count() === 1 ? 'COMMON.ERROR' : 'COMMON.ERRORS') | translate }}
+          </div>
+          <ul class="fes__banner-list">
+            @for (it of items(); track $index) {
+              <li><button type="button" class="fes__link" (click)="jump(it)">{{ it.label }}</button></li>
+            }
+          </ul>
+          @if (hiddenCount() > 0) {
+            <div class="fes__more">{{ 'COMMON.FORM_ERRORS.HIDDEN' | translate: { count: hiddenCount() } }}</div>
+          }
+        </div>
+      }
+    } @else {
     <button type="button" class="fes__trigger" [attr.aria-expanded]="open()" (click)="toggle()">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
@@ -48,6 +66,7 @@ export interface FormErrorItem {
           <div class="fes__more">{{ 'COMMON.FORM_ERRORS.HIDDEN' | translate: { count: hiddenCount() } }}</div>
         }
       </div>
+    }
     }
   `,
   styles: [`
@@ -75,6 +94,11 @@ export interface FormErrorItem {
     }
     .fes__label { min-width: 0; overflow-wrap: anywhere; }
     .fes__hint { flex: none; font-size: 11px; font-weight: 600; color: var(--ui-red-text); }
+    .fes__banner { margin: 0 0 16px; padding: 10px 14px; border: 1px solid var(--ui-red-soft-2); background: var(--ui-red-soft); border-radius: 10px; }
+    :host(.fes--banner) { display: block; margin-inline-end: 0; }
+    .fes__banner-title { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: var(--ui-red-text); }
+    .fes__banner-list { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 14px; }
+    .fes__link { border: 0; background: none; padding: 2px 0; font: inherit; font-size: 13px; color: var(--ui-red-text); text-decoration: underline; cursor: pointer; text-align: start; }
     .fes__more { padding: 6px 10px 2px; font-size: 12px; color: var(--ui-muted); }
   `],
 })
@@ -87,6 +111,10 @@ export class FormErrorSummaryComponent {
   readonly container = input.required<HTMLElement>();
   /** Fired just before scrolling to a field, so a tabbed host can show the pane holding it. */
   readonly jumping = output<HTMLElement>();
+  /** 'banner' = an inline list of links under the page header (shown once a save has failed) instead of the footer popover. */
+  readonly variant = input<'popover' | 'banner'>('popover');
+  /** Banner only: the host sets this once a save attempt has failed. */
+  readonly show = input(true);
 
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
 
@@ -94,6 +122,15 @@ export class FormErrorSummaryComponent {
   private readonly snapshot = signal<FormErrorItem[]>([]);
   readonly items = this.snapshot.asReadonly();
   readonly hiddenCount = computed(() => Math.max(0, this.count() - this.snapshot().length));
+
+  constructor() {
+    // Banner: keep the list of links in step with the fields as they are fixed (deferred so the DOM has re-rendered).
+    effect(() => {
+      if (this.variant() !== 'banner' || !this.show()) return;
+      this.count();
+      setTimeout(() => this.snapshot.set(this.collect()));
+    });
+  }
 
   toggle(): void {
     if (this.open()) { this.open.set(false); return; }

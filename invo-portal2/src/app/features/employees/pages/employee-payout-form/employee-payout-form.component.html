@@ -1,10 +1,10 @@
 <div class="ep-page">
-  <header class="ep-header">
-    <div class="ep-header__titles">
-      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-      <h1 class="ep-title">{{ (isEdit ? 'EMPLOYEE_PAYOUT.EDIT' : 'EMPLOYEE_PAYOUT.NEW') | translate }}</h1>
-    </div>
-  </header>
+  <app-page-header [title]="(isEdit ? 'EMPLOYEE_PAYOUT.EDIT' : 'EMPLOYEE_PAYOUT.NEW') | translate" [trail]="breadcrumbs()">
+<app-form-actions pageActions>
+    <button formActionSecondary type="button" (click)="cancel()" [disabled]="saving">{{ 'COMMON.CANCEL' | translate }}</button>
+    <button formActionPrimary type="button" (click)="save()" [disabled]="saving || loading">{{ 'COMMON.SAVE' | translate }}</button>
+</app-form-actions>
+</app-page-header>
 
   @if (loading) {
     <app-form-skeleton />
@@ -125,8 +125,5 @@
 
   <app-loading-overlay [show]="saving" [message]="'COMMON.SAVING' | translate"/>
 
-  <app-form-sticky-footer>
-    <button type="button" class="btn btn-cancel" (click)="cancel()" [disabled]="saving">{{ 'COMMON.CANCEL' | translate }}</button>
-    <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving || loading">{{ 'COMMON.SAVE' | translate }}</button>
-  </app-form-sticky-footer>
+  
 </div>

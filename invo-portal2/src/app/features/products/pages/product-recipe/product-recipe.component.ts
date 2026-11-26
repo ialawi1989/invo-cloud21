@@ -1,3 +1,4 @@
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -16,7 +17,6 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { withTranslations } from '@core/i18n/with-translations';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { PaginationComponent } from '@shared/components/pagination/pagination.component';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
@@ -71,12 +71,11 @@ const PARAMS = {
 @Component({
   selector: 'app-product-recipe',
   standalone: true,
-  imports: [
+  imports: [PageHeaderComponent, 
     CommonModule,
     RouterModule,
     FormsModule,
     TranslateModule,
-    BreadcrumbsComponent,
     PaginationComponent,
     LoadingOverlayComponent,
     MycurrencyPipe,

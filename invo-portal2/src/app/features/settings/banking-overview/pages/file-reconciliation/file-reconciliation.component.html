@@ -1,7 +1,5 @@
 <div class="fr-page">
-  <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-  <h1 class="fr-title">{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.TITLE' | translate }}</h1>
-  <p class="fr-sub">{{ 'BANKING_OVERVIEW.FILE_RECONCILIATION.SUBTITLE' | translate }}</p>
+  <app-page-header [title]="'BANKING_OVERVIEW.FILE_RECONCILIATION.TITLE' | translate" [description]="'BANKING_OVERVIEW.FILE_RECONCILIATION.SUBTITLE' | translate" [trail]="breadcrumbs()"/>
 
   <!-- ─── Step 1 — upload + map columns ──────────────────────────────── -->
   <div class="fr-card">

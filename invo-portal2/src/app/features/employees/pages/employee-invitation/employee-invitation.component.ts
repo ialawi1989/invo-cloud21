@@ -1,3 +1,5 @@
+import { FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective } from '@shared/components/form-actions/form-actions.component';
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -21,9 +23,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { withTranslations } from '@core/i18n/with-translations';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
-import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 import { ToggleComponent } from '@shared/components/toggle/toggle.component';
 import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
 import { ToastService } from '@shared/components/toast/toast.service';
@@ -60,14 +60,12 @@ interface InvitedUser {
 @Component({
   selector: 'app-employee-invitation',
   standalone: true,
-  imports: [FormSkeletonComponent, 
+  imports: [FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, PageHeaderComponent, FormSkeletonComponent, 
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
     TranslateModule,
-    BreadcrumbsComponent,
     LoadingOverlayComponent,
-    FormStickyFooterComponent,
     ToggleComponent,
     DatePickerComponent,
   ],

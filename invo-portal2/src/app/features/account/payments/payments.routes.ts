@@ -38,7 +38,7 @@ export const PAYMENTS_ROUTES: Routes = [
   {
     path: 'view/:id',
     canActivate: [translationsLoaded, privilegeGuard],
-    data: { permissionPath: 'invoicePaymentsSecurity.actions.view.access' },
+    data: { pageWidth: 'bleed', permissionPath: 'invoicePaymentsSecurity.actions.view.access' },
     loadComponent: () =>
       import('./pages/payment-view/payment-view.component').then(m => m.PaymentViewComponent),
   },
@@ -47,7 +47,7 @@ export const PAYMENTS_ROUTES: Routes = [
     path: ':id',
     canActivate: [translationsLoaded, privilegeGuard, paymentEditableGuard],
     canDeactivate: [unsavedChangesGuard],
-    data: { permissionPath: 'invoicePaymentsSecurity.actions.add.access' },
+    data: { pageWidth: 'form', permissionPath: 'invoicePaymentsSecurity.actions.add.access' },
     loadComponent: () =>
       import('./pages/payment-form/payment-form.component').then(m => m.PaymentFormComponent),
   },

@@ -25,7 +25,7 @@ export const RECURRING_EXPENSES_ROUTES: Routes = [
   {
     path: 'view/:id',
     canActivate: [translationsLoaded, privilegeGuard],
-    data: { permissionPath: 'recurringExpenseSecurity.actions.view.access' },
+    data: { pageWidth: 'bleed', permissionPath: 'recurringExpenseSecurity.actions.view.access' },
     loadComponent: () =>
       import('./pages/recurring-expense-view/recurring-expense-view.component').then(m => m.RecurringExpenseViewComponent),
   },

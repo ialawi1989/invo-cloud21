@@ -1,3 +1,6 @@
+import { FormActionsComponent, FormActionPrimaryDirective } from '@shared/components/form-actions/form-actions.component';
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
+import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { StatusBadgeComponent } from '@shared/components/status-badge/status-badge.component';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
@@ -41,7 +44,7 @@ const TAB_PARAM: ParamDef<Tab> = { key: 'tab', codec: enumCodec(['events', 'temp
 @Component({
   selector: 'app-notification-settings',
   standalone: true,
-  imports: [TooltipDirective, ListSkeletonComponent, StatusBadgeComponent, FormsModule, TranslateModule, DatePipe, SearchDropdownComponent, DatePickerComponent],
+  imports: [FormActionsComponent, FormActionPrimaryDirective, PageHeaderComponent, TooltipDirective, ListSkeletonComponent, StatusBadgeComponent, FormsModule, TranslateModule, DatePipe, SearchDropdownComponent, DatePickerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './notification-settings.component.html',
   styleUrl: './notification-settings.component.scss',
@@ -58,6 +61,12 @@ export class NotificationSettingsComponent implements OnInit {
   private modal = inject(ModalService);
   private qp = inject(QueryParamsService);
   readonly privileges = inject(PrivilegeService);
+
+  /** Same standard trail as every other settings page; inside the settings shell it becomes Settings › Group. */
+  readonly breadcrumbs = computed<BreadcrumbItem[]>(() => [
+    { label: this.translate.instant('SETTINGS.TITLE'), routerLink: '/settings' },
+    { label: this.translate.instant('NOTIFICATIONS_SETTINGS.TITLE') },
+  ]);
 
   readonly canEdit = computed(() => this.privileges.check('notificationSettingsSecurity.actions.edit.access'));
   readonly canEditTemplates = computed(() => this.privileges.check('messageTemplatesSecurity.actions.edit.access'));

@@ -24,14 +24,14 @@ export const VAT_PAYMENT_ROUTES: Routes = [
   {
     path: 'view/:id',
     canActivate: [translationsLoaded, privilegeGuard],
-    data: { permissionPath: 'vatPayment.actions.view.access' },
+    data: { pageWidth: 'bleed', permissionPath: 'vatPayment.actions.view.access' },
     loadComponent: () => import('./pages/vat-payment-view/vat-payment-view.component').then(m => m.VatPaymentViewComponent),
   },
   {
     path: ':id',
     canActivate: [translationsLoaded, privilegeGuard],
     canDeactivate: [unsavedChangesGuard],
-    data: { permissionPath: 'vatPayment.actions.add.access' },
+    data: { pageWidth: 'form', permissionPath: 'vatPayment.actions.add.access' },
     loadComponent: () => import('./pages/vat-payment-form/vat-payment-form.component').then(m => m.VatPaymentFormComponent),
   },
 ];

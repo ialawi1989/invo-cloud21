@@ -1,3 +1,5 @@
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
+import { FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, FormActionExtraDirective } from '@shared/components/form-actions/form-actions.component';
 import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
 import {
   ChangeDetectionStrategy,
@@ -17,10 +19,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { withTranslations } from '@core/i18n/with-translations';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
-import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 import { SegmentedToggleComponent, SegmentedToggleOption } from '@shared/components/segmented-toggle/segmented-toggle.component';
 import { ModalService } from '@shared/modal/modal.service';
 import { ToastService } from '@shared/components/toast/toast.service';
@@ -55,15 +55,13 @@ const PAGE_SIZE = 15;
 @Component({
   selector: 'app-reconciliation-form',
   standalone: true,
-  imports: [
+  imports: [FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, FormActionExtraDirective, PageHeaderComponent, 
     CommonModule,
     FormsModule,
     RouterModule,
     TranslateModule,
     MycurrencyPipe,
-    BreadcrumbsComponent,
     LoadingOverlayComponent,
-    FormStickyFooterComponent,
     SegmentedToggleComponent,
     AccountHeaderComponent,
     DatePickerComponent,

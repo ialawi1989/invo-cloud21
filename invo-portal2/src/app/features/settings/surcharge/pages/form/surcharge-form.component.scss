@@ -1,12 +1,6 @@
-.srf-page {
-  padding: 16px 20px 100px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
+.srf-page { display: flex; flex-direction: column; gap: 16px; }
 
 .page-header { display: flex; flex-direction: column; gap: 4px; }
-.page-title  { margin: 0; font-size: 22px; font-weight: 700; color: var(--ui-text); }
 
 .card {
   background: var(--ui-surface);
@@ -82,19 +76,6 @@
 /* Save bar — fixed to the bottom-right of the viewport, same
    pattern as the price-label form so the user can save without
    scrolling back to the top. */
-.save-bar {
-  position: fixed;
-  inset-inline: 0;
-  bottom: 0;
-  z-index: 60;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  background: var(--ui-footer-bg);
-  border-top: 1px solid var(--ui-line);
-}
 
 .spinner {
   width: 14px;

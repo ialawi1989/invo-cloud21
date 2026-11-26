@@ -1,3 +1,5 @@
+import { FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective } from '@shared/components/form-actions/form-actions.component';
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { Component, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -7,9 +9,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService } from '@core/i18n/language.service';
 import { MathUtils } from '@core/math/math-helpers';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
-import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown';
 import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
 import { ToastService } from '@shared/components/toast/toast.service';
@@ -38,9 +38,8 @@ import { InvoicesService } from '../../services/invoices.service';
 @Component({
   selector: 'app-invoice-payment',
   standalone: true,
-  imports: [
-    CommonModule, FormsModule, TranslateModule, MycurrencyPipe, BreadcrumbsComponent, FormStickyFooterComponent,
-    SearchDropdownComponent, DatePickerComponent, VoucherPaymentComponent, PointsPaymentComponent, DocAttachmentsCardComponent, CustomerAddressFieldComponent,
+  imports: [FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, PageHeaderComponent, 
+    CommonModule, FormsModule, TranslateModule, MycurrencyPipe, SearchDropdownComponent, DatePickerComponent, VoucherPaymentComponent, PointsPaymentComponent, DocAttachmentsCardComponent, CustomerAddressFieldComponent,
   ],
   templateUrl: './invoice-payment.component.html',
   styleUrl: './invoice-payment.component.scss',

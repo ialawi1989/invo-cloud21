@@ -1,3 +1,4 @@
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -14,7 +15,6 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { withTranslations } from '@core/i18n/with-translations';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { SegmentedToggleComponent, SegmentedToggleOption } from '@shared/components/segmented-toggle/segmented-toggle.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
@@ -94,12 +94,11 @@ function headerWords(header: string): string[] {
 @Component({
   selector: 'app-file-reconciliation',
   standalone: true,
-  imports: [
+  imports: [PageHeaderComponent, 
     CommonModule,
     FormsModule,
     RouterModule,
     TranslateModule,
-    BreadcrumbsComponent,
     SegmentedToggleComponent,
     SearchDropdownComponent,
     DatePickerComponent,

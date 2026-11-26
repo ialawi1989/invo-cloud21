@@ -1,38 +1,11 @@
 // Same spacing as the Transactions page: the main layout already pads the content, so the page adds none; the header
 // block takes the list card's own side inset (24px, 12px compact) + the list header's extra 4px so the breadcrumb,
 // title, account name and actions line up with the card edges.
-.rec-page {
-  padding: 0 0 40px;
-}
 
-.rec-head {
-  --rec-px: 24px;
-  --rec-pt: 14px;
-  padding: var(--rec-pt) calc(var(--rec-px) + 4px) 0;
-}
 :host-context([data-density="compact"]) .rec-head { --rec-px: 12px; --rec-pt: 10px; }
 
-.rec-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin: 4px 0 12px;
-}
 
-.rec-title {
-  margin: 0;
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--ui-text);
-  letter-spacing: -0.01em;
-}
 
-.rec-header__actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
 
 .rec-badge {
   display: inline-block;

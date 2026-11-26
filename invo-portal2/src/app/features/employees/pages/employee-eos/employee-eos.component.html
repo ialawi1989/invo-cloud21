@@ -1,5 +1,39 @@
 @if (record(); as rec) {
   <div class="eos">
+    <!-- Title and tabs are the record shell's; this row holds the page's actions (Cancel, Save draft, Finalize). -->
+    <app-page-header [title]="'EMPLOYEES.TABS.EOS' | translate" [bare]="true">
+      <app-form-actions pageActions>
+        <button type="button" formActionSecondary [disabled]="saving()" (click)="cancel()">
+          {{ 'COMMON.CANCEL' | translate }}
+        </button>
+        <ng-container ngProjectAs="[formActionSecondary]">
+          @if (canEdit() && !isCompleted()) {
+            <button type="button" formActionSecondary [disabled]="saving()" (click)="saveDraft()">
+              {{ 'EMPLOYEES.EOS.SAVE_DRAFT' | translate }}
+            </button>
+          }
+        </ng-container>
+        <ng-container ngProjectAs="[formActionPrimary]">
+          @if (canComplete() && !isCompleted()) {
+            <button type="button" formActionPrimary class="eos-finalize"
+                    [disabled]="saving() || !finalizeReady()"
+                    (click)="finalize()">
+              {{ 'EMPLOYEES.EOS.FINALIZE' | translate }}
+            </button>
+          }
+        </ng-container>
+      </app-form-actions>
+    </app-page-header>
+
+    @if (errorCount() > 0) {
+      <button type="button" class="eos-errors" (click)="jumpToError()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        {{ errorCount() }} {{ (errorCount() === 1 ? 'COMMON.ERROR' : 'COMMON.ERRORS') | translate }}
+      </button>
+    }
     <div class="eos__main">
     <!-- Driven by the SERVER's statutoryCalculationsAvailable, never hardcoded:
          the day a jurisdiction rule set exists the server flips it and this
@@ -266,33 +300,6 @@
     }
 
     </div>
-
-    <app-form-sticky-footer>
-      @if (errorCount() > 0) {
-        <button type="button" class="eos-errors" (click)="jumpToError()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-          </svg>
-          {{ errorCount() }} {{ (errorCount() === 1 ? 'COMMON.ERROR' : 'COMMON.ERRORS') | translate }}
-        </button>
-      }
-      <button type="button" class="btn btn-default" [disabled]="saving()" (click)="cancel()">
-        {{ 'COMMON.CANCEL' | translate }}
-      </button>
-      @if (canEdit() && !isCompleted()) {
-        <button type="button" class="btn btn-default" [disabled]="saving()" (click)="saveDraft()">
-          {{ 'EMPLOYEES.EOS.SAVE_DRAFT' | translate }}
-        </button>
-      }
-      @if (canComplete() && !isCompleted()) {
-        <button type="button" class="btn btn-primary eos-finalize"
-                [disabled]="saving() || !finalizeReady()"
-                (click)="finalize()">
-          {{ 'EMPLOYEES.EOS.FINALIZE' | translate }}
-        </button>
-      }
-    </app-form-sticky-footer>
   </div>
 }
 

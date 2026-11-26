@@ -29,7 +29,7 @@ export const MANUAL_ADJUSTMENT_ROUTES: Routes = [
     path: 'view/:id',
     canActivate: [translationsLoaded, privilegeGuard],
     loadComponent: () => import('./pages/manual-adjustment-view/manual-adjustment-view.component').then(m => m.ManualAdjustmentViewComponent),
-    data: { permissionPath: 'manualAdjustmentSecurity.actions.view.access' },
+    data: { pageWidth: 'bleed', permissionPath: 'manualAdjustmentSecurity.actions.view.access' },
   },
   {
     path: 'new',

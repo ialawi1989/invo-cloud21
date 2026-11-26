@@ -1,12 +1,6 @@
-.df-page {
-  padding: 16px 20px 100px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
+.df-page { display: flex; flex-direction: column; gap: 16px; }
 
 .page-header { display: flex; flex-direction: column; gap: 4px; }
-.page-title  { margin: 0; font-size: 22px; font-weight: 700; color: var(--ui-text); }
 
 // Two-column body — main (2fr) + side (1fr). Side becomes a
 // horizontal strip above the main on narrow screens so the small
@@ -363,19 +357,6 @@
   // needed here. The shared component owns the visual.
 }
 
-.save-bar {
-  position: fixed;
-  inset-inline: 0;
-  bottom: 0;
-  z-index: 60;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  background: var(--ui-footer-bg);
-  border-top: 1px solid var(--ui-line);
-}
 
 .spinner {
   width: 14px;

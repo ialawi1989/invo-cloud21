@@ -8,7 +8,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
+import { PageHeaderComponent } from '../page-header/page-header.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { ListSearchComponent } from '@shared/components/list-search/list-search.component';
 
@@ -48,24 +48,19 @@ import { ListSearchComponent } from '@shared/components/list-search/list-search.
   imports: [
     CommonModule,
     TranslateModule,
-    BreadcrumbsComponent,
+    PageHeaderComponent,
     ListSearchComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="ls-page" [class.ls-page--wide]="wide">
-      <header class="ls-header">
-        <div class="ls-header__titles">
-          @if (breadcrumbs?.length) {
-            <app-breadcrumbs [items]="breadcrumbs ?? []" separator="chevron"/>
-          }
-          @if (title) { <h1 class="ls-title">{{ title }}</h1> }
-          @if (subtitle) { <p class="ls-sub">{{ subtitle }}</p> }
-        </div>
-        <div class="ls-header__actions">
-          <ng-content select="[shellActions]"/>
-        </div>
-      </header>
+      <!-- The title, breadcrumb, description and the actions slot are the app-wide page header. A page without a title
+           (a shell used inside another page) gets no header. -->
+      @if (title) {
+        <app-page-header [title]="title" [description]="subtitle || null" [trail]="breadcrumbs ?? []">
+          <div pageActions class="ls-header__actions"><ng-content select="[shellActions]"/></div>
+        </app-page-header>
+      }
 
       @if (!hideToolbar) {
         <div class="ls-toolbar">
@@ -130,31 +125,12 @@ import { ListSearchComponent } from '@shared/components/list-search/list-search.
   `,
   styles: [`
     .ls-page {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 16px 24px 40px;
+      /* Gutters, width cap and centering belong to the shell layout's page frame, not to the page. */
+      padding: 0 0 40px;
       position: relative;
     }
-    .ls-page--wide { max-width: none; }
 
-    .ls-header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 16px;
-      margin-bottom: 16px;
-    }
-    .ls-header__titles { flex: 1; min-width: 0; }
     .ls-header__actions { display: flex; gap: 8px; flex-shrink: 0; }
-
-    .ls-title {
-      margin: 8px 0 4px;
-      font-size: 22px;
-      font-weight: 700;
-      color: var(--ui-text);
-      letter-spacing: -0.01em;
-    }
-    .ls-sub { margin: 0; font-size: 14px; color: var(--ui-muted); }
 
     .ls-toolbar {
       display: flex;

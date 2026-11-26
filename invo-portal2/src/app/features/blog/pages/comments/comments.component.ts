@@ -1,3 +1,4 @@
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -40,7 +41,7 @@ type StatusTab = CommentStatus | 'all';
 @Component({
   selector: 'app-blog-comments',
   standalone: true,
-  imports: [ListSkeletonComponent, 
+  imports: [PageHeaderComponent, ListSkeletonComponent, 
     CommonModule,
     FormsModule,
     RouterModule,

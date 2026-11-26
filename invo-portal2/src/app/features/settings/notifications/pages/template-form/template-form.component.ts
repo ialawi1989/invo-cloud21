@@ -1,3 +1,4 @@
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { ChangeDetectionStrategy, Component, ElementRef, OnInit, computed, inject, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -30,7 +31,7 @@ function emptyTemplate(): MessageTemplate {
 @Component({
   selector: 'app-template-form',
   standalone: true,
-  imports: [TooltipDirective, FormsModule, TranslateModule, SearchDropdownComponent, SegmentedToggleComponent],
+  imports: [PageHeaderComponent, TooltipDirective, FormsModule, TranslateModule, SearchDropdownComponent, SegmentedToggleComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './template-form.component.html',
   styleUrl: './template-form.component.scss',

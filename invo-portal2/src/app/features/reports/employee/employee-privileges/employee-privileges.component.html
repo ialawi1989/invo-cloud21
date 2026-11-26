@@ -56,7 +56,7 @@
           <span>{{ 'REPORTS.EMP_PRIV.HOLDERS_COUNT' | translate: { n: holders().length } }}</span>
           <span>{{ 'REPORTS.EMP_PRIV.GRANTED_VIA' | translate }}</span>
         </div>
-        @for (h of sortedHolders(); track $index) {
+        @for (h of holdersPageRows(); track $index) {
           <button type="button" class="ep-row ep-pick" (click)="jumpTo(h)">
             <span class="ep-who"><span class="ep-avatar">{{ initial(h.employeeName || '') }}</span>
               <span class="ep-name">{{ h.employeeName }}@if (h.employeeEmail) { <small>{{ h.employeeEmail }}</small> }</span></span>
@@ -64,6 +64,12 @@
           </button>
         } @empty {
           <p class="ep-none">{{ 'REPORTS.EMP_PRIV.NOBODY' | translate }}</p>
+        }
+        @if (holders().length) {
+          <div class="ep-pager">
+            <app-pagination [page]="holdersPage()" [pageSize]="holdersPageSize()" [count]="holders().length" [pageCount]="holdersPageCount()"
+              [pageSizeOptions]="sizes" (pageChange)="goToHolders($event)" (pageSizeChange)="setHoldersPageSize($event)" />
+          </div>
         }
       </div>
       @if (holders().length) { <p class="ep-hint">{{ 'REPORTS.EMP_PRIV.CLICK_OPEN' | translate }}</p> }

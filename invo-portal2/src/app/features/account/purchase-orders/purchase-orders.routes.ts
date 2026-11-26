@@ -26,7 +26,7 @@ export const PURCHASE_ORDERS_ROUTES: Routes = [
   {
     path: 'view/:id',
     canActivate: [translationsLoaded, privilegeGuard],
-    data: { permissionPath: 'purchaseOrderSecurity.actions.view.access' },
+    data: { pageWidth: 'bleed', permissionPath: 'purchaseOrderSecurity.actions.view.access' },
     loadComponent: () =>
       import('./pages/purchase-order-view/purchase-order-view.component').then(m => m.PurchaseOrderViewComponent),
   },

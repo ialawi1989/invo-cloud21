@@ -1,3 +1,4 @@
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -16,10 +17,9 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { withTranslations } from '@core/i18n/with-translations';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
-import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
+import { FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, FormActionExtraDirective } from '@shared/components/form-actions/form-actions.component';
 import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { DropdownMenuBtnComponent, DropdownMenuBtnItem } from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
@@ -88,14 +88,16 @@ const RECORD_LIMIT = 5;
 @Component({
   selector: 'app-opening-balances',
   standalone: true,
-  imports: [
+  imports: [PageHeaderComponent, 
     CommonModule,
     FormsModule,
     TranslateModule,
     MycurrencyPipe,
-    BreadcrumbsComponent,
     LoadingOverlayComponent,
-    FormStickyFooterComponent,
+    FormActionsComponent,
+    FormActionPrimaryDirective,
+    FormActionSecondaryDirective,
+    FormActionExtraDirective,
     DatePickerComponent,
     SearchDropdownComponent,
     DropdownMenuBtnComponent,

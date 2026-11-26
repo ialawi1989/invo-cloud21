@@ -1,10 +1,22 @@
-<app-breadcrumbs [items]="breadcrumbs()" />
-
 <div class="gosi">
-  <header class="gosi__head">
-    <h1 class="gosi__title">{{ 'EMPLOYEES.GOSI.TITLE' | translate }}</h1>
-    <p class="gosi__sub">{{ 'EMPLOYEES.GOSI.SUBTITLE' | translate }}</p>
-  </header>
+  <app-page-header [title]="'EMPLOYEES.GOSI.TITLE' | translate" [description]="'EMPLOYEES.GOSI.SUBTITLE' | translate" [trail]="breadcrumbs()">
+<app-form-actions pageActions>
+    @if (errorCount() > 0) {
+      <app-form-error-summary [count]="errorCount()" [form]="periodForm" [container]="host"/>
+    }
+    @if (addingPeriod()) {
+      <span class="mandatory-legend">{{ 'COMMON.MANDATORY_LEGEND' | translate }}</span>
+    }
+    <button formActionSecondary type="button" (click)="back()">
+      {{ 'COMMON.BACK' | translate }}
+    </button>
+    @if (canView() && canEdit()) {
+      <button formActionPrimary type="button" (click)="save()" [disabled]="saving() || !hasChanges()">
+        {{ (saving() ? 'COMMON.SAVING' : 'COMMON.SAVE') | translate }}
+      </button>
+    }
+</app-form-actions>
+</app-page-header>
 
   @if (!computationAvailable()) {
     <p class="gosi__note" role="status">{{ 'EMPLOYEES.GOSI.NOT_A_CALCULATOR' | translate }}</p>
@@ -504,20 +516,5 @@
 
   <app-loading-overlay [show]="loading()" />
 
-  <app-form-sticky-footer>
-    @if (errorCount() > 0) {
-      <app-form-error-summary [count]="errorCount()" [form]="periodForm" [container]="host"/>
-    }
-    @if (addingPeriod()) {
-      <span class="mandatory-legend">{{ 'COMMON.MANDATORY_LEGEND' | translate }}</span>
-    }
-    <button type="button" class="btn btn-ghost" (click)="back()">
-      {{ 'COMMON.BACK' | translate }}
-    </button>
-    @if (canView() && canEdit()) {
-      <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving() || !hasChanges()">
-        {{ (saving() ? 'COMMON.SAVING' : 'COMMON.SAVE') | translate }}
-      </button>
-    }
-  </app-form-sticky-footer>
+  
 </div>

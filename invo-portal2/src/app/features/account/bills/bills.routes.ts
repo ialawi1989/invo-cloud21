@@ -41,7 +41,7 @@ export const BILLS_ROUTES: Routes = [
   {
     path: 'view/:id',
     canActivate: [translationsLoaded, privilegeGuard],
-    data: { permissionPath: 'billingSecurity.actions.view.access' },
+    data: { pageWidth: 'bleed', permissionPath: 'billingSecurity.actions.view.access' },
     loadComponent: () => import('./pages/bill-view/bill-view.component').then(m => m.BillViewComponent),
   },
   {
@@ -49,7 +49,7 @@ export const BILLS_ROUTES: Routes = [
     path: 'pay/:billId',
     canActivate: [translationsLoaded, privilegeGuard],
     canDeactivate: [unsavedChangesGuard],
-    data: { permissionPath: 'billingPaymentsSecurity.actions.add.access' },
+    data: { pageWidth: 'form', permissionPath: 'billingPaymentsSecurity.actions.add.access' },
     loadComponent: () => import('../bills-payment/pages/bill-payment-form/bill-payment-form.component').then(m => m.BillPaymentFormComponent),
   },
   {

@@ -1,12 +1,18 @@
 <div class="ps-page">
-  <header class="page-header">
-    <div class="page-header__titles">
-      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-      <h1 class="page-title">{{ 'SETTINGS.ITEMS.PREFIX_SETTINGS' | translate }}</h1>
-      <p class="page-sub">{{ 'SETTINGS.PREFIX.SUBTITLE' | translate }}</p>
-    </div>
-    <app-segmented-toggle size="sm" [options]="viewOptions" [value]="view()" (valueChange)="setView($event)"/>
-  </header>
+  <app-page-header [title]="'SETTINGS.ITEMS.PREFIX_SETTINGS' | translate" [description]="'SETTINGS.PREFIX.SUBTITLE' | translate" [trail]="breadcrumbs()">
+    <app-form-actions pageActions>
+      <button type="button" formActionOverflow (click)="resetToDefaults()" [disabled]="saving() || loading()">
+        {{ 'SETTINGS.PREFIX.RESET_DEFAULTS' | translate }}
+      </button>
+      <button type="button" formActionSecondary (click)="cancel()" [disabled]="saving()">
+        {{ 'COMMON.CANCEL' | translate }}
+      </button>
+      <button type="button" formActionPrimary (click)="save()"
+              [disabled]="saving() || loading() || !isValid() || !isDirty()">
+        {{ 'COMMON.SAVE' | translate }}
+      </button>
+    </app-form-actions>
+  </app-page-header>
 
   @if (loading()) {
     <app-form-skeleton />
@@ -32,6 +38,11 @@
         </ul>
       </div>
     </aside>
+
+    <!-- View control (not an action): Cards / Table, right above the content it switches. -->
+    <div class="ps-toolbar">
+      <app-segmented-toggle size="sm" [options]="viewOptions" [value]="view()" (valueChange)="setView($event)"/>
+    </div>
 
     <!-- One card per document type. Always-editable inputs + live preview. -->
     @if (view() === 'cards') {
@@ -145,20 +156,4 @@
 
   <app-loading-overlay [show]="saving()" [message]="saveLabel()"/>
 
-  <app-form-sticky-footer>
-    <button type="button" class="btn btn-ghost" (click)="resetToDefaults()" [disabled]="saving() || loading()">
-      {{ 'SETTINGS.PREFIX.RESET_DEFAULTS' | translate }}
-    </button>
-    <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
-      {{ 'COMMON.CANCEL' | translate }}
-    </button>
-    <button
-      type="button"
-      class="btn btn-primary"
-      (click)="save()"
-      [disabled]="saving() || loading() || !isValid() || !isDirty()"
-    >
-      {{ 'COMMON.SAVE' | translate }}
-    </button>
-  </app-form-sticky-footer>
 </div>

@@ -172,26 +172,26 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./features/tracking-map/tracking-map.routes').then(m => m.TRACKING_MAP_ROUTES),
       },
-      {
+      { data: { pageWidth: 'form' },
         path: 'settings',
         loadComponent: () =>
           import('./features/settings/settings.component').then(m => m.SettingsComponent),
       },
-      {
+      { data: { pageWidth: 'form' },
         path: 'settings/tab-builder',
         loadComponent: () =>
           import('./features/settings/pages/tab-builder-settings/tab-builder-settings.component')
             .then(m => m.TabBuilderSettingsComponent),
         canDeactivate: [unsavedChangesGuard],
       },
-      {
+      { data: { pageWidth: 'form' },
         path: 'settings/business',
         loadComponent: () =>
           import('./features/settings/pages/business-settings/business-settings.component')
             .then(m => m.BusinessSettingsComponent),
         canDeactivate: [unsavedChangesGuard],
       },
-      {
+      { data: { pageWidth: 'form' },
         path: 'settings/image-display',
         loadComponent: () =>
           import('./features/settings/pages/image-display-settings/image-display-settings.component')
@@ -204,7 +204,7 @@ export const routes: Routes = [
           import('./features/settings/pages/branches-list/branches-list.component')
             .then(m => m.BranchesListComponent),
       },
-      {
+      { data: { pageWidth: 'form' },
         path: 'settings/branches/:id',
         loadComponent: () =>
           import('./features/settings/pages/branch-form/branch-form.component')
@@ -217,14 +217,14 @@ export const routes: Routes = [
           import('./features/settings/pages/custom-fields-list/custom-fields-list.component')
             .then(m => m.CustomFieldsListComponent),
       },
-      {
+      { data: { pageWidth: 'form' },
         path: 'settings/custom-fields/:type',
         loadComponent: () =>
           import('./features/settings/pages/custom-fields-manager/custom-fields-manager.component')
             .then(m => m.CustomFieldsManagerComponent),
         canDeactivate: [unsavedChangesGuard],
       },
-      {
+      { data: { pageWidth: 'form' },
         path: 'settings/prefix',
         loadComponent: () =>
           import('./features/settings/pages/prefix-settings/prefix-settings.component')
@@ -235,46 +235,46 @@ export const routes: Routes = [
         // Employee commission + tips: on/off, when commission is earned, the payout cycle.
         path: 'settings/commission-settings',
         canActivate: [privilegeGuard],
-        data: { permissionPath: 'companySettingsSecurity.actions.businessSettings' },
+        data: { pageWidth: 'form', permissionPath: 'companySettingsSecurity.actions.businessSettings' },
         loadComponent: () =>
           import('./features/settings/pages/commission-settings/commission-settings.component')
             .then(m => m.CommissionSettingsComponent),
         canDeactivate: [unsavedChangesGuard],
       },
-      {
+      { data: { pageWidth: 'form' },
         path: 'settings/pos-options',
         loadComponent: () =>
           import('./features/settings/pages/pos-options/pos-options.component')
             .then(m => m.PosOptionsComponent),
         canDeactivate: [unsavedChangesGuard],
       },
-      {
+      { data: { pageWidth: 'form' },
         path: 'settings/invoice-options',
         loadComponent: () =>
           import('./features/settings/pages/invoice-options/invoice-options.component')
             .then(m => m.InvoiceOptionsComponent),
         canDeactivate: [unsavedChangesGuard],
       },
-      {
+      { data: { pageWidth: 'form' },
         path: 'settings/estimate-options',
         loadComponent: () =>
           import('./features/settings/pages/estimate-options/estimate-options.component')
             .then(m => m.EstimateOptionsComponent),
         canDeactivate: [unsavedChangesGuard],
       },
-      {
+      { data: { pageWidth: 'form' },
         path: 'settings/tax-details',
         loadComponent: () =>
           import('./features/settings/pages/tax-details/tax-details.component')
             .then(m => m.TaxDetailsComponent),
         canDeactivate: [unsavedChangesGuard],
       },
-      {
+      { data: { pageWidth: 'form' },
         path: 'settings/tax/new',
         loadComponent: () => import('./features/settings/pages/tax-form/tax-form.component').then(m => m.TaxFormComponent),
         canDeactivate: [unsavedChangesGuard],
       },
-      {
+      { data: { pageWidth: 'form' },
         path: 'settings/tax/:id',
         loadComponent: () => import('./features/settings/pages/tax-form/tax-form.component').then(m => m.TaxFormComponent),
         canDeactivate: [unsavedChangesGuard],
@@ -291,7 +291,7 @@ export const routes: Routes = [
           import('./features/settings/pages/kitchen-sections-list/kitchen-sections-list.component')
             .then(m => m.KitchenSectionsListComponent),
       },
-      {
+      { data: { pageWidth: 'form' },
         path: 'settings/kitchen/:id',
         loadComponent: () =>
           import('./features/settings/pages/kitchen-section-form/kitchen-section-form.component')
@@ -304,7 +304,7 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/website/content-library/pages/content-library-list/content-library-list.component').then(m => m.ContentLibraryListComponent),
       },
-      {
+      { data: { pageWidth: 'bleed' },
         path: 'website/content-library/:id',
         loadComponent: () =>
           import('./features/website/content-library/pages/content-library/content-library.component').then(m => m.ContentLibraryComponent),
@@ -343,7 +343,7 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/website/navigation/pages/navigation-list/navigation-list.component').then(m => m.NavigationListComponent),
       },
-      {
+      { data: { pageWidth: 'bleed' },
         path: 'navigation-list/:id',
         loadComponent: () =>
           import('./features/website/navigation/pages/navigation-builder/navigation-builder.component').then(m => m.NavigationBuilderComponent),

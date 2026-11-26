@@ -19,6 +19,6 @@ export const DOMAIN_SETTINGS_ROUTES: Routes = [
     path: '',
     canActivate: [translationsLoaded, privilegeGuard],
     loadComponent: () => import('./pages/domain-settings/domain-settings.component').then(m => m.DomainSettingsComponent),
-    data: { permissionPath: 'DomainSettingsSecurity.actions.view.access' },
+    data: { pageWidth: 'form', permissionPath: 'DomainSettingsSecurity.actions.view.access' },
   },
 ];

@@ -1,8 +1,33 @@
 <div class="af">
-  <div class="af__header">
-    <button class="af__back" (click)="back()"><span class="ui-icon ui-icon-arrow-left"></span> {{ 'APPOINTMENTS.FORM.BACK' | translate }}</button>
-    <h1>{{ (isEditMode() ? 'APPOINTMENTS.FORM.EDIT_TITLE' : 'APPOINTMENTS.FORM.NEW_TITLE') | translate }}</h1>
-  </div>
+  <app-page-header [title]="(isEditMode() ? 'APPOINTMENTS.FORM.EDIT_TITLE' : 'APPOINTMENTS.FORM.NEW_TITLE') | translate">
+@if (!loading()) {
+<app-form-actions pageActions>
+      @if (isEditMode() && isInvoiced()) {
+        <span class="af__cancel-hint">{{ 'APPOINTMENTS.FORM.CANCEL_UNAVAILABLE' | translate }}</span>
+      }
+      @if (isEditMode() && !isInvoiced() && !readOnly() && canDelete()) {
+        <button formActionOverflow type="button" [disabled]="saving()" (click)="cancel()">
+          {{ 'APPOINTMENTS.FORM.CANCEL_APPOINTMENT' | translate }}
+        </button>
+      }
+      <button formActionSecondary type="button" (click)="back()">{{ 'APPOINTMENTS.FORM.BACK_BTN' | translate }}</button>
+      @if (!readOnly()) {
+        @if (!isInvoiced()) {
+          <button formActionPrimary type="button" [disabled]="saving()" (click)="save()">
+            {{ 'APPOINTMENTS.FORM.SAVE' | translate }}
+          </button>
+          <button formActionSecondary type="button" [disabled]="saving()" (click)="checkIn()">
+            {{ 'APPOINTMENTS.FORM.CHECK_IN' | translate }}
+          </button>
+        } @else {
+          <button formActionPrimary type="button" (click)="goToPayment()">
+            {{ 'APPOINTMENTS.FORM.PAY' | translate }}
+          </button>
+        }
+      }
+</app-form-actions>
+}
+</app-page-header>
 
   @if (loading()) {
     <div class="af__loading">…</div>
@@ -218,30 +243,6 @@
       <div class="af__summary-grand"><span>{{ 'APPOINTMENTS.FORM.GRAND_TOTAL' | translate }}</span><strong>{{ total() | mycurrency }}</strong></div>
     </section>
 
-    <app-form-sticky-footer>
-      @if (isEditMode() && isInvoiced()) {
-        <span class="af__cancel-hint">{{ 'APPOINTMENTS.FORM.CANCEL_UNAVAILABLE' | translate }}</span>
-      }
-      @if (isEditMode() && !isInvoiced() && !readOnly() && canDelete()) {
-        <button type="button" class="btn af__btn--danger" [disabled]="saving()" (click)="cancel()">
-          {{ 'APPOINTMENTS.FORM.CANCEL_APPOINTMENT' | translate }}
-        </button>
-      }
-      <button type="button" class="btn btn-ghost" (click)="back()">{{ 'APPOINTMENTS.FORM.BACK_BTN' | translate }}</button>
-      @if (!readOnly()) {
-        @if (!isInvoiced()) {
-          <button type="button" class="btn btn-primary" [disabled]="saving()" (click)="save()">
-            {{ 'APPOINTMENTS.FORM.SAVE' | translate }}
-          </button>
-          <button type="button" class="btn btn-ghost" [disabled]="saving()" (click)="checkIn()">
-            {{ 'APPOINTMENTS.FORM.CHECK_IN' | translate }}
-          </button>
-        } @else {
-          <button type="button" class="btn btn-primary" (click)="goToPayment()">
-            {{ 'APPOINTMENTS.FORM.PAY' | translate }}
-          </button>
-        }
-      }
-    </app-form-sticky-footer>
+    
   }
 </div>

@@ -29,7 +29,7 @@ export const MENU_BUILDER_ROUTES: Routes = [
     loadComponent: () =>
       import('./pages/menu-builder-list/menu-builder-list.component').then(m => m.MenuBuilderListComponent),
   },
-  {
+  { data: { pageWidth: 'form' },
     path: ':id',
     canActivate: [translationsLoaded],
     canDeactivate: [unsavedChangesGuard],

@@ -9,13 +9,7 @@
  * figure most likely to be mistaken for take-home pay, so it is attached to the
  * number rather than placed in a footnote.
  */
-.employee-payroll {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding: 1rem 0.25rem;
-  min-width: 0;
-}
+.employee-payroll { display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
 
 // ─── Shared HR error banner ──────────────────────────────────────────────
 .hr-error {

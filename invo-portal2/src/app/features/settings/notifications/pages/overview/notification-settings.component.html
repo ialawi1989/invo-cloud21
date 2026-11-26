@@ -1,10 +1,13 @@
 <div class="ns">
-  <header class="ns-head">
-    <div>
-      <h1>{{ 'NOTIFICATIONS_SETTINGS.TITLE' | translate }}</h1>
-      <p>{{ 'NOTIFICATIONS_SETTINGS.SUBTITLE' | translate }}</p>
-    </div>
-  </header>
+  <app-page-header [title]="'NOTIFICATIONS_SETTINGS.TITLE' | translate" [description]="'NOTIFICATIONS_SETTINGS.SUBTITLE' | translate" [trail]="breadcrumbs()">
+@if (tab() === 'events') {
+<app-form-actions pageActions>
+      <button formActionPrimary type="button" [disabled]="saving() || !canEdit()" (click)="save()">
+        {{ 'NOTIFICATIONS_SETTINGS.SAVE_CHANGES' | translate }}
+      </button>
+</app-form-actions>
+}
+</app-page-header>
 
   <div class="ns-summary">
     <div class="ns-card">
@@ -127,11 +130,7 @@
       }
     }
 
-    <div class="ns-save-bar">
-      <button type="button" class="ns-btn ns-btn--primary" [disabled]="saving() || !canEdit()" (click)="save()">
-        {{ 'NOTIFICATIONS_SETTINGS.SAVE_CHANGES' | translate }}
-      </button>
-    </div>
+    
   }
 
   <!-- ============== TEMPLATES TAB ============== -->

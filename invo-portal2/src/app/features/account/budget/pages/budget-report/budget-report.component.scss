@@ -1,4 +1,4 @@
-.br { padding: 24px; display: flex; flex-direction: column; gap: 14px; }
+.br { display: flex; flex-direction: column; gap: 14px; }
 .page-header { display: flex; flex-direction: column; gap: 8px; margin-bottom: 6px; padding-bottom: 16px; border-bottom: 1px solid var(--ui-line);
   &__row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
   &__title { margin: 0; font-size: 24px; font-weight: 700; color: var(--ui-text); } }

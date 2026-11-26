@@ -1,3 +1,5 @@
+import { FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective } from '@shared/components/form-actions/form-actions.component';
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { ChangeDetectorRef, Component, OnInit, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -7,11 +9,9 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { withTranslations } from '@core/i18n/with-translations';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { DateFieldComponent } from '@shared/components/date-field/date-field.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
-import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { ToastService } from '@shared/components/toast/toast.service';
 import { SalesLookupsService } from '../../../account/services/sales-lookups.service';
@@ -44,9 +44,9 @@ const today = () => {
 @Component({
   selector: 'app-employee-payout-form',
   standalone: true,
-  imports: [TooltipDirective, FormSkeletonComponent, 
+  imports: [FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, PageHeaderComponent, TooltipDirective, FormSkeletonComponent, 
     CommonModule, FormsModule, TranslateModule, MycurrencyPipe,
-    BreadcrumbsComponent, SearchDropdownComponent, DateFieldComponent, FormStickyFooterComponent, LoadingOverlayComponent,
+    SearchDropdownComponent, DateFieldComponent, LoadingOverlayComponent,
   ],
   templateUrl: './employee-payout-form.component.html',
   styleUrl: '../earnings-pages.scss',

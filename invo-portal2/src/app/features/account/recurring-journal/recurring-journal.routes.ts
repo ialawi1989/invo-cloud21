@@ -37,7 +37,7 @@ export const RECURRING_JOURNAL_ROUTES: Routes = [
     path: 'new',
     canActivate: [translationsLoaded, privilegeGuard],
     canDeactivate: [unsavedChangesGuard],
-    data: { permissionPath: 'recurringJournalSecurity.actions.add.access' },
+    data: { pageWidth: 'form', permissionPath: 'recurringJournalSecurity.actions.add.access' },
     loadComponent: () =>
       import('./pages/recurring-journal-form/recurring-journal-form.component')
         .then(m => m.RecurringJournalFormComponent),
@@ -46,7 +46,7 @@ export const RECURRING_JOURNAL_ROUTES: Routes = [
     path: ':id/edit',
     canActivate: [translationsLoaded, privilegeGuard],
     canDeactivate: [unsavedChangesGuard],
-    data: { permissionPath: 'recurringJournalSecurity.actions.add.access' },
+    data: { pageWidth: 'form', permissionPath: 'recurringJournalSecurity.actions.add.access' },
     loadComponent: () =>
       import('./pages/recurring-journal-form/recurring-journal-form.component')
         .then(m => m.RecurringJournalFormComponent),
@@ -54,7 +54,7 @@ export const RECURRING_JOURNAL_ROUTES: Routes = [
   {
     path: ':id',
     canActivate: [translationsLoaded, privilegeGuard],
-    data: { permissionPath: 'recurringJournalSecurity.actions.view.access' },
+    data: { pageWidth: 'bleed', permissionPath: 'recurringJournalSecurity.actions.view.access' },
     loadComponent: () =>
       import('./pages/recurring-journal-view/recurring-journal-view.component')
         .then(m => m.RecurringJournalViewComponent),

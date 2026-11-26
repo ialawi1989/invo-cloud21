@@ -1,3 +1,5 @@
+import { FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective } from '@shared/components/form-actions/form-actions.component';
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -7,9 +9,7 @@ import { LanguageService } from '@core/i18n/language.service';
 import { MathUtils } from '@core/math/math-helpers';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
-import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
 import { DropdownMenuBtnComponent, DropdownMenuBtnItem } from '@shared/components/dropdown-menu-btn/dropdown-menu-btn.component';
 import { ToastService } from '@shared/components/toast/toast.service';
@@ -45,9 +45,8 @@ const localDate = (v: any): Date | null => {
 @Component({
   selector: 'app-vat-payment-form',
   standalone: true,
-  imports: [
-    CommonModule, TranslateModule, MycurrencyPipe, BreadcrumbsComponent, FormStickyFooterComponent,
-    DatePickerComponent, DropdownMenuBtnComponent, VatReportContentComponent,
+  imports: [FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, PageHeaderComponent, 
+    CommonModule, TranslateModule, MycurrencyPipe, DatePickerComponent, DropdownMenuBtnComponent, VatReportContentComponent,
   ],
   templateUrl: './vat-payment-form.component.html',
   styleUrl: './vat-payment-form.component.scss',

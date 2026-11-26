@@ -1,3 +1,4 @@
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -15,7 +16,6 @@ import { DestroyRef } from '@angular/core';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 
 import { withTranslations } from '@core/i18n/with-translations';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { ToastService } from '@shared/components/toast/toast.service';
@@ -56,12 +56,11 @@ type Tab = 'edit-by-page' | 'customize-defaults';
 @Component({
   selector: 'app-seo-page-type',
   standalone: true,
-  imports: [
+  imports: [PageHeaderComponent, 
     CommonModule,
     FormsModule,
     RouterLink,
     TranslateModule,
-    BreadcrumbsComponent,
     LoadingOverlayComponent,
     SegmentedToggleComponent,
     SeoCustomizeDefaultsComponent,

@@ -1,3 +1,5 @@
+import { FormActionsComponent, FormActionPrimaryDirective } from '@shared/components/form-actions/form-actions.component';
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
@@ -6,11 +8,9 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { withTranslations } from '@core/i18n/with-translations';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { TabTemplateBuilderComponent } from '@shared/components/tab-builder/tab-template-builder/tab-template-builder.component';
-import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
 import { TabTemplate } from '@shared/components/tab-builder/tab-builder.types';
 import { TabBuilderSettingsService } from '../../services/tab-builder.service';
@@ -26,25 +26,23 @@ import { TabBuilderSettingsService } from '../../services/tab-builder.service';
 @Component({
   selector: 'app-tab-builder-settings',
   standalone: true,
-  imports: [
+  imports: [FormActionsComponent, FormActionPrimaryDirective, PageHeaderComponent, 
     CommonModule,
     RouterModule,
     TranslateModule,
-    BreadcrumbsComponent,
     LoadingOverlayComponent,
     TabTemplateBuilderComponent,
-    FormStickyFooterComponent,
-  ],
+    ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="tab-builder-page">
-      <header class="page-header">
-        <div class="page-header__titles">
-          <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-          <h1 class="page-title">{{ 'SETTINGS.ITEMS.PRODUCTS_TAB_BUILDER' | translate }}</h1>
-          <p class="page-sub">{{ 'SETTINGS.ITEMS.PRODUCTS_TAB_BUILDER_DESC' | translate }}</p>
-        </div>
-      </header>
+      <app-page-header [title]="'SETTINGS.ITEMS.PRODUCTS_TAB_BUILDER' | translate" [description]="'SETTINGS.ITEMS.PRODUCTS_TAB_BUILDER_DESC' | translate" [trail]="breadcrumbs()">
+<app-form-actions pageActions>
+        <button formActionPrimary type="button" (click)="save()" [disabled]="saving() || loading()">
+          {{ 'COMMON.SAVE' | translate }}
+        </button>
+</app-form-actions>
+</app-page-header>
 
       @if (loading()) {
         <div class="loading"><span class="spinner spinner--lg"></span></div>
@@ -70,17 +68,13 @@ import { TabBuilderSettingsService } from '../../services/tab-builder.service';
         [message]="saveLabel()"
       />
 
-      <app-form-sticky-footer>
-        <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving() || loading()">
-          {{ 'COMMON.SAVE' | translate }}
-        </button>
-      </app-form-sticky-footer>
+      
     </div>
   `,
   styles: [`
     // Extra bottom padding leaves room for the sticky save bar so the
     // last card never sits underneath it when the user scrolls.
-    .tab-builder-page { max-width: 1200px; padding: 0 0 96px; position: relative; }
+    .tab-builder-page { position: relative; }
 
     .page-header {
       display: flex; align-items: flex-start; justify-content: space-between;

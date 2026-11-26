@@ -18,7 +18,7 @@ export const CHART_OF_ACCOUNTS_ROUTES: Routes = [
   {
     path: 'view/:id',
     canActivate: [privilegeGuard],
-    data: { permissionPath: 'accountSecurity.actions.view.access' },
+    data: { pageWidth: 'bleed', permissionPath: 'accountSecurity.actions.view.access' },
     loadComponent: () =>
       import('./pages/view/chart-of-accounts-view.component')
         .then(m => m.ChartOfAccountsViewComponent),
@@ -26,7 +26,7 @@ export const CHART_OF_ACCOUNTS_ROUTES: Routes = [
   {
     path: ':id',
     canActivate: [privilegeGuard],
-    data: { permissionPath: 'accountSecurity.actions.add.access' },
+    data: { pageWidth: 'narrow', permissionPath: 'accountSecurity.actions.add.access' },
     loadComponent: () =>
       import('./pages/form/chart-of-accounts-form.component')
         .then(m => m.ChartOfAccountsFormComponent),

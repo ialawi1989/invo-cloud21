@@ -1,3 +1,4 @@
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -7,13 +8,13 @@ import { Website } from '../../../models/website.model';
 import { ModalService } from '../../../../../shared/modal/modal.service';
 import { NewCollectionModalComponent } from '../../components/new-collection-modal.component';
 import { withTranslations } from '../../../../../core/i18n/with-translations';
-import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../../shared/components/breadcrumbs';
+import { BreadcrumbItem } from '../../../../../shared/components/breadcrumbs';
 import { SpinnerComponent } from '../../../../../shared/components/spinner';
 
 @Component({
   selector: 'app-content-library-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, BreadcrumbsComponent, SpinnerComponent],
+  imports: [PageHeaderComponent, CommonModule, FormsModule, RouterModule, SpinnerComponent],
   styles: [`
     :host { display:block; }
     .top-bar { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
@@ -65,20 +66,14 @@ import { SpinnerComponent } from '../../../../../shared/components/spinner';
   `],
   template: `
     <div>
-      <!-- Breadcrumbs + Header -->
-      <app-breadcrumbs [items]="breadcrumbs" navClass="mb-2" />
-      <div class="top-bar">
-        <div>
-          <h1 class="page-title">Content Library</h1>
-          <p class="page-sub">Store and manage content to display anywhere on your site.</p>
-        </div>
-        <div class="top-actions">
+      <app-page-header title="Content Library" description="Store and manage content to display anywhere on your site." [trail]="breadcrumbs">
+        <div pageActions>
           <button class="btn btn-outline" (click)="openNewCollection()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Create Collection
           </button>
         </div>
-      </div>
+      </app-page-header>
 
       <!-- Search -->
       <div class="search-bar">

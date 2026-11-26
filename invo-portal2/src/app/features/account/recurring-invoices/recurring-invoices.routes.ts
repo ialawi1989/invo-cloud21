@@ -26,7 +26,7 @@ export const RECURRING_INVOICES_ROUTES: Routes = [
   {
     path: 'view/:id',
     canActivate: [translationsLoaded, privilegeGuard],
-    data: { permissionPath: 'recurringInvoiceSecurity.actions.view.access' },
+    data: { pageWidth: 'bleed', permissionPath: 'recurringInvoiceSecurity.actions.view.access' },
     loadComponent: () =>
       import('./pages/recurring-invoice-view/recurring-invoice-view.component').then(m => m.RecurringInvoiceViewComponent),
   },

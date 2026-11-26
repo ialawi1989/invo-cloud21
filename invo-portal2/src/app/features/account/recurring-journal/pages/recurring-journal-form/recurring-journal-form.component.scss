@@ -1,15 +1,6 @@
-.rjf-page {
-  max-width: 920px;
-  margin: 0 auto;
-  padding: 16px 24px 100px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  position: relative;
-}
+.rjf-page { display: flex; flex-direction: column; gap: 16px; position: relative; }
 
 .page-header { display: flex; flex-direction: column; gap: 4px; }
-.page-title { margin: 8px 0 0; font-size: 22px; font-weight: 700; color: var(--ui-text); }
 
 .card {
   background: var(--ui-surface);
@@ -78,19 +69,6 @@
   font-weight: 600;
 }
 
-.save-bar {
-  position: fixed;
-  inset-inline: 0;
-  bottom: 0;
-  z-index: 60;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  background: var(--ui-footer-bg);
-  border-top: 1px solid var(--ui-line);
-}
 
 .btn {
   display: inline-flex;

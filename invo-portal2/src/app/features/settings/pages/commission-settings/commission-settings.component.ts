@@ -1,3 +1,5 @@
+import { FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective } from '@shared/components/form-actions/form-actions.component';
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -9,9 +11,7 @@ import { ApiService } from '@core/http/api.service';
 import { CompanyService } from '@core/auth/company.service';
 import { withTranslations } from '@core/i18n/with-translations';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
-import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { DateFieldComponent } from '@shared/components/date-field/date-field.component';
@@ -40,9 +40,9 @@ interface Choice<T> { value: T; label: string; disabled?: boolean }
 @Component({
   selector: 'app-commission-settings',
   standalone: true,
-  imports: [FormSkeletonComponent, 
+  imports: [FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, PageHeaderComponent, FormSkeletonComponent, 
     CommonModule, FormsModule, TranslateModule,
-    BreadcrumbsComponent, FormStickyFooterComponent, LoadingOverlayComponent,
+    LoadingOverlayComponent,
     SearchDropdownComponent, DateFieldComponent, ToggleComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,

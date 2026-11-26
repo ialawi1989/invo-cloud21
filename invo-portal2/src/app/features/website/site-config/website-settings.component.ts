@@ -1,3 +1,5 @@
+import { FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective } from '@shared/components/form-actions/form-actions.component';
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -12,9 +14,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { ApiService } from '@core/http/api.service';
 import { LanguageService } from '@core/i18n/language.service';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
-import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { ToastService } from '@shared/components/toast/toast.service';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
@@ -45,18 +45,24 @@ import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton
 @Component({
   selector: 'app-website-settings',
   standalone: true,
-  imports: [FormSkeletonComponent, 
+  imports: [FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, PageHeaderComponent, FormSkeletonComponent, 
     CommonModule, TranslateModule,
-    BreadcrumbsComponent, FormStickyFooterComponent, LoadingOverlayComponent,
+    LoadingOverlayComponent,
     SettingsFieldsComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="ws-page">
-      <header class="page-header">
-        <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-        <h1 class="page-title">{{ 'WEBSITE.SETTINGS.TITLE' | translate }}</h1>
-      </header>
+      <app-page-header [title]="'WEBSITE.SETTINGS.TITLE' | translate" [trail]="breadcrumbs()">
+<app-form-actions pageActions>
+        <button formActionSecondary type="button" (click)="reload()" [disabled]="saving() || !dirty()">
+          {{ 'COMMON.CANCEL' | translate }}
+        </button>
+        <button formActionPrimary type="button" (click)="save()" [disabled]="saving() || !dirty()">
+          {{ 'COMMON.SAVE' | translate }}
+        </button>
+</app-form-actions>
+</app-page-header>
 
       @if (loading()) {
         <app-form-skeleton />
@@ -98,18 +104,10 @@ import { FormSkeletonComponent } from '@shared/components/skeleton/form-skeleton
 
       <app-loading-overlay [show]="saving()" [message]="'COMMON.SAVING' | translate"/>
 
-      <app-form-sticky-footer>
-        <button type="button" class="btn btn-ghost" (click)="reload()" [disabled]="saving() || !dirty()">
-          {{ 'COMMON.CANCEL' | translate }}
-        </button>
-        <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving() || !dirty()">
-          {{ 'COMMON.SAVE' | translate }}
-        </button>
-      </app-form-sticky-footer>
+      
     </div>
   `,
   styles: [`
-    .ws-page { padding-bottom: 80px; }
     .ws-loading { display: flex; justify-content: center; padding: 60px 0; }
     .card { background: var(--ui-surface); border-radius: 12px; box-shadow: 0 1px 2px rgba(15,23,42,.04); margin-bottom: 16px; overflow: hidden; }
     .card__head { padding: 14px 18px; border-bottom: 1px solid var(--ui-surface-2); }

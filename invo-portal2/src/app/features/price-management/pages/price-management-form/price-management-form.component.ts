@@ -1,3 +1,5 @@
+import { FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective } from '@shared/components/form-actions/form-actions.component';
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -6,12 +8,10 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import { LanguageService } from '@core/i18n/language.service';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown';
 import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
-import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { TimePickerComponent } from '@shared/components/time-picker/time-picker.component';
 import { ToastService } from '@shared/components/toast/toast.service';
@@ -32,9 +32,9 @@ import { PriceManagementService } from '../../services/price-management.service'
 @Component({
   selector: 'app-price-management-form',
   standalone: true,
-  imports: [
-    CommonModule, FormsModule, TranslateModule, BreadcrumbsComponent, DatePickerComponent, SearchDropdownComponent,
-    EmptyStateComponent, FormStickyFooterComponent, LoadingOverlayComponent, TimePickerComponent, ToggleComponent,
+  imports: [FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, PageHeaderComponent, 
+    CommonModule, FormsModule, TranslateModule, DatePickerComponent, SearchDropdownComponent,
+    EmptyStateComponent, LoadingOverlayComponent, TimePickerComponent, ToggleComponent,
   ],
   templateUrl: './price-management-form.component.html',
   styleUrl: './price-management-form.component.scss',

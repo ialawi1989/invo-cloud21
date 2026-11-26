@@ -2,6 +2,7 @@ import {
   Component, ElementRef, HostListener, ViewChild, computed, effect, inject, signal,
 } from '@angular/core';
 import { Router } from '@angular/router';
+import { SettingsModeService } from '../../services/settings-mode.service';
 import { TranslateModule } from '@ngx-translate/core';
 import { SafeHtmlPipe } from '../../../pipes/safe-html.pipe';
 import { ModalService } from '../../../../shared/modal/modal.service';
@@ -23,6 +24,7 @@ export class GlobalSearchComponent {
   private search = inject(GlobalSearchService);
   private router = inject(Router);
   private modal  = inject(ModalService);
+  private settingsMode = inject(SettingsModeService);
 
   @ViewChild('input') private inputEl?: ElementRef<HTMLInputElement>;
   @ViewChild('list')  private listEl?: ElementRef<HTMLElement>;
@@ -119,6 +121,8 @@ export class GlobalSearchComponent {
       const component = typeof c === 'function' && !c.prototype ? await c() : c;
       this.modal.open(component, { size: (e.popup.size as any) ?? 'md', closeOnBackdrop: true });
     } else if (e.link) {
+      // A Settings result keeps the settings menu on, including for tiles that live outside /settings/** (e.g. /promotions/*).
+      if (e.kind === 'setting') this.settingsMode.enterForTarget(e.link, e.queryParams);
       void this.router.navigate([e.link], { queryParams: e.queryParams ?? null });
     }
   }

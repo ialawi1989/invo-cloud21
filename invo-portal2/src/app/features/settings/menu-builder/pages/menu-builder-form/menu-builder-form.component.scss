@@ -1,10 +1,8 @@
 // The sticky save bar is fixed to the bottom of the viewport: leave room under the last card, and keep a focused field
 // (scrollIntoView / Tab) from landing behind it.
-:host { display: block; scroll-padding-bottom: 96px; }
-.mbf-page { display: flex; flex-direction: column; gap: 16px; padding-bottom: 96px; max-width: 1120px; margin: 0 auto; }
-.mbf-header { display: flex; flex-direction: column; gap: 6px; }
+:host { display: block; }
+.mbf-page { display: flex; flex-direction: column; gap: 16px; }
 .mbf-titlebar { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 14px; }
-.mbf-title { margin: 0; font-size: 22px; font-weight: 700; color: var(--ui-text); overflow-wrap: anywhere; }
 .mbf-general-error { margin: 0; padding: 10px 12px; border-radius: 8px; background: var(--ui-red-soft); color: var(--ui-red-text); font-size: 13px; }
 .mbf-pick { margin: 0; padding: 28px; text-align: center; font-size: 14px; color: var(--ui-faint); background: var(--ui-surface); border: 1px dashed var(--ui-line-strong); border-radius: 12px; }
 

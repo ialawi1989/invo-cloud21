@@ -1,22 +1,29 @@
 <div class="plf-page">
-  <header class="page-header">
-    <div class="page-header__titles">
-      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-      <h1 class="page-title">{{ pageTitle() }}</h1>
-    </div>
-    @if (isExisting()) {
-      <div class="page-header__actions">
-        <app-dropdown-menu-btn [items]="importMenuItems()" align="end" triggerClass="btn btn-default">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="17 8 12 3 7 8"/>
-            <line x1="12" y1="3" x2="12" y2="15"/>
-          </svg>
-          {{ 'PRICE_LABEL.IMPORT.ACTION' | translate }}
-        </app-dropdown-menu-btn>
-      </div>
-    }
-  </header>
+  <app-page-header [title]="pageTitle()" [trail]="breadcrumbs()">
+    <app-form-actions pageActions>
+      <ng-container ngProjectAs="[formActionExtra]">
+        @if (isExisting()) {
+          <app-dropdown-menu-btn formActionExtra [items]="importMenuItems()" align="end" triggerClass="fa-btn fa-btn--secondary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            {{ 'PRICE_LABEL.IMPORT.ACTION' | translate }}
+          </app-dropdown-menu-btn>
+        }
+      </ng-container>
+      <button type="button" formActionSecondary (click)="cancel()" [disabled]="saving()">
+        {{ 'COMMON.CANCEL' | translate }}
+      </button>
+      <button type="button" formActionPrimary
+        [disabled]="saving() || loading() || !label().name.trim() || !isDirty()"
+        (click)="save()">
+        @if (saving()) { <span class="spinner" aria-hidden="true"></span> }
+        {{ 'COMMON.SAVE' | translate }}
+      </button>
+    </app-form-actions>
+  </app-page-header>
 
   <section class="card">
     <header class="card__head">
@@ -256,17 +263,6 @@
     </section>
   </div>
 
-  <div class="form-footer">
-    <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">
-      {{ 'COMMON.CANCEL' | translate }}
-    </button>
-    <button type="button" class="btn btn-primary"
-      [disabled]="saving() || loading() || !label().name.trim() || !isDirty()"
-      (click)="save()">
-      @if (saving()) { <span class="spinner" aria-hidden="true"></span> }
-      {{ 'COMMON.SAVE' | translate }}
-    </button>
-  </div>
 
   <app-loading-overlay [show]="loading()"/>
 </div>

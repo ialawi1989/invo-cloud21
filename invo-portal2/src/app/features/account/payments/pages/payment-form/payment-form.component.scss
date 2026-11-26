@@ -1,5 +1,5 @@
 // Same identity as the other account forms.
-.pf { padding: 24px; padding-bottom: 96px; max-width: 1100px; display: flex; flex-direction: column; gap: 14px; }
+.pf { display: flex; flex-direction: column; gap: 14px; }
 .page-header { display: flex; flex-direction: column; gap: 8px; margin-bottom: 6px; padding-bottom: 16px; border-bottom: 1px solid var(--ui-line);
   &__title { margin: 0; font-size: 24px; font-weight: 700; color: var(--ui-text); } }
 
@@ -23,7 +23,6 @@
 .pf-prompt { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; background: var(--ui-x-e6f4f6); border: 1px solid var(--ui-x-b6dde3); border-radius: 10px; padding: 10px 14px; color: #1d6b7a;
   &__actions { display: inline-flex; gap: 8px; } }
 
-.pf-lines-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .pf-tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .pf-seg { display: inline-flex; border: 1px solid var(--ui-line-strong); border-radius: 8px; overflow: hidden;
   button { border: 0; background: var(--ui-surface); padding: 7px 12px; font-size: 13px; font-weight: 600; color: var(--ui-text-4); cursor: pointer; &.on { background: var(--ui-b-2691a4); color: #fff; } } }
@@ -43,10 +42,10 @@
   &:hover:not(:disabled) { background: var(--ui-surface-1); } &:disabled { opacity: .5; cursor: not-allowed; }
   &--primary { border-color: #2691a4; background: #2691a4; color: #fff; &:hover:not(:disabled) { background: #227d8d; } } }
 
-@media (max-width: 576px) { .pf { padding-inline: 0 !important; } }
+
 
 // The footer content spans exactly the page content: same start edge, same end edge (shell 24 + page 24 each side).
-:host ::ng-deep .ffs__inner { width: calc(100% - 96px) !important; max-width: 1052px !important; margin: 0 0 0 48px !important; padding: 12px 0 !important; }
+:host ::ng-deep .ffs__inner { width: calc(100% - 48px) !important; max-width: none !important; margin: 0 0 0 24px !important; padding: 12px 0 !important; }
 @media (max-width: 576px) { :host ::ng-deep .ffs__inner { width: calc(100% - 32px) !important; margin-inline-start: 16px !important; } }
 
 // Table look shared with the item table: darker header labels, light header tint, white body.

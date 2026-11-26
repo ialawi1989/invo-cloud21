@@ -1,21 +1,19 @@
 <div class="sa">
-  <header class="sa__head">
-    <div>
-      <h1 class="sa__title">{{ 'ANALYTICS.TITLE' | translate }}</h1>
-      <p class="sa__sub">{{ 'ANALYTICS.SUBTITLE' | translate }}</p>
+  <app-page-header [title]="'ANALYTICS.TITLE' | translate" [description]="'ANALYTICS.SUBTITLE' | translate">
+    <div pageActions>
+      <div class="sa__range">
+        <app-date-picker
+          mode="range"
+          [presets]="presets()"
+          [value]="range()"
+          (valueChange)="onRange($event)"
+        />
+        @if (prevPeriodLabel()) {
+          <span class="sa__compare">{{ 'ANALYTICS.COMPARE_PREV' | translate }} ({{ prevPeriodLabel() }})</span>
+        }
+      </div>
     </div>
-    <div class="sa__range">
-      <app-date-picker
-        mode="range"
-        [presets]="presets()"
-        [value]="range()"
-        (valueChange)="onRange($event)"
-      />
-      @if (prevPeriodLabel()) {
-        <span class="sa__compare">{{ 'ANALYTICS.COMPARE_PREV' | translate }} ({{ prevPeriodLabel() }})</span>
-      }
-    </div>
-  </header>
+  </app-page-header>
 
   @if (loading()) {
     <!-- Loading — skeleton, no connect prompts yet -->

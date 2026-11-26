@@ -1,3 +1,5 @@
+import { FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective } from '@shared/components/form-actions/form-actions.component';
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
@@ -22,10 +24,8 @@ import { SECURITY_DEFINITIONS } from '@core/auth/privileges/definitions/registry
 /** A saved privilege set the user can clone from (the "preset" dropdown). */
 interface RoleOption { id: string; name: string; }
 
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
-import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 import { SegmentedToggleComponent, type SegmentedToggleOption } from '@shared/components/segmented-toggle/segmented-toggle.component';
 import { ToggleComponent } from '@shared/components/toggle/toggle.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
@@ -189,11 +189,9 @@ interface GroupVm {
 @Component({
   selector: 'app-privilege-form',
   standalone: true,
-  imports: [TooltipDirective, NgTemplateOutlet, SegmentedToggleComponent, FormSkeletonComponent,
+  imports: [FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, PageHeaderComponent, TooltipDirective, NgTemplateOutlet, SegmentedToggleComponent, FormSkeletonComponent,
     TranslateModule,
-    BreadcrumbsComponent,
     LoadingOverlayComponent,
-    FormStickyFooterComponent,
     ToggleComponent,
     SearchDropdownComponent,
   ],

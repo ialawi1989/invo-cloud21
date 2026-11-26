@@ -1,8 +1,14 @@
 <div class="ps-page">
-  <header class="page-header">
-    <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-    <h1 class="page-header__title">{{ 'PROMOTIONS.PROMOTIONS_POINTS.PROMOTIONS_POINT_SETTINGS' | translate }}</h1>
-  </header>
+  <app-page-header [title]="'PROMOTIONS.PROMOTIONS_POINTS.PROMOTIONS_POINT_SETTINGS' | translate" [trail]="breadcrumbs()">
+@if (setting(); as s) {
+<app-form-actions pageActions>
+      <button formActionSecondary type="button" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+      <button formActionPrimary type="button" [disabled]="!formValid() || saving()" (click)="save()">
+        {{ 'COMMON.SAVE' | translate }}
+      </button>
+</app-form-actions>
+}
+</app-page-header>
 
   @if (setting(); as s) {
     <section class="ps-card">
@@ -92,11 +98,6 @@
       </div>
     </section>
 
-    <app-form-sticky-footer>
-      <button type="button" class="ps-btn" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
-      <button type="button" class="ps-btn ps-btn--primary" [disabled]="!formValid() || saving()" (click)="save()">
-        {{ 'COMMON.SAVE' | translate }}
-      </button>
-    </app-form-sticky-footer>
+    
   }
 </div>

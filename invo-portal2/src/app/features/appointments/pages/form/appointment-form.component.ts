@@ -1,3 +1,5 @@
+import { FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, FormActionOverflowDirective } from '@shared/components/form-actions/form-actions.component';
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -7,7 +9,6 @@ import { ErrorService } from '@core/http/error.service';
 import { ModalService } from '@shared/modal/modal.service';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
-import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import { EmployeeService } from '../../../employees/services/employee.service';
@@ -57,7 +58,7 @@ let rowSeq = 0;
 @Component({
   selector: 'app-appointment-form',
   standalone: true,
-  imports: [TooltipDirective, FormsModule, TranslateModule, SearchDropdownComponent, DatePickerComponent, MycurrencyPipe, FormStickyFooterComponent],
+  imports: [FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, FormActionOverflowDirective, PageHeaderComponent, TooltipDirective, FormsModule, TranslateModule, SearchDropdownComponent, DatePickerComponent, MycurrencyPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './appointment-form.component.html',
   styleUrl: './appointment-form.component.scss',

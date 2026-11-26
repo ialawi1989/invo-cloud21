@@ -1,3 +1,5 @@
+import { FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective } from '@shared/components/form-actions/form-actions.component';
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { DragIconComponent } from '@shared/components/drag-icon/drag-icon.component';
 import {
   ChangeDetectionStrategy,
@@ -31,10 +33,8 @@ import {
   PickAssignedProductsResult,
 } from '../../components/pick-assigned-products-modal/pick-assigned-products-modal.component';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
-import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 import { TranslateLinkComponent } from '@shared/components/translate-link/translate-link.component';
 import { ToastService } from '@shared/components/toast/toast.service';
 import { ModalService } from '@shared/modal/modal.service';
@@ -64,14 +64,12 @@ interface DeptOption { id: string; name: string; }
 @Component({
   selector: 'app-category-form',
   standalone: true,
-  imports: [DragIconComponent, FormSkeletonComponent, 
+  imports: [FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, PageHeaderComponent, DragIconComponent, FormSkeletonComponent, 
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
     TranslateModule,
-    BreadcrumbsComponent,
     LoadingOverlayComponent,
-    FormStickyFooterComponent,
     SearchDropdownComponent,
     TranslateLinkComponent,
     CollapsibleCardComponent,

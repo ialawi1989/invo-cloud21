@@ -225,7 +225,7 @@
         <div class="canvas-loading">Loading image…</div>
       }
       @if (loadError()) {
-        <div class="canvas-loading">Couldn’t load this image for editing.</div>
+        <div class="canvas-loading">Couldn’t load this image for editing. The file may be missing from storage — try re-uploading it.</div>
       }
       <canvas
         #mainCanvas

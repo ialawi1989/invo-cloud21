@@ -1,8 +1,22 @@
 <div class="dom-page">
-  <header class="page-header">
-    <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-    <h1 class="page-title">{{ 'DOMAIN_SETTINGS.PAGE_TITLE' | translate }}</h1>
-  </header>
+  <app-page-header [title]="'DOMAIN_SETTINGS.PAGE_TITLE' | translate" [trail]="breadcrumbs()">
+@if (!(loadFailed() && isInitial() && !loading())) {
+<app-form-actions pageActions>
+      @if (isApproved() || isPendingValidation()) {
+        <button formActionOverflow type="button" (click)="removeDomain()" [disabled]="busy()">
+          {{ (isApproved() ? 'DOMAIN_SETTINGS.REMOVE_DOMAIN' : 'DOMAIN_SETTINGS.CANCEL_REMOVE') | translate }}
+        </button>
+      }
+      <span class="save-bar__spacer"></span>
+      @if (isInitial()) {
+        <button formActionPrimary type="button" [disabled]="!canSubmitRegister()" (click)="register()">{{ 'DOMAIN_SETTINGS.REGISTER_DOMAIN' | translate }}</button>
+      }
+      @if (isPendingValidation()) {
+        <button formActionPrimary type="button" [disabled]="!isCertIssued() || busy()" (click)="approve()">{{ 'DOMAIN_SETTINGS.CONTINUE' | translate }}</button>
+      }
+</app-form-actions>
+}
+</app-page-header>
 
   @if (loadFailed() && isInitial() && !loading()) {
     <app-empty-state icon="error" tone="error" [title]="'DOMAIN_SETTINGS.LOAD_FAILED' | translate">
@@ -222,20 +236,7 @@
       </section>
     }
 
-    <footer class="save-bar">
-      @if (isApproved() || isPendingValidation()) {
-        <button type="button" class="btn btn-danger" (click)="removeDomain()" [disabled]="busy()">
-          {{ (isApproved() ? 'DOMAIN_SETTINGS.REMOVE_DOMAIN' : 'DOMAIN_SETTINGS.CANCEL_REMOVE') | translate }}
-        </button>
-      }
-      <span class="save-bar__spacer"></span>
-      @if (isInitial()) {
-        <button type="button" class="btn btn-primary" [disabled]="!canSubmitRegister()" (click)="register()">{{ 'DOMAIN_SETTINGS.REGISTER_DOMAIN' | translate }}</button>
-      }
-      @if (isPendingValidation()) {
-        <button type="button" class="btn btn-primary" [disabled]="!isCertIssued() || busy()" (click)="approve()">{{ 'DOMAIN_SETTINGS.CONTINUE' | translate }}</button>
-      }
-    </footer>
+    
   }
 
   <app-loading-overlay [show]="loading()"/>

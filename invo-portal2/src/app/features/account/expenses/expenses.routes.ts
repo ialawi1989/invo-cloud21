@@ -37,7 +37,7 @@ export const EXPENSES_ROUTES: Routes = [
   {
     path: 'view/:id',
     canActivate: [translationsLoaded, privilegeGuard],
-    data: { permissionPath: 'expenseSecurity.actions.view.access' },
+    data: { pageWidth: 'bleed', permissionPath: 'expenseSecurity.actions.view.access' },
     loadComponent: () => import('./pages/expense-view/expense-view.component').then(m => m.ExpenseViewComponent),
   },
   {

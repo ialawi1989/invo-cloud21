@@ -1,4 +1,4 @@
-.cq { padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; }
+.cq { display: flex; flex-direction: column; gap: 16px; }
 .cq__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .cq__title { font-size: 20px; font-weight: 600; color: var(--ui-text); margin: 0; }
 .cq__head-actions, .cq__actions { display: flex; gap: 8px; }

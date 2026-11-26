@@ -7,7 +7,7 @@ export const OPENING_BALANCES_ROUTES: Routes = [
     path: '',
     canActivate: [privilegeGuard],
     canDeactivate: [unsavedChangesGuard],
-    data: { permissionPath: 'openingBalances.actions.view.access' },
+    data: { pageWidth: 'form', permissionPath: 'openingBalances.actions.view.access' },
     loadComponent: () =>
       import('./pages/opening-balances.component')
         .then(m => m.OpeningBalancesComponent),

@@ -1,8 +1,14 @@
 <div class="cf-page">
-  <header class="page-header">
-    <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-    <h1 class="page-header__title">{{ titleKey() | translate }} <small>· {{ typeKey() | translate }}</small></h1>
-  </header>
+  <app-page-header [title]="pageTitleKey() | translate" [description]="typeLabel()" [trail]="breadcrumbs()">
+@if (campaign(); as c) {
+<app-form-actions pageActions>
+      <button formActionSecondary type="button" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+      <button formActionPrimary type="button" [disabled]="!formValid() || saving()" (click)="save()">
+        {{ 'COMMON.SAVE' | translate }}
+      </button>
+</app-form-actions>
+}
+</app-page-header>
 
   @if (campaign(); as c) {
     <!-- name -->
@@ -193,11 +199,6 @@
       </section>
     }
 
-    <app-form-sticky-footer>
-      <button type="button" class="cf-btn" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
-      <button type="button" class="cf-btn cf-btn--primary" [disabled]="!formValid() || saving()" (click)="save()">
-        {{ 'COMMON.SAVE' | translate }}
-      </button>
-    </app-form-sticky-footer>
+    
   }
 </div>

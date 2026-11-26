@@ -1,10 +1,10 @@
 <div class="clf-page">
-  <header class="page-header">
-    <div class="page-header__titles">
-      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-      <h1 class="page-title">{{ pageTitle() }}</h1>
-    </div>
-  </header>
+  <app-page-header [title]="pageTitle()" [trail]="breadcrumbs()">
+<app-form-actions pageActions>
+    <button formActionSecondary type="button" (click)="cancel()" [disabled]="saving()">{{ 'COMMON.CANCEL' | translate }}</button>
+    <button formActionPrimary type="button" (click)="save()" [disabled]="!canSave() || loading()">{{ 'COMMON.SAVE' | translate }}</button>
+</app-form-actions>
+</app-page-header>
 
   @if (loading()) {
     <app-form-skeleton />
@@ -145,8 +145,5 @@
 
   <app-loading-overlay [show]="saving()" [message]="saveLabel()"/>
 
-  <app-form-sticky-footer>
-    <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="saving()">{{ 'COMMON.CANCEL' | translate }}</button>
-    <button type="button" class="btn btn-primary" (click)="save()" [disabled]="!canSave() || loading()">{{ 'COMMON.SAVE' | translate }}</button>
-  </app-form-sticky-footer>
+  
 </div>

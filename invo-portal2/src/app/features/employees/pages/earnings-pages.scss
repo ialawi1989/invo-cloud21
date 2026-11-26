@@ -3,15 +3,13 @@
 
 :host { display: block; }
 
-.ep-page { max-width: 1200px; padding: 0 0 96px; position: relative; }
+.ep-page { position: relative; }
 
 .ep-header {
   display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 20px;
   &__titles { min-width: 0; flex: 1; }
   &__actions { flex-shrink: 0; display: flex; gap: 8px; }
 }
-.ep-title { font-size: 20px; font-weight: 700; color: var(--ui-text-2); margin: 6px 0 0; }
-.ep-sub   { font-size: 13px; color: var(--ui-muted); margin: 2px 0 0; }
 
 .ep-card {
   background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: 12px; margin-bottom: 16px;

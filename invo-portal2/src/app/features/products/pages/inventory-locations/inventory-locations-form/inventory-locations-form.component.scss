@@ -1,25 +1,13 @@
 // ── Page chrome ─────────────────────────────────────────────────────────
-.ilf-page {
-  max-width: 1100px;
-  margin: 0 auto;
-  // Bottom padding leaves room for the sticky save bar so the last
+.ilf-page { // Bottom padding leaves room for the sticky save bar so the last
   // card never sits underneath it when the user scrolls.
-  padding: 16px 24px 96px;
-  position: relative;
-}
+  padding: 16px 24px 96px; position: relative; }
 
 .page-header {
   margin-bottom: 16px;
   &__titles { min-width: 0; }
 }
 
-.page-title {
-  margin: 8px 0 4px;
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--ui-text);
-  letter-spacing: -0.01em;
-}
 
 .loading {
   display: flex;

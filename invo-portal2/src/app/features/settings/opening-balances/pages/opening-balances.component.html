@@ -1,19 +1,31 @@
 <div class="ob-page">
-  <app-breadcrumbs [items]="breadcrumbs()" separator="chevron" />
-
-  <header class="ob-head">
-    <div class="ob-head__titles">
-      <h1 class="ob-title">{{ 'OPENING_BALANCES.TITLE' | translate }}</h1>
-      <p class="ob-sub">{{ 'OPENING_BALANCES.SUBTITLE' | translate }}</p>
-    </div>
-    <div class="ob-head__actions">
+  <app-page-header [title]="'OPENING_BALANCES.TITLE' | translate" [description]="'OPENING_BALANCES.SUBTITLE' | translate" [trail]="breadcrumbs()">
+    <app-form-actions pageActions>
       <app-dropdown-menu-btn
         [items]="optionsMenu()" [appendToBody]="true" [chevron]="true" align="end"
-        triggerClass="ob-btn ob-btn--ghost">
+        triggerClass="fa-btn fa-btn--secondary" formActionExtra>
         {{ 'OPENING_BALANCES.OPTIONS' | translate }}
       </app-dropdown-menu-btn>
-    </div>
-  </header>
+      <ng-container ngProjectAs="[formActionSecondary]">
+        @if (editMode()) {
+          <button type="button" formActionSecondary (click)="cancel()" [disabled]="saving()">
+            {{ 'COMMON.CANCEL' | translate }}
+          </button>
+        }
+      </ng-container>
+      <ng-container ngProjectAs="[formActionPrimary]">
+        @if (editMode()) {
+          <button type="button" formActionPrimary (click)="save()" [disabled]="saving() || loading()">
+            {{ 'COMMON.SAVE' | translate }}
+          </button>
+        } @else {
+          <button type="button" formActionPrimary (click)="enterEdit()" [disabled]="loading() || groups().length === 0">
+            {{ 'OPENING_BALANCES.EDIT' | translate }}
+          </button>
+        }
+      </ng-container>
+    </app-form-actions>
+  </app-page-header>
 
   <!-- Toolbar: opening date · branch · live balance status -->
   <section class="ob-toolbar">
@@ -243,18 +255,4 @@
 
   <app-loading-overlay [show]="saving()" />
 
-  <app-form-sticky-footer>
-    @if (editMode()) {
-      <button type="button" class="ob-btn ob-btn--ghost" (click)="cancel()" [disabled]="saving()">
-        {{ 'COMMON.CANCEL' | translate }}
-      </button>
-      <button type="button" class="ob-btn ob-btn--primary" (click)="save()" [disabled]="saving() || loading()">
-        {{ 'COMMON.SAVE' | translate }}
-      </button>
-    } @else {
-      <button type="button" class="ob-btn ob-btn--primary" (click)="enterEdit()" [disabled]="loading() || groups().length === 0">
-        {{ 'OPENING_BALANCES.EDIT' | translate }}
-      </button>
-    }
-  </app-form-sticky-footer>
 </div>

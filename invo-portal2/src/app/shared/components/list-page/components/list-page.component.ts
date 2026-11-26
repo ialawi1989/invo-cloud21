@@ -11,6 +11,7 @@ import {
   computed,
   effect,
   ContentChildren,
+  contentChild,
   QueryList,
   TemplateRef,
   ElementRef,
@@ -76,7 +77,9 @@ import { CountState, DeferredCount } from '../utils/deferred-count';
 import { COUNT_TIMEOUT_MS, CountMode, listPageConfig, MAX_PAGE_LIMIT } from '../list-page.config';
 import { OnDemandCount, OnDemandState } from '../utils/on-demand-count';
 import { recordListMetric } from '../utils/list-metrics';
-import { BreadcrumbsComponent, BreadcrumbItem } from '../../breadcrumbs';
+import { BreadcrumbItem } from '../../breadcrumbs';
+import { PageHeaderComponent } from '../../page-header/page-header.component';
+import { FormActionsComponent } from '../../form-actions/form-actions.component';
 import { ListPreferencesService } from '../../../../core/layout/services/list-preferences.service';
 import { ListColumnPref } from '../../../../core/layout/services/employee-options.service';
 import { LayoutService } from '../../../../core/layout/services/layout.service';
@@ -128,7 +131,7 @@ import {
     ListGalleryCardDirective,
     FilterModalComponent,
     PaginationComponent,
-    BreadcrumbsComponent,
+    PageHeaderComponent,
     TranslateModule,
     TooltipDirective,
     ListFilterBarComponent,
@@ -322,10 +325,9 @@ import {
       min-height: 0;
       display: flex;
       flex-direction: column;
-      /* Fill the viewport HEIGHT but keep comfortable side + bottom gutters
-         (Wix-style contained panel) so the table stays scannable and doesn't
-         feel crammed against the screen edges. The header supplies the top gap. */
-      padding: 0 var(--lp-page-px) var(--lp-page-pb);
+      /* Fill the viewport HEIGHT. The gutters (top, sides, bottom) belong to the page frame of the shell layout —
+         the list page sets none of its own, or a list would sit 48px from the edge instead of 24px. */
+      padding: 0;
       /* Comfortable, Wix-like row rhythm — roomy but not airy. */
     }
     /* Let the primary (frozen) column absorb horizontal slack so wide screens
@@ -340,7 +342,6 @@ import {
     /* Page header (H1) — small extra inset on top of the container gutters. */
     .list-page-container.lp-fullbleed > .lp-head {
       flex: 0 0 auto;
-      padding: var(--lp-head-pt) 4px var(--lp-head-pb);
     }
     /* Card edge: the same border and shadow as the form cards (employee form,
        Customers), so lists and forms match. Full-bleed mode below removes it. */
@@ -701,11 +702,8 @@ import {
     @keyframes lp-skel-pulse { 50% { opacity: .55; } }
 
     /* ── Redesign: header / toolbar / bulk bar / footer ─────────────────────── */
-    .lp-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--lp-gap); padding-block-end: 16px; }
-    .lp-head__main { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-    .lp-head__title-row { display: flex; align-items: center; gap: 12px; min-width: 0; }
-    .lp-title { font-size: 24px; font-weight: 500; line-height: 1.25; letter-spacing: -0.01em; color: var(--ui-text); }
-    .lp-subtitle { font-size: 14px; color: var(--ui-muted); }
+    /* The header itself is <app-page-header> (title, breadcrumb, description, rhythm); only the projected bits live here. */
+    .lp-head__count { display: contents; }
     .lp-count {
       flex: 0 0 auto; font-size: 13px; line-height: 1.4; padding: 2px 10px; border-radius: 999px;
       color: var(--ui-muted); border: 1px solid var(--ui-line-strong); font-variant-numeric: tabular-nums; unicode-bidi: isolate;
@@ -734,7 +732,7 @@ import {
     }
     .lp-search__input::placeholder { color: var(--ui-placeholder, var(--ui-muted)); }
     .lp-search__input:hover { border-color: var(--ui-field-border-hover, var(--ui-faint)); }
-    .lp-search__input:focus-visible { outline: 2px solid var(--lp-focus); outline-offset: 1px; border-color: var(--lp-focus); }
+    .lp-search__input:focus-visible { outline: none; border-color: var(--lp-focus); box-shadow: 0 0 0 3px rgba(50, 172, 193, 0.14); }
     .lp-search__go, .lp-search__clear {
       position: absolute; top: 0; bottom: 0; display: inline-flex; align-items: center; justify-content: center;
       color: var(--ui-muted); background: transparent; border-radius: 8px; cursor: pointer;
@@ -1022,6 +1020,9 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
   get isFitContent(): boolean {
     return this.fitContent && this.isFullBleed;
   }
+
+  /** An `<app-form-actions listHeaderActions>` projected into the header makes the header's actions stick under the top bar. */
+  readonly projectedFormActions = contentChild(FormActionsComponent);
 
   /** Effective full-bleed: only on desktop widths. On mobile (< 768px) we keep
    *  the padded, page-scroll layout — a fixed-viewport shell fights iOS Safari's
@@ -1408,9 +1409,10 @@ export class ListPageComponent<T = any> implements OnInit, AfterViewInit, OnDest
       // footer height and a visible filter bar are accounted for exactly.
       const card = root.querySelector<HTMLElement>('.list-card');
       const below = card ? Math.max(0, card.getBoundingClientRect().bottom - hostRect.bottom) : ListPageComponent.SCROLL_BOTTOM_RESERVE;
-      // The card's bottom edge then sits exactly one page padding above the viewport bottom.
-      const container = root.querySelector<HTMLElement>('.list-page-container');
-      const pagePb = container ? parseFloat(getComputedStyle(container).paddingBottom) || 0 : 0;
+      // The card's bottom edge then sits exactly one page gutter above the viewport bottom. The gutter belongs to the shell's
+      // page frame (the list page sets none of its own); outside the shell it falls back to the container's own padding.
+      const gutterEl = root.closest<HTMLElement>('.page-frame') ?? root.querySelector<HTMLElement>('.list-page-container');
+      const pagePb = gutterEl ? parseFloat(getComputedStyle(gutterEl).paddingBottom) || 0 : 0;
       const h = window.innerHeight - docTop - below - pagePb - this.bottomReserve;
       // Never collapse to an unusably short strip on tiny viewports.
       this.scrollMaxHeight.set(Math.max(240, Math.round(h)));

@@ -1,22 +1,36 @@
 <div class="tp-page">
-  <header class="page-header">
-    <app-breadcrumbs [items]="breadcrumbs" separator="chevron"/>
-    <div class="page-header__row">
-      <h1 class="page-header__title">{{ 'PROMOTIONS.CUSTOMER_TIERS.CUSTOMER_TIERS' | translate }}</h1>
-      @if (data(); as d) {
-        <div class="tp-actions">
+  <app-page-header [title]="'PROMOTIONS.CUSTOMER_TIERS.CUSTOMER_TIERS' | translate" [trail]="breadcrumbs">
+    <app-form-actions pageActions>
+      <ng-container ngProjectAs="[formActionExtra]">
+        @if (data(); as d) {
           @if (canEvaluate && !editMode()) {
-            <button type="button" class="tp-btn" [disabled]="!d.enabled" (click)="evaluate()">
+            <button type="button" class="tp-btn" formActionExtra [disabled]="!d.enabled" (click)="evaluate()">
               {{ 'PROMOTIONS.CUSTOMER_TIERS.EVALUATION' | translate }}
             </button>
           }
-          <button type="button" class="tp-btn" (click)="openHistory()">
+        }
+      </ng-container>
+      <ng-container ngProjectAs="[formActionExtra]">
+        @if (data()) {
+          <button type="button" class="tp-btn" formActionExtra (click)="openHistory()">
             {{ 'PROMOTIONS.CUSTOMER_TIERS.HISTORY' | translate }}
           </button>
-        </div>
-      }
-    </div>
-  </header>
+        }
+      </ng-container>
+      <ng-container ngProjectAs="[formActionSecondary]">
+        @if (data() && editMode()) {
+          <button type="button" formActionSecondary (click)="cancelChanges()">{{ 'COMMON.CANCEL' | translate }}</button>
+        }
+      </ng-container>
+      <ng-container ngProjectAs="[formActionPrimary]">
+        @if (data() && editMode()) {
+          <button type="button" formActionPrimary [disabled]="!valid() || saving()" (click)="save()">
+            {{ 'COMMON.SAVE' | translate }}
+          </button>
+        }
+      </ng-container>
+    </app-form-actions>
+  </app-page-header>
 
   @if (data(); as d) {
     <!-- ── Summary banner (view mode) ───────────────────────────── -->
@@ -217,12 +231,6 @@
         </div>
       </section>
 
-      <app-form-sticky-footer>
-        <button type="button" class="tp-btn" (click)="cancelChanges()">{{ 'COMMON.CANCEL' | translate }}</button>
-        <button type="button" class="tp-btn tp-btn--primary" [disabled]="!valid() || saving()" (click)="save()">
-          {{ 'COMMON.SAVE' | translate }}
-        </button>
-      </app-form-sticky-footer>
     }
   }
 </div>

@@ -24,14 +24,14 @@ export const SUPPLIERS_ROUTES: Routes = [
   {
     path: 'view/:id',
     canActivate: [translationsLoaded, privilegeGuard],
-    data: { permissionPath: 'supplierSecurity.actions.view.access' },
+    data: { pageWidth: 'bleed', permissionPath: 'supplierSecurity.actions.view.access' },
     loadComponent: () => import('./pages/supplier-dashboard/supplier-dashboard.component').then(m => m.SupplierDashboardComponent),
   },
   {
     path: ':id',
     canActivate: [translationsLoaded, privilegeGuard],
     canDeactivate: [unsavedChangesGuard],
-    data: { permissionPath: 'supplierSecurity.actions.add.access' },
+    data: { pageWidth: 'form', permissionPath: 'supplierSecurity.actions.add.access' },
     loadComponent: () => import('./pages/supplier-form/supplier-form.component').then(m => m.SupplierFormComponent),
   },
 ];

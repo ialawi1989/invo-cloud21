@@ -1,3 +1,4 @@
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -14,10 +15,9 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { withTranslations } from '@core/i18n/with-translations';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
-import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
+import { FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, FormActionOverflowDirective } from '@shared/components/form-actions/form-actions.component';
 import { SegmentedToggleComponent, SegmentedToggleOption } from '@shared/components/segmented-toggle/segmented-toggle.component';
 import { ToastService } from '@shared/components/toast/toast.service';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
@@ -63,14 +63,16 @@ interface PrefixRow {
 @Component({
   selector: 'app-prefix-settings',
   standalone: true,
-  imports: [TooltipDirective, FormSkeletonComponent, 
+  imports: [PageHeaderComponent, TooltipDirective, FormSkeletonComponent, 
     CommonModule,
     RouterModule,
     FormsModule,
     TranslateModule,
-    BreadcrumbsComponent,
     LoadingOverlayComponent,
-    FormStickyFooterComponent,
+    FormActionsComponent,
+    FormActionPrimaryDirective,
+    FormActionSecondaryDirective,
+    FormActionOverflowDirective,
     SegmentedToggleComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -1,3 +1,5 @@
+import { FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective } from '@shared/components/form-actions/form-actions.component';
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { DragIconComponent } from '@shared/components/drag-icon/drag-icon.component';
 import {
   ChangeDetectionStrategy,
@@ -20,7 +22,6 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { withTranslations } from '@core/i18n/with-translations';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { ToastService } from '@shared/components/toast/toast.service';
@@ -104,12 +105,11 @@ const NUMERIC_COMPARATORS = [
 @Component({
   selector: 'app-products-collections-form',
   standalone: true,
-  imports: [DragIconComponent, 
+  imports: [FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, PageHeaderComponent, DragIconComponent, 
     CommonModule,
     FormsModule,
     DragDropModule,
     TranslateModule,
-    BreadcrumbsComponent,
     LoadingOverlayComponent,
     SegmentedToggleComponent,
     SearchDropdownComponent,

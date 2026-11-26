@@ -1,54 +1,7 @@
 :host { display: block; }
 
 .product-form-page {
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 24px 24px 96px; // bottom pad leaves room for the sticky footer
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-}
-
-// ── Header ────────────────────────────────────────────────────────────────────
-// Two-row layout: breadcrumb (parent only — back-link) on top, prominent
-// H1 page title underneath. Save/Cancel live in the sticky footer.
-.page-header {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 14px;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--ui-line);
-
-  &__lead {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    min-width: 0;
-    flex: 1 1 auto;
-  }
-
-  &__title {
-    margin: 0;
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--ui-text);
-    line-height: 1.2;
-    word-break: break-word;
-  }
-
-  &__actions {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    flex: 0 0 auto;
-    align-self: end;
-  }
-
-  &__action {
-    flex: 0 0 auto;
-  }
-}
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
 
 // Per-section wrapper produced by the `@for` loop in the form
 // template. The `--hidden` modifier visually drops the section
@@ -197,74 +150,19 @@
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-// ── Sticky footer (Save / Cancel) ─────────────────────────────────────────────
-.form-footer {
-  position: fixed;
-  inset-inline: 0;
-  bottom: 0;
-  z-index: 60;
-  background: var(--ui-footer-bg);
-  border-top: 1px solid var(--ui-line);
-  box-shadow: 0 -4px 12px rgba(15, 23, 42, 0.06);
-
-  &__inner {
-    max-width: 1120px;
-    margin: 0 auto;
-    padding: 12px 24px;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 10px;
-  }
-
-  &__errors {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin-inline-end: auto;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--ui-red-text);
-
-    svg { color: var(--ui-red-text); }
-  }
-
-  &__save {
-    position: relative;
-  }
-
-  &__badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 18px;
-    height: 18px;
-    padding: 0 6px;
-    margin-inline-start: 4px;
-    background: #dc2626;
-    color: #fff;
-    border-radius: 999px;
-    font-size: 11px;
-    font-weight: 700;
-    line-height: 1;
-  }
-
-  // When the form has validation errors the Save button shifts to a
-  // washed-out brand tint instead of a hard grey. Communicates "still
-  // the primary action, just not ready yet" while the red badge does
-  // the heavy lifting of saying "fix N things first".
-  &--invalid &__save {
-    background: linear-gradient(180deg,
-      var(--color-brand-300, #7dd3fc) 0%,
-      var(--color-brand-400, #38bdf8) 100%);
-    border-color: transparent;
-    color: #fff;
-    opacity: 0.85;
-    box-shadow: 0 1px 2px rgba(50, 172, 193, 0.18);
-
-    &:hover:not(:disabled) {
-      opacity: 1;
-      box-shadow: 0 4px 10px rgba(50, 172, 193, 0.25);
-    }
-  }
+// Error count on the Save button (the details are in the banner under the header).
+.pf-save-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 6px;
+  margin-inline-start: 4px;
+  background: #dc2626;
+  color: #fff;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
 }

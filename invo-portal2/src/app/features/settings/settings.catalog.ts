@@ -28,6 +28,8 @@ export interface SettingItem {
 
 export interface SettingGroup {
   id:     string;
+  /** i18n key of the heading this group is listed under in the settings menu (SETTINGS.SECTIONS.*). */
+  section?: string;
   title:  string;
   icon:   string;
   color:  string;
@@ -36,7 +38,7 @@ export interface SettingGroup {
 
 export const SETTINGS_GROUPS: SettingGroup[] = [
   {
-    id: 'company', title: 'SETTINGS.GROUPS.COMPANY', color: '#32acc1',
+    id: 'company', section: 'SETTINGS.SECTIONS.BUSINESS_SETUP', title: 'SETTINGS.GROUPS.COMPANY', color: '#32acc1',
     icon: `<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>`,
     items: [
       // Business Settings now folds in identity + locale + currency +
@@ -55,7 +57,7 @@ export const SETTINGS_GROUPS: SettingGroup[] = [
     ],
   },
   {
-    id: 'products', title: 'SETTINGS.GROUPS.PRODUCTS', color: '#14b8a6',
+    id: 'products', section: 'SETTINGS.SECTIONS.BUSINESS_SETUP', title: 'SETTINGS.GROUPS.PRODUCTS', color: '#14b8a6',
     icon: `<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>`,
     items: [
       { label: 'SETTINGS.ITEMS.PRODUCTS_TAB_BUILDER', description: 'SETTINGS.ITEMS.PRODUCTS_TAB_BUILDER_DESC', link: '/settings/tab-builder', privilege: 'tabBuilderSecurity.access',
@@ -63,7 +65,7 @@ export const SETTINGS_GROUPS: SettingGroup[] = [
     ],
   },
   {
-    id: 'media', title: 'SETTINGS.GROUPS.MEDIA', color: '#a855f7',
+    id: 'media', section: 'SETTINGS.SECTIONS.BUSINESS_SETUP', title: 'SETTINGS.GROUPS.MEDIA', color: '#a855f7',
     icon: `<rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>`,
     items: [
       { label: 'SETTINGS.ITEMS.MEDIA_MANAGER', description: 'SETTINGS.ITEMS.MEDIA_MANAGER_DESC', link: '/settings/media', privilege: 'mediaSettingsSecurity.actions.view.access',
@@ -76,7 +78,7 @@ export const SETTINGS_GROUPS: SettingGroup[] = [
     // Site, Domain & SEO — the website-facing IA. Customer-facing
     // surface settings live here (SEO meta tags now; later: domain,
     // custom DNS, social-link footer, robots.txt, sitemap toggles).
-    id: 'siteSeo', title: 'SETTINGS.GROUPS.SITE_SEO', color: '#3b82f6',
+    id: 'siteSeo', section: 'SETTINGS.SECTIONS.BUSINESS_SETUP', title: 'SETTINGS.GROUPS.SITE_SEO', color: '#3b82f6',
     icon: `<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>`,
     items: [
       { label: 'SETTINGS.ITEMS.SEO_SETTINGS', description: 'SETTINGS.ITEMS.SEO_SETTINGS_DESC', link: '/settings/seo', privilege: 'companySettingsSecurity.actions.businessSettings.access',
@@ -86,7 +88,7 @@ export const SETTINGS_GROUPS: SettingGroup[] = [
     ],
   },
   {
-    id: 'pos', title: 'SETTINGS.GROUPS.POS', color: '#6366f1',
+    id: 'pos', section: 'SETTINGS.SECTIONS.SALES_POS', title: 'SETTINGS.GROUPS.POS', color: '#6366f1',
     icon: `<rect x="2" y="8" width="20" height="12" rx="2"/><rect x="6" y="12" width="12" height="2" rx="1"/><rect x="6" y="16" width="8" height="1" rx="0.5"/><rect x="7" y="3" width="10" height="3" rx="1"/><circle cx="19" cy="5" r="1"/>`,
     items: [
       { label: 'SETTINGS.ITEMS.POS_OPTIONS',      description: 'SETTINGS.ITEMS.POS_OPTIONS_DESC',      link: '/settings/pos-options',     privilege: 'companySettingsSecurity.actions.businessSettings.access',
@@ -106,7 +108,7 @@ export const SETTINGS_GROUPS: SettingGroup[] = [
     ],
   },
   {
-    id: 'invoice', title: 'SETTINGS.GROUPS.INVOICE', color: '#10b981',
+    id: 'invoice', section: 'SETTINGS.SECTIONS.SALES_POS', title: 'SETTINGS.GROUPS.INVOICE', color: '#10b981',
     icon: `<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>`,
     items: [
       // All entity-builder tiles route into the unified document-builder
@@ -121,7 +123,7 @@ export const SETTINGS_GROUPS: SettingGroup[] = [
     ],
   },
   {
-    id: 'estimate', title: 'SETTINGS.GROUPS.ESTIMATE', color: '#10b981',
+    id: 'estimate', section: 'SETTINGS.SECTIONS.SALES_POS', title: 'SETTINGS.GROUPS.ESTIMATE', color: '#10b981',
     icon: `<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>`,
     items: [
       { label: 'SETTINGS.ITEMS.ESTIMATE_BUILDER', description: 'SETTINGS.ITEMS.ESTIMATE_BUILDER_DESC', link: '/settings/document-builder', queryParams: { type: 'estimate' }, privilege: 'estimateBuilderSecurity.access',
@@ -131,7 +133,7 @@ export const SETTINGS_GROUPS: SettingGroup[] = [
     ],
   },
   {
-    id: 'expense', title: 'SETTINGS.GROUPS.EXPENSE', color: '#f59e0b',
+    id: 'expense', section: 'SETTINGS.SECTIONS.PURCHASING_FINANCE', title: 'SETTINGS.GROUPS.EXPENSE', color: '#f59e0b',
     icon: `<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>`,
     items: [
       { label: 'SETTINGS.ITEMS.EXPENSE_BUILDER', description: 'SETTINGS.ITEMS.EXPENSE_BUILDER_DESC', link: '/settings/document-builder', queryParams: { type: 'expense' }, privilege: 'expenseBuilderSecurity.access',
@@ -139,7 +141,7 @@ export const SETTINGS_GROUPS: SettingGroup[] = [
     ],
   },
   {
-    id: 'purchase', title: 'SETTINGS.GROUPS.PURCHASE', color: '#f59e0b',
+    id: 'purchase', section: 'SETTINGS.SECTIONS.PURCHASING_FINANCE', title: 'SETTINGS.GROUPS.PURCHASE', color: '#f59e0b',
     icon: `<circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>`,
     items: [
       { label: 'SETTINGS.ITEMS.PURCHASE_ORDER_BUILDER', description: 'SETTINGS.ITEMS.PURCHASE_ORDER_BUILDER_DESC', link: '/settings/document-builder', queryParams: { type: 'purchase-order' }, privilege: 'purchaseOrderBuilderSecurity.access',
@@ -147,7 +149,7 @@ export const SETTINGS_GROUPS: SettingGroup[] = [
     ],
   },
   {
-    id: 'bill', title: 'SETTINGS.GROUPS.BILL', color: '#8b5cf6',
+    id: 'bill', section: 'SETTINGS.SECTIONS.PURCHASING_FINANCE', title: 'SETTINGS.GROUPS.BILL', color: '#8b5cf6',
     icon: `<path d="M4 2v20l3-3 2.5 3L12 19l2.5 3L17 19l3 3V2z"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="9" y1="12" x2="15" y2="12"/>`,
     items: [
       { label: 'SETTINGS.ITEMS.BILL_BUILDER', description: 'SETTINGS.ITEMS.BILL_BUILDER_DESC', link: '/settings/document-builder', queryParams: { type: 'bill' }, privilege: 'billBuilderSecurity.access',
@@ -157,7 +159,7 @@ export const SETTINGS_GROUPS: SettingGroup[] = [
     ],
   },
   {
-    id: 'tax', title: 'SETTINGS.GROUPS.TAX', color: '#ef4444',
+    id: 'tax', section: 'SETTINGS.SECTIONS.PURCHASING_FINANCE', title: 'SETTINGS.GROUPS.TAX', color: '#ef4444',
     icon: `<path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 3.9 2.4-7.4L2 9.4h7.6z"/>`,
     items: [
       { label: 'SETTINGS.ITEMS.MANAGE_TAX', description: 'SETTINGS.ITEMS.MANAGE_TAX_DESC', link: '/settings/tax', privilege: 'taxSecurity.actions.view.access',
@@ -167,7 +169,7 @@ export const SETTINGS_GROUPS: SettingGroup[] = [
     ],
   },
   {
-    id: 'pricing', title: 'SETTINGS.GROUPS.PRICING', color: '#f97316',
+    id: 'pricing', section: 'SETTINGS.SECTIONS.SALES_POS', title: 'SETTINGS.GROUPS.PRICING', color: '#f97316',
     icon: `<path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>`,
     items: [
       { label: 'SETTINGS.ITEMS.LABEL_BUILDER',  description: 'SETTINGS.ITEMS.LABEL_BUILDER_DESC',  link: '/settings/label-builder', privilege: 'labelBuilderSecurity.actions.view.access',
@@ -179,7 +181,7 @@ export const SETTINGS_GROUPS: SettingGroup[] = [
     ],
   },
   {
-    id: 'shipping', title: 'SETTINGS.GROUPS.SHIPPING', color: '#0ea5e9',
+    id: 'shipping', section: 'SETTINGS.SECTIONS.OPERATIONS', title: 'SETTINGS.GROUPS.SHIPPING', color: '#0ea5e9',
     icon: `<path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>`,
     items: [
       // Four separate pages, as in the legacy app.
@@ -202,7 +204,7 @@ export const SETTINGS_GROUPS: SettingGroup[] = [
     // too — the Discount entry there carried no featureFlag and was
     // reachable on every plan, gated only by `discountSecurity`. The
     // Promotion card comes back when coupons/points/tiers are ported.
-    id: 'discount', title: 'SETTINGS.GROUPS.DISCOUNT', color: '#f43f5e',
+    id: 'discount', section: 'SETTINGS.SECTIONS.SALES_POS', title: 'SETTINGS.GROUPS.DISCOUNT', color: '#f43f5e',
     icon: `<line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>`,
     items: [
       { label: 'SETTINGS.ITEMS.DISCOUNT', description: 'SETTINGS.ITEMS.DISCOUNT_DESC', link: '/settings/discounts', privilege: 'discountSecurity.actions.view.access',
@@ -223,7 +225,7 @@ export const SETTINGS_GROUPS: SettingGroup[] = [
     // mismatch caused. Mirrors the deliberate choice at
     // promotions.routes.ts:29. Add `feature: PROMOTIONS_VOUCHERS` once the
     // backfill in docs/tickets/promotions-feature-key-mismatch.md has run.
-    id: 'promotion', title: 'SETTINGS.GROUPS.PROMOTION', color: '#ec4899',
+    id: 'promotion', section: 'SETTINGS.SECTIONS.SALES_POS', title: 'SETTINGS.GROUPS.PROMOTION', color: '#ec4899',
     icon: `<polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>`,
     items: [
       { label: 'SETTINGS.ITEMS.GIFT_VOUCHERS', description: 'SETTINGS.ITEMS.GIFT_VOUCHERS_DESC', link: '/promotions/promotions-vouchers', privilege: 'PromotionalVoucherPrivileges.access',
@@ -239,7 +241,7 @@ export const SETTINGS_GROUPS: SettingGroup[] = [
     ],
   },
   {
-    id: 'other', title: 'SETTINGS.GROUPS.OTHER', color: '#64748b',
+    id: 'other', section: 'SETTINGS.SECTIONS.OPERATIONS', title: 'SETTINGS.GROUPS.OTHER', color: '#64748b',
     icon: `<line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/>`,
     items: [
       { label: 'SETTINGS.ITEMS.PAYMENT_METHODS',    description: 'SETTINGS.ITEMS.PAYMENT_METHODS_DESC',    link: '/settings/payment-methods', privilege: 'paymentMethodSecurity.actions.view.access',

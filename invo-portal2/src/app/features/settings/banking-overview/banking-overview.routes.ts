@@ -46,7 +46,7 @@ export const BANKING_OVERVIEW_ROUTES: Routes = [
     // it and this is a read/compare-only tool with no persistence.
     path: 'file-reconciliation/:accountId',
     canActivate: [privilegeGuard],
-    data: PERMISSION,
+    data: { ...PERMISSION, pageWidth: 'form' },
     loadComponent: () =>
       import('./pages/file-reconciliation/file-reconciliation.component')
         .then(m => m.FileReconciliationComponent),

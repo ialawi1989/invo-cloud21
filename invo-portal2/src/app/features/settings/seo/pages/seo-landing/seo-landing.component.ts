@@ -1,3 +1,4 @@
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -12,7 +13,6 @@ import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { withTranslations } from '@core/i18n/with-translations';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
 import { ToastService } from '@shared/components/toast/toast.service';
@@ -45,11 +45,10 @@ import type { SeoPageType } from '../../services/seo.types';
 @Component({
   selector: 'app-seo-landing',
   standalone: true,
-  imports: [
+  imports: [PageHeaderComponent, 
     CommonModule,
     RouterLink,
     TranslateModule,
-    BreadcrumbsComponent,
     LoadingOverlayComponent,
     ToggleComponent,
   ],

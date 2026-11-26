@@ -1,10 +1,10 @@
 <div class="tax-form-page" [formGroup]="form">
-  <header class="page-header">
-    <div class="page-header__titles">
-      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-      <h1 class="page-title">{{ (isNew() ? 'SETTINGS.TAX.FORM_NEW' : 'SETTINGS.TAX.FORM_EDIT') | translate }}</h1>
-    </div>
-  </header>
+  <app-page-header [title]="(isNew() ? 'SETTINGS.TAX.FORM_NEW' : 'SETTINGS.TAX.FORM_EDIT') | translate" [trail]="breadcrumbs()">
+<app-form-actions pageActions>
+    <button formActionSecondary type="button" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+    <button formActionPrimary type="button" (click)="save()" [disabled]="saving() || loading()">{{ 'COMMON.SAVE' | translate }}</button>
+</app-form-actions>
+</app-page-header>
 
   @if (loading()) {
     <app-form-skeleton />
@@ -95,8 +95,5 @@
 
   <app-loading-overlay [show]="saving()" [message]="'COMMON.SAVING' | translate"/>
 
-  <app-form-sticky-footer>
-    <button type="button" class="btn btn-outline" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
-    <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving() || loading()">{{ 'COMMON.SAVE' | translate }}</button>
-  </app-form-sticky-footer>
+  
 </div>

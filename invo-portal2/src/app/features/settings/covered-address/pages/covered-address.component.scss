@@ -1,13 +1,11 @@
 .cap-page {
-  padding: 16px 20px 100px;
+  
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
 .page-header { display: flex; flex-direction: column; gap: 4px; }
-.page-title  { margin: 0; font-size: 22px; font-weight: 700; color: var(--ui-text); }
-.page-sub    { margin: 0; font-size: 13px; color: var(--ui-muted); max-width: 80ch; line-height: 1.5; }
 
 .card {
   background: var(--ui-surface);
@@ -342,20 +340,6 @@ select.field__input {
   font-weight: 600;
 }
 
-// ─── Save bar ────────────────────────────────────────────────────
-.save-bar {
-  position: fixed;
-  inset-inline: 0;
-  bottom: 0;
-  z-index: 60;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  background: var(--ui-footer-bg);
-  border-top: 1px solid var(--ui-line);
-}
 
 .spinner {
   width: 14px;

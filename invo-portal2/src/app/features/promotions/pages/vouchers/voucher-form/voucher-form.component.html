@@ -1,10 +1,16 @@
 <div class="vf-page">
-  <header class="page-header">
-    <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-    <h1 class="page-header__title">
-      {{ (isEdit() ? 'PROMOTIONS.PROMOTIONS_VOUCHERS.EDIT_PROMOTIONS_VOUCHERS' : 'PROMOTIONS.PROMOTIONS_VOUCHERS.GIVE_PROMOTIONS_VOUCHERS') | translate }}
-    </h1>
-  </header>
+  <app-page-header [title]="(isEdit() ? 'PROMOTIONS.PROMOTIONS_VOUCHERS.EDIT_PROMOTIONS_VOUCHERS' : 'PROMOTIONS.PROMOTIONS_VOUCHERS.GIVE_PROMOTIONS_VOUCHERS') | translate" [trail]="breadcrumbs()">
+@if (voucher(); as v) {
+@if (settings()?.enabled) {
+<app-form-actions pageActions>
+        <button formActionSecondary type="button" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+        <button formActionPrimary type="button" [disabled]="!formValid() || saving()" (click)="save()">
+          {{ 'COMMON.SAVE' | translate }}
+        </button>
+</app-form-actions>
+}
+}
+</app-page-header>
 
   @if (!loading() && settings() && !settings()!.enabled) {
     <div class="vf-disabled">{{ 'PROMOTIONS.PROMOTIONS_VOUCHERS.SORRY_THE_VOUCHERS_SETTING_IS_DISABLED' | translate }}</div>
@@ -147,12 +153,7 @@
         }
       </section>
 
-      <app-form-sticky-footer>
-        <button type="button" class="vf-btn" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
-        <button type="button" class="vf-btn vf-btn--primary" [disabled]="!formValid() || saving()" (click)="save()">
-          {{ 'COMMON.SAVE' | translate }}
-        </button>
-      </app-form-sticky-footer>
+      
     }
   }
 </div>

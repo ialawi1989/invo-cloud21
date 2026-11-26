@@ -21,6 +21,20 @@
       [emptyState]="emptyState()"
       [entityType]="'option-availability'"
       (selectionChanged)="onSelectionChange($event)">
+      <app-form-actions listHeaderActions>
+    @if (dirtyCount() > 0) {
+      <span class="oa-hint">
+        {{ 'PRODUCTS.OPTIONS.AVAILABILITY.UNSAVED' | translate:{ count: dirtyCount() } }}
+      </span>
+    }
+    <button type="button" formActionSecondary [disabled]="dirtyCount() === 0 || saving()" (click)="discard()">
+      {{ 'COMMON.CANCEL' | translate }}
+    </button>
+    <button type="button" formActionPrimary [disabled]="dirtyCount() === 0 || saving()" (click)="save()">
+      {{ 'COMMON.SAVE' | translate }}
+    </button>
+
+      </app-form-actions>
 
       <!-- Name -->
       <ng-template listCellTemplate="name" let-row>
@@ -49,19 +63,6 @@
   }
 
   <!-- Save lives in the app-standard fixed action bar, same as every form. -->
-  <app-form-sticky-footer>
-    @if (dirtyCount() > 0) {
-      <span class="oa-hint">
-        {{ 'PRODUCTS.OPTIONS.AVAILABILITY.UNSAVED' | translate:{ count: dirtyCount() } }}
-      </span>
-    }
-    <button type="button" class="btn btn-ghost" [disabled]="dirtyCount() === 0 || saving()" (click)="discard()">
-      {{ 'COMMON.CANCEL' | translate }}
-    </button>
-    <button type="button" class="btn btn-primary" [disabled]="dirtyCount() === 0 || saving()" (click)="save()">
-      {{ 'COMMON.SAVE' | translate }}
-    </button>
-  </app-form-sticky-footer>
 
   <app-loading-overlay [show]="saving()"/>
 </div>

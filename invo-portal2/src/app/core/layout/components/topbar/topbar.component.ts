@@ -1,7 +1,7 @@
 import { toSignal } from '@angular/core/rxjs-interop';
 import {
   Component, Input, Output, EventEmitter, inject, computed, signal,
-  HostListener, ElementRef
+  HostListener, ElementRef, ViewChild, effect, untracked
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -25,6 +25,7 @@ import { RecentUpdatesPanelComponent } from './recent-updates-panel.component';
 import { NotificationsPanelComponent } from './notifications-panel.component';
 import { GlobalSearchComponent } from '../global-search/global-search.component';
 import { PendingOrdersService } from '../../services/pending-orders.service';
+import { SettingsModeService } from '../../services/settings-mode.service';
 
 import type { FavPage as FavTab } from '../../services/favorites.service';
 
@@ -163,7 +164,10 @@ import type { FavPage as FavTab } from '../../services/favorites.service';
         </div>
 
         <!-- Settings -->
-        <button class="icon-action" [routerLink]="'/settings'"
+        <button #gearBtn class="icon-action" [class.icon-action--active]="settingsMode.inSettingsMode()"
+                (click)="settingsMode.toggleFromGear()"
+                [attr.aria-pressed]="settingsMode.inSettingsMode()"
+                [attr.aria-label]="'TOPBAR.SETTINGS' | translate"
                 [appTooltip]="'TOPBAR.SETTINGS' | translate">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="3"/>
@@ -636,6 +640,9 @@ export class TopbarComponent {
   branchSvc            = inject(BranchConnectionService) as BranchConnectionService;
   get connectedBranches() { return this.branchSvc.connectedCount; }
   pendingOrders        = inject(PendingOrdersService);
+  settingsMode         = inject(SettingsModeService);
+
+  @ViewChild('gearBtn') private gearBtn?: ElementRef<HTMLButtonElement>;
 
   logoImgError    = false;
   qaOpen          = signal(false);
@@ -668,6 +675,10 @@ export class TopbarComponent {
   isCurrentPageFavorited = computed(() => this.favsService.isFavorite(this.router.url));
 
   constructor() {
+    // Leaving settings mode on purpose (Back, or the gear again) hands focus back to the gear.
+    effect(() => {
+      if (this.settingsMode.leaveRequest() > 0) untracked(() => setTimeout(() => this.gearBtn?.nativeElement.focus()));
+    });
     this.favsService.load();
     // Boot-time warm-up. A failure here is not fatal — the service stays
     // "not loaded" so whoever needs the list next retries it.

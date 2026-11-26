@@ -1,3 +1,4 @@
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -9,7 +10,6 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { from, merge } from 'rxjs';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -106,9 +106,8 @@ const SCOPE_KEY  = 'dashboard:scope';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [
+  imports: [PageHeaderComponent, 
     CommonModule,
-    RouterLink,
     TranslateModule,
     SearchDropdownComponent,
     SkeletonComponent,

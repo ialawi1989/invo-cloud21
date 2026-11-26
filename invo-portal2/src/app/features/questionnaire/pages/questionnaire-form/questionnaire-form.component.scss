@@ -1,4 +1,4 @@
-.qf-page { padding: 16px 20px 100px; display: flex; flex-direction: column; gap: 16px; }
+.qf-page { display: flex; flex-direction: column; gap: 16px; }
 .qf-header { display: flex; flex-direction: column; gap: 4px; }
 .qf-title { margin: 0; font-size: 22px; font-weight: 700; color: var(--ui-text); }
 
@@ -19,11 +19,7 @@
   &--err { border-color: var(--ui-red-soft-2); }
 }
 
-.qf-bar {
-  position: fixed; inset-inline: 0; bottom: 0; z-index: 60;
-  display: flex; justify-content: flex-end; gap: 8px; padding: 10px 20px;
-  background: var(--ui-footer-bg); border-top: 1px solid var(--ui-line);
-}
+
 .qf-btn {
   padding: 9px 22px; border-radius: 8px; font-size: 13px; cursor: pointer; border: 1px solid transparent;
   &:disabled { opacity: .6; cursor: default; }

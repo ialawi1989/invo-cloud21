@@ -1,3 +1,4 @@
+import { FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective } from '@shared/components/form-actions/form-actions.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -16,7 +17,6 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { withTranslations } from '@core/i18n/with-translations';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
-import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 import { ToastService } from '@shared/components/toast/toast.service';
 import { ModalService } from '@shared/modal/modal.service';
 import {
@@ -70,12 +70,10 @@ interface AvailabilityRow {
 @Component({
   selector: 'app-option-availability',
   standalone: true,
-  imports: [
-    CommonModule,
+  imports: [FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, CommonModule,
     FormsModule,
     TranslateModule,
     LoadingOverlayComponent,
-    FormStickyFooterComponent,
     ListPageComponent,
     ListCellTemplateDirective,
   ],

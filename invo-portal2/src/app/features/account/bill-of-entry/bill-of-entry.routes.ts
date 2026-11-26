@@ -40,7 +40,7 @@ export const BILL_OF_ENTRY_ROUTES: Routes = [
   {
     path: 'view/:id',
     canActivate: [translationsLoaded, privilegeGuard],
-    data: { permissionPath: 'billOfEntrySecurity.actions.view.access' },
+    data: { pageWidth: 'bleed', permissionPath: 'billOfEntrySecurity.actions.view.access' },
     loadComponent: () => import('./pages/bill-of-entry-view/bill-of-entry-view.component').then(m => m.BillOfEntryViewComponent),
   },
   {

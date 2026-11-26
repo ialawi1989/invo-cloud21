@@ -1,13 +1,28 @@
 <div class="mjf-page">
   <app-loading-overlay [show]="loading()" [fullScreen]="false"/>
 
-  <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-
-  <div class="mjf-header">
-    <h1 class="mjf-title">
-      {{ (isNew() ? 'MANUAL_JOURNALS.FORM.NEW_TITLE' : 'MANUAL_JOURNALS.FORM.EDIT_TITLE') | translate }}
-    </h1>
-  </div>
+  <app-page-header [title]="(isNew() ? 'MANUAL_JOURNALS.FORM.NEW_TITLE' : 'MANUAL_JOURNALS.FORM.EDIT_TITLE') | translate" [trail]="breadcrumbs()">
+<app-form-actions pageActions>
+  <button formActionSecondary type="button" (click)="cancel()">
+    {{ 'COMMON.CANCEL' | translate }}
+  </button>
+  @if (!isNew()) {
+    <button formActionSecondary type="button" (click)="view()">
+      {{ 'COMMON.VIEW' | translate }}
+    </button>
+  }
+  @if (status() === 'Draft' || status() === '') {
+    <button formActionSecondary type="button" [disabled]="saveDraftDisabled()"
+      [appTooltip]="missingTooltip()" (click)="save('Draft')">
+      {{ 'COMMON.SAVE_DRAFT' | translate }}
+    </button>
+  }
+  <button formActionPrimary type="button" [disabled]="saveDisabled()"
+    [appTooltip]="missingTooltip()" (click)="save('Open')">
+    {{ 'COMMON.SAVE' | translate }}
+  </button>
+</app-form-actions>
+</app-page-header>
 
   <div class="mjf-card">
     <div class="mjf-fields">
@@ -147,23 +162,4 @@
   </div>
 </div>
 
-<app-form-sticky-footer>
-  <button type="button" class="btn btn-ghost" (click)="cancel()">
-    {{ 'COMMON.CANCEL' | translate }}
-  </button>
-  @if (!isNew()) {
-    <button type="button" class="btn btn-ghost" (click)="view()">
-      {{ 'COMMON.VIEW' | translate }}
-    </button>
-  }
-  @if (status() === 'Draft' || status() === '') {
-    <button type="button" class="btn btn-ghost" [disabled]="saveDraftDisabled()"
-      [appTooltip]="missingTooltip()" (click)="save('Draft')">
-      {{ 'COMMON.SAVE_DRAFT' | translate }}
-    </button>
-  }
-  <button type="button" class="btn btn-primary" [disabled]="saveDisabled()"
-    [appTooltip]="missingTooltip()" (click)="save('Open')">
-    {{ 'COMMON.SAVE' | translate }}
-  </button>
-</app-form-sticky-footer>
+

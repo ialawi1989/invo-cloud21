@@ -1,3 +1,4 @@
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -25,7 +26,6 @@ import type {
   FilterConfig,
 } from '@shared/components/list-page/interfaces/list-page.types';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 
 import { journalLink } from '../../../chart-of-accounts/utils/journal-links';
 import { BankingOverviewService } from '../../services/banking-overview.service';
@@ -40,14 +40,13 @@ import { AccountHeaderComponent } from '../../components/account-header/account-
 @Component({
   selector: 'app-banking-transactions',
   standalone: true,
-  imports: [
+  imports: [PageHeaderComponent, 
     CommonModule,
     RouterModule,
     TranslateModule,
     MycurrencyPipe,
     ListPageComponent,
     ListCellTemplateDirective,
-    BreadcrumbsComponent,
     AccountHeaderComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,

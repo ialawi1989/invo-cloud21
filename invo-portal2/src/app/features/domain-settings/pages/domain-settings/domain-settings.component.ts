@@ -1,10 +1,11 @@
+import { FormActionsComponent, FormActionPrimaryDirective, FormActionOverflowDirective } from '@shared/components/form-actions/form-actions.component';
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { LanguageService } from '@core/i18n/language.service';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
 import { LoadingOverlayComponent } from '@shared/components/spinner/loading-overlay.component';
@@ -31,7 +32,7 @@ const POLL_MAX_MS = 30 * 60_000;
 @Component({
   selector: 'app-domain-settings',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, BreadcrumbsComponent, EmptyStateComponent, LoadingOverlayComponent],
+  imports: [FormActionsComponent, FormActionPrimaryDirective, FormActionOverflowDirective, PageHeaderComponent, CommonModule, FormsModule, TranslateModule, EmptyStateComponent, LoadingOverlayComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './domain-settings.component.html',
   styleUrl: './domain-settings.component.scss',

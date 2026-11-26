@@ -3,12 +3,7 @@
 // `.save-bar`, and `.spinner` rules so the two surfaces look
 // identical side-by-side.
 
-.pmc-page {
-  padding: 16px 20px 100px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
+.pmc-page { display: flex; flex-direction: column; gap: 16px; }
 
 .page-header {
   display: flex;
@@ -27,7 +22,6 @@
   }
   &__titles { display: flex; flex-direction: column; gap: 4px; flex: 1 1 auto; min-width: 0; }
 }
-.page-title  { margin: 0; font-size: 22px; font-weight: 700; color: var(--ui-text); }
 .page-sub    {
   margin: 0;
   font-size: 13px;
@@ -369,19 +363,6 @@
   > svg { color: currentColor; flex-shrink: 0; }
 }
 
-.save-bar {
-  position: fixed;
-  inset-inline: 0;
-  bottom: 0;
-  z-index: 60;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  background: var(--ui-footer-bg);
-  border-top: 1px solid var(--ui-line);
-}
 
 .spinner {
   width: 14px;

@@ -1,1 +1,1 @@
-export { MediaPreviewComponent } from './media-preview.component';
+export { MediaPreviewComponent, type MediaEditResult } from './media-preview.component';

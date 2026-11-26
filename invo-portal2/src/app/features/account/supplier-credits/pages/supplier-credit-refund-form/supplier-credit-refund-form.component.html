@@ -1,9 +1,11 @@
 @if (loaded) {
   <div class="pf">
-    <header class="page-header">
-      <app-breadcrumbs [items]="breadcrumbs" separator="chevron"/>
-      <h1 class="page-header__title">{{ 'SUPPLIER_CREDITS.REFUND.TITLE' | translate }}</h1>
-    </header>
+    <app-page-header [title]="'SUPPLIER_CREDITS.REFUND.TITLE' | translate" [trail]="breadcrumbs">
+<app-form-actions pageActions>
+      <button formActionSecondary type="button" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+      <button formActionPrimary type="button" [disabled]="submitting" (click)="save()">{{ 'COMMON.SAVE' | translate }}</button>
+</app-form-actions>
+</app-page-header>
 
     <section class="pf-card">
       <h2 class="pf-card__title">{{ 'SUPPLIER_CREDITS.REFUND.FORM' | translate }}</h2>
@@ -76,9 +78,6 @@
       </div>
     </section>
 
-    <app-form-sticky-footer>
-      <button type="button" class="pf-btn" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
-      <button type="button" class="pf-btn pf-btn--primary" [disabled]="submitting" (click)="save()">{{ 'COMMON.SAVE' | translate }}</button>
-    </app-form-sticky-footer>
+    
   </div>
 }

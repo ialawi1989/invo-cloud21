@@ -1,5 +1,4 @@
 :host { display: block; }
-.pc { max-width: 1280px; margin: 0 auto; padding: 24px 20px 96px; }
 .pc__header h1 { margin: 6px 0 2px; font-size: 22px; font-weight: 700; color: var(--ui-text); }
 .pc__header p { margin: 0 0 16px; font-size: 13px; color: var(--ui-muted); }
 
@@ -56,7 +55,6 @@
 .pc__footer { position: sticky; bottom: 0; display: flex; justify-content: flex-end; padding: 12px 0; margin-top: 16px; background: linear-gradient(to top, var(--ui-surface) 70%, transparent); }
 
 @media (max-width: 640px) {
-  .pc { padding: 16px 12px 96px; }
   .pc__filter, .pc__search { width: 100%; max-width: none; flex-basis: 100%; }
   .pc__field { width: 100%; }
 }

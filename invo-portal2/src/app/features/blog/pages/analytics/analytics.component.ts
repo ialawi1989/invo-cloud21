@@ -1,3 +1,4 @@
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -35,7 +36,7 @@ type PostsByKey = 'publishDate' | 'views' | 'clicks' | 'readingTime' | 'engageme
 @Component({
   selector: 'app-blog-analytics',
   standalone: true,
-  imports: [ListSkeletonComponent, CommonModule, RouterModule, TranslateModule, DatePickerComponent, SearchDropdownComponent],
+  imports: [PageHeaderComponent, ListSkeletonComponent, CommonModule, RouterModule, TranslateModule, DatePickerComponent, SearchDropdownComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './analytics.component.html',
   styleUrl: './analytics.component.scss',

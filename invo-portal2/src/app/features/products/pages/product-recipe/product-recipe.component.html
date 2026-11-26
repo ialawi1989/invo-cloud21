@@ -1,11 +1,7 @@
 <div class="pr-page">
-  <header class="page-header">
-    <div class="page-header__titles">
-      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-      <h1 class="page-title">{{ 'PRODUCTS.PRODUCT_RECIPE.TITLE' | translate }}</h1>
-      <p class="page-sub">{{ 'PRODUCTS.PRODUCT_RECIPE.SUBTITLE' | translate }}</p>
-    </div>
-    <div class="page-header__actions">
+  <app-page-header [title]="'PRODUCTS.PRODUCT_RECIPE.TITLE' | translate" [description]="'PRODUCTS.PRODUCT_RECIPE.SUBTITLE' | translate" [trail]="breadcrumbs()">
+<div pageActions>
+<div class="page-header__actions">
       <app-dropdown-menu-btn
         [items]="moreMenuItems"
         [appendToBody]="true"
@@ -17,7 +13,8 @@
         </svg>
       </app-dropdown-menu-btn>
     </div>
-  </header>
+</div>
+</app-page-header>
 
   <!-- Toolbar -->
   <div class="toolbar">

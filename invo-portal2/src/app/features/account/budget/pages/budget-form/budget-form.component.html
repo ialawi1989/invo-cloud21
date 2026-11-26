@@ -1,9 +1,14 @@
 @if (loaded()) {
   <div class="bf">
-    <header class="page-header">
-      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-      <h1 class="page-header__title">{{ (formStatus() === 'new' ? 'BUDGET.FORM.NEW' : 'BUDGET.FORM.EDIT') | translate }}</h1>
-    </header>
+    <app-page-header [title]="(formStatus() === 'new' ? 'BUDGET.FORM.NEW' : 'BUDGET.FORM.EDIT') | translate" [trail]="breadcrumbs()">
+<app-form-actions pageActions>
+      <button formActionSecondary type="button" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+      @if (formStatus() === 'edit') {
+        <button formActionSecondary type="button" (click)="openReport()">{{ 'BUDGET.FORM.REPORT' | translate }}</button>
+      }
+      <button formActionPrimary type="button" [disabled]="submitting()" (click)="save()">{{ 'COMMON.SAVE' | translate }}</button>
+</app-form-actions>
+</app-page-header>
 
     <section class="bf-card">
       <h2 class="bf-card__title">{{ 'BUDGET.FORM.DETAILS' | translate }}</h2>
@@ -80,12 +85,6 @@
       </section>
     }
 
-    <app-form-sticky-footer>
-      <button type="button" class="bf-btn" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
-      @if (formStatus() === 'edit') {
-        <button type="button" class="bf-btn" (click)="openReport()">{{ 'BUDGET.FORM.REPORT' | translate }}</button>
-      }
-      <button type="button" class="bf-btn bf-btn--primary" [disabled]="submitting()" (click)="save()">{{ 'COMMON.SAVE' | translate }}</button>
-    </app-form-sticky-footer>
+    
   </div>
 }

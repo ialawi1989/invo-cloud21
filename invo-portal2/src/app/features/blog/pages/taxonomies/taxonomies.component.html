@@ -1,14 +1,7 @@
 <div class="tx">
-  <header class="tx__head">
-    <div class="tx__headText">
-      <h1 class="tx__title">
-        {{ 'BLOG.TAXONOMIES.TITLE' | translate }}
-        <span class="tx__count">{{ filteredRows().length }}</span>
-      </h1>
-      <p class="tx__sub">{{ 'BLOG.TAXONOMIES.SUBTITLE' | translate }}</p>
-    </div>
-    @if (tab() !== 'hashtag') {
-      <div class="tx__headActions">
+  <app-page-header [title]="'BLOG.TAXONOMIES.TITLE' | translate" [description]="'BLOG.TAXONOMIES.SUBTITLE' | translate" [count]="filteredRows().length">
+    <div pageActions>
+      @if (tab() !== 'hashtag') {
         <button type="button" class="tx-btn tx-btn--ai" (click)="aiCreate()">
           <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="m12 3 1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg>
           {{ 'BLOG.TAXONOMIES.CREATE_WITH_AI' | translate }}
@@ -16,9 +9,9 @@
         <button type="button" class="tx-btn tx-btn--primary" (click)="createNew()">
           + {{ (tab() === 'category' ? 'BLOG.TAXONOMIES.NEW_CATEGORY' : 'BLOG.TAXONOMIES.NEW_TAG') | translate }}
         </button>
-      </div>
-    }
-  </header>
+            }
+    </div>
+  </app-page-header>
 
   <app-segmented-toggle
     [options]="tabOptions()"

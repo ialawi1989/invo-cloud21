@@ -6,10 +6,18 @@ import { Media } from '../../models/media.model';
 import { MediaService } from '../../services/media.service';
 import { MODAL_REF, MODAL_DATA } from '../../../../../shared/modal/modal.tokens';
 import { ModalRef, ModalService } from '../../../../../shared/modal/modal.service';
-import { ImageEditorModalComponent, ImageEditorModalData } from '../../../../../shared/components/image-editor';
+import { ImageEditorModalComponent, ImageEditorModalData, ImageEditorSaveResult } from '../../../../../shared/components/image-editor';
 
 import { ModelViewerComponent } from '../model-viewer/model-viewer.component';
 import { TooltipDirective } from '@shared/directives/tooltip.directive';
+/** What the preview closes with after an edit is saved: the new file and how to apply it to the original. */
+export interface MediaEditResult {
+  file: File;
+  mode: 'new' | 'replace';
+  deleteOriginal: boolean;
+  original: Media;
+}
+
 interface PreviewModalData {
   media: Media;
   mediaList?: Media[];
@@ -365,7 +373,7 @@ export class MediaPreviewComponent implements OnInit, OnDestroy {
       }
     }
 
-    const ref = this.modalSvc.open<ImageEditorModalComponent, ImageEditorModalData, Blob | undefined>(
+    const ref = this.modalSvc.open<ImageEditorModalComponent, ImageEditorModalData, ImageEditorSaveResult | undefined>(
       ImageEditorModalComponent,
       {
         size: 'fullscreen',
@@ -373,18 +381,21 @@ export class MediaPreviewComponent implements OnInit, OnDestroy {
         data: {
           imageUrl: editorUrl,
           fileName: this.currentMedia.name,
+          // An existing library item: Save asks "new image" or "replace the original".
+          allowReplace: !!mediaId,
         },
       },
     );
 
-    let editedBlob: Blob | undefined;
+    let saved: ImageEditorSaveResult | undefined;
     try {
-      editedBlob = await ref.afterClosed();
+      saved = await ref.afterClosed();
     } finally {
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     }
+    const editedBlob = saved?.blob;
 
-    if (editedBlob) {
+    if (saved && editedBlob) {
       // Build the upload File from the edited bytes. The editor exports WebP (or
       // JPEG as a fallback), so derive the name/extension from the blob's actual
       // type — the backend derives the stored extension and content-type from
@@ -398,7 +409,8 @@ export class MediaPreviewComponent implements OnInit, OnDestroy {
       // Close the preview and hand the file to the opener, which uploads it with
       // a page-level spinner and refreshes the library. Uploading here would be
       // torn down the moment the modal closes, so the opener owns it.
-      this.modalRef?.close(file);
+      const result: MediaEditResult = { file, mode: saved.mode, deleteOriginal: saved.deleteOriginal, original: this.currentMedia };
+      this.modalRef?.close(result);
     }
   }
 

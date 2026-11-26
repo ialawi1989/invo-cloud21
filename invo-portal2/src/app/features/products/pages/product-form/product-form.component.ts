@@ -20,7 +20,8 @@ import {
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
 
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
+import { FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, FormActionExtraDirective } from '@shared/components/form-actions/form-actions.component';
 import { FormErrorSummaryComponent } from '@shared/components/form-error-summary/form-error-summary.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
@@ -100,7 +101,11 @@ type FormStatus = 'new' | 'edit';
     CommonModule,
     ReactiveFormsModule,
     TranslateModule,
-    BreadcrumbsComponent,
+    PageHeaderComponent,
+    FormActionsComponent,
+    FormActionPrimaryDirective,
+    FormActionSecondaryDirective,
+    FormActionExtraDirective,
     CommonFieldsComponent,
     ProductPricingComponent,
     PromotionSettingsComponent,
@@ -184,6 +189,9 @@ export class ProductFormComponent implements OnInit, OnDestroy, CanLeaveComponen
    * Total count of invalid controls across the whole form tree.
    * Drives the error badge on the Save button in the sticky footer.
    */
+  /** Set once a save fails validation; shows the error banner under the header. */
+  readonly saveAttempted = signal(false);
+
   errorCount = computed<number>(() => {
     void this.formTick();
     return this.countInvalid(this.productForm);
@@ -560,6 +568,7 @@ export class ProductFormComponent implements OnInit, OnDestroy, CanLeaveComponen
       // a required control they never focused (e.g. an empty UOM) blocks the
       // save with no on-screen hint about where the problem is.
       this.productForm.markAllAsTouched();
+      this.saveAttempted.set(true);
       this.scrollToFirstError();
       return;
     }

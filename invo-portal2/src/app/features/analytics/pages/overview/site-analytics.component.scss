@@ -7,9 +7,6 @@ $sa-shadow-hover: 0 4px 12px rgba(15, 23, 42, .08), 0 2px 4px rgba(15, 23, 42, .
 
 .sa { width: 100%; }
 
-.sa__head { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 22px; }
-.sa__title { margin: 0 0 4px; font-size: 28px; font-weight: 800; color: var(--ui-text); letter-spacing: -0.02em; }
-.sa__sub { margin: 0; font-size: 14px; color: var(--ui-muted); }
 .sa__range { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
 .sa__compare { font-size: 13px; color: var(--ui-muted); }
 

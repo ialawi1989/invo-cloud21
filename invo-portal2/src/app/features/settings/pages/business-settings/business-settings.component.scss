@@ -1,11 +1,7 @@
 // ── Page chrome (mirrors tab-builder-settings) ─────────────────────────
-.business-page {
-  max-width: 1200px;
-  // Extra bottom padding leaves room for the sticky save bar so the
+.business-page { // Extra bottom padding leaves room for the sticky save bar so the
   // last card never sits underneath it when the user scrolls.
-  padding: 0 0 96px;
-  position: relative;
-}
+  position: relative; }
 
 .page-header {
   display: flex;
@@ -18,8 +14,6 @@
   &__actions { flex-shrink: 0; }
 }
 
-.page-title { font-size: 20px; font-weight: 700; color: var(--ui-text-2); margin: 6px 0 0; }
-.page-sub   { font-size: 13px; color: var(--ui-muted);  margin: 2px 0 0; }
 
 .btn {
   padding: 8px 18px;

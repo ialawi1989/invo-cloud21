@@ -51,7 +51,7 @@ export const PROMOTIONS_ROUTES: Routes = [
       {
         path: 'new',
         canDeactivate: [unsavedChangesGuard],
-        data: { permissionPath: `${VOUCHERS}.actions.AddVoucher.access` },
+        data: { pageWidth: 'narrow', permissionPath: `${VOUCHERS}.actions.AddVoucher.access` },
         canActivate: [privilegeGuard],
         loadComponent: () =>
           import('./pages/vouchers/voucher-form/voucher-form.component').then(m => m.VoucherFormComponent),
@@ -59,7 +59,7 @@ export const PROMOTIONS_ROUTES: Routes = [
       {
         path: 'settings',
         canDeactivate: [unsavedChangesGuard],
-        data: { permissionPath: `${VOUCHERS}.actions.EditRate.access` },
+        data: { pageWidth: 'narrow', permissionPath: `${VOUCHERS}.actions.EditRate.access` },
         canActivate: [privilegeGuard],
         loadComponent: () =>
           import('./pages/vouchers/voucher-settings/voucher-settings.component').then(m => m.VoucherSettingsComponent),
@@ -77,7 +77,7 @@ export const PROMOTIONS_ROUTES: Routes = [
       {
         path: ':id/edit',
         canDeactivate: [unsavedChangesGuard],
-        data: { permissionPath: `${VOUCHERS}.actions.EditRate.access` },
+        data: { pageWidth: 'narrow', permissionPath: `${VOUCHERS}.actions.EditRate.access` },
         canActivate: [privilegeGuard],
         loadComponent: () =>
           import('./pages/vouchers/voucher-form/voucher-form.component').then(m => m.VoucherFormComponent),
@@ -89,7 +89,7 @@ export const PROMOTIONS_ROUTES: Routes = [
     canActivate: [translationsLoaded, planFeatureGuard, privilegeGuard],
     data: { permissionPath: `${TIERS}.access`, planFeature: PROMOTIONS_CUSTOMER_TIERS },
     children: [
-      {
+      { data: { pageWidth: 'form' },
         path: '',
         canDeactivate: [unsavedChangesGuard],
         loadComponent: () =>
@@ -115,7 +115,7 @@ export const PROMOTIONS_ROUTES: Routes = [
       {
         path: 'new',
         canDeactivate: [unsavedChangesGuard],
-        data: { permissionPath: `${POINTS}.actions.AddPoints.access` },
+        data: { pageWidth: 'narrow', permissionPath: `${POINTS}.actions.AddPoints.access` },
         canActivate: [privilegeGuard],
         loadComponent: () =>
           import('./pages/points/points-form/points-form.component').then(m => m.PointsFormComponent),
@@ -123,7 +123,7 @@ export const PROMOTIONS_ROUTES: Routes = [
       {
         path: 'settings',
         canDeactivate: [unsavedChangesGuard],
-        data: { permissionPath: `${POINTS}.actions.EditRate.access` },
+        data: { pageWidth: 'narrow', permissionPath: `${POINTS}.actions.EditRate.access` },
         canActivate: [privilegeGuard],
         loadComponent: () =>
           import('./pages/points/points-settings/points-settings.component').then(m => m.PointsSettingsComponent),
@@ -158,7 +158,7 @@ export const PROMOTIONS_ROUTES: Routes = [
       {
         path: 'new/:type',
         canDeactivate: [unsavedChangesGuard],
-        data: { permissionPath: `${COUPONS}.actions.AddCouponSets.access` },
+        data: { pageWidth: 'narrow', permissionPath: `${COUPONS}.actions.AddCouponSets.access` },
         canActivate: [privilegeGuard],
         loadComponent: () =>
           import('./pages/coupons/coupon-set-form/coupon-set-form.component').then(m => m.CouponSetFormComponent),
@@ -176,7 +176,7 @@ export const PROMOTIONS_ROUTES: Routes = [
       {
         path: ':id/edit',
         canDeactivate: [unsavedChangesGuard],
-        data: { permissionPath: `${COUPONS}.actions.EditCouponSets.access` },
+        data: { pageWidth: 'narrow', permissionPath: `${COUPONS}.actions.EditCouponSets.access` },
         canActivate: [privilegeGuard],
         loadComponent: () =>
           import('./pages/coupons/coupon-set-form/coupon-set-form.component').then(m => m.CouponSetFormComponent),
@@ -196,7 +196,7 @@ export const PROMOTIONS_ROUTES: Routes = [
       {
         path: 'new/:type',
         canDeactivate: [unsavedChangesGuard],
-        data: { permissionPath: `${CAMPAIGNS}.actions.AddCampaigns.access` },
+        data: { pageWidth: 'narrow', permissionPath: `${CAMPAIGNS}.actions.AddCampaigns.access` },
         canActivate: [privilegeGuard],
         loadComponent: () =>
           import('./pages/campaigns/campaign-form/campaign-form.component').then(m => m.CampaignFormComponent),
@@ -209,7 +209,7 @@ export const PROMOTIONS_ROUTES: Routes = [
       {
         path: ':id/edit',
         canDeactivate: [unsavedChangesGuard],
-        data: { permissionPath: `${CAMPAIGNS}.actions.EditRate.access` },
+        data: { pageWidth: 'narrow', permissionPath: `${CAMPAIGNS}.actions.EditRate.access` },
         canActivate: [privilegeGuard],
         loadComponent: () =>
           import('./pages/campaigns/campaign-form/campaign-form.component').then(m => m.CampaignFormComponent),
@@ -217,7 +217,7 @@ export const PROMOTIONS_ROUTES: Routes = [
       {
         path: ':id/clone',
         canDeactivate: [unsavedChangesGuard],
-        data: { permissionPath: `${CAMPAIGNS}.actions.SpendCampaigns.access` },
+        data: { pageWidth: 'narrow', permissionPath: `${CAMPAIGNS}.actions.SpendCampaigns.access` },
         canActivate: [privilegeGuard],
         loadComponent: () =>
           import('./pages/campaigns/campaign-form/campaign-form.component').then(m => m.CampaignFormComponent),

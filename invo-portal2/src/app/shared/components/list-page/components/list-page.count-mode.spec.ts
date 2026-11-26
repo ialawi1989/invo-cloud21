@@ -41,7 +41,7 @@ describe('<app-list-page> countMode', () => {
   const el = () => fixture.nativeElement as HTMLElement;
   // Not whenStable(): while a count is in flight its 30s timeout timer keeps the zone "unstable" on purpose.
   const settle = async () => { for (let i = 0; i < 4; i++) { await new Promise(r => setTimeout(r, 0)); fixture.detectChanges(); } };
-  const pill = () => el().querySelector('.lp-head__title-row .lp-count') as HTMLElement | null;
+  const pill = () => el().querySelector('.ph__title-line .lp-count') as HTMLElement | null;
   const foot = () => (el().querySelector('.lp-foot') as HTMLElement).textContent!.replace(/\s+/g, ' ').trim();
   const footBtn = () => el().querySelector('.lp-foot .pg-link') as HTMLButtonElement | null;
   const live = () => Array.from(el().querySelectorAll('[aria-live]')).map(e => e.textContent!.trim()).filter(Boolean);

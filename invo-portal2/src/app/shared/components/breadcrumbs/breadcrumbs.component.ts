@@ -4,11 +4,16 @@ import {
   TemplateRef,
   computed,
   contentChild,
+  inject,
   input,
   output,
+  signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
+import { SettingsModeService } from '../../../core/layout/services/settings-mode.service';
+import { LanguageService } from '../../../core/i18n/language.service';
 
 import {
   BreadcrumbItem,
@@ -81,6 +86,12 @@ export class BreadcrumbsComponent {
    */
   mobileBack = input<boolean>(true);
 
+  /**
+   * True when `items` are only the PARENTS of the current page (what `<app-page-header>` passes — the page's own title is
+   * shown right below, so it is not a crumb). Then no crumb is "the current page": the last one is a normal link.
+   */
+  trailIsParents = input<boolean>(false);
+
   // ── Outputs ────────────────────────────────────────────────────────────────
   itemClick = output<BreadcrumbItem>();
 
@@ -93,9 +104,49 @@ export class BreadcrumbsComponent {
   fullItems = computed<BreadcrumbItem[]>(() => {
     const base = this.items();
     const cur = this.current();
-    if (cur == null) return base;
-    return [...base, { label: cur }];
+    return this.settingsTrail(cur == null ? base : [...base, { label: cur }]);
   });
+
+  private readonly settings = inject(SettingsModeService);
+  private readonly translate = inject(TranslateService);
+  private readonly lang = inject(LanguageService);
+  /** Bumped once the lazy 'settings' strings arrive, so a trail built before they loaded re-reads its labels. */
+  private readonly i18nTick = signal(0);
+  private settingsLoading = false;
+
+  /** Group / "Settings" labels live in the lazy 'settings' namespace: load it on demand instead of showing the raw key. */
+  private settingsLabel(key: string): string {
+    this.i18nTick();
+    const t = this.translate.instant(key);
+    if (t === key && !this.settingsLoading) {
+      this.settingsLoading = true;
+      void this.lang.loadFeature('settings').catch(() => {}).then(() => this.i18nTick.update(n => n + 1));
+    }
+    return t;
+  }
+
+  /**
+   * Inside the settings shell the trail reads "Settings › <Group>" and no longer repeats the page's own title (the crumb
+   * right after "Settings"): the rail already shows which tile is open. A detail page keeps its extra crumb
+   * ("Settings › Group › Edit"). Outside settings mode — or on a full-page layout — the trail is untouched.
+   */
+  private settingsTrail(items: BreadcrumbItem[]): BreadcrumbItem[] {
+    if (!this.settings.crumbsInShell()) return items;
+    const group = this.settings.activeGroup();
+    const parents = this.trailIsParents();
+    if (!group || (!parents && items.length < 2)) return items;
+    const first = this.settings.targetFor(group);
+    const groupCrumb: BreadcrumbItem = { label: this.settingsLabel(group.title), routerLink: first?.link, queryParams: first?.queryParams };
+    const settingsCrumb: BreadcrumbItem = { label: this.settingsLabel('SETTINGS.TITLE'), routerLink: '/settings' };
+    const s = items.findIndex(i => i.routerLink === '/settings');
+    if (parents) {
+      // Parents only (the page title is below): Settings › Group, then whatever parent crumbs followed "Settings".
+      if (s >= 0) return [...items.slice(0, s + 1), groupCrumb, ...items.slice(s + 1)];
+      return [settingsCrumb, groupCrumb, ...items.slice(1)]; // a tile that lives elsewhere (/promotions/*): its own first crumb is the feature
+    }
+    if (s >= 0) return [...items.slice(0, s + 1), groupCrumb, ...items.slice(s + 2)];
+    return [settingsCrumb, groupCrumb, ...items.slice(2)];
+  }
 
   /**
    * The visible items, after optional collapsing. Collapsed groups are
@@ -119,7 +170,7 @@ export class BreadcrumbsComponent {
    */
   parentItem = computed<BreadcrumbItem | null>(() => {
     const items = this.visibleItems();
-    for (let i = items.length - 2; i >= 0; i--) {
+    for (let i = items.length - (this.trailIsParents() ? 1 : 2); i >= 0; i--) {
       const item = items[i];
       if (item.label === '…') continue;
       if (item.routerLink || item.href) return item;
@@ -130,7 +181,7 @@ export class BreadcrumbsComponent {
   // ── Helpers ────────────────────────────────────────────────────────────────
 
   isCurrent(index: number): boolean {
-    return index === this.visibleItems().length - 1;
+    return !this.trailIsParents() && index === this.visibleItems().length - 1;
   }
 
   isEllipsis(item: BreadcrumbItem): boolean {

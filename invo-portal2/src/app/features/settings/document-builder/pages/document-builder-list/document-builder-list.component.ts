@@ -1,3 +1,4 @@
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -19,7 +20,6 @@ import { LoadingOverlayComponent } from '@shared/components/spinner/loading-over
 import { SkeletonComponent } from '@shared/components/skeleton/skeleton.component';
 import { TooltipDirective } from '@shared/directives/tooltip.directive';
 import { ModalService } from '@shared/modal/modal.service';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { ConfirmModalComponent, ConfirmModalData } from '@shared/modal/demo/confirm-modal.component';
 import {
@@ -53,7 +53,7 @@ const VALID_TYPES = new Set<DocumentType>([
 @Component({
   selector: 'app-document-builder-list',
   standalone: true,
-  imports: [
+  imports: [PageHeaderComponent, 
     CommonModule,
     RouterModule,
     FormsModule,
@@ -62,8 +62,7 @@ const VALID_TYPES = new Set<DocumentType>([
     SkeletonComponent,
     TooltipDirective,
     DropdownMenuBtnComponent,
-    BreadcrumbsComponent,
-  ],
+    ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './document-builder-list.component.html',
   styleUrl: './document-builder-list.component.scss',

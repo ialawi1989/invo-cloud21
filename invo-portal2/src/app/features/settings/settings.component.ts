@@ -1,65 +1,24 @@
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { PrivilegeService } from '../../core/auth/privileges/privilege.service';
-import { FeatureService } from '../../core/auth/feature.service';
+import { TranslateModule } from '@ngx-translate/core';
 import { SafeHtmlPipe } from '../../core/pipes/safe-html.pipe';
-import { ModalService } from '../../shared/modal/modal.service';
 import { withTranslations } from '../../core/i18n/with-translations';
 import { SegmentedToggleComponent, SegmentedToggleOption } from '../../shared/components/segmented-toggle/segmented-toggle.component';
+import { SettingsAccessService } from './services/settings-access.service';
+import { SettingsSearchService } from './services/settings-search.service';
 import { SETTINGS_GROUPS, SettingGroup, SettingItem } from './settings.catalog';
 
-
-/**
- * Bounded Levenshtein distance — returns `-1` as soon as the cost
- * exceeds `budget`, which lets the caller skip the inner allocation
- * for obviously-too-different word pairs. Used by the settings
- * search "Did you mean …" suggestion; an unbounded variant would
- * be wasteful when we already know we'll reject anything > N edits.
- */
-function levenshtein(a: string, b: string, budget: number): number {
-  if (Math.abs(a.length - b.length) > budget) return -1;
-  if (a === b) return 0;
-  const m = a.length, n = b.length;
-  // Two-row buffer is enough — classic space-optimised LD.
-  let prev = new Array<number>(n + 1);
-  let curr = new Array<number>(n + 1);
-  for (let j = 0; j <= n; j++) prev[j] = j;
-  for (let i = 1; i <= m; i++) {
-    curr[0] = i;
-    let rowMin = curr[0];
-    for (let j = 1; j <= n; j++) {
-      const cost = a.charCodeAt(i - 1) === b.charCodeAt(j - 1) ? 0 : 1;
-      curr[j] = Math.min(
-        prev[j] + 1,        // deletion
-        curr[j - 1] + 1,    // insertion
-        prev[j - 1] + cost, // substitution
-      );
-      if (curr[j] < rowMin) rowMin = curr[j];
-    }
-    // Early exit — if every cell in this row already exceeds the
-    // budget, no later row can drop back below it.
-    if (rowMin > budget) return -1;
-    [prev, curr] = [curr, prev];
-  }
-  return prev[n] <= budget ? prev[n] : -1;
-}
 
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslateModule, SafeHtmlPipe, SegmentedToggleComponent],
+  imports: [PageHeaderComponent, CommonModule, RouterModule, TranslateModule, SafeHtmlPipe, SegmentedToggleComponent],
   template: `
     <div class="settings-page">
 
-      <!-- Header -->
-      <div class="page-header">
-        <div>
-          <h1 class="page-title">{{ 'SETTINGS.TITLE' | translate }}</h1>
-          <p class="page-sub">{{ 'SETTINGS.SUBTITLE' | translate }}</p>
-        </div>
-      </div>
+      <app-page-header [title]="'SETTINGS.TITLE' | translate" [description]="'SETTINGS.SUBTITLE' | translate"/>
 
       <!-- Search + view switch -->
       <div class="toolbar">
@@ -172,11 +131,8 @@ function levenshtein(a: string, b: string, budget: number): number {
     </div>
   `,
   styles: [`
-    .settings-page { max-width: 1100px; }
 
     .page-header { margin-bottom: 20px; }
-    .page-title  { font-size: 22px; font-weight: 700; color: var(--ui-text-2); margin: 0 0 4px; }
-    .page-sub    { font-size: 14px; color: var(--ui-muted); margin: 0; }
 
     .toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; flex-wrap: wrap; }
     .toolbar .search-bar { flex: 1 1 280px; margin-bottom: 0; }
@@ -302,10 +258,8 @@ function levenshtein(a: string, b: string, budget: number): number {
   `]
 })
 export class SettingsComponent {
-  private privilegeService = inject(PrivilegeService);
-  private featureService   = inject(FeatureService);
-  private modalService     = inject(ModalService);
-  private translateSvc     = inject(TranslateService);
+  private access = inject(SettingsAccessService);
+  private search = inject(SettingsSearchService);
 
   constructor() { withTranslations('settings'); }
 
@@ -333,139 +287,17 @@ export class SettingsComponent {
 
   filteredGroups = computed(() => {
     const q = this.searchQuery().toLowerCase().trim();
-    if (!q) return this.allGroups.map(g => ({
-      ...g,
-      items: g.items.filter(i => this.canAccess(i))
-    }));
     return this.allGroups.map(g => ({
       ...g,
-      items: g.items.filter(i =>
-        this.canAccess(i) && this.matchesItem(i, q)
-      )
-    })).filter(g => g.items.length > 0);
+      items: g.items.filter(i => this.canAccess(i) && (!q || this.search.matches(i, q)))
+    })).filter(g => !q || g.items.length > 0);
   });
 
-  /** Build the search corpus for a tile — visible label/description
-   *  plus any extra `searchKeys` translated and folded into a single
-   *  lowercase haystack. Splitting the check into its own helper
-   *  keeps the `filteredGroups` body readable while the corpus grows
-   *  with more pages.
-   *
-   *  Token-AND semantics: every whitespace-separated word in the
-   *  query must appear *somewhere* in the corpus. That lets a search
-   *  like "branch name" match a tile whose title is "Branch Settings"
-   *  and whose searchKey contains "Branch name", even though neither
-   *  text contains the exact phrase. */
-  private matchesItem(item: SettingItem, q: string): boolean {
-    if (!q) return true;
-    const corpus = this.itemCorpus(item);
-    for (const tok of q.split(/\s+/)) {
-      if (tok && !corpus.includes(tok)) return false;
-    }
-    return true;
-  }
-
-  /** Concatenate the tile's translated label + description + every
-   *  leaf translation under `i18nPrefix` into one lowercase string.
-   *  Built lazily per call — the i18n dictionary is in-memory so
-   *  walking a sub-tree is cheap. */
-  private itemCorpus(item: SettingItem): string {
-    const parts: string[] = [
-      this.t(item.label),
-      this.t(item.description),
-    ];
-    if (item.i18nPrefix) {
-      this.collectLeaves(this.lookupTree(item.i18nPrefix), parts);
-    }
-    return parts.join(' ').toLowerCase();
-  }
-
-  /** Resolve a dot-separated i18n prefix to the nested object that
-   *  holds its sub-keys. Returns `null` when the path doesn't exist
-   *  in the current language (e.g. feature namespace not yet loaded). */
-  private lookupTree(prefix: string): unknown {
-    const lang = this.translateSvc.currentLang ?? this.translateSvc.getFallbackLang();
-    const dict = (this.translateSvc as any).store?.translations?.[lang ?? ''];
-    if (!dict || typeof dict !== 'object') return null;
-    let node: unknown = dict;
-    for (const seg of prefix.split('.')) {
-      if (node && typeof node === 'object' && seg in (node as Record<string, unknown>)) {
-        node = (node as Record<string, unknown>)[seg];
-      } else {
-        return null;
-      }
-    }
-    return node;
-  }
-
-  /** Recursively push every string leaf of `node` into `out`. */
-  private collectLeaves(node: unknown, out: string[]): void {
-    if (typeof node === 'string') {
-      out.push(node);
-      return;
-    }
-    if (node && typeof node === 'object') {
-      for (const v of Object.values(node as Record<string, unknown>)) {
-        this.collectLeaves(v, out);
-      }
-    }
-  }
-
-  /** "Did you mean …" suggestion shown when the search returns zero
-   *  results. Walks every tile's corpus (label + description +
-   *  searchKeys), tokenises into individual words, and picks the
-   *  closest word to each typed token by Levenshtein distance.
-   *  Returns `null` when nothing close enough is found so the
-   *  template can hide the suggestion entirely. */
+  /** "Did you mean …" suggestion shown when the search returns zero results. */
   searchSuggestion = computed<string | null>(() => {
     const q = this.searchQuery().trim();
     if (!q || this.filteredGroups().some(g => g.items.length > 0)) return null;
-
-    // Build the corpus of unique words from every accessible tile.
-    // Source: each tile's `itemCorpus` (label + description + every
-    // leaf string under `i18nPrefix`) — same haystack the matcher
-    // uses, so suggestions can only ever be words that would
-    // actually surface a real tile.
-    const corpus = new Set<string>();
-    for (const g of this.allGroups) {
-      for (const i of g.items) {
-        if (!this.canAccess(i)) continue;
-        for (const w of this.itemCorpus(i).split(/\s+/)) {
-          const clean = w.replace(/[^a-z0-9؀-ۿ]/gi, '');
-          if (clean.length >= 3) corpus.add(clean);
-        }
-      }
-    }
-
-    // For each typed word, find the closest corpus word within a small
-    // edit-distance budget. Threshold scales with word length so short
-    // tokens get tighter matching (no point suggesting "bus" for "set").
-    const out: string[] = [];
-    let changed = false;
-    for (const w of q.split(/\s+/)) {
-      const lower = w.toLowerCase();
-      if (lower.length < 3 || corpus.has(lower)) {
-        out.push(w);
-        continue;
-      }
-      const budget = Math.max(1, Math.floor(lower.length / 4));
-      let best: { word: string; dist: number } | null = null;
-      for (const c of corpus) {
-        // Skip words wildly different in length — cheap pre-filter.
-        if (Math.abs(c.length - lower.length) > budget) continue;
-        const d = levenshtein(lower, c, budget);
-        if (d < 0) continue;
-        if (!best || d < best.dist) best = { word: c, dist: d };
-        if (best.dist === 0) break;
-      }
-      if (best && best.dist > 0 && best.dist <= budget) {
-        out.push(best.word);
-        changed = true;
-      } else {
-        out.push(w);
-      }
-    }
-    return changed ? out.join(' ') : null;
+    return this.search.suggest(q, this.allGroups.flatMap(g => g.items).filter(i => this.canAccess(i)));
   });
 
   /** Accept the current "Did you mean …" suggestion. */
@@ -474,12 +306,7 @@ export class SettingsComponent {
     if (s) this.searchQuery.set(s);
   }
 
-  canAccess(item: SettingItem): boolean {
-    if (item.feature && !this.featureService.isEnabled(item.feature)) return false;
-    if (!item.privilege) return true;
-    if (!this.privilegeService.privileges) return true;
-    return this.privilegeService.check(item.privilege);
-  }
+  canAccess(item: SettingItem): boolean { return this.access.canAccess(item); }
 
   onSearch(e: Event): void {
     this.searchQuery.set((e.target as HTMLInputElement).value);
@@ -492,14 +319,7 @@ export class SettingsComponent {
     this.searchQuery.set('');
   }
 
-  async openPopup(popup: { component: any; size?: string }): Promise<void> {
-    const component = typeof popup.component === 'function'
-      ? await popup.component()
-      : popup.component;
-    this.modalService.open(component, { size: (popup.size as any) ?? 'md', closeOnBackdrop: true });
-  }
-
-  private t(key: string): string {
-    return this.translateSvc.instant(key);
+  openPopup(popup: { component: any; size?: string }): Promise<void> {
+    return this.access.openPopup(popup);
   }
 }

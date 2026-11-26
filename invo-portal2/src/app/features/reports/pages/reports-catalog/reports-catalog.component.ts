@@ -1,3 +1,4 @@
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -35,7 +36,7 @@ type MetaTab = 'all' | 'favorites' | 'new';
 @Component({
   selector: 'app-reports-catalog',
   standalone: true,
-  imports: [TooltipDirective, CommonModule, FormsModule, RouterLink, TranslateModule, SegmentedToggleComponent],
+  imports: [PageHeaderComponent, TooltipDirective, CommonModule, FormsModule, RouterLink, TranslateModule, SegmentedToggleComponent],
   templateUrl: './reports-catalog.component.html',
   styleUrl: './reports-catalog.component.scss',
 })

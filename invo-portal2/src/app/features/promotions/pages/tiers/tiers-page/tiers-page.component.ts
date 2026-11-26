@@ -1,3 +1,4 @@
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -9,9 +10,8 @@ import { LanguageService } from '@core/i18n/language.service';
 import { PrivilegeService } from '@core/auth/privileges/privilege.service';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
-import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
+import { FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, FormActionExtraDirective } from '@shared/components/form-actions/form-actions.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { ToastService } from '@shared/components/toast/toast.service';
 import { ToggleComponent } from '@shared/components/toggle/toggle.component';
@@ -43,8 +43,8 @@ const MAX_TIERS = 8;
 @Component({
   selector: 'app-tiers-page',
   standalone: true,
-  imports: [
-    CommonModule, FormsModule, TranslateModule, MycurrencyPipe, BreadcrumbsComponent, FormStickyFooterComponent,
+  imports: [PageHeaderComponent, 
+    CommonModule, FormsModule, TranslateModule, MycurrencyPipe, FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, FormActionExtraDirective,
     SearchDropdownComponent, ToggleComponent, DaySpanControlComponent, TranslatedStringInputComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,

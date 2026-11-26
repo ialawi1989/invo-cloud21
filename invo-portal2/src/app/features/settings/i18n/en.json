@@ -16,6 +16,24 @@
       "SUCCESS":          "Successfully imported!"
     },
 
+    "BACK": "Back",
+    "ALL_SETTINGS": "All settings",
+    "NO_RESULTS": "No matching settings",
+    "MATCH_ONE": "{{count}} match",
+    "MATCH_MANY": "{{count}} matches",
+    "COLLAPSE_MENU": "Collapse menu",
+    "EXPAND_MENU": "Expand menu",
+    "NAV_LABEL": "Settings menu",
+    "SUBMENU_LABEL": "Settings section",
+    "BREADCRUMB_LABEL": "Breadcrumb",
+    "CLEAR_SEARCH": "Clear search",
+    "SECTIONS": {
+      "BUSINESS_SETUP": "Business setup",
+      "SALES_POS": "Sales and POS",
+      "PURCHASING_FINANCE": "Purchasing and finance",
+      "OPERATIONS": "Operations"
+    },
+
     "GROUPS": {
       "COMPANY":   "Company Setup",
       "PRODUCTS":  "Products",

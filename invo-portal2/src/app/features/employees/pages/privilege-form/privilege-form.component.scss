@@ -1,9 +1,5 @@
 // ── Page chrome (matches branch-form / settings forms) ────────────────
-.privilege-form-page {
-  max-width: 1120px;
-  padding: 0 0 96px;
-  position: relative;
-}
+.privilege-form-page { position: relative; }
 
 .page-header {
   display: flex;
@@ -15,13 +11,6 @@
   &__titles { min-width: 0; flex: 1; }
 }
 
-.page-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--ui-text-2);
-  margin: 6px 0 0;
-  word-break: break-word;
-}
 
 .btn {
   padding: 8px 18px;

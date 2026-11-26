@@ -1,3 +1,5 @@
+import { FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective } from '@shared/components/form-actions/form-actions.component';
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -7,9 +9,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService } from '@core/i18n/language.service';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 import type { CanLeaveComponent } from '@core/guards/unsaved-changes.guard';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
-import { FormStickyFooterComponent } from '@shared/components/form-sticky-footer/form-sticky-footer.component';
 import { DatePickerComponent } from '@shared/components/datepicker/date-picker.component';
 import { SearchDropdownComponent } from '@shared/components/dropdown/search-dropdown.component';
 import { ToastService } from '@shared/components/toast/toast.service';
@@ -27,7 +27,7 @@ import { SupplierCreditsService } from '../../services/supplier-credits.service'
 @Component({
   selector: 'app-supplier-credit-refund-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, MycurrencyPipe, BreadcrumbsComponent, FormStickyFooterComponent, DatePickerComponent, SearchDropdownComponent],
+  imports: [FormActionsComponent, FormActionPrimaryDirective, FormActionSecondaryDirective, PageHeaderComponent, CommonModule, FormsModule, TranslateModule, MycurrencyPipe, DatePickerComponent, SearchDropdownComponent],
   templateUrl: './supplier-credit-refund-form.component.html',
   // Same card / field identity as the other account forms.
   styleUrls: ['../../../payments/pages/payment-form/payment-form.component.scss', '../../../credit-notes/pages/credit-note-refund-form/credit-note-refund-form.component.scss'],

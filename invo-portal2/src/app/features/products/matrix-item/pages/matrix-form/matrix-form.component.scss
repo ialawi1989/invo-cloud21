@@ -2,11 +2,11 @@
   /* Outer page padding comes from the shared `.main-content` wrapper (24px /
      16px on mobile), same as the list pages — so only add the bottom space the
      fixed save-bar needs, and let horizontal/top align with everything else. */
-  padding: 0 0 100px;
+  
   display: flex;
   flex-direction: column;
   gap: 16px;
-  @media (max-width: 640px) { padding: 0 0 96px; gap: 12px; }
+  @media (max-width: 640px) { gap: 12px; }
 }
 
 .page-header { display: flex; flex-direction: column; gap: 4px; }
@@ -204,14 +204,6 @@ form { display: flex; flex-direction: column; gap: 16px;
 .branch-mode-row { display: flex; justify-content: flex-end; margin: 10px 0 8px; }
 .matrix-branch-tabs { display: block; margin-bottom: 10px; }
 /* Per-branch heading shown in Bulk mode (each branch's variant table). */
-.branch-bulk-title {
-  margin: 18px 0 6px;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--ui-text);
-  padding-bottom: 4px;
-  border-bottom: 1px solid var(--ui-line);
-}
 .branch-bulk-title:first-of-type { margin-top: 8px; }
 
 .branch-tabs {
@@ -610,19 +602,6 @@ button.pv-variant-name,
   .pivot .cell-input--sm { width: 128px; text-align: end; }
 }
 
-.save-bar {
-  position: fixed;
-  inset-inline: 0;
-  bottom: 0;
-  z-index: 60;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  background: var(--ui-footer-bg);
-  border-top: 1px solid var(--ui-line);
-}
 
 .danger:hover { color: var(--ui-red-text); }
 

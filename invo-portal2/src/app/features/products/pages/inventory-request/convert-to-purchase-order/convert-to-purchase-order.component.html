@@ -1,11 +1,16 @@
 <div class="cpo">
-  <header class="cpo__header">
-    <div>
-      <app-breadcrumbs [items]="breadcrumbs()" separator="chevron"/>
-      <h1 class="cpo__title">{{ 'PRODUCTS.INVENTORY_REQUEST.CONVERT_PAGE_TITLE' | translate }}</h1>
-    </div>
-    <button type="button" class="btn btn-ghost" (click)="print()" [disabled]="!selected()">{{ 'COMMON.PRINT' | translate }}</button>
-  </header>
+  <app-page-header [title]="'PRODUCTS.INVENTORY_REQUEST.CONVERT_PAGE_TITLE' | translate" [trail]="breadcrumbs()">
+    <app-form-actions pageActions>
+      <button type="button" class="btn btn-ghost" formActionExtra (click)="print()" [disabled]="!selected()">{{ 'COMMON.PRINT' | translate }}</button>
+      <button type="button" formActionSecondary (click)="cancel()" [disabled]="converting()">
+        {{ 'COMMON.CANCEL' | translate }}
+      </button>
+      <button type="button" formActionPrimary (click)="convert()"
+              [disabled]="converting() || loading() || hasUnassigned() || alreadyConverted() || !groups().length">
+        {{ 'PRODUCTS.INVENTORY_REQUEST.CONVERT_ALL' | translate }}
+      </button>
+    </app-form-actions>
+  </app-page-header>
 
   @if (loading()) {
     <app-form-skeleton />
@@ -49,13 +54,4 @@
 
   <app-loading-overlay [show]="converting()" [message]="'COMMON.SAVING' | translate"/>
 
-  <app-form-sticky-footer>
-    <button type="button" class="btn btn-ghost" (click)="cancel()" [disabled]="converting()">
-      {{ 'COMMON.CANCEL' | translate }}
-    </button>
-    <button type="button" class="btn btn-primary" (click)="convert()"
-            [disabled]="converting() || loading() || hasUnassigned() || alreadyConverted() || !groups().length">
-      {{ 'PRODUCTS.INVENTORY_REQUEST.CONVERT_ALL' | translate }}
-    </button>
-  </app-form-sticky-footer>
 </div>

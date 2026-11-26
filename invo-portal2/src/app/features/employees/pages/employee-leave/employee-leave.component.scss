@@ -6,13 +6,7 @@
  * marked, not just a footnote. The figures inside it cover a different period
  * from the one the profile asked for, and that has to be impossible to miss.
  */
-.employee-leave {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding: 1rem 0.25rem;
-  min-width: 0;
-}
+.employee-leave { display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
 
 // ─── Shared HR error banner ──────────────────────────────────────────────
 .hr-error {

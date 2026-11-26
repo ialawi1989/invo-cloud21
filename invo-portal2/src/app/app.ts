@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { Subscription, filter } from 'rxjs';
 import { AuthTabSyncService } from './core/auth/auth-tab-sync.service';
 import { AuthService } from './core/auth/auth.service';
+import { SettingsModeService } from './core/layout/services/settings-mode.service';
 import { ToastComponent } from './shared/components/toast/toast.component';
 @Component({
   selector: 'app-root',
@@ -19,6 +20,8 @@ export class App implements OnInit, OnDestroy {
   private tabSync = inject(AuthTabSyncService);
   private auth    = inject(AuthService);
   private router  = inject(Router);
+  /** Created at bootstrap so it sees the very first navigation (deep links / refresh on /settings/**). */
+  private readonly settingsMode = inject(SettingsModeService);
   private sub!: Subscription;
 
   ngOnInit(): void {

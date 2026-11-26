@@ -1,12 +1,5 @@
 // ── Page chrome ─────────────────────────────────────────────────────────
-.ps-page {
-  max-width: 1100px;
-  margin: 0 auto;
-  // Bottom padding leaves room for the sticky save bar so the last
-  // card never sits underneath it when the user scrolls.
-  padding: 16px 24px 96px;
-  position: relative;
-}
+.ps-page { position: relative; }
 
 .page-header {
   display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
@@ -15,15 +8,7 @@
   &__titles { min-width: 0; }
 }
 
-.page-title {
-  margin: 8px 0 4px;
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--ui-text);
-  letter-spacing: -0.01em;
-}
 
-.page-sub { margin: 0; font-size: 14px; color: var(--ui-muted); }
 
 .loading {
   display: flex;
@@ -261,3 +246,6 @@
   td:nth-child(4) { padding-top: 18px; white-space: nowrap; }
   &__row--invalid td:first-child { box-shadow: inset 3px 0 0 #ef4444; }
 }
+
+// Cards / Table switch: a view control, so it sits right-aligned directly above the content it changes.
+.ps-toolbar { display: flex; justify-content: flex-end; margin: 0 0 12px; }

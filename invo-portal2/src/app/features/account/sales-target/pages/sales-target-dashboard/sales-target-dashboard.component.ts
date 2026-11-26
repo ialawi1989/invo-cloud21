@@ -1,3 +1,4 @@
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -8,7 +9,6 @@ import { LanguageService } from '@core/i18n/language.service';
 import { MycurrencyPipe } from '@core/pipes/mycurrency.pipe';
 import { SegmentedToggleComponent, SegmentedToggleOption } from '@shared/components/segmented-toggle/segmented-toggle.component';
 import { TooltipDirective } from '@shared/directives/tooltip.directive';
-import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import type { BreadcrumbItem } from '@shared/components/breadcrumbs/breadcrumbs.types';
 import { ToastService } from '@shared/components/toast/toast.service';
 import { ModalService } from '@shared/modal/modal.service';
@@ -34,7 +34,7 @@ const AMBER = '#f59e0b';
 @Component({
   selector: 'app-sales-target-dashboard',
   standalone: true,
-  imports: [CommonModule, TranslateModule, NgApexchartsModule, BreadcrumbsComponent, PeriodAnchorComponent, MycurrencyPipe, SegmentedToggleComponent, TooltipDirective],
+  imports: [PageHeaderComponent, CommonModule, TranslateModule, NgApexchartsModule, PeriodAnchorComponent, MycurrencyPipe, SegmentedToggleComponent, TooltipDirective],
   providers: [MycurrencyPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './sales-target-dashboard.component.html',
